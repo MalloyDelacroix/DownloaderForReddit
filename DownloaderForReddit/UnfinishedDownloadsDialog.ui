@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>unfinished_downloads_dialog</class>
+ <widget class="QDialog" name="unfinished_downloads_dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>394</width>
+    <height>95</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Unfinished Downloads</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="0" column="0" colspan="4">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="3">
+    <widget class="QPushButton" name="close_and_keep_button">
+     <property name="toolTip">
+      <string>Closes this dialog but does not erase the list of unfinished downloads.  More unfinished downloads will be added to the list if another download is canceled</string>
+     </property>
+     <property name="text">
+      <string>Close</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="close_and_delete_button">
+     <property name="toolTip">
+      <string>Closes this dialog and deletes the unfinished downloads list</string>
+     </property>
+     <property name="text">
+      <string>Delete List</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="download_button">
+     <property name="toolTip">
+      <string>Closes this dialog and downloads the unfinished downloads list</string>
+     </property>
+     <property name="text">
+      <string>Download List</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
