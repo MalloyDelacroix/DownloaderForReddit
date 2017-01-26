@@ -839,6 +839,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_number_of_downloads()
         if self.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()
+        self.download_count = 0
 
     def open_settings_dialog(self):
         """Displays the main settings dialog"""
@@ -889,7 +890,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.save_state()
 
     """
-    The following functions change options set in the setings menu that must be provided to each list model object.
+    The following functions change options set in the settings menu that must be provided to each list model object.
     These functions go through each object in every list and update the individual options
     """
     def change_post_limit(self, new_limit):
