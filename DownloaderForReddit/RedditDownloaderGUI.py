@@ -165,7 +165,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.user_list_view.customContextMenuRequested.connect(self.user_list_right_click)
 
-        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(0))
+        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(0, False))
         self.user_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.user_lists_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -174,7 +174,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.subreddit_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_list_view.customContextMenuRequested.connect(self.subreddit_list_right_click)
 
-        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(0))
+        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(0, False))
         self.subreddit_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.subreddit_list_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
