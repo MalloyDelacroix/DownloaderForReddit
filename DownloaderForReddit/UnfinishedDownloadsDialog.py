@@ -37,3 +37,4 @@ class UnfinishedDownloadsDialog(QtWidgets.QDialog, Ui_unfinished_downloads_dialo
 
         self.close_and_keep_button.clicked.connect(self.close)
         self.close_and_delete_button.clicked.connect(self.close)
+        self.download_button.clicked.connect(self.close)

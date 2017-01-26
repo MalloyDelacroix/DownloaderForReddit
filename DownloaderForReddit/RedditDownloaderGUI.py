@@ -519,6 +519,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_unfinished_downloads(self):
         """Downloads the content that was left during the last run if the user clicked the stop download button"""
+        self.download_count = 0
+        self.started_download_gui_shift()
         self.reddit_extractor = RedditExtractor(None, None, self.queue, None, None, None, None, None, None, None, None,
                                                 self.unfinished_downloads)
         self.stop_download.connect(self.reddit_extractor.stop_download)
@@ -529,6 +531,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
         self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
         self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
+        self.reddit_extractor.finished.connect(self.reset_unfinished_downloads)
         self.reddit_extractor.finished.connect(self.thread.quit)
         self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
@@ -814,7 +817,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
         self.running = True
         self.output_box.clear()
-        self.download_button.setText('Downloading...Please Wait')
+        self.download_button.setText('Downloading...Click to Stop Download')
         self.add_user_button.setDisabled(True)
         self.remove_user_button.setDisabled(True)
         self.add_subreddit_button.setDisabled(True)
@@ -1027,6 +1030,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def clear_unfinished_list(self):
         self.unfinished_downloads.clear()
+        self.unfinished_downloads_available = False
+
+    def reset_unfinished_downloads(self):
+        self.unfinished_downloads_available = False
 
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur creadits they have remaining"""
@@ -1043,7 +1050,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if imgur_client is not None:
             credits_dict = imgur_client.credits
             dialog_text = 'Imgur credit limit: %s\n\nImgur credits remaining: %s' % (credits_dict['ClientLimit'],
-                                                                                   credits_dict['ClientRemaining'])
+                                                                                     credits_dict['ClientRemaining'])
             reply = QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
 
     def display_about_dialog(self):

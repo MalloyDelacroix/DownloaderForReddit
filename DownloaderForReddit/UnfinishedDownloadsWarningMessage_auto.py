@@ -38,5 +38,5 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Warning - Unfinished Downloads"))
-        self.label.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">TextLabelYou have unfinished downloads.  These downloads cannot be saved and downloaded next session.  If you close now all of this undownloaded content will be lost and will be marked to not be extracted again (you may redownload this content if you uncheck &quot;avoid duplicates&quot; in the settings menu).  Are you sure you want to exit?</span></p></body></html>"))
+        self.label.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">You have unfinished downloads.  These downloads cannot be saved and downloaded next session.  If you close now all of this undownloaded content will be lost and will be marked to not be extracted again (you may redownload this content if you uncheck &quot;avoid duplicates&quot; in the settings menu).  Are you sure you want to exit?</span></p></body></html>"))
 

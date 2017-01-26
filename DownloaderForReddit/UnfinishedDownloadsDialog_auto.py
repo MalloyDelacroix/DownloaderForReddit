@@ -20,6 +20,7 @@ class Ui_unfinished_downloads_dialog(object):
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
         self.label = QtWidgets.QLabel(unfinished_downloads_dialog)
+        self.label.setText("")
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
         self.gridLayout_2.addLayout(self.gridLayout, 0, 0, 1, 4)
@@ -39,7 +40,6 @@ class Ui_unfinished_downloads_dialog(object):
     def retranslateUi(self, unfinished_downloads_dialog):
         _translate = QtCore.QCoreApplication.translate
         unfinished_downloads_dialog.setWindowTitle(_translate("unfinished_downloads_dialog", "Unfinished Downloads"))
-        self.label.setText(_translate("unfinished_downloads_dialog", "TextLabel"))
         self.close_and_keep_button.setToolTip(_translate("unfinished_downloads_dialog", "Closes this dialog but does not erase the list of unfinished downloads.  More unfinished downloads will be added to the list if another download is canceled"))
         self.close_and_keep_button.setText(_translate("unfinished_downloads_dialog", "Close"))
         self.close_and_delete_button.setToolTip(_translate("unfinished_downloads_dialog", "Closes this dialog and deletes the unfinished downloads list"))

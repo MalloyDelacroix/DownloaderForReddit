@@ -19,7 +19,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;TextLabelYou have unfinished downloads.  These downloads cannot be saved and downloaded next session.  If you close now all of this undownloaded content will be lost and will be marked to not be extracted again (you may redownload this content if you uncheck &amp;quot;avoid duplicates&amp;quot; in the settings menu).  Are you sure you want to exit?&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;You have unfinished downloads. These downloads cannot be saved and downloaded next session. If you close now all of this undownloaded content will be lost and will be marked to not be extracted again (you may redownload this content if you uncheck &amp;quot;avoid duplicates&amp;quot; in the settings menu). Are you sure you want to exit?&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>

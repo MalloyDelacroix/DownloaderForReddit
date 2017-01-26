@@ -279,11 +279,11 @@ class RedditExtractor(QObject):
 
     def stop_download(self):
         self.run = False
-        print('Active thread count: %s' % self.download_pool.activeThreadCount())
+        # print('Active thread count: %s' % self.download_pool.activeThreadCount())
         self.download_pool.clear()
-        print('len of queued posts: %s' % len(self.queued_posts))
+        # print('len of queued posts: %s' % len(self.queued_posts))
         self.queue.put('\nStopped\n')
-        print('queued posts not downloaded: %s' % len([x for x in self.queued_posts if not x.downloaded]))
+        # print('queued posts not downloaded: %s' % len([x for x in self.queued_posts if not x.downloaded]))
 
     def send_unfinished_downloads(self):
         unfinished_list = [x for x in self.queued_posts if not x.downloaded]
@@ -294,6 +294,7 @@ class RedditExtractor(QObject):
         self.queued_posts = self.unfinished_downloads_list
         self.status_bar_update.emit('Downloaded: 0  of  %s' % len(self.queued_posts))
         self.download_posts()
+        self.queue.put('\nFinished')
         self.finished.emit()
 
     def skip_user_validation(self):
