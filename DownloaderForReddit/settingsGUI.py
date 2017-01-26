@@ -24,14 +24,17 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
+import sys
 import shutil
 import datetime
 import time
 from PyQt5 import QtWidgets, QtCore
-
-from RD_settings_auto import Ui_Settings
 from ImgurClientDialog import ImgurClientDialog
 from Messages import Message
+if sys.platform == 'darwin':
+    from SettingsGUI_mac_auto import Ui_Settings
+else:
+    from RD_settings_auto import Ui_Settings
 
 
 class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
