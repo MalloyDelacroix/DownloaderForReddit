@@ -2,6 +2,7 @@
 Downloader for Reddit is a GUI application for downloading content submitted to reddit.  It has many advanced features and customizable settings to extract only content that you want and avoid duplicate downloads (if you so choose).  
 The main GUI window is based on a similar project, The reddit Data Extractor by NSchrading.
 
+
 Main Window
 ------------
 ![Main Window] (http://i.imgur.com/KKMdIxM.png)
@@ -25,6 +26,19 @@ The output box will output information in real time as it happens during running
 Additionally under the lists menu there is a selection for 'Failed Downloads.' Clicking this button will bring up a dialog that displays all failed downloads as well as the information listed above. The default is for this dialog to open automatically at the end of a download to alert you to all failed downloads. The auto open feature can be disabled from the dialog.
 
 Also in the lists menu is an option for 'Last Downloaded Users.' This option opens a dialog box which contains a list of the users that had content downloaded during the last session and optionally displays the content in their user download folder.
+
+**Note: Before any content can be downloaded from Imgur.com you will need to have an imgur client-id and client secret.**
+To obtain this go to https://api.imgur.com/oauth2/addclient.  
+The following settings are recommended:
+- Application name: Downloader For Reddit
+- Authorization type: Anonymouse usage without user authorization
+- Authorization callback URL: Any valid url can be used here (ex. https://google.com) 
+- Application website: https://github.com/MalloyDelacroix/DownloaderForReddit
+- Email: This is the email the client-id and secret will me sent to
+
+This client-id and client secret will be entered in the 'Imgur Client Information' dialog box accesed through the settings menu.
+
+Imgur will allow you 12,500 downloads per day. Your remaining Imgur credits can be viewed by clicking 'Imgur Credits' in the help menu.
 
 
 Settings Window
