@@ -224,6 +224,7 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
 
     def run(self):
         """Creates an instance of the UserFinder class and moves it to another thread"""
+        self.found_user_output.clear()
         self.save_user_finder(False)
         self.running = True
         self.stacked_widget.setCurrentIndex(2)

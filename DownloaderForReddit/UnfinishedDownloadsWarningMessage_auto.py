@@ -12,6 +12,9 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(632, 133)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Images/iconmonstr-warning-6-48.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        Dialog.setWindowIcon(icon)
         self.gridLayout_2 = QtWidgets.QGridLayout(Dialog)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.gridLayout = QtWidgets.QGridLayout()
@@ -38,5 +41,5 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Warning - Unfinished Downloads"))
-        self.label.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">You have unfinished downloads.  These downloads cannot be saved and downloaded next session.  If you close now all of this undownloaded content will be lost and will be marked to not be extracted again (you may redownload this content if you uncheck &quot;avoid duplicates&quot; in the settings menu).  Are you sure you want to exit?</span></p></body></html>"))
+        self.label.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">You have unfinished downloads. These downloads cannot be saved and downloaded next session. If you close now all of this undownloaded content will be lost and will be marked to not be extracted again (you may redownload this content if you uncheck &quot;avoid duplicates&quot; in the settings menu). Are you sure you want to exit?</span></p></body></html>"))
 

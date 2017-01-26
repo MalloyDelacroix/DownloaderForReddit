@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Warning - Unfinished Downloads</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>Images/iconmonstr-warning-6-48.png</normaloff>Images/iconmonstr-warning-6-48.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
