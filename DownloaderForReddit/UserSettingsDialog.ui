@@ -93,7 +93,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;The date and time (time is in 24 hour format) to restrict downloads to&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="displayFormat">
-            <string>M/d/yyyy hh:mm</string>
+            <string>M/d/yyyy h:mm ap</string>
            </property>
            <property name="calendarPopup">
             <bool>true</bool>

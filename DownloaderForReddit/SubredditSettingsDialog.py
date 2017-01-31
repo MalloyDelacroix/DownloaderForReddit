@@ -54,6 +54,7 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.display_list = [x.name for x in self.subreddit_list]
         self.current_sub = clicked_sub
         self.restore_defaults = False
+        self.closed = False
 
         self.download_subreddit_button.clicked.connect(self.download_single)
         self.view_downloads_button.clicked.connect(self.change_page)
@@ -89,8 +90,13 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.subreddit_list_widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_list_widget.customContextMenuRequested.connect(self.subreddit_list_widget_right_click)
 
+        self.subreddit_content_list.setViewMode(QtWidgets.QListView.IconMode)
+        self.subreddit_content_list.setIconSize(QtCore.QSize(308, 308))
+        self.subreddit_content_list.setWordWrap(True)
         self.subreddit_content_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_content_list.customContextMenuRequested.connect(self.subreddit_content_list_right_click)
+        self.subreddit_content_list.doubleClicked.connect(lambda:
+                                                          self.open_file(self.subreddit_content_list.currentRow()))
 
     def setup(self):
         """
@@ -220,20 +226,14 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
             if len(self.picture_list) > 0:
                 for file in self.picture_list:
                     path, text = file.rsplit('/', 1)
-                    # file_path = '%s%s%s' % (folder_name, '/' if not
-                    #                        self.current_sub.save_path.endswith('/') else '', file)
                     item = QtWidgets.QListWidgetItem()
-                    display = QtWidgets.QLabel()
-                    display.setWordWrap(True)
-                    item.setSizeHint(QtCore.QSize(310, 310))
-                    pixmap = QtGui.QPixmap(file)
-                    pixmap = pixmap.scaled(QtCore.QSize(310, 310), QtCore.Qt.KeepAspectRatio)
-                    height = pixmap.height()
-                    width = pixmap.width()
-                    display.setText('<p><br>%s</p><img src="%s" height="%s" width="%s"></img>' % (text, file,
-                                                                                                  height, width))
+                    icon = QtGui.QIcon()
+                    pixmap = QtGui.QPixmap(file).scaled(QtCore.QSize(308, 308), QtCore.Qt.KeepAspectRatio)
+                    icon.addPixmap(pixmap)
+                    item.setIcon(icon)
+                    item.setText(text)
                     self.subreddit_content_list.addItem(item)
-                    self.subreddit_content_list.setItemWidget(item, display)
+                    QtWidgets.QApplication.processEvents()
 
         except FileNotFoundError:
             self.subreddit_content_list.addItem('No content has been downloaded for this subreddit yet')
@@ -296,6 +296,9 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         else:
             opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
             subprocess.call([opener, self.picture_list[position]])
+
+    def closeEvent(self, event):
+        self.closed = True
 
 
 # Functions that sort the displayed content in an expected manner

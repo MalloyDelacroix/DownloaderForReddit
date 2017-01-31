@@ -11,12 +11,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_user_settings_dialog(object):
     def setupUi(self, user_settings_dialog):
         user_settings_dialog.setObjectName("user_settings_dialog")
-        user_settings_dialog.resize(483, 493)
+        user_settings_dialog.resize(483, 511)
         font = QtGui.QFont()
         font.setPointSize(10)
         user_settings_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("pictures/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         user_settings_dialog.setWindowIcon(icon)
         user_settings_dialog.setModal(False)
         self.gridLayout_5 = QtWidgets.QGridLayout(user_settings_dialog)
@@ -145,7 +145,7 @@ class Ui_user_settings_dialog(object):
         self.view_downloads_button.setToolTip(_translate("user_settings_dialog", "View this users downloads (will only display downloads that are in the save path above)"))
         self.view_downloads_button.setText(_translate("user_settings_dialog", "View Downloads"))
         self.date_limit_edit.setToolTip(_translate("user_settings_dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">The date and time (time is in 24 hour format) to restrict downloads to</span></p></body></html>"))
-        self.date_limit_edit.setDisplayFormat(_translate("user_settings_dialog", "M/d/yyyy hh:mm:ss"))
+        self.date_limit_edit.setDisplayFormat(_translate("user_settings_dialog", "M/d/yyyy h:mm ap"))
         self.label_2.setText(_translate("user_settings_dialog", "Name Downloads By: "))
         self.label_4.setText(_translate("user_settings_dialog", "Previous Downloads:"))
         self.avoid_duplicates_checkbox.setText(_translate("user_settings_dialog", "Avoid Duplicates"))

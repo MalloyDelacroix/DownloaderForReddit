@@ -272,22 +272,24 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             user_settings_dialog = UserSettingsDialog(current_list_model,
                                                       current_list_model.reddit_object_list[position], False)
             user_settings_dialog.single_download.connect(self.run_single_user)
+            user_settings_dialog.show()
             if page == 1:
                 user_settings_dialog.change_to_downloads_view()
-            dialog = user_settings_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                if not user_settings_dialog.restore_defaults:
-                    current_list_model.reddit_object_list = user_settings_dialog.user_list
-                else:
-                    for user in current_list_model.reddit_object_list:
-                        user.custom_date_limit = None
-                        user.avoid_duplicates = self.avoid_duplicates
-                        user.download_videos = self.download_videos
-                        user.download_images = self.download_images
-                        user.do_not_edit = False
-                        user.save_path = '%s%s/' % (self.save_path, user.name)
-                        user.name_downloads_by = self.name_downloads_by
-                        user.post_limit = self.post_limit
+            if not user_settings_dialog.closed:
+                dialog = user_settings_dialog.exec_()
+                if dialog == QtWidgets.QDialog.Accepted:
+                    if not user_settings_dialog.restore_defaults:
+                        current_list_model.reddit_object_list = user_settings_dialog.user_list
+                    else:
+                        for user in current_list_model.reddit_object_list:
+                            user.custom_date_limit = None
+                            user.avoid_duplicates = self.avoid_duplicates
+                            user.download_videos = self.download_videos
+                            user.download_images = self.download_images
+                            user.do_not_edit = False
+                            user.save_path = '%s%s/' % (self.save_path, user.name)
+                            user.name_downloads_by = self.name_downloads_by
+                            user.post_limit = self.post_limit
         except AttributeError:
             Message.no_user_selected(self)
 
@@ -319,22 +321,24 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             subreddit_settings_dialog = SubredditSettingsDialog(current_list_model,
                                                                 current_list_model.reddit_object_list[position])
             subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
+            subreddit_settings_dialog.show()
             if page == 1:
                 subreddit_settings_dialog.change_to_downloads_view()
-            dialog = subreddit_settings_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                if not subreddit_settings_dialog.restore_defaults:
-                    current_list_model.reddit_object_list = subreddit_settings_dialog.subreddit_list
-                else:
-                    for sub in current_list_model.reddit_object_list:
-                        sub.custom_date_limit = None
-                        sub.avoid_duplicates = self.avoid_duplicates
-                        sub.download_videos = self.download_videos
-                        sub.download_images = self.download_images
-                        sub.do_not_edit = False
-                        sub.save_path = self.save_path
-                        sub.name_downloads_by = self.name_downloads_by
-                        sub.post_limit = self.post_limit
+            if not subreddit_settings_dialog.closed:
+                dialog = subreddit_settings_dialog.exec_()
+                if dialog == QtWidgets.QDialog.Accepted:
+                    if not subreddit_settings_dialog.restore_defaults:
+                        current_list_model.reddit_object_list = subreddit_settings_dialog.subreddit_list
+                    else:
+                        for sub in current_list_model.reddit_object_list:
+                            sub.custom_date_limit = None
+                            sub.avoid_duplicates = self.avoid_duplicates
+                            sub.download_videos = self.download_videos
+                            sub.download_images = self.download_images
+                            sub.do_not_edit = False
+                            sub.save_path = self.save_path
+                            sub.name_downloads_by = self.name_downloads_by
+                            sub.post_limit = self.post_limit
         except AttributeError:
             Message.no_subreddit_selected(self)
 

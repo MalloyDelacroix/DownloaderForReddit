@@ -62,6 +62,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.current_user = clicked_user
         self.downloaded_users_mode = downloaded_users_mode
         self.restore_defaults = False
+        self.closed = False
 
         self.show_downloads = True
 
@@ -97,6 +98,9 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_list_widget.doubleClicked.connect(lambda: self.open_user_download_folder(
                                                     self.user_list_widget.currentRow()))
 
+        self.user_content_list.setViewMode(QtWidgets.QListView.IconMode)
+        self.user_content_list.setIconSize(QtCore.QSize(308, 308))
+        self.user_content_list.setWordWrap(True)
         self.user_content_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.user_content_list.customContextMenuRequested.connect(self.user_content_list_right_click)
         self.user_content_list.doubleClicked.connect(lambda: self.open_file(self.user_content_list.currentRow()))
@@ -228,21 +232,16 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
                                     x.endswith(('.jpg', '.jpeg', '.png'))], key=alphanum_key)
                 if len(self.user_folder) > 0:
                     for file in self.user_folder:
-                        text = str(file)
                         file_path = '%s%s%s' % (self.current_user.save_path, '/' if not
                                                 self.current_user.save_path.endswith('/') else '', file)
                         item = QtWidgets.QListWidgetItem()
-                        display = QtWidgets.QLabel()
-                        display.setWordWrap(True)
-                        item.setSizeHint(QtCore.QSize(310, 310))
-                        pixmap = QtGui.QPixmap(file_path)
-                        pixmap = pixmap.scaled(QtCore.QSize(310, 310), QtCore.Qt.KeepAspectRatio)
-                        height = pixmap.height()
-                        width = pixmap.width()
-                        display.setText('<p><br>%s</p><img src="%s" height="%s" width="%s"></img>' % (text, file_path,
-                                                                                                      height, width))
+                        icon = QtGui.QIcon()
+                        pixmap = QtGui.QPixmap(file_path).scaled(QtCore.QSize(310, 310), QtCore.Qt.KeepAspectRatio)
+                        icon.addPixmap(pixmap)
+                        item.setIcon(icon)
+                        item.setText(str(file))
                         self.user_content_list.addItem(item)
-                        self.user_content_list.setItemWidget(item, display)
+                        QtWidgets.QApplication.processEvents()
 
             except FileNotFoundError:
                 self.user_content_list.addItem('No content has been downloaded for this user yet')
@@ -292,6 +291,9 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         else:
             self.show_downloads = True
         self.setup_user_content_list()
+
+    def closeEvent(self, event):
+        self.closed = True
 
 
 # Functions that sort the displayed content in an expected manner
