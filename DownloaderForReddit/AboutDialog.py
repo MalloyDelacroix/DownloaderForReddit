@@ -46,7 +46,7 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setScaledContents(True)
 
-        self.info_label.setText('Version: 1.0\nAuthor: Kyle H\nHomepage: ')  # TODO: update home page
+        self.info_label.setText('Version: 1.0\nAuthor: Kyle H\nHomepage: https://github.com/MalloyDelacroix/DownloaderForReddit')
         self.info_label.setScaledContents(True)
 
         self.license_box.setOpenExternalLinks(True)
