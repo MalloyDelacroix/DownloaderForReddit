@@ -57,7 +57,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>0</y>
+         <y>20</y>
          <width>161</width>
          <height>24</height>
         </rect>
@@ -69,24 +69,6 @@
        </property>
        <property name="text">
         <string>Imgur Client Information</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="reddit_account_link_button">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>30</y>
-         <width>161</width>
-         <height>24</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Link Reddit Account</string>
        </property>
       </widget>
      </widget>
@@ -764,14 +746,32 @@
   <widget class="QPushButton" name="restore_defaults_button">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>200</x>
      <y>530</y>
-     <width>91</width>
+     <width>121</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>Restore Defaults</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="reddit_account_link_button">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>80</y>
+     <width>161</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>Link Reddit Account</string>
    </property>
   </widget>
  </widget>
