@@ -39,7 +39,6 @@ else:
     from SettingsGUI_linux_auto import Ui_Settings
 
 
-
 class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
 
     def __init__(self):
