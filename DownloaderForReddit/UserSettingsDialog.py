@@ -71,6 +71,8 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         else:
             self.view_downloads_button.clicked.connect(self.toggle_download_views)
 
+        self.cust_save_path_dialog.clicked.connect(self.select_save_path_dialog)
+
         for user in self.display_list:
             self.user_list_widget.addItem(user)
         self.user_list_widget.setCurrentRow(self.display_list.index(self.current_user.name))
@@ -166,6 +168,13 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.download_user_button.setDisabled(True)
         self.save_temporary_user()
         self.single_download.emit(self.current_user)
+
+    def select_save_path_dialog(self):
+        path = self.custom_save_path_line_edit.text() if self.custom_save_path_line_edit != '' else \
+                   '%s%s' % (os.path.expanduser('~'), '/Downloads/')
+        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder', path))
+        if folder_name != '':
+            self.custom_save_path_line_edit.setText(folder_name + '/')
 
     def set_restore_defaults(self):
         self.restore_defaults = True

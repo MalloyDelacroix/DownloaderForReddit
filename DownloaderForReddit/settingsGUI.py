@@ -214,7 +214,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
 
     def select_save_path(self):
         """Opens a file dialog to select the save path"""
-        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder',"%s%s" %
+        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder', "%s%s" %
                                                                      (os.path.expanduser('~'), '/Downloads/')))
         if folder_name != '':
             self.save_directory_line_edit.setText(folder_name + '/')

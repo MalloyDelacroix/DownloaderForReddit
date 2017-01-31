@@ -58,9 +58,10 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.download_subreddit_button.clicked.connect(self.download_single)
         self.view_downloads_button.clicked.connect(self.change_page)
         self.view_downloads_button.setToolTip('This will only display the downloaded subreddit content if it is located'
-                                              ' <br>in the subreddit folder. Content saved with the method "User Name" '
-                                              ' <br>or "User Name/Subreddit Name" cannot be displayed')
+                                              ' <br>in the subreddit folder')
         self.view_downloads_button.setToolTipDuration(-1)
+
+        self.cust_save_path_dialog.clicked.connect(self.select_save_path_dialog)
 
         for sub in self.display_list:
             self.subreddit_list_widget.addItem(sub)
@@ -156,6 +157,13 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.download_subreddit_button.setDisabled(False)
         self.save_temporary_sub()
         self.single_download.emit(self.current_sub)
+
+    def select_save_path_dialog(self):
+        path = self.custom_save_path_line_edit.text() if self.custom_save_path_line_edit != '' else \
+                   '%s%s' % (os.path.expanduser('~'), '/Downloads/')
+        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder', path))
+        if folder_name != '':
+            self.custom_save_path_line_edit.setText(folder_name + '/')
 
     def set_restore_defaults(self):
         self.restore_defaults = True
