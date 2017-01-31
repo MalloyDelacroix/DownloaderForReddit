@@ -102,7 +102,7 @@ class Ui_Settings(object):
         self.score_group.setTitle("")
         self.score_group.setObjectName("score_group")
         self.restrict_to_score_checkbox = QtWidgets.QCheckBox(self.score_group)
-        self.restrict_to_score_checkbox.setGeometry(QtCore.QRect(10, 20, 181, 20))
+        self.restrict_to_score_checkbox.setGeometry(QtCore.QRect(10, 20, 221, 20))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.restrict_to_score_checkbox.setFont(font)
