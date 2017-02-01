@@ -142,8 +142,10 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         is changed and then switched to another sub, if the user clicks "OK", changes to all subs will be saved
         """
         self.current_sub.do_not_edit = self.do_not_edit_checkbox.isChecked()
-        if self.current_sub.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(), '%m/%d/%Y %H:%M:%S'))):
-            self.current_sub.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(), '%m/%d/%Y %H:%M:%S')))
+        if self.current_sub.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                        '%m/%d/%Y %I:%M %p'))):
+            self.current_sub.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                               '%m/%d/%Y %I:%M %p')))
         elif not self.restrict_date_checkbox.isChecked():
             self.current_sub.custom_date_limit = 1
         self.current_sub.post_limit = self.post_limit_spinbox.value()

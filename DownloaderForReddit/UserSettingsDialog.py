@@ -64,6 +64,11 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.restore_defaults = False
         self.closed = False
 
+        self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
+
+        self.user_content_icons_full_width = self.settings.value('user_content_icons_full_width', False, type=bool)
+        self.user_content_icon_size = self.settings.value('user_content_icon_size', 76, type=int)
+
         self.show_downloads = True
 
         self.download_user_button.clicked.connect(self.download_single)
@@ -99,7 +104,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
                                                     self.user_list_widget.currentRow()))
 
         self.user_content_list.setViewMode(QtWidgets.QListView.IconMode)
-        self.user_content_list.setIconSize(QtCore.QSize(308, 308))
         self.user_content_list.setWordWrap(True)
         self.user_content_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.user_content_list.customContextMenuRequested.connect(self.user_content_list_right_click)
@@ -151,8 +155,10 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         user is changed and then switched to another user, if the user clicks "OK", changes to all subs will be saved
         """
         self.current_user.do_not_edit = self.do_not_edit_checkbox.isChecked()
-        if self.current_user.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(), '%m/%d/%Y %H:%M:%S'))):
-            self.current_user.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(), '%m/%d/%Y %H:%M:%S')))
+        if self.current_user.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                         '%m/%d/%Y %I:%M %p'))):
+            self.current_user.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                                '%m/%d/%Y %I:%M %p')))
         if not self.restrict_date_checkbox.isChecked():
             self.current_user.custom_date_limit = 1
         self.current_user.post_limit = self.post_limit_spinbox.value()
@@ -225,6 +231,11 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
     def setup_user_content_list(self):
         """Sets up the user content list with the content that is in the currently selected users download directory"""
         self.user_content_list.clear()
+        if self.user_content_icons_full_width:
+            icon_size = self.user_content_list.width()
+        else:
+            icon_size = self.user_content_icon_size
+        self.user_content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
         if self.show_downloads:
             try:
                 self.user_folder = sorted([x for x in os.listdir(self.current_user.save_path)
@@ -236,7 +247,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
                                                 self.current_user.save_path.endswith('/') else '', file)
                         item = QtWidgets.QListWidgetItem()
                         icon = QtGui.QIcon()
-                        pixmap = QtGui.QPixmap(file_path).scaled(QtCore.QSize(310, 310), QtCore.Qt.KeepAspectRatio)
+                        pixmap = QtGui.QPixmap(file_path).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
                         icon.addPixmap(pixmap)
                         item.setIcon(icon)
                         item.setText(str(file))
@@ -261,9 +272,38 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         try:
             position = self.user_content_list.currentRow()
             open_file = menu.addAction('Open File')
+            menu.addSeparator()
+            icons_full_width = menu.addAction('Icons Full List Width')
+            icon_size_menu = menu.addMenu('Icon Size')
+            icon_size_group = QtWidgets.QActionGroup(self)
+            icon_size_group.setExclusive(True)
+
+            self.icon_size_extra_small = icon_size_menu.addAction('Extra Small')
+            self.icon_size_extra_small.setCheckable(True)
+            icon_size_group.addAction(self.icon_size_extra_small)
+            icon_size_small = icon_size_menu.addAction('Small')
+            icon_size_small.setCheckable(True)
+            icon_size_group.addAction(icon_size_small)
+            icon_size_medium = icon_size_menu.addAction('Medium')
+            icon_size_medium.setCheckable(True)
+            icon_size_group.addAction(icon_size_medium)
+            icon_size_large = icon_size_menu.addAction('Large')
+            icon_size_large.setCheckable(True)
+            icon_size_group.addAction(icon_size_large)
+            icon_size_extra_large = icon_size_menu.addAction('Extra Large')
+            icon_size_extra_large.setCheckable(True)
+            icon_size_group.addAction(icon_size_extra_large)
+
             open_file.triggered.connect(lambda: self.open_file(position))
+            icons_full_width.triggered.connect(self.set_icons_full_width)
+            self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
+            icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
+            icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
+            icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
+            icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
+
         except AttributeError:
-            print('UserSettingsDialog line 210')
+            print('UserSettingsDialog AttributeError: line 304')
         menu.exec(QtGui.QCursor.pos())
 
     def open_user_download_folder(self, position):
@@ -285,6 +325,18 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
             subprocess.call([opener, file])
 
+    def set_icons_full_width(self):
+        self.user_content_icons_full_width = True
+        self.user_content_list.setIconSize(QtCore.QSize(self.user_content_list.width(), self.user_content_list.width()))
+
+    def set_icon_size(self, size):
+        self.user_content_icon_size = size
+        self.user_content_list.setIconSize(QtCore.QSize(size, size))
+
+    def set_context_menu_items_checked(self):
+        if self.user_content_icon_size == 48:
+            pass
+
     def toggle_download_views(self):
         if self.show_downloads:
             self.show_downloads = False
@@ -292,7 +344,16 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.show_downloads = True
         self.setup_user_content_list()
 
+    def resizeEvent(self, event):
+        if self.user_content_icons_full_width:
+            icon_size = self.user_content_list.width()
+        else:
+            icon_size = self.user_content_icon_size
+        self.user_content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
+
     def closeEvent(self, event):
+        self.settings.setValue('user_content_icons_full_width', self.user_content_icons_full_width)
+        self.settings.setValue('user_content_icon_size', self.user_content_icon_size)
         self.closed = True
 
 
