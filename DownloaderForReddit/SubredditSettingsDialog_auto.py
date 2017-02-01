@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_subreddit_settings_dialog(object):
     def setupUi(self, subreddit_settings_dialog):
         subreddit_settings_dialog.setObjectName("subreddit_settings_dialog")
-        subreddit_settings_dialog.resize(488, 532)
+        subreddit_settings_dialog.resize(505, 536)
         font = QtGui.QFont()
         font.setPointSize(10)
         subreddit_settings_dialog.setFont(font)
@@ -139,6 +139,8 @@ class Ui_subreddit_settings_dialog(object):
         self.gridLayout_6 = QtWidgets.QGridLayout()
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.subreddit_content_list = QtWidgets.QListWidget(self.page_2)
+        self.subreddit_content_list.setResizeMode(QtWidgets.QListView.Adjust)
+        self.subreddit_content_list.setWordWrap(True)
         self.subreddit_content_list.setObjectName("subreddit_content_list")
         self.gridLayout_6.addWidget(self.subreddit_content_list, 0, 0, 1, 1)
         self.gridLayout_7.addLayout(self.gridLayout_6, 0, 0, 1, 1)
@@ -157,7 +159,7 @@ class Ui_subreddit_settings_dialog(object):
         self.view_downloads_button.setToolTip(_translate("subreddit_settings_dialog", "View this users downloads (will only display downloads that are in the save path below)"))
         self.view_downloads_button.setText(_translate("subreddit_settings_dialog", "View Downloads"))
         self.date_limit_edit.setToolTip(_translate("subreddit_settings_dialog", "<html><head/><body><p><span style=\" font-size:10pt;\">The date and time (time is in 24 hour format) to restrict downloads to</span></p></body></html>"))
-        self.date_limit_edit.setDisplayFormat(_translate("subreddit_settings_dialog", "M/d/yyyy h:mm ap"))
+        self.date_limit_edit.setDisplayFormat(_translate("subreddit_settings_dialog", "M/d/yyyy hh:mm ap"))
         self.label_2.setText(_translate("subreddit_settings_dialog", "Name Downloads By: "))
         self.label_4.setText(_translate("subreddit_settings_dialog", "Previous Downloads:"))
         self.avoid_duplicates_checkbox.setText(_translate("subreddit_settings_dialog", "Avoid Duplicates"))

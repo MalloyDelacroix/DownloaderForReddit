@@ -56,6 +56,12 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.restore_defaults = False
         self.closed = False
 
+        self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
+
+        self.subreddit_content_icons_full_width = self.settings.value('subreddit_content_icons_full_width', False,
+                                                                      type=bool)
+        self.subreddit_content_icon_size = self.settings.value('subreddit_content_icon_size', 110, type=int)
+
         self.download_subreddit_button.clicked.connect(self.download_single)
         self.view_downloads_button.clicked.connect(self.change_page)
         self.view_downloads_button.setToolTip('This will only display the downloaded subreddit content if it is located'
@@ -91,8 +97,6 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.subreddit_list_widget.customContextMenuRequested.connect(self.subreddit_list_widget_right_click)
 
         self.subreddit_content_list.setViewMode(QtWidgets.QListView.IconMode)
-        self.subreddit_content_list.setIconSize(QtCore.QSize(308, 308))
-        self.subreddit_content_list.setWordWrap(True)
         self.subreddit_content_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_content_list.customContextMenuRequested.connect(self.subreddit_content_list_right_click)
         self.subreddit_content_list.doubleClicked.connect(lambda:
@@ -197,8 +201,6 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
             self.resize(self.page_two_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(1)
         self.view_downloads_button.setText('Sub Settings')
-        self.subreddit_content_list.setMinimumHeight(315)
-        self.subreddit_content_list.setMinimumWidth(315)
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
         self.setup_subreddit_content_list()
@@ -230,7 +232,7 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
                     path, text = file.rsplit('/', 1)
                     item = QtWidgets.QListWidgetItem()
                     icon = QtGui.QIcon()
-                    pixmap = QtGui.QPixmap(file).scaled(QtCore.QSize(308, 308), QtCore.Qt.KeepAspectRatio)
+                    pixmap = QtGui.QPixmap(file).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
                     icon.addPixmap(pixmap)
                     item.setIcon(icon)
                     item.setText(text)
@@ -269,14 +271,44 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         menu.exec(QtGui.QCursor.pos())
 
     def subreddit_content_list_right_click(self):
-        menu = QtWidgets.QMenu()
-        try:
-            position = self.subreddit_content_list.currentRow()
-            open_file = menu.addAction('Open File')
-            open_file.triggered.connect(lambda: self.open_file(position))
-        except AttributeError:
-            print('SubredditSettingsDialog line 173')
-        menu.exec(QtGui.QCursor.pos())
+        self.menu = QtWidgets.QMenu()
+        # try:
+        position = self.subreddit_content_list.currentRow()
+        open_file = self.menu.addAction('Open File')
+        self.menu.addSeparator()
+        self.icons_full_width = self.menu.addAction('Icons Full List Width')
+        self.icons_full_width.setCheckable(True)
+        self.icon_size_menu = self.menu.addMenu('Icon Size')
+        self.icon_size_group = QtWidgets.QActionGroup(self)
+        self.icon_size_group.setExclusive(True)
+
+        self.icon_size_extra_small = self.icon_size_menu.addAction('Extra Small')
+        self.icon_size_extra_small.setCheckable(True)
+        self.icon_size_small = self.icon_size_menu.addAction('Small')
+        self.icon_size_small.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_small)
+        self.icon_size_medium = self.icon_size_menu.addAction('Medium')
+        self.icon_size_medium.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_medium)
+        self.icon_size_large = self.icon_size_menu.addAction('Large')
+        self.icon_size_large.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_large)
+        self.icon_size_extra_large = self.icon_size_menu.addAction('Extra Large')
+        self.icon_size_extra_large.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_extra_large)
+        self.set_context_menu_items_checked()
+
+        open_file.triggered.connect(lambda: self.open_file(position))
+        self.icons_full_width.triggered.connect(self.set_icons_full_width)
+        self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
+        self.icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
+        self.icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
+        self.icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
+        self.icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
+
+        # except AttributeError:
+            # print('SubredditSettingsDialog line 310')
+        self.menu.exec(QtGui.QCursor.pos())
 
     def open_subreddit_download_folder(self, position):
         selected_sub = self.subreddit_list[position]
@@ -299,8 +331,42 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
             opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
             subprocess.call([opener, self.picture_list[position]])
 
+    def set_icons_full_width(self):
+        self.subreddit_content_icons_full_width = True
+        self.subreddit_content_list.setIconSize(QtCore.QSize(self.subreddit_content_list.width(), self.subreddit_content_list.width()))
+
+    def set_icon_size(self, size):
+        self.subreddit_content_icons_full_width = False
+        self.subreddit_content_icon_size = size
+        self.subreddit_content_list.setIconSize(QtCore.QSize(size, size))
+
+    def set_context_menu_items_checked(self):
+        if self.subreddit_content_icons_full_width:
+            self.icons_full_width.setChecked(True)
+        else:
+            self.icons_full_width.setChecked(False)
+            if self.subreddit_content_icon_size == 48:
+                self.icon_size_extra_small.setChecked(True)
+            elif self.subreddit_content_icon_size == 72:
+                self.icon_size_small.setChecked(True)
+            elif self.subreddit_content_icon_size == 110:
+                self.icon_size_medium.setChecked(True)
+            elif self.subreddit_content_icon_size == 176:
+                self.icon_size_large.setChecked(True)
+            else:
+                self.icon_size_extra_large.setChecked(True)
+
+    def resizeEvent(self, event):
+        if self.subreddit_content_icons_full_width:
+            icon_size = self.subreddit_content_list.width()
+        else:
+            icon_size = self.subreddit_content_icon_size
+        self.subreddit_content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
+
     def closeEvent(self, event):
         self.closed = True
+        self.settings.setValue('subreddit_content_icons_full_width', self.subreddit_content_icons_full_width)
+        self.settings.setValue('subreddit_content_icon_size', self.subreddit_content_icon_size)
 
 
 # Functions that sort the displayed content in an expected manner

@@ -67,7 +67,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
 
         self.user_content_icons_full_width = self.settings.value('user_content_icons_full_width', False, type=bool)
-        self.user_content_icon_size = self.settings.value('user_content_icon_size', 76, type=int)
+        self.user_content_icon_size = self.settings.value('user_content_icon_size', 110, type=int)
 
         self.show_downloads = True
 
@@ -103,8 +103,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_list_widget.doubleClicked.connect(lambda: self.open_user_download_folder(
                                                     self.user_list_widget.currentRow()))
 
-        self.user_content_list.setViewMode(QtWidgets.QListView.IconMode)
-        self.user_content_list.setWordWrap(True)
         self.user_content_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.user_content_list.customContextMenuRequested.connect(self.user_content_list_right_click)
         self.user_content_list.doubleClicked.connect(lambda: self.open_file(self.user_content_list.currentRow()))
@@ -210,8 +208,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.resize(self.page_two_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(1)
         self.view_downloads_button.setText('User Settings')
-        self.user_content_list.setMinimumWidth(315)
-        self.user_content_list.setMinimumHeight(315)
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
         self.setup_user_content_list()
@@ -268,43 +264,44 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         menu.exec(QtGui.QCursor.pos())
 
     def user_content_list_right_click(self):
-        menu = QtWidgets.QMenu()
-        try:
-            position = self.user_content_list.currentRow()
-            open_file = menu.addAction('Open File')
-            menu.addSeparator()
-            icons_full_width = menu.addAction('Icons Full List Width')
-            icon_size_menu = menu.addMenu('Icon Size')
-            icon_size_group = QtWidgets.QActionGroup(self)
-            icon_size_group.setExclusive(True)
+        self.menu = QtWidgets.QMenu()
+        # try:
+        position = self.user_content_list.currentRow()
+        open_file = self.menu.addAction('Open File')
+        self.menu.addSeparator()
+        self.icons_full_width = self.menu.addAction('Icons Full List Width')
+        self.icons_full_width.setCheckable(True)
+        self.icon_size_menu = self.menu.addMenu('Icon Size')
+        self.icon_size_group = QtWidgets.QActionGroup(self)
+        self.icon_size_group.setExclusive(True)
 
-            self.icon_size_extra_small = icon_size_menu.addAction('Extra Small')
-            self.icon_size_extra_small.setCheckable(True)
-            icon_size_group.addAction(self.icon_size_extra_small)
-            icon_size_small = icon_size_menu.addAction('Small')
-            icon_size_small.setCheckable(True)
-            icon_size_group.addAction(icon_size_small)
-            icon_size_medium = icon_size_menu.addAction('Medium')
-            icon_size_medium.setCheckable(True)
-            icon_size_group.addAction(icon_size_medium)
-            icon_size_large = icon_size_menu.addAction('Large')
-            icon_size_large.setCheckable(True)
-            icon_size_group.addAction(icon_size_large)
-            icon_size_extra_large = icon_size_menu.addAction('Extra Large')
-            icon_size_extra_large.setCheckable(True)
-            icon_size_group.addAction(icon_size_extra_large)
+        self.icon_size_extra_small = self.icon_size_menu.addAction('Extra Small')
+        self.icon_size_extra_small.setCheckable(True)
+        self.icon_size_small = self.icon_size_menu.addAction('Small')
+        self.icon_size_small.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_small)
+        self.icon_size_medium = self.icon_size_menu.addAction('Medium')
+        self.icon_size_medium.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_medium)
+        self.icon_size_large = self.icon_size_menu.addAction('Large')
+        self.icon_size_large.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_large)
+        self.icon_size_extra_large = self.icon_size_menu.addAction('Extra Large')
+        self.icon_size_extra_large.setCheckable(True)
+        self.icon_size_group.addAction(self.icon_size_extra_large)
+        self.set_context_menu_items_checked()
 
-            open_file.triggered.connect(lambda: self.open_file(position))
-            icons_full_width.triggered.connect(self.set_icons_full_width)
-            self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
-            icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
-            icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
-            icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
-            icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
+        open_file.triggered.connect(lambda: self.open_file(position))
+        self.icons_full_width.triggered.connect(self.set_icons_full_width)
+        self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
+        self.icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
+        self.icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
+        self.icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
+        self.icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
 
-        except AttributeError:
-            print('UserSettingsDialog AttributeError: line 304')
-        menu.exec(QtGui.QCursor.pos())
+        # except AttributeError:
+            # print('UserSettingsDialog AttributeError: line 304')
+        self.menu.exec(QtGui.QCursor.pos())
 
     def open_user_download_folder(self, position):
         selected_user = self.user_list[position]
@@ -330,12 +327,25 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_content_list.setIconSize(QtCore.QSize(self.user_content_list.width(), self.user_content_list.width()))
 
     def set_icon_size(self, size):
+        self.user_content_icons_full_width = False
         self.user_content_icon_size = size
         self.user_content_list.setIconSize(QtCore.QSize(size, size))
 
     def set_context_menu_items_checked(self):
-        if self.user_content_icon_size == 48:
-            pass
+        if self.user_content_icons_full_width:
+            self.icons_full_width.setChecked(True)
+        else:
+            self.icons_full_width.setChecked(False)
+            if self.user_content_icon_size == 48:
+                self.icon_size_extra_small.setChecked(True)
+            elif self.user_content_icon_size == 72:
+                self.icon_size_small.setChecked(True)
+            elif self.user_content_icon_size == 110:
+                self.icon_size_medium.setChecked(True)
+            elif self.user_content_icon_size == 176:
+                self.icon_size_large.setChecked(True)
+            else:
+                self.icon_size_extra_large.setChecked(True)
 
     def toggle_download_views(self):
         if self.show_downloads:
@@ -352,9 +362,9 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
 
     def closeEvent(self, event):
+        self.closed = True
         self.settings.setValue('user_content_icons_full_width', self.user_content_icons_full_width)
         self.settings.setValue('user_content_icon_size', self.user_content_icon_size)
-        self.closed = True
 
 
 # Functions that sort the displayed content in an expected manner
