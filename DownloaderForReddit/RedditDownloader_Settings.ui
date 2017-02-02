@@ -33,7 +33,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>pictures/settings_single_gear.png</normaloff>pictures/settings_single_gear.png</iconset>
+    <normaloff>Images/settings_single_gear.png</normaloff>Images/settings_single_gear.png</iconset>
   </property>
   <property name="whatsThis">
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This is a section to watch subreddits for top posts, and add users to userlist that are in the top&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

@@ -16,7 +16,7 @@ class Ui_user_settings_dialog(object):
         font.setPointSize(10)
         user_settings_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("pictures/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         user_settings_dialog.setWindowIcon(icon)
         user_settings_dialog.setModal(False)
         self.gridLayout_5 = QtWidgets.QGridLayout(user_settings_dialog)

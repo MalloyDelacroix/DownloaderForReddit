@@ -20,7 +20,7 @@ class Ui_Settings(object):
         Settings.setMinimumSize(QtCore.QSize(513, 560))
         Settings.setMaximumSize(QtCore.QSize(513, 560))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("pictures/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Settings.setWindowIcon(icon)
         self.gridLayoutWidget_2 = QtWidgets.QWidget(Settings)
         self.gridLayoutWidget_2.setGeometry(QtCore.QRect(310, 10, 191, 61))

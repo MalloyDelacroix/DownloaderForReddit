@@ -26,7 +26,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>pictures/magnifying_glass.png</normaloff>pictures/magnifying_glass.png</iconset>
+    <normaloff>Images/magnifying_glass.png</normaloff>Images/magnifying_glass.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
