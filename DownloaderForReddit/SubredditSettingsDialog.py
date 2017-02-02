@@ -162,8 +162,8 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
 
     def download_single(self):
         """
-        Downloads only the subreddit that is selected.  Emits a signal picked up by the main GUI that runs an instance of
-        the RedditExtractor class with a single item subreddit list
+        Downloads only the subreddit that is selected.  Emits a signal picked up by the main GUI that runs an instance
+        of the RedditExtractor class with a single item subreddit list
         """
         self.download_subreddit_button.setText("Downloading...")
         self.download_subreddit_button.setDisabled(False)
@@ -272,42 +272,42 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
 
     def subreddit_content_list_right_click(self):
         self.menu = QtWidgets.QMenu()
-        # try:
-        position = self.subreddit_content_list.currentRow()
-        open_file = self.menu.addAction('Open File')
-        self.menu.addSeparator()
-        self.icons_full_width = self.menu.addAction('Icons Full List Width')
-        self.icons_full_width.setCheckable(True)
-        self.icon_size_menu = self.menu.addMenu('Icon Size')
-        self.icon_size_group = QtWidgets.QActionGroup(self)
-        self.icon_size_group.setExclusive(True)
+        try:
+            position = self.subreddit_content_list.currentRow()
+            open_file = self.menu.addAction('Open File')
+            self.menu.addSeparator()
+            self.icons_full_width = self.menu.addAction('Icons Full List Width')
+            self.icons_full_width.setCheckable(True)
+            self.icon_size_menu = self.menu.addMenu('Icon Size')
+            self.icon_size_group = QtWidgets.QActionGroup(self)
+            self.icon_size_group.setExclusive(True)
 
-        self.icon_size_extra_small = self.icon_size_menu.addAction('Extra Small')
-        self.icon_size_extra_small.setCheckable(True)
-        self.icon_size_small = self.icon_size_menu.addAction('Small')
-        self.icon_size_small.setCheckable(True)
-        self.icon_size_group.addAction(self.icon_size_small)
-        self.icon_size_medium = self.icon_size_menu.addAction('Medium')
-        self.icon_size_medium.setCheckable(True)
-        self.icon_size_group.addAction(self.icon_size_medium)
-        self.icon_size_large = self.icon_size_menu.addAction('Large')
-        self.icon_size_large.setCheckable(True)
-        self.icon_size_group.addAction(self.icon_size_large)
-        self.icon_size_extra_large = self.icon_size_menu.addAction('Extra Large')
-        self.icon_size_extra_large.setCheckable(True)
-        self.icon_size_group.addAction(self.icon_size_extra_large)
-        self.set_context_menu_items_checked()
+            self.icon_size_extra_small = self.icon_size_menu.addAction('Extra Small')
+            self.icon_size_extra_small.setCheckable(True)
+            self.icon_size_small = self.icon_size_menu.addAction('Small')
+            self.icon_size_small.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_small)
+            self.icon_size_medium = self.icon_size_menu.addAction('Medium')
+            self.icon_size_medium.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_medium)
+            self.icon_size_large = self.icon_size_menu.addAction('Large')
+            self.icon_size_large.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_large)
+            self.icon_size_extra_large = self.icon_size_menu.addAction('Extra Large')
+            self.icon_size_extra_large.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_extra_large)
+            self.set_context_menu_items_checked()
 
-        open_file.triggered.connect(lambda: self.open_file(position))
-        self.icons_full_width.triggered.connect(self.set_icons_full_width)
-        self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
-        self.icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
-        self.icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
-        self.icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
-        self.icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
+            open_file.triggered.connect(lambda: self.open_file(position))
+            self.icons_full_width.triggered.connect(self.set_icons_full_width)
+            self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
+            self.icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
+            self.icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
+            self.icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
+            self.icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
 
-        # except AttributeError:
-            # print('SubredditSettingsDialog line 310')
+        except AttributeError:
+            print('SubredditSettingsDialog line 310')
         self.menu.exec(QtGui.QCursor.pos())
 
     def open_subreddit_download_folder(self, position):
@@ -333,7 +333,8 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
 
     def set_icons_full_width(self):
         self.subreddit_content_icons_full_width = True
-        self.subreddit_content_list.setIconSize(QtCore.QSize(self.subreddit_content_list.width(), self.subreddit_content_list.width()))
+        self.subreddit_content_list.setIconSize(QtCore.QSize(self.subreddit_content_list.width(),
+                                                             self.subreddit_content_list.width()))
 
     def set_icon_size(self, size):
         self.subreddit_content_icons_full_width = False
