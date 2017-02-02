@@ -712,9 +712,9 @@
   <widget class="QDialogButtonBox" name="save_cancel_button_box">
    <property name="geometry">
     <rect>
-     <x>340</x>
+     <x>360</x>
      <y>520</y>
-     <width>161</width>
+     <width>141</width>
      <height>41</height>
     </rect>
    </property>
@@ -730,7 +730,7 @@
     <rect>
      <x>10</x>
      <y>530</y>
-     <width>171</width>
+     <width>221</width>
      <height>16</height>
     </rect>
    </property>
@@ -746,7 +746,7 @@
   <widget class="QPushButton" name="restore_defaults_button">
    <property name="geometry">
     <rect>
-     <x>200</x>
+     <x>230</x>
      <y>530</y>
      <width>121</width>
      <height>23</height>
