@@ -284,6 +284,7 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
 
             self.icon_size_extra_small = self.icon_size_menu.addAction('Extra Small')
             self.icon_size_extra_small.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_extra_small)
             self.icon_size_small = self.icon_size_menu.addAction('Small')
             self.icon_size_small.setCheckable(True)
             self.icon_size_group.addAction(self.icon_size_small)
