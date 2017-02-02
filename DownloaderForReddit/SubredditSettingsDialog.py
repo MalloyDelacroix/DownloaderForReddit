@@ -250,13 +250,13 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         """
         main_folder = main_folder + '/' if not main_folder.endswith('/') else main_folder
         self.pictures = [os.path.join(main_folder, x) for x in os.listdir(main_folder) if
-                    os.path.isfile(os.path.join(main_folder, x)) and x.endswith(('.jpg', '.jpeg', '.png'))]
+                    os.path.isfile(os.path.join(main_folder, x)) and x.lower().endswith(('.jpg', '.jpeg', '.png'))]
         sub_folders = [x for x in os.listdir(main_folder) if os.path.isdir(os.path.join(main_folder, x))]
 
         for folder in sub_folders:
             path = os.path.join(main_folder, folder)
             for file in os.listdir(path):
-                if os.path.isfile(os.path.join(path, file)) and file.endswith(('.jpg', '.jpeg', '.png')):
+                if os.path.isfile(os.path.join(path, file)) and file.lower().endswith(('.jpg', '.jpeg', '.png')):
                     self.pictures.append('%s%s%s' % (path, '/' if not path.endswith('/') else '', file))
         return sorted(self.pictures, key=alphanum_key)
 

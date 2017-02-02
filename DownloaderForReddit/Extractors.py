@@ -67,7 +67,7 @@ class Extractor(object):
         """See get_json"""
         response = requests.get(url)
         if response.status_code == 200 and 'text' in response.headers['Content-Type']:
-            return response.text()
+            return response.text
         else:
             self.extracted_content.append("Failed to retrieve data for link %s\nUser: %s  Subreddit: %s  Tile: %s" %
                                           (url, self.user, self.subreddit, self.post_title))
@@ -219,7 +219,7 @@ class VidbleExtractor(Extractor):
         domain, vidble_id = self.url.rsplit('/', 1)
         if '.' in vidble_id:
             vidble_id = vidble_id[:vidble_id.rfind('.')]
-        soup = BeautifulSoup(self.get_text(self.url), 'lxml')
+        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
         imgs = soup.find_all('img')
         for img in imgs:
             img_class = img.get('class')
@@ -235,7 +235,7 @@ class VidbleExtractor(Extractor):
     def extract_album(self):
         count = 1
         domain, vidble_id = self.url.rsplit('/', 1)
-        soup = BeautifulSoup(self.get_text(self.url), 'lxml')
+        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
         imgs = soup.find_all('img')
         for img in imgs:
             img_class = img.get('class')

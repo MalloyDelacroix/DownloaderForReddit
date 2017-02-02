@@ -236,7 +236,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             try:
                 self.user_folder = sorted([x for x in os.listdir(self.current_user.save_path)
                                     if os.path.isfile(os.path.join(self.current_user.save_path, x)) and
-                                    x.endswith(('.jpg', '.jpeg', '.png'))], key=alphanum_key)
+                                    x.lower().endswith(('.jpg', '.jpeg', '.png'))], key=alphanum_key)
                 if len(self.user_folder) > 0:
                     for file in self.user_folder:
                         file_path = '%s%s%s' % (self.current_user.save_path, '/' if not
