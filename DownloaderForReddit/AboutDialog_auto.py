@@ -29,7 +29,7 @@ class Ui_About(object):
         self.license_box.setGeometry(QtCore.QRect(10, 120, 381, 231))
         self.license_box.setObjectName("license_box")
         self.info_label = QtWidgets.QLabel(About)
-        self.info_label.setGeometry(QtCore.QRect(110, 40, 281, 61))
+        self.info_label.setGeometry(QtCore.QRect(110, 40, 281, 41))
         self.info_label.setObjectName("info_label")
         self.label = QtWidgets.QLabel(About)
         self.label.setGeometry(QtCore.QRect(110, 10, 171, 21))
@@ -37,6 +37,10 @@ class Ui_About(object):
         font.setPointSize(12)
         self.label.setFont(font)
         self.label.setObjectName("label")
+        self.link_label = QtWidgets.QLabel(About)
+        self.link_label.setGeometry(QtCore.QRect(110, 70, 291, 21))
+        self.link_label.setOpenExternalLinks(True)
+        self.link_label.setObjectName("link_label")
 
         self.retranslateUi(About)
         self.buttonBox.accepted.connect(About.accept)
@@ -58,4 +62,5 @@ class Ui_About(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Courier New\'; font-size:8pt;\">You should have received a copy of the GNU General Public License along with Downloader For Reddit.  If not, see: </span><a href=\"http://www.gnu.org/licenses/\"><span style=\" font-size:8pt; text-decoration: underline; color:#0000ff;\">http://www.gnu.org/licenses/</span></a></p></body></html>"))
         self.info_label.setText(_translate("About", "TextLabel"))
         self.label.setText(_translate("About", "Downloader For Reddit"))
+        self.link_label.setText(_translate("About", "TextLabel"))
 

@@ -49,6 +49,9 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
         self.info_label.setText('Version: 1.0\nAuthor: Kyle H')
         self.info_label.setScaledContents(True)
 
+        self.link_label.setText('Homepage: <a href="https://github.com/MalloyDelacroix/DownloaderForReddit">Downloader for Reddit</a>')
+        self.link_label.setToolTip('https://github.com/MalloyDelacroix/DownloaderForReddit')
+
         self.license_box.setOpenExternalLinks(True)
 
     def accept(self):

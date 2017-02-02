@@ -85,7 +85,7 @@ p, li { white-space: pre-wrap; }
      <x>110</x>
      <y>40</y>
      <width>281</width>
-     <height>61</height>
+     <height>41</height>
     </rect>
    </property>
    <property name="text">
@@ -108,6 +108,22 @@ p, li { white-space: pre-wrap; }
    </property>
    <property name="text">
     <string>Downloader For Reddit</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="link_label">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>70</y>
+     <width>291</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+   <property name="openExternalLinks">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
