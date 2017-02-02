@@ -29,7 +29,7 @@ class Ui_About(object):
         self.license_box.setGeometry(QtCore.QRect(10, 120, 381, 231))
         self.license_box.setObjectName("license_box")
         self.info_label = QtWidgets.QLabel(About)
-        self.info_label.setGeometry(QtCore.QRect(110, 40, 211, 61))
+        self.info_label.setGeometry(QtCore.QRect(110, 40, 281, 61))
         self.info_label.setObjectName("info_label")
         self.label = QtWidgets.QLabel(About)
         self.label.setGeometry(QtCore.QRect(110, 10, 171, 21))
