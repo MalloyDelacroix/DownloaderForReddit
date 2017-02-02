@@ -177,7 +177,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
                                                                            "may result in unpredictable behavior",
                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
                 if reply == QtWidgets.QMessageBox.Ok:
-                    if file_name == 'save_file':
+                    if file_name == 'save_file' or file_name == 'save_file.dat':
                         shutil.copy(file_name, os.getcwd())
                 else:
                     pass
