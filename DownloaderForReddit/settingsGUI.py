@@ -157,20 +157,28 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             reply = QtWidgets.QMessageBox.information(self, "Backup File", "Backup settings file to selected location?",
                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
             if reply == QtWidgets.QMessageBox.Ok:
-                shutil.copy('save_file.dat', folder_name)
+                if sys.platform == 'win32':
+                    shutil.copy('save_file.dat', folder_name)
+                else:
+                    shutil.copy('save_file', folder_name)
 
     def import_backup_file(self):
         """Imports a copy of the programs save_file data to the current directory for use by the program"""
-        file_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup File To Import", "%s%s" %
+        file_name = str(QtWidgets.QFileDialog.getOpenFileName(self, "Select Backup File To Import", "%s%s" %
                                                                    (os.path.expanduser('~'), '/Downloads/')))
         try:
             if file_name != "":
-                reply = QtWidgets.QMessageBox.warning(self, "Backup File", "Are you sure you want to import this save file?"
-                                                                           " any existing data (user/subreddit lists, etc.)"
-                                                                           " will be deleted.",
+                reply = QtWidgets.QMessageBox.warning(self, "Backup File", "Are you sure you want to import this save "
+                                                                           "file? any existing data (user/subreddit "
+                                                                           "lists, etc.) will be deleted.\nBe sure the "
+                                                                           "file you are about to import has been "
+                                                                           "exported by this program and is unaltered. "
+                                                                           "Importing an altered or unexpected file "
+                                                                           "may result in unpredictable behavior",
                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
                 if reply == QtWidgets.QMessageBox.Ok:
-                    shutil.copy(file_name, os.getcwd())
+                    if file_name == 'save_file':
+                        shutil.copy(file_name, os.getcwd())
                 else:
                     pass
         except PermissionError:
