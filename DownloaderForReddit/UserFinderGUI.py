@@ -124,6 +124,9 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
 
         self.found_user_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
+        self.content_list_icons_full_width = self.settings.value('content_list_icons_full_width', False, type=bool)
+        self.content_list_icon_size = self.settings.value('content_list_icon_size', 110, type=int)
+
         self.user_display_list = []
 
         try:
@@ -194,16 +197,73 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         menu.exec(QtGui.QCursor.pos())
 
     def content_display_list_right_click(self):
-        menu = QtWidgets.QMenu()
+        self.menu = QtWidgets.QMenu()
         try:
             position = self.content_display_list.currentRow()
-            open_picture = menu.addAction('Open In Default Picture Viewer')
-            open_folder = menu.addAction('Open Folder')
+            open_picture = self.menu.addAction('Open In Default Picture Viewer')
+            open_folder = self.menu.addAction('Open Folder')
+
+            self.menu.addSeparator()
+            self.icons_full_width = self.menu.addAction('Icons Full List Width')
+            self.icons_full_width.setCheckable(True)
+            self.icon_size_menu = self.menu.addMenu('Icon Size')
+            self.icon_size_group = QtWidgets.QActionGroup(self)
+            self.icon_size_group.setExclusive(True)
+
+            self.icon_size_extra_small = self.icon_size_menu.addAction('Extra Small')
+            self.icon_size_extra_small.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_extra_small)
+            self.icon_size_small = self.icon_size_menu.addAction('Small')
+            self.icon_size_small.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_small)
+            self.icon_size_medium = self.icon_size_menu.addAction('Medium')
+            self.icon_size_medium.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_medium)
+            self.icon_size_large = self.icon_size_menu.addAction('Large')
+            self.icon_size_large.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_large)
+            self.icon_size_extra_large = self.icon_size_menu.addAction('Extra Large')
+            self.icon_size_extra_large.setCheckable(True)
+            self.icon_size_group.addAction(self.icon_size_extra_large)
+            self.set_context_menu_items_checked()
+
             open_picture.triggered.connect(self.open_file)
             open_folder.triggered.connect(self.open_folder)
+            self.icons_full_width.triggered.connect(self.set_icons_full_width)
+            self.icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
+            self.icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
+            self.icon_size_medium.triggered.connect(lambda: self.set_icon_size(110))
+            self.icon_size_large.triggered.connect(lambda: self.set_icon_size(176))
+            self.icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
         except AttributeError:
-            print('didnt work')
-        menu.exec(QtGui.QCursor.pos())
+            print('Exception at line 238')
+        self.menu.exec(QtGui.QCursor.pos())
+
+    def set_icons_full_width(self):
+        self.content_list_icons_full_width = True
+        self.content_display_list.setIconSize(QtCore.QSize(self.content_display_list.width(),
+                                                           self.content_display_list.width()))
+
+    def set_icon_size(self, size):
+        self.content_list_icons_full_width = False
+        self.content_list_icon_size = size
+        self.content_display_list.setIconSize(QtCore.QSize(size, size))
+
+    def set_context_menu_items_checked(self):
+        if self.content_list_icons_full_width:
+            self.icons_full_width.setChecked(True)
+        else:
+            self.icons_full_width.setChecked(False)
+            if self.content_list_icon_size == 48:
+                self.icon_size_extra_small.setChecked(True)
+            elif self.content_list_icon_size == 72:
+                self.icon_size_small.setChecked(True)
+            elif self.content_list_icon_size == 110:
+                self.icon_size_medium.setChecked(True)
+            elif self.content_list_icon_size == 176:
+                self.icon_size_large.setChecked(True)
+            else:
+                self.icon_size_extra_large.setChecked(True)
 
     def found_user_list_right_click(self):
         menu = QtWidgets.QMenu()
@@ -219,7 +279,7 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
             remove_user_and_blacklist.triggered.connect(self.remove_and_blacklist_user)
             open_user_folder.triggered.connect(self.open_folder)
         except AttributeError:
-            print('didnt work')
+            print('Exception at line 282')
         menu.exec(QtGui.QCursor.pos())
 
     def run(self):
@@ -404,37 +464,27 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         Sets up the content display list to show the picture content located in the selected users sub directory inside
         UserFinder directory
         """
-        if len(self.found_user_list.selectedIndexes()) > 1:
-            # self.setup_content_list_multiple()
-            pass
+        self.content_display_list.clear()
+        if self.content_list_icons_full_width:
+            icon_size = self.content_display_list.width()
         else:
-            self.content_display_list.clear()
-            try:
-                index = self.found_user_list.currentRow()
-            except TypeError:
-                index = 0
-            if len(self.user_folders) > 0:
-                for file in os.listdir('%sUserFinder/%s' % (self.save_path, self.user_folders[index])):
-                    text = str(file)
-                    file_path = '%sUserFinder/%s/%s' % (self.save_path, self.user_folders[index], file)
-                    item = QtWidgets.QListWidgetItem()
-                    display = QtWidgets.QLabel()
-                    display.setOpenExternalLinks(True)
-                    display.setTextFormat(QtCore.Qt.RichText)
-                    item.setSizeHint(QtCore.QSize(300, 300))
-                    pixmap = QtGui.QPixmap(file_path)
-                    pixmap = pixmap.scaled(QtCore.QSize(300, 300), QtCore.Qt.KeepAspectRatio)
-                    height = pixmap.height()
-                    width = pixmap.width()
-                    display.setText('<p>%s</p><br><img src="%s" height="%s" width="%s"></img>' % (text, file_path,
-                                                                                                  height, width))
-                    self.content_display_list.addItem(item)
-                    self.content_display_list.setItemWidget(item, display)
-
-    def update_found_users_list_view(self):
-        pass
-        # for x in self.found_users:
-            # self.found_user_list.append(x)
+            icon_size = self.content_list_icon_size
+        self.content_display_list.setIconSize(QtCore.QSize(icon_size, icon_size))
+        try:
+            index = self.found_user_list.currentRow()
+        except TypeError:
+            index = 0
+        if len(self.user_folders) > 0:
+            for file in os.listdir('%sUserFinder/%s' % (self.save_path, self.user_folders[index])):
+                file_path = '%sUserFinder/%s/%s' % (self.save_path, self.user_folders[index], file)
+                item = QtWidgets.QListWidgetItem()
+                icon = QtGui.QIcon()
+                pixmap = QtGui.QPixmap(file_path).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
+                icon.addPixmap(pixmap)
+                item.setIcon(icon)
+                item.setText(str(file))
+                self.content_display_list.addItem(item)
+                QtWidgets.QApplication.processEvents()
 
     def setup_progress_bar(self, status):
         if type(status) == int:
@@ -493,8 +543,15 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
             self.close_finder()
 
     def close_finder(self):
+        self.settings.setValue('content_list_icons_full_width', self.content_list_icons_full_width)
+        self.settings.setValue('content_list_icon_size', self.content_list_icon_size)
         self.closed.emit()
         self.close()
+
+    def resizeEvent(self, event):
+        if self.content_list_icons_full_width:
+            self.content_display_list.setIconSize(QtCore.QSize(self.content_display_list.width(),
+                                                               self.content_display_list.width()))
 
     def save_user_finder(self, close):
         self.settings.setValue('geometry', self.saveGeometry())

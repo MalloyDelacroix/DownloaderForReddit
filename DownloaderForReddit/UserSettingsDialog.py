@@ -357,10 +357,8 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     def resizeEvent(self, event):
         if self.user_content_icons_full_width:
-            icon_size = self.user_content_list.width()
-        else:
-            icon_size = self.user_content_icon_size
-        self.user_content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
+            self.user_content_list.setIconSize(QtCore.QSize(self.user_content_list.width(),
+                                                            self.user_content_list.width()))
 
     def closeEvent(self, event):
         self.closed = True
