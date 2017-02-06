@@ -9,16 +9,20 @@ from PyQt5.QtCore import QObject, QSettings, pyqtSignal
 source_location = 'C:\\Users\\Kyle\\Documents\\Programming\\TestDownloadFolder\\DownloaderForReddit'
 
 
-
 class Updater(QObject):
 
-    def __init__(self):
+    finished = pyqtSignal()
+    set_label = pyqtSignal(str)
+    setup_progress_bar = pyqtSignal(int)
+    update_progress_bar = pyqtSignal(int)
+
+    def __init__(self, download_url, download_name, new_version, program_files_location):
         super().__init__()
-        self.settings = QSettings('SomeGuySoftware', 'dfr_updater')
-        self.download_url = self.settings.value('download_url', None, type=str)
-        self.download_name = self.settings.value('download_name', None, type=str)
-        self.new_version = self.settings.value('new_version', None, type=str)
-        # self.program_files_location = self.settings.value('program_files_location', None, type=str)
+        self.download_url = download_url
+        self.download_name = download_name
+        self.new_version = new_version
+        # self.program_files_location = program_files_location
+
         self.program_files_location = source_location
         self.platform = sys.platform
         self.suffix = '.tar.gz' if self.platform == 'linux' else '.zip'
@@ -29,12 +33,18 @@ class Updater(QObject):
         print(self.new_version)
         print(self.program_files_location)
 
+    def run(self):
+        pass
+
     def download_update(self):
         download = requests.get(self.download_url, stream=True)
         if download.status_code == 200:
+            download_size = download.headers.get('content-length')
+            self.setup_progress_bar.emit(int(download_size))
             with open(self.file_name, 'wb') as file:
                 for chunk in download.iter_content(1024):
                     file.write(chunk)
+                    self.update_progress_bar.emit(len(chunk))
             print('download complete')
 
     def delete_old_files(self):
@@ -61,3 +71,6 @@ class Updater(QObject):
 
     def clean_up_temporary(self):
         shutil.rmtree(self.temp_directory)
+
+    def stop(self):
+        pass

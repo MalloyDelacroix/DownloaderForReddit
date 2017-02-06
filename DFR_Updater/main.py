@@ -1,11 +1,15 @@
-from DFR_Updater.Updater import Updater
+import sys
+from PyQt5 import QtWidgets
+
+from DFR_Updater.UpdaterGUI import UpdaterWidget
 
 
 def main():
-    updater = Updater()
-    updater.download_update()
-    # updater.delete_old_files()
-    updater.replace_with_new_version()
+    app = QtWidgets.QApplication(sys.argv)
+    widget = UpdaterWidget()
+    widget.show()
+    sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()
