@@ -1,7 +1,7 @@
 import sys
 from PyQt5 import QtWidgets
 
-from DFR_Updater.UpdaterGUI import UpdaterWidget
+from UpdaterGUI import UpdaterWidget
 
 
 def main():
