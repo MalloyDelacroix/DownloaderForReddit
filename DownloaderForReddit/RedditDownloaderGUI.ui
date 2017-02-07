@@ -270,6 +270,7 @@
      <string>Help</string>
     </property>
     <addaction name="file_imgur_credits"/>
+    <addaction name="file_check_for_updates"/>
     <addaction name="file_about"/>
    </widget>
    <addaction name="menuFile"/>
@@ -354,6 +355,11 @@
   <action name="file_subreddit_list_count">
    <property name="text">
     <string>Subreddit List Count:</string>
+   </property>
+  </action>
+  <action name="file_check_for_updates">
+   <property name="text">
+    <string>Check For Update</string>
    </property>
   </action>
  </widget>

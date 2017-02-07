@@ -131,6 +131,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_last_downloaded_users.triggered.connect(self.open_last_downloaded_users)
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
+        self.file_check_for_updates.triggered.connect(self.check_for_updates)
         self.file_about.triggered.connect(self.display_about_dialog)
         self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
         self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(0, True))
@@ -1212,4 +1213,4 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 print(self.last_update)
 
     def run_updater(self):
-        print('updater being ran')
+        print(os.getcwd())

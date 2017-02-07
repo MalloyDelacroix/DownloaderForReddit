@@ -155,6 +155,8 @@ class Ui_MainWindow(object):
         self.file_user_list_count.setObjectName("file_user_list_count")
         self.file_subreddit_list_count = QtWidgets.QAction(MainWindow)
         self.file_subreddit_list_count.setObjectName("file_subreddit_list_count")
+        self.file_check_for_updates = QtWidgets.QAction(MainWindow)
+        self.file_check_for_updates.setObjectName("file_check_for_updates")
         self.menuFile.addAction(self.file_open_settings)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.file_save)
@@ -174,6 +176,7 @@ class Ui_MainWindow(object):
         self.menuLists.addAction(self.file_subreddit_list_count)
         self.menuUser_Finder.addAction(self.file_open_user_finder)
         self.menuHelp.addAction(self.file_imgur_credits)
+        self.menuHelp.addAction(self.file_check_for_updates)
         self.menuHelp.addAction(self.file_about)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuLists.menuAction())
@@ -222,4 +225,5 @@ class Ui_MainWindow(object):
         self.file_about.setText(_translate("MainWindow", "About"))
         self.file_user_list_count.setText(_translate("MainWindow", "User List Count:"))
         self.file_subreddit_list_count.setText(_translate("MainWindow", "Subreddit List Count:"))
+        self.file_check_for_updates.setText(_translate("MainWindow", "Check For Update"))
 
