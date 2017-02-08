@@ -186,7 +186,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.add_subreddit_button.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.add_subreddit_button.customContextMenuRequested.connect(self.add_subreddit_button_right_click)
 
-        self.check_for_updates()
+        self.check_for_updates(False)
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -1188,13 +1188,14 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.settings.setValue('list_sort_method', self.list_sort_method)
 
-    def check_for_updates(self):
-        print('check for updates called')
+    def check_for_updates(self, from_menu):
         self.update_thread = QtCore.QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
         self.update_thread.started.connect(self.update_checker.run)
         self.update_checker.update_available_signal.connect(self.update_dialog)
+        if from_menu:
+            self.update_checker.no_update_signal.connect(self.no_update_available_dialog)
         self.update_checker.finished.connect(self.update_thread.quit)
         self.update_checker.finished.connect(self.update_checker.deleteLater)
         self.update_thread.finished.connect(self.update_thread.deleteLater)
@@ -1207,10 +1208,18 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             dialog = update_checker.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
                 self.run_updater()
-                print(update_variables[0])
             else:
                 self.last_update = update_checker.set_last_update
-                print(self.last_update)
+
+    def no_update_available_dialog(self):
+        Message.up_to_date_message(self)
 
     def run_updater(self):
-        print(os.getcwd())
+        platform = sys.platform
+        split_char = '\\' if platform == 'win32' else '/'
+        containing_folder, current = os.getcwd().rsplit(split_char, 1)
+        updater = '%s%s%s' % (containing_folder, 'drf_updater/dfr_updater', '.exe' if platform == 'win32' else '')
+        if platform == 'win32':
+            os.startfile(updater)
+        else:
+            subprocess.call(['xdg-open', updater])

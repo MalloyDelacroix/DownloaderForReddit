@@ -209,6 +209,14 @@ class Message(object):
         else:
             return False
 
+    def up_to_date_message(self):
+        text = 'You are running the latest version of The Downloader for Reddit'
+        reply = message.information(self, 'Up To Date', text, message.Ok)
+        if reply == message.Ok:
+            return True
+        else:
+            return False
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
