@@ -1064,25 +1064,20 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def open_user_manual(self):
         manual = 'The Downloader For Reddit - User Manual.pdf'
-        try:
+        if os.path.isfile(os.path.join(os.getcwd(), manual)):
             file = os.path.join(os.getcwd(), manual)
-            if sys.platform == 'win32':
-                os.startfile(file)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, file])
-        except:
+        else:
             separator = '/' if not sys.platform == 'win32' else '\\'
             containing_folder, current = os.getcwd().rsplit(separator, 1)
             file = os.path.join(containing_folder, manual)
+        try:
             if sys.platform == 'win32':
                 os.startfile(file)
             else:
                 opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
                 subprocess.call([opener, file])
-        finally:
-            pass
-
+        except FileNotFoundError:
+            Message.user_manual_not_found(self)
 
     def refresh_user_count(self):
         """Updates the shown user count seen in the file menu"""

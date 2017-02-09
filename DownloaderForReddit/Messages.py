@@ -207,6 +207,17 @@ class Message(object):
         else:
             return False
 
+    def user_manual_not_found(self):
+        text = 'The user manual cannot be found.  This is most likely because the manual has been moved from the ' \
+               'expected location, or renamed to something the application is not expecting.  To correct the issue ' \
+               'please move the user manual back to the source folder and ensure it is named ' \
+               '"The Downloader For Reddit - User Manual.pdf"'
+        reply = message.information(self, 'User Manual Not Found', text, message.Ok)
+        if reply == message.Ok:
+            return True
+        else:
+            return False
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
