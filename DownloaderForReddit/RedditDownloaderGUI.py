@@ -858,7 +858,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.reddit_username = settings.reddit_account_username
             self.reddit_password = settings.reddit_account_password
             self.auto_save_on_close = settings.auto_save_checkbox.isChecked()
-            self.restrict_date = settings.date_restriction_checkbox.isChecked()
+            if settings.date_restriction_checkbox.isChecked() or settings.restrict_by_custom_date_checkbox.isChecked():
+                self.restrict_date = True
+            else:
+                self.restrict_date = False
             self.download_videos = settings.link_filter_video_checkbox.isChecked()
             if settings.link_filter_avoid_duplicates_checkbox.isChecked() != self.avoid_duplicates:
                 self.change_avoid_duplicates(settings.link_filter_avoid_duplicates_checkbox.isChecked())
