@@ -72,8 +72,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
 
-        # self.last_update = self.settings.value('last_update', None, type=str)
-        self.last_update = None
+        self.last_update = self.settings.value('last_update', None, type=str)
+        # self.last_update = None
 
         self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
         self.restoreGeometry(self.settings.value('window_geometry', self.saveGeometry()))
@@ -1207,13 +1207,15 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             update_checker.show()
             dialog = update_checker.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                self.run_updater()
-            else:
+                # self.run_updater()
                 self.last_update = update_checker.set_last_update
+            # else:
+                # self.last_update = update_checker.set_last_update
 
     def no_update_available_dialog(self):
         Message.up_to_date_message(self)
 
+    """
     def run_updater(self):
         platform = sys.platform
         split_char = '\\' if platform == 'win32' else '/'
@@ -1223,3 +1225,4 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             os.startfile(updater)
         else:
             subprocess.call(['xdg-open', updater])
+    """

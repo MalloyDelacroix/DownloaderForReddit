@@ -242,23 +242,37 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
         self.new_version = update_variables[0]
         self.update_size_mb = update_variables[1] / 1000000
         self.set_last_update = None
-        print('UpdateDialog initialized')
-
+        self.label.setOpenExternalLinks(True)
+        self.label.setWordWrap(True)
+        """
         self.label.setText('There is a new version of The Downloader for Reddit available for download.  Would you like'
                            ' to download this version?\n\nNew version: %s\nSize: %s\n\nIf you click "update" the '
                            'program will be closed and updated to the latest version.  Please finish any downloads '
                            'before clicking update' % (self.new_version, '{0:.1f}MB'.format(self.update_size_mb)))
+        """
 
-        self.buttonBox.button(QDialogButtonBox.Ok).setText('Update')
+        self.label.setText('There is a new version of The Downloader for Reddit available.  At this moment, the '
+                           'automatic update feature has not been implemented (that feature is coming soon) so please '
+                           'visit <a href="https://github.com/MalloyDelacroix/DownloaderForReddit/releases">the gitbub'
+                           ' releases page</a> to download the newest version.<br><br>When you download the new version '
+                           'make sure your save file (located in the programs source folder) is moved to the new '
+                           'program location, or just move all the files in the download to the current location<br><br>'
+                           'New Version: %s<br>Download Size: %s' %
+                           (self.new_version, '{0:.1f}MB'.format(self.update_size_mb)))
+
+        # self.buttonBox.button(QDialogButtonBox.Ok).setText('Update')
 
         self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.check_and_close)
+        # self.buttonBox.rejected.connect(self.check_and_close)
+        self.buttonBox.rejected.connect(self.close)
 
     def accept(self):
+        if self.do_not_notify_checkbox.isChecked():
+            self.set_last_update = self.new_version
         super().accept()
 
     def check_and_close(self):
         if self.do_not_notify_checkbox.isChecked():
-            self.set_last_update = self.update_variables[0]
+            self.set_last_update = self.new_version
         else:
             self.set_last_update = None
