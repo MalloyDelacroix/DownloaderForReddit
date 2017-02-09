@@ -270,6 +270,8 @@
      <string>Help</string>
     </property>
     <addaction name="file_imgur_credits"/>
+    <addaction name="separator"/>
+    <addaction name="file_user_manual"/>
     <addaction name="file_about"/>
    </widget>
    <addaction name="menuFile"/>
@@ -354,6 +356,11 @@
   <action name="file_subreddit_list_count">
    <property name="text">
     <string>Subreddit List Count:</string>
+   </property>
+  </action>
+  <action name="file_user_manual">
+   <property name="text">
+    <string>User Manual</string>
    </property>
   </action>
  </widget>

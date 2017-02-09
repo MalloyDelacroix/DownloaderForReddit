@@ -48,7 +48,7 @@ from AboutDialog import AboutDialog
 
 
 if sys.platform == 'win32':
-    myappid = 'SomeGuySoftware.DownloaderForReddit.V1.0'
+    myappid = 'SomeGuySoftware.DownloaderForReddit.V1.0.1'
     AppUserModelID = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
@@ -132,6 +132,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_last_downloaded_users.triggered.connect(self.open_last_downloaded_users)
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
+        self.file_user_manual.triggered.connect(self.open_user_manual)
         self.file_about.triggered.connect(self.display_about_dialog)
         self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
         self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(0, True))
@@ -1060,6 +1061,28 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def display_about_dialog(self):
         about_dialog = AboutDialog()
         about_dialog.exec_()
+
+    def open_user_manual(self):
+        manual = 'The Downloader For Reddit - User Manual.pdf'
+        try:
+            file = os.path.join(os.getcwd(), manual)
+            if sys.platform == 'win32':
+                os.startfile(file)
+            else:
+                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+                subprocess.call([opener, file])
+        except:
+            separator = '/' if not sys.platform == 'win32' else '\\'
+            containing_folder, current = os.getcwd().rsplit(separator, 1)
+            file = os.path.join(containing_folder, manual)
+            if sys.platform == 'win32':
+                os.startfile(file)
+            else:
+                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+                subprocess.call([opener, file])
+        finally:
+            pass
+
 
     def refresh_user_count(self):
         """Updates the shown user count seen in the file menu"""
