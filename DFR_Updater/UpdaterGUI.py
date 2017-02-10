@@ -124,7 +124,8 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
         if sys.platform == 'win32':
             os.startfile(os.path.join(self.program_files_location, 'DownloaderForReddit.exe'))
         elif sys.platform == 'linux':
-            subprocess.call(['xdg-open', os.path.join(self.program_files_location, 'DownloaderForReddit')])
+            subprocess.Popen([os.path.join(self.program_files_location, 'DownloaderForReddit'),
+                              os.path.join(self.program_files_location, 'DownloaderForReddit')])
 
     """
     The methods below are to alert the user to any type of error that may arise during the update process and provide

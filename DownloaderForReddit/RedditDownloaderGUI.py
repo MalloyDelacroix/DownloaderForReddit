@@ -1215,7 +1215,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue('list_sort_method', self.list_sort_method)
 
     def check_for_updates(self, from_menu):
-        print('checking for updates')
         self.update_thread = QtCore.QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
@@ -1250,6 +1249,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if platform == 'win32':
                 os.startfile(updater)
             else:
-                subprocess.call(['xdg-open', updater])
+                subprocess.Popen([updater, updater])
         except:
             self.update_output(updater)

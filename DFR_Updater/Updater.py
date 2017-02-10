@@ -4,6 +4,7 @@ import sys
 import shutil
 import tempfile
 import zipfile
+import tarfile
 from PyQt5.QtCore import QObject, pyqtSignal
 
 
@@ -97,9 +98,14 @@ class Updater(QObject):
         try:
             if self.run:
                 self.update_label.emit('Installing new update...')
-                zip_ref = zipfile.ZipFile(self.file_name, 'r')
-                zip_ref.extractall(self.temp_directory)
-                zip_ref.close()
+                if sys.platform == 'win32':
+                    zip_ref = zipfile.ZipFile(self.file_name, 'r')
+                    zip_ref.extractall(self.temp_directory)
+                    zip_ref.close()
+                else:
+                    tar = tarfile.open(self.file_name)
+                    tar.extractall(path=self.temp_directory)
+                    tar.close()
 
                 unpacked_directory = None
                 for x in os.listdir(self.temp_directory):
@@ -112,13 +118,16 @@ class Updater(QObject):
                     for file in file_list:
                         shutil.move(os.path.join(unpacked_directory, file), self.program_files_location)
                         self.update_progress_bar.emit(1)
+
         except:
+            self.run = False
             self.error_signal.emit((2, self.temp_directory))
 
     def clean_up_temporary(self):
         """Deletes any temporary files that where created"""
-        self.update_label.emit('Cleaning up temp folder...')
-        shutil.rmtree(self.temp_directory)
+        if self.run:
+            self.update_label.emit('Cleaning up temp folder...')
+            shutil.rmtree(self.temp_directory)
 
     def stop(self):
         self.run = False
