@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from AboutDialog_auto import Ui_About
+from version import __version__
 
 
 class AboutDialog(QtWidgets.QDialog, Ui_About):
@@ -46,7 +47,7 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
         self.logo_label.setPixmap(pixmap)
         self.logo_label.setScaledContents(True)
 
-        self.info_label.setText('Version: 1.0.1\nAuthor: Kyle H')
+        self.info_label.setText('Version: %s\nAuthor: Kyle H' % __version__)
         self.info_label.setScaledContents(True)
 
         self.link_label.setText('Homepage: <a href="https://github.com/MalloyDelacroix/DownloaderForReddit">Downloader for Reddit</a>')

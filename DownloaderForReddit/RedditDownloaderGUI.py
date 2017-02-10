@@ -45,6 +45,7 @@ from UserFinderGUI import UserFinderGUI
 from UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from AboutDialog import AboutDialog
 from UpdaterChecker import UpdateChecker
+from version import __version__
 
 
 class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -52,7 +53,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     stop_download = QtCore.pyqtSignal()
     update_user_finder = QtCore.pyqtSignal()
 
-    def __init__(self, version, queue, receiver):
+    def __init__(self, queue, receiver):
         """
         The main GUI window that all interaction is done through.
 
@@ -63,7 +64,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
-        self.version = version
+        self.version = __version__
         self.failed_list = []
         self.last_downloaded_users = []
         self.download_count = 0
@@ -400,9 +401,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_user(self):
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, self.post_limit, self.save_path,
-                                                self.subreddit_sort_method, self.subreddit_sort_top_method,
-                                                self.restrict_date, self.restrict_by_submission_score,
+        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, self.post_limit,
+                                                self.save_path, self.subreddit_sort_method,
+                                                self.subreddit_sort_top_method, self.restrict_date,
+                                                self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
         self.stop_download.connect(self.reddit_extractor.stop_download)
@@ -428,9 +430,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.started_download_gui_shift()
         user_list = [user]
-        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, self.post_limit, self.save_path,
-                                                self.subreddit_sort_method, self.subreddit_sort_top_method,
-                                                self.restrict_date, self.restrict_by_submission_score,
+        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, self.post_limit,
+                                                self.save_path, self.subreddit_sort_method,
+                                                self.subreddit_sort_top_method, self.restrict_date,
+                                                self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
         self.stop_download.connect(self.reddit_extractor.stop_download)
@@ -449,9 +452,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_subreddit(self):
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, self.post_limit, self.save_path,
-                                                self.subreddit_sort_method, self.subreddit_sort_top_method,
-                                                self.restrict_date, self.restrict_by_submission_score,
+        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, self.post_limit,
+                                                self.save_path, self.subreddit_sort_method,
+                                                self.subreddit_sort_top_method, self.restrict_date,
+                                                self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
         self.stop_download.connect(self.reddit_extractor.stop_download)
@@ -476,9 +480,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.started_download_gui_shift()
         subreddit_list = [subreddit]
-        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, self.post_limit, self.save_path,
-                                                self.subreddit_sort_method, self.subreddit_sort_top_method,
-                                                self.restrict_date, self.restrict_by_submission_score,
+        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, self.post_limit,
+                                                self.save_path, self.subreddit_sort_method,
+                                                self.subreddit_sort_top_method, self.restrict_date,
+                                                self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
         self.stop_download.connect(self.reddit_extractor.stop_download)
@@ -502,9 +507,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(user_list, subreddit_list, self.queue, self.post_limit, self.save_path,
-                                                self.subreddit_sort_method, self.subreddit_sort_top_method,
-                                                self.restrict_date, self.restrict_by_submission_score,
+        self.reddit_extractor = RedditExtractor(user_list, subreddit_list, self.queue, self.post_limit,
+                                                self.save_path, self.subreddit_sort_method,
+                                                self.subreddit_sort_top_method, self.restrict_date,
+                                                self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
         self.stop_download.connect(self.reddit_extractor.stop_download)
@@ -527,8 +533,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Downloads the content that was left during the last run if the user clicked the stop download button"""
         self.download_count = 0
         self.started_download_gui_shift()
-        self.reddit_extractor = RedditExtractor(None, None, self.queue, None, None, None, None, None, None, None, None,
-                                                self.unfinished_downloads)
+        self.reddit_extractor = RedditExtractor(None, None, self.queue, None, None, None, None, None,
+                                                None, None, None,  self.unfinished_downloads)
         self.stop_download.connect(self.reddit_extractor.stop_download)
 
         self.thread = QtCore.QThread()

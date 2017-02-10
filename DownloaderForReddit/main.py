@@ -23,7 +23,7 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__version__ = '1.1.0'
+from version import __version__
 
 
 import sys
@@ -35,7 +35,7 @@ from RedditDownloaderGUI import RedditDownloaderGUI
 
 
 if sys.platform == 'win32':
-    myappid = 'SomeGuySoftware.DownloaderForReddit.v%s' % __version__
+    myappid = 'SomeGuySoftware.DownloaderForReddit.%s' % __version__
     AppUserModelID = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
@@ -82,7 +82,7 @@ def main():
     thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
 
-    window = RedditDownloaderGUI(__version__, queue, receiver)
+    window = RedditDownloaderGUI(queue, receiver)
 
     receiver.output_signal.connect(window.update_output)
     receiver.moveToThread(thread)
