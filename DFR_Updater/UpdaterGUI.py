@@ -12,6 +12,10 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
     cancel_signal = QtCore.pyqtSignal()
 
     def __init__(self):
+        """
+        The GUI window that runs the updater in a separate thread.  Used mainly to show the progress of the updater and
+        ensure the user that it is doing something while it downloads the newest version from github
+        """
         super().__init__()
         self.setupUi(self)
         self.settings = QtCore.QSettings('SomeGuySoftware', 'dfr_updater')
@@ -26,24 +30,19 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
         self.running = False
         self.up_to_date = False
 
-        if self.up_to_date:
-            self.button_box.accepted.connect(self.open_file_location)
-        else:
-            self.button_box.accepted.connect(self.run)
-        if self.running:
-            self.button_box.rejected.connect(self.stop_download())
-        else:
-            self.button_box.rejected.connect(self.close)
+        self.button_box.accepted.connect(self.assign_accept)
+        self.button_box.rejected.connect(self.assign_reject)
 
         self.progress_bar.setVisible(False)
         self.launch_checkbox.setVisible(False)
 
     def run(self):
+        """Moves the Updater module to a separate thread and runs it"""
         self.update_label('Starting updater...')
         self.running_gui_shift()
 
         self.thread = QtCore.QThread()
-        self.updater = Updater(self.download_url, self.download_name, self.new_version, None)
+        self.updater = Updater(self.download_url, self.download_name, self.new_version, self.program_files_location)
         self.cancel_signal.connect(self.updater.stop)
         self.updater.moveToThread(self.thread)
         self.thread.started.connect(self.updater.run_update)
@@ -57,21 +56,37 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.start()
 
+    def assign_accept(self):
+        if self.up_to_date:
+            self.open_file_location()
+        else:
+            self.run()
+
+    def assign_reject(self):
+        if self.running:
+            self.stop_download()
+        else:
+            self.close()
+
     def running_gui_shift(self):
+        """Changes some GUI behavior so as not to interfere with the updater while providing a way to stop it"""
         self.progress_bar.setVisible(True)
         self.running = True
         self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
         self.button_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Stop')
 
     def finished_gui_shift(self):
+        """Changes the GUI behaviour again so that certain operations can be performed once the update is complete"""
         self.running = False
         self.up_to_date = True
         self.update_label('Update complete. You are now running the latest version.')
+        self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(True)
         self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setText('Open exe location')
         self.button_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
         self.launch_checkbox.setVisible(True)
 
     def stopped_gui_shift(self):
+        """A different GUI shift that provides a way to restart the updater if it is stopped"""
         self.running = False
         self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(True)
         self.button_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
@@ -98,17 +113,23 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
         self.finished_gui_shift()
 
     def open_file_location(self):
+        """Opens the source folder of the new program version"""
         if sys.platform == 'win32':
             os.startfile(self.program_files_location)
         else:
             subprocess.call(['xdg-open', self.program_files_location])
 
     def launch_program(self):
+        """Launches the newly installed program version"""
         if sys.platform == 'win32':
             os.startfile(os.path.join(self.program_files_location, 'DownloaderForReddit.exe'))
         elif sys.platform == 'linux':
             subprocess.call(['xdg-open', os.path.join(self.program_files_location, 'DownloaderForReddit')])
 
+    """
+    The methods below are to alert the user to any type of error that may arise during the update process and provide
+    them with a way to resolve the error manually
+    """
     def update_error(self, code):
         self.stopped_gui_shift()
         if code[0] == 0:
@@ -137,6 +158,10 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
             self.save_height = False
 
     def open_temporary_download_location(self, location):
+        """
+        In case the downloader fails after downloading the new update but before moving it, this will open the
+        temporary location
+        """
         if sys.platform == 'win32':
             os.startfile(location)
         else:

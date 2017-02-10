@@ -22,7 +22,9 @@ class UpdateChecker(QObject):
         self.download_name = None
 
     def run(self):
+        print('retrieving json')
         self.retrieve_json_data()
+        print('checking releases')
         self.check_releases()
         self.finished.emit()
 
@@ -40,15 +42,13 @@ class UpdateChecker(QObject):
                     self.download_size = asset['size']
                     self.download_url = asset['browser_download_url']
                     self.update_available_signal.emit((self.newest_version, self.download_size))
-                    # self.save_download_url()
+                    self.save_download_url()
         else:
             self.no_update_signal.emit()
 
-    """
     def save_download_url(self):
         settings = QSettings('SomeGuySoftware', 'dfr_updater')
         settings.setValue('download_url', self.download_url)
         settings.setValue('download_name', self.download_name)
         settings.setValue('new_version', self.newest_version)
         settings.setValue('program_files_location', os.getcwd())
-    """

@@ -6,8 +6,6 @@ import tempfile
 import zipfile
 from PyQt5.QtCore import QObject, pyqtSignal
 
-# source_location = 'C:\\Users\\Kyle\\Documents\\Programming\\TestDownloadFolder\\DownloaderForReddit'
-
 
 class Updater(QObject):
 
@@ -18,13 +16,21 @@ class Updater(QObject):
     error_signal = pyqtSignal(tuple)
 
     def __init__(self, download_url, download_name, new_version, program_files_location):
+        """
+        A class that updates The Downloader for Reddit application by downloading the new version from github and then
+        removing the old version files and replacing them with the newly downloaded ones
+
+        :param download_url: The url (supplied by The Downloader for Reddit) where the new version is downloaded from
+        :param download_name: The name of the compressed file which contains the executable and its dependants
+        :param new_version: The version number of the new download
+        :param program_files_location: The location of the installed version of The Downloader for Reddit
+        """
         super().__init__()
         self.download_url = download_url
         self.download_name = download_name
         self.new_version = new_version
         self.program_files_location = program_files_location
 
-        # self.program_files_location = source_location
         self.platform = sys.platform
         self.suffix = '.tar.gz' if self.platform == 'linux' else '.zip'
         self.temp_directory = tempfile.mkdtemp()
@@ -41,6 +47,7 @@ class Updater(QObject):
         self.finished.emit()
 
     def download_update(self):
+        """Connects to the github releases section and downloads the appropriate executable for the platform"""
         if self.run:
             self.update_label.emit('Establishing connection...')
             download = requests.get(self.download_url, stream=True)
@@ -59,6 +66,13 @@ class Updater(QObject):
                 self.error_signal.emit((0, 0))
 
     def delete_old_files(self):
+        """
+        Deletes the old program files so they can be replaced with the new version.
+
+        The updater will check to see if praw.ini is in the folder.  This is done as somewhat of a safe guard to make
+        sure the target source folder that was supplied is the actual source folder for the program.  It checks for
+        praw.ini simply because that is a file that is guaranteed to be in the source directory for the program
+        """
         self.update_label.emit('Removing outdated program files...')
         if 'praw.ini' in os.listdir(self.program_files_location):
             if self.run:
@@ -79,6 +93,7 @@ class Updater(QObject):
             self.error_signal.emit((1, self.temp_directory))
 
     def replace_with_new_version(self):
+        """Moves the new program version files to the original source folder"""
         try:
             if self.run:
                 self.update_label.emit('Installing new update...')
@@ -101,6 +116,7 @@ class Updater(QObject):
             self.error_signal.emit((2, self.temp_directory))
 
     def clean_up_temporary(self):
+        """Deletes any temporary files that where created"""
         self.update_label.emit('Cleaning up temp folder...')
         shutil.rmtree(self.temp_directory)
 

@@ -1189,6 +1189,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue('list_sort_method', self.list_sort_method)
 
     def check_for_updates(self, from_menu):
+        print('checking for updates')
         self.update_thread = QtCore.QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
@@ -1217,9 +1218,12 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def run_updater(self):
         platform = sys.platform
         split_char = '\\' if platform == 'win32' else '/'
-        containing_folder, current = os.getcwd().rsplit(split_char, 1)
-        updater = '%s%s%s' % (containing_folder, 'drf_updater/dfr_updater', '.exe' if platform == 'win32' else '')
-        if platform == 'win32':
-            os.startfile(updater)
-        else:
-            subprocess.call(['xdg-open', updater])
+        updater = '%s%s%sdfr_updater%s' % (os.getcwd(), split_char, 'dfr_updater/', '.exe' if platform == 'win32' else '')
+        updater = ''.join([x if x != '\\' else '/' for x in updater])
+        try:
+            if platform == 'win32':
+                os.startfile(updater)
+            else:
+                subprocess.call(['xdg-open', updater])
+        except:
+            self.update_output(updater)

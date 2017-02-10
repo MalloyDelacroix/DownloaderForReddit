@@ -249,17 +249,6 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
                            'program will be closed and updated to the latest version.  Please finish any downloads '
                            'before clicking update' % (self.new_version, '{0:.1f}MB'.format(self.update_size_mb)))
 
-        """
-        self.label.setText('There is a new version of The Downloader for Reddit available.  At this moment, the '
-                           'automatic update feature has not been implemented (that feature is coming soon) so please '
-                           'visit <a href="https://github.com/MalloyDelacroix/DownloaderForReddit/releases">the gitbub'
-                           ' releases page</a> to download the newest version.<br><br>When you download the new version '
-                           'make sure your save file (located in the programs source folder) is moved to the new '
-                           'program location, or just move all the files in the download to the current location<br><br>'
-                           'New Version: %s<br>Download Size: %s' %
-                           (self.new_version, '{0:.1f}MB'.format(self.update_size_mb)))
-        """
-
         self.buttonBox.button(QDialogButtonBox.Ok).setText('Update')
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.check_and_close)
