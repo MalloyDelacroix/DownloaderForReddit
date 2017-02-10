@@ -28,7 +28,6 @@ import sys
 import subprocess
 import shelve
 from datetime import datetime
-import ctypes
 import imgurpython
 from PyQt5 import QtWidgets, QtCore, QtGui
 
@@ -40,16 +39,12 @@ from AddUserDialog import AddUserDialog
 from settingsGUI import RedditDownloaderSettingsGUI
 from UserSettingsDialog import UserSettingsDialog
 from SubredditSettingsDialog import SubredditSettingsDialog
-from Messages import Message, UnfinishedDownloadsWarning
+from Messages import Message, UnfinishedDownloadsWarning, UpdateDialog
 from FailedDownloadsDialog import FailedDownloadsDialog
 from UserFinderGUI import UserFinderGUI
 from UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from AboutDialog import AboutDialog
-
-
-if sys.platform == 'win32':
-    myappid = 'SomeGuySoftware.DownloaderForReddit.V1.0.1'
-    AppUserModelID = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+from UpdaterChecker import UpdateChecker
 
 
 class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -57,7 +52,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     stop_download = QtCore.pyqtSignal()
     update_user_finder = QtCore.pyqtSignal()
 
-    def __init__(self, queue, receiver):
+    def __init__(self, version, queue, receiver):
         """
         The main GUI window that all interaction is done through.
 
@@ -68,6 +63,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
+        self.version = version
         self.failed_list = []
         self.last_downloaded_users = []
         self.download_count = 0
@@ -75,6 +71,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder_open = False
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
+
+        self.last_update = self.settings.value('last_update', None, type=str)
+        # self.last_update = None
 
         self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
         self.restoreGeometry(self.settings.value('window_geometry', self.saveGeometry()))
@@ -133,6 +132,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
         self.file_user_manual.triggered.connect(self.open_user_manual)
+        self.file_check_for_updates.triggered.connect(self.check_for_updates)
         self.file_about.triggered.connect(self.display_about_dialog)
         self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
         self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(0, True))
@@ -153,7 +153,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_save.triggered.connect(self.save_state)
         self.file_exit.triggered.connect(self.close)
 
-        # self.download_button.clicked.connect(self.test_three)
         self.download_button.clicked.connect(self.button_assignment)
         self.add_user_button.clicked.connect(self.add_user_dialog)
         self.remove_user_button.clicked.connect(self.remove_user)
@@ -186,6 +185,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.add_subreddit_button.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.add_subreddit_button.customContextMenuRequested.connect(self.add_subreddit_button_right_click)
+
+        self.check_for_updates(False)
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -1106,6 +1107,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.receiver.stop_run()
                 self.settings.setValue('window_geometry', self.saveGeometry())
                 self.settings.setValue('total_files_downloaded', self.total_files_downloaded)
+                self.settings.setValue('last_update', self.last_update)
                 if self.auto_save_on_close:
                     self.save_state()
             else:
@@ -1114,6 +1116,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.receiver.stop_run()
             self.settings.setValue('window_geometry', self.saveGeometry())
             self.settings.setValue('total_files_downloaded', self.total_files_downloaded)
+            self.settings.setValue('last_update', self.last_update)
             if self.auto_save_on_close:
                 self.save_state()
 
@@ -1204,3 +1207,43 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue('custom__date', self.custom_date)
 
         self.settings.setValue('list_sort_method', self.list_sort_method)
+
+    def check_for_updates(self, from_menu):
+        print('checking for updates')
+        self.update_thread = QtCore.QThread()
+        self.update_checker = UpdateChecker(self.version)
+        self.update_checker.moveToThread(self.update_thread)
+        self.update_thread.started.connect(self.update_checker.run)
+        self.update_checker.update_available_signal.connect(self.update_dialog)
+        if from_menu:
+            self.update_checker.no_update_signal.connect(self.no_update_available_dialog)
+        self.update_checker.finished.connect(self.update_thread.quit)
+        self.update_checker.finished.connect(self.update_checker.deleteLater)
+        self.update_thread.finished.connect(self.update_thread.deleteLater)
+        self.update_thread.start()
+
+    def update_dialog(self, update_variables):
+        if self.last_update != update_variables[0]:
+            update_checker = UpdateDialog(update_variables)
+            update_checker.show()
+            dialog = update_checker.exec_()
+            if dialog == QtWidgets.QDialog.Accepted:
+                self.run_updater()
+            else:
+                self.last_update = update_checker.set_last_update
+
+    def no_update_available_dialog(self):
+        Message.up_to_date_message(self)
+
+    def run_updater(self):
+        platform = sys.platform
+        split_char = '\\' if platform == 'win32' else '/'
+        updater = '%s%s%sdfr_updater%s' % (os.getcwd(), split_char, 'dfr_updater/', '.exe' if platform == 'win32' else '')
+        updater = ''.join([x if x != '\\' else '/' for x in updater])
+        try:
+            if platform == 'win32':
+                os.startfile(updater)
+            else:
+                subprocess.call(['xdg-open', updater])
+        except:
+            self.update_output(updater)

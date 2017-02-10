@@ -272,6 +272,9 @@
     <addaction name="file_imgur_credits"/>
     <addaction name="separator"/>
     <addaction name="file_user_manual"/>
+    <addaction name="separator"/>
+    <addaction name="file_check_for_updates"/>
+    <addaction name="separator"/>
     <addaction name="file_about"/>
    </widget>
    <addaction name="menuFile"/>
@@ -361,6 +364,11 @@
   <action name="file_user_manual">
    <property name="text">
     <string>User Manual</string>
+   </property>
+  </action>
+  <action name="file_check_for_updates">
+   <property name="text">
+    <string>Check For Update</string>
    </property>
   </action>
  </widget>

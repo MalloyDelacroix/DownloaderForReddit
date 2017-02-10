@@ -35,5 +35,3 @@ Installing The Downloader For Reddit
 By far the easiest way to install and use The Downloader for Reddit is to download one of the pre-packated executables from the [releases section](https://github.com/MalloyDelacroix/DownloaderForReddit/releases) (at the moment stand alone executables are only available for Windows and Linux).
 
 To run the program, extract the folder (DownloaderForReddit) from the zip file and scroll down to and click the executable file (DownloaderForReddit.exe on windows and just DownloaderForReddit on Linux). Everything is self contained in the folder, there is nothing to install.
-
-

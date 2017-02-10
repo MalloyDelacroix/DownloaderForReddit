@@ -25,8 +25,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QMessageBox as message
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
+from PyQt5.QtCore import pyqtSignal
 
 from UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
+from UpdateDialog_auto import Ui_update_dialog_box
 
 no_user_list_message = 'There are no user lists available. To add a user, please add a user list'
 no_subreddit_list_message = 'There are no subreddit lists available. To add a subreddit please add a subreddit list'
@@ -213,6 +215,10 @@ class Message(object):
                'please move the user manual back to the source folder and ensure it is named ' \
                '"The Downloader For Reddit - User Manual.pdf"'
         reply = message.information(self, 'User Manual Not Found', text, message.Ok)
+
+    def up_to_date_message(self):
+        text = 'You are running the latest version of The Downloader for Reddit'
+        reply = message.information(self, 'Up To Date', text, message.Ok)
         if reply == message.Ok:
             return True
         else:
@@ -233,3 +239,32 @@ class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
     def accept(self):
         super().accept()
+
+
+class UpdateDialog(QDialog, Ui_update_dialog_box):
+
+    def __init__(self, update_variables):
+        super().__init__()
+        self.setupUi(self)
+        self.new_version = update_variables[0]
+        self.update_size_mb = update_variables[1] / 1000000
+        self.set_last_update = None
+        self.label.setOpenExternalLinks(True)
+        self.label.setWordWrap(True)
+        self.label.setText('There is a new version of The Downloader for Reddit available for download.  Would you like'
+                           ' to download this version?\n\nNew version: %s\nSize: %s\n\nIf you click "update" the '
+                           'program will be closed and updated to the latest version.  Please finish any downloads '
+                           'before clicking update' % (self.new_version, '{0:.1f}MB'.format(self.update_size_mb)))
+
+        self.buttonBox.button(QDialogButtonBox.Ok).setText('Update')
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.check_and_close)
+
+    def accept(self):
+        super().accept()
+
+    def check_and_close(self):
+        if self.do_not_notify_checkbox.isChecked():
+            self.set_last_update = self.new_version
+        else:
+            self.set_last_update = None
