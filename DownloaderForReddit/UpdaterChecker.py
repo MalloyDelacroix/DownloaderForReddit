@@ -11,6 +11,11 @@ class UpdateChecker(QObject):
     finished = pyqtSignal()
 
     def __init__(self, installed_version):
+        """
+        Class that runs on a separate thread from the main GUI and checks github for a newly released version of the
+        program.
+        :param installed_version: The version of the application that is currently installed
+        """
         super().__init__()
         self.installed_version = installed_version
         self.release_api_caller = 'https://api.github.com/repos/MalloyDelacroix/DownloaderForReddit/releases/latest'
@@ -22,9 +27,7 @@ class UpdateChecker(QObject):
         self.download_name = None
 
     def run(self):
-        print('retrieving json')
         self.retrieve_json_data()
-        print('checking releases')
         self.check_releases()
         self.finished.emit()
 
@@ -34,6 +37,9 @@ class UpdateChecker(QObject):
             self._json = response.json()
 
     def check_releases(self):
+        """
+        Checks the json content retrieved from github to see if there is an update available and information about it
+        """
         if self._json['tag_name'] != self.installed_version:
             self.newest_version = self._json['tag_name']
             for asset in self._json['assets']:
@@ -47,6 +53,10 @@ class UpdateChecker(QObject):
             self.no_update_signal.emit()
 
     def save_download_url(self):
+        """
+        These variables are saved and then used by the updater application so it does not have to make the same call to
+        the github api to retrieve the same information as above
+        """
         settings = QSettings('SomeGuySoftware', 'dfr_updater')
         settings.setValue('download_url', self.download_url)
         settings.setValue('download_name', self.download_name)
