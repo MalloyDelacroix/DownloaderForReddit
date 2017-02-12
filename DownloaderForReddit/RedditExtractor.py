@@ -25,7 +25,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import praw
 import prawcore
-from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool
+from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool, QThread
+from queue import Queue
 
 from version import __version__
 
@@ -39,6 +40,8 @@ class RedditExtractor(QObject):
     unfinished_downloads_signal = pyqtSignal(list)
     status_bar_update = pyqtSignal(str)
     update_download_count = pyqtSignal()
+
+    stop_download_thread = pyqtSignal()
 
     def __init__(self, user_list, subreddit_list, queue, post_limit, save_path, subreddit_sort_method,
                  subreddit_sort_top_method, restrict_date, restrict_by_score, restrict_score_method,
@@ -77,11 +80,10 @@ class RedditExtractor(QObject):
         self.restrict_score_limit = restrict_score_limit
         self.unfinished_downloads_list = unfinished_downloads_list
 
-        self.queued_posts = []
+        self.queued_posts = Queue()
         self.run = True
 
-        self.download_pool = QThreadPool()
-        self.download_pool.setMaxThreadCount(4)
+        self.download_number = 0
 
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
@@ -110,7 +112,7 @@ class RedditExtractor(QObject):
                 user.check_save_path()
             else:
                 self.queue.put("%s does not exist" % user.name)
-
+        self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
         self.run_user()
 
     def validate_subreddits(self):
@@ -129,10 +131,12 @@ class RedditExtractor(QObject):
                 date_limit = sub.date_limit if self.restrict_date else 1
                 post_limit = sub.post_limit
                 submissions = self.get_submissions_subreddit(subreddit, date_limit, post_limit)
+                print(len(submissions))
                 sub.get_new_submissions(submissions)
                 self.validated_subreddits.append(sub)
             else:
                 self.queue.put("%s is not a valid subreddit" % sub.name)
+        self.queue.put(' ')  # Adds some small separation in the output box between subs being validated and downloaded
         self.run_subreddit()
 
     def validate_users_and_subreddits(self):
@@ -162,6 +166,7 @@ class RedditExtractor(QObject):
                 user.get_new_submissions(submissions)
                 self.validated_users.append(user)
                 user.check_save_path()
+        self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
         self.run_user()
 
     def run_user(self):
@@ -169,59 +174,62 @@ class RedditExtractor(QObject):
         Handles calling the appropriate functions to extract the content from the users reddit links and download
         the content
         """
-        self.status_bar_update.emit('Extracting User Content...')
+        self.start_downloader()
+        # self.status_bar_update.emit('Extracting User Content...')
+        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         for user in self.validated_users:
             user.extract_content()
             if len(user.failed_extracts) > 0:
                 for entry in user.failed_extracts:
                     self.queue.put(entry)
 
-        for user in self.validated_users:
             if len(user.content) > 0:
                 self.downloaded_users.append(user.name)
             for post in user.content:
                 post.install_queue(self.queue)
-                self.queued_posts.append(post)
-
-        self.status_bar_update.emit('Downloaded: 0  of  %s' % len(self.queued_posts))
-        self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
-        self.download_posts()
-        for user in self.validated_users:
-            user.clear_download_session_data()
-        self.queue.put('\nFinished')
-        self.send_unfinished_downloads()
-        self.send_downloaded_users()
-        self.finished.emit()
+                self.queued_posts.put(post)
+                self.download_number += 1
+                self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+        self.queued_posts.put(None)
 
     def run_subreddit(self):
         """See run_user"""
-        self.status_bar_update.emit('Extracting Subreddit Content...')
+        self.start_downloader()
+        # self.status_bar_update.emit('Extracting Subreddit Content...')
+        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         for sub in self.validated_subreddits:
             sub.extract_content()
             if len(sub.failed_extracts) > 0:
                 for entry in sub.failed_extracts:
                     self.queue.put(entry)
 
-        for sub in self.validated_subreddits:
             for post in sub.content:
                 post.install_queue(self.queue)  # Gives each QRunnable an instance of the main queue to update the GUI
-                self.queued_posts.append(post)
+                self.queued_posts.put(post)
+                self.download_number += 1
+                self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+        self.queued_posts.put(None)
 
-        self.status_bar_update.emit('Downloaded: 0  of  %s' % len(self.queued_posts))
-        self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
-        self.download_posts()
+    def downloads_finished(self):
         for sub in self.validated_subreddits:
             sub.clear_download_session_data()
+        for user in self.validated_users:
+            user.clear_download_session_data()
         self.queue.put('\nFinished')
         self.send_unfinished_downloads()
         self.finished.emit()
 
-    def download_posts(self):
-        """Pulls from the list of extracted content and spawns threads to download multiple links simultaneously"""
-        for post in self.queued_posts:
-            if self.run:
-                self.download_pool.start(post)
-        self.download_pool.waitForDone()
+    def start_downloader(self):
+        self.downloader = Downloader(self.queued_posts)
+        self.stop_download_thread.connect(self.downloader.stop)
+        self.downloader_thread = QThread()
+        self.downloader.moveToThread(self.downloader_thread)
+        self.downloader_thread.started.connect(self.downloader.download)
+        self.downloader.finished.connect(self.downloader_thread.quit)
+        self.downloader.finished.connect(self.deleteLater)
+        self.downloader.finished.connect(self.downloads_finished)
+        self.downloader_thread.finished.connect(self.deleteLater)
+        self.downloader_thread.start()
 
     def get_submissions_user(self, user, date_limit, post_limit):  # 0 = greater than, 1 = less than
         """Extracts user submissions from reddit if they meet the user provided criteria"""
@@ -286,11 +294,12 @@ class RedditExtractor(QObject):
         # print('len of queued posts: %s' % len(self.queued_posts))
         self.queue.put('\nStopped\n')
         # print('queued posts not downloaded: %s' % len([x for x in self.queued_posts if not x.downloaded]))
+        self.stop_download_thread.emit()
 
     def send_unfinished_downloads(self):
-        unfinished_list = [x for x in self.queued_posts if not x.downloaded]
-        if len(unfinished_list) > 0:
-            self.unfinished_downloads_signal.emit(unfinished_list)
+        if not self.queued_posts.empty():
+            for post in self.queued_posts.get():
+                self.unfinished_downloads_signal.emit(post)
 
     def finish_downloads(self):
         self.queued_posts = self.unfinished_downloads_list
@@ -301,3 +310,37 @@ class RedditExtractor(QObject):
 
     def skip_user_validation(self):
         self.validated_users = self.user_list
+
+
+class Downloader(QObject):
+
+    finished = pyqtSignal()
+
+    def __init__(self, queue):
+        """
+        Class that spawns the separate download threads.  This is a separate class so it can be moved to its own thread
+        and run simultaneously with post extraction.
+
+        :param queue: The download queue in which extracted content is placed
+        """
+        super().__init__()
+        self.queue = queue
+        self.run = True
+
+        self.download_pool = QThreadPool()
+        # self.download_pool.setMaxThreadCount(4)
+
+    def download(self):
+        """Spawns the download pool threads"""
+        while self.run:
+            post = self.queue.get()
+            if post is not None:
+                self.download_pool.start(post)
+            else:
+                self.run = False
+        self.download_pool.waitForDone()
+        print('Downloader Finished')
+        self.finished.emit()
+
+    def stop(self):
+        self.run = False

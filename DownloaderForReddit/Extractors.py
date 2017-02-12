@@ -296,6 +296,7 @@ class EroshareExtractor(Extractor):
                 if entry.get('type') == "Video":
                     number = count if len(album) > 1 else ""
                     self.create_content_from_extract(entry.get('url_mp4'), album_id, number)
+                    count += 1
                 elif entry.get('type') == "Image":
                     number = count if len(album) > 1 else ""
                     self.create_content_from_extract(entry.get('url_full_protocol'), album_id, number)

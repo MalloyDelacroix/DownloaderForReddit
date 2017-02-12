@@ -55,8 +55,8 @@ class Content(QRunnable):
         self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
         self.subreddit_save_method = subreddit_save_method
         self.successful = None
-        self.output = ""
-        self.setAutoDelete(False)
+        self.output = ''
+        # self.setAutoDelete(False)
         self.downloaded = False
 
         self.queue = None
@@ -67,31 +67,31 @@ class Content(QRunnable):
         folder with the specified naming convention and is where each file will ultimately be named
         """
         if self.subreddit_save_method is None:
-            filename = "%s%s%s%s" % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
+            filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
                                      self.file_ext)
             self.check_save_path_subreddit(self.save_path)
 
         elif self.subreddit_save_method == 'User Name':
-            filename = "%s%s/%s%s%s" % (self.save_path, self.user, self.clean_filename(self.submission_id),
+            filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
                                         self.number_in_seq, self.file_ext)
-            self.check_save_path_subreddit("%s%s/" % (self.save_path, self.user))
+            self.check_save_path_subreddit('%s%s/' % (self.save_path, self.user))
 
         elif self.subreddit_save_method == 'Subreddit Name':
-            filename = "%s%s/%s%s%s" % (self.save_path, self.subreddit, self.clean_filename(self.submission_id),
+            filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit, self.clean_filename(self.submission_id),
                                         self.number_in_seq, self.file_ext)
-            self.check_save_path_subreddit("%s%s" % (self.save_path, self.subreddit))
+            self.check_save_path_subreddit('%s%s' % (self.save_path, self.subreddit))
 
         elif self.subreddit_save_method == 'Subreddit Name/User Name':
-            filename = "%s%s/%s/%s%s%s" % (self.save_path, self.subreddit, self.user,
+            filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
                                          self.clean_filename(self.submission_id), self.number_in_seq, self.file_ext)
-            self.check_save_path_subreddit("%s%s/%s/" % (self.save_path, self.subreddit, self.user))
+            self.check_save_path_subreddit('%s%s/%s/' % (self.save_path, self.subreddit, self.user))
 
         elif self.subreddit_save_method == 'User Name/Subreddit Name':
-            filename = "%s%s/%s/%s%s%s" % (self.save_path, self.user, self.subreddit,
+            filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
                                          self.clean_filename(self.submission_id), self.number_in_seq, self.file_ext)
-            self.check_save_path_subreddit("%s%s/%s" % (self.save_path, self.user, self.subreddit))
+            self.check_save_path_subreddit('%s%s/%s' % (self.save_path, self.user, self.subreddit))
         else:
-            filename = "%s%s%s%s" % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
+            filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
                                      self.file_ext)
         response = requests.get(self.url, stream=True)
         if response.status_code == 200:
@@ -101,15 +101,15 @@ class Content(QRunnable):
             self.queue.put('Saved %s' % filename)
             self.downloaded = True
             return None
-        self.queue.put("Failed Download:  File %s%s posted by %s failed to download...try link to download "
-                       "manually: %s" % (self.submission_id, self.number_in_seq, self.user, self.url))
+        self.queue.put('Failed Download:  File %s%s posted by %s failed to download...try link to download '
+                       'manually: %s\n' % (self.submission_id, self.number_in_seq, self.user, self.url))
 
     def clean_filename(self, name):
         """Ensures each file name does not contain forbidden characters and is within the character limit"""
         forbidden_chars = '"*\\/\'.|?:<>'
         filename = ''.join([x if x not in forbidden_chars else '#' for x in name])
         if len(filename) >= 240:
-            filename = filename[:237] + "..."
+            filename = filename[:237] + '...'
         return filename
 
     def check_save_path_subreddit(self, path):
