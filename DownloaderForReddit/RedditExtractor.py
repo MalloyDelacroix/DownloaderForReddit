@@ -39,8 +39,8 @@ class RedditExtractor(QObject):
     downloaded_users_signal = pyqtSignal(list)
     unfinished_downloads_signal = pyqtSignal(list)
     status_bar_update = pyqtSignal(str)
-    update_download_count = pyqtSignal()
-
+    setup_progress_bar = pyqtSignal(int)
+    update_progress_bar = pyqtSignal()
     stop_download_thread = pyqtSignal()
 
     def __init__(self, user_list, subreddit_list, queue, post_limit, save_path, subreddit_sort_method,
@@ -177,6 +177,7 @@ class RedditExtractor(QObject):
         self.start_downloader()
         # self.status_bar_update.emit('Extracting User Content...')
         self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+        self.setup_progress_bar.emit(len(self.validated_users))
         for user in self.validated_users:
             user.extract_content()
             if len(user.failed_extracts) > 0:
@@ -190,6 +191,7 @@ class RedditExtractor(QObject):
                 self.queued_posts.put(post)
                 self.download_number += 1
                 self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+            self.update_progress_bar.emit()
         self.queued_posts.put(None)
 
     def run_subreddit(self):
@@ -217,6 +219,8 @@ class RedditExtractor(QObject):
             user.clear_download_session_data()
         self.queue.put('\nFinished')
         self.send_unfinished_downloads()
+        if len(self.downloaded_users) > 0:
+            self.send_downloaded_users()
         self.finished.emit()
 
     def start_downloader(self):
@@ -289,11 +293,7 @@ class RedditExtractor(QObject):
 
     def stop_download(self):
         self.run = False
-        # print('Active thread count: %s' % self.download_pool.activeThreadCount())
-        self.download_pool.clear()
-        # print('len of queued posts: %s' % len(self.queued_posts))
         self.queue.put('\nStopped\n')
-        # print('queued posts not downloaded: %s' % len([x for x in self.queued_posts if not x.downloaded]))
         self.stop_download_thread.emit()
 
     def send_unfinished_downloads(self):
