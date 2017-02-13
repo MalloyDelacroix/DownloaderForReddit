@@ -91,8 +91,8 @@ class ImgurExtractor(Extractor):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         try:
             if 'i.imgur' in self.url:
-            # if self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm')):
                 self.extract_direct_link()
+
             elif "/a/" in self.url:
                 self.extract_album()
             elif '/gallery/' in self.url:
@@ -100,6 +100,8 @@ class ImgurExtractor(Extractor):
                     self.extract_album()
                 except:
                     pass
+            elif self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm')):
+                self.extract_direct_mislinked()
             else:
                 self.extract_single()
         except:
@@ -107,7 +109,7 @@ class ImgurExtractor(Extractor):
                                           (self.url, self.user, self.subreddit, self.post_title))
 
     def extract_direct_link(self):
-        for ext in ['.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
+        for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
             if ext in self.url:
                 index = self.url.find(ext)
                 url = '%s%s' % (self.url[:index], ext)
@@ -150,6 +152,31 @@ class ImgurExtractor(Extractor):
             url = pic.mp4
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
                      self.subreddit_save_method)
+        self.extracted_content.append(x)
+
+    def extract_direct_mislinked(self):
+        """
+        All direct links to imgur.com must start with 'https://i.imgur.  Sometimes links get mis labeled somehow when
+        they are posted.  This method is to add the correct address beginning to mislinked imgur urls and get a proper
+        extraction
+        """
+        for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
+            if ext in self.url:
+                index = self.url.find(ext)
+                url = '%s%s' % (self.url[:index], ext)
+
+        domain, id_with_ext = url.rsplit('/', 1)
+        domain = 'https://i.imgur.com/'
+        url = '%s%s' % (domain, id_with_ext)
+        image_id, extension = id_with_ext.rsplit('.', 1)
+        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+        if url.endswith('gifv') or url.endswith('gif'):
+            picture = self.client.get_image(image_id)
+            if picture.type == 'image/gif' and picture.animated:
+                url = picture.mp4
+                extension = 'mp4'
+        x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
+                    self.subreddit_save_method)
         self.extracted_content.append(x)
 
 

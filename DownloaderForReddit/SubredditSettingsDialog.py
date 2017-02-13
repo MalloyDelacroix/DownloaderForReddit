@@ -321,7 +321,7 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
                 os.startfile(sub_folder)
             else:
                 opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call(opener, sub_folder)
+                subprocess.call([opener, sub_folder])
         except FileNotFoundError:
             Message.no_subreddit_download_folder(self)
 

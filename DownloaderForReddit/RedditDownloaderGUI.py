@@ -874,9 +874,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if imgur_client != self.imgur_client:
                 self.change_imgur_client(imgur_client)
 
-            if settings.custom_date != self.custom_date:
-                self.custom_date = settings.custom_date
-                self.change_custom_date()
+            # if settings.custom_date != self.custom_date:
+            self.custom_date = settings.custom_date
+            self.change_custom_date()
 
             if settings.list_sort_method != self.list_sort_method:
                 self.list_sort_method = settings.list_sort_method

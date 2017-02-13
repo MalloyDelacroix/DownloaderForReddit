@@ -311,7 +311,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             os.startfile(selected_user.save_path)
         else:
             opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-            subprocess.call(opener, selected_user.save_path)
+            subprocess.call([opener, selected_user.save_path])
 
     def open_file(self, position):
         file = '%s%s%s' % (self.current_user.save_path, '/' if not self.current_user.save_path.endswith('/') else

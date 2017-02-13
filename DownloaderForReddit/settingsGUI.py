@@ -304,7 +304,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             self.settings.setValue('subreddit_save_by_combo', self.subreddit_save_by_combo.currentIndex())
             self.settings.setValue('name_downloads_by_combo', self.name_downloads_by_combo.currentIndex())
             self.settings.setValue('save_directory_line_edit', self.save_directory_line_edit.text())
-            self.settings.setValue('restrict_by_custom_date_checkbox', self.restrict_by_custom_date_checkbox.isChecked())
+            self.settings.setValue('restrict_by_custom_date_checkbox',
+                                   self.restrict_by_custom_date_checkbox.isChecked())
             self.settings.setValue('settings_custom_date', self.custom_date)
             self.settings.setValue('list_sort_combo', self.list_sort_combo.currentIndex())
             self.settings.setValue('list_sort_order_combo', self.list_sort_order_combo.currentIndex())
