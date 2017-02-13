@@ -189,8 +189,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.progress_bar = QtWidgets.QProgressBar()
         self.statusbar.addPermanentWidget(self.progress_bar)
-        self.progress_bar.setToolTip('This bar displays the progress of link extraction from submitted content')
+        self.bar_count = 0
+        self.progress_bar.setToolTip('Displays the progress of user/subreddit validation, then link extraction')
         self.progress_bar.setVisible(False)
+        self.progress_label = QtWidgets.QLabel()
+        self.progress_label.setText('Extraction Complete')
 
         self.check_for_updates(False)
 
@@ -412,21 +415,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                 self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
-        self.stop_download.connect(self.reddit_extractor.stop_download)
-
-        self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.validate_users)
-        self.reddit_extractor.remove_invalid_user.connect(self.remove_invalid_user)
-        self.reddit_extractor.downloaded_users_signal.connect(self.fill_downloaded_users_list)
-        self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        self.thread.start()
+        self.start_reddit_extractor_thread('user')
 
     def run_single_user(self, user):
         """
@@ -441,19 +430,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                 self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
-        self.stop_download.connect(self.reddit_extractor.stop_download)
-
-        self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.validate_users)
-        self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        self.thread.start()
+        self.start_reddit_extractor_thread('user')
 
     def run_subreddit(self):
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
@@ -463,20 +440,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                 self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
-        self.stop_download.connect(self.reddit_extractor.stop_download)
-
-        self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.validate_subreddits)
-        self.reddit_extractor.remove_invalid_subreddit.connect(self.remove_invalid_subreddit)
-        self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        self.thread.start()
+        self.start_reddit_extractor_thread('subreddit')
 
     def run_single_subreddit(self, subreddit):
         """
@@ -491,19 +455,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                 self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
-        self.stop_download.connect(self.reddit_extractor.stop_download)
-
-        self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.validate_subreddits)
-        self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        self.thread.start()
+        self.start_reddit_extractor_thread('subreddit')
 
     def run_user_and_subreddit(self):
         """
@@ -518,21 +470,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                 self.restrict_by_submission_score,
                                                 self.restrict_by_submission_score_method,
                                                 self.restrict_by_submission_score_limit, None)
-        self.stop_download.connect(self.reddit_extractor.stop_download)
-
-        self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.validate_users_and_subreddits)
-        self.reddit_extractor.remove_invalid_user.connect(self.remove_invalid_user)
-        self.reddit_extractor.remove_invalid_subreddit.connect(self.remove_invalid_subreddit)
-        self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        self.thread.start()
+        self.start_reddit_extractor_thread('users_and_subreddits')
 
     def run_unfinished_downloads(self):
         """Downloads the content that was left during the last run if the user clicked the stop download button"""
@@ -540,29 +478,26 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.started_download_gui_shift()
         self.reddit_extractor = RedditExtractor(None, None, self.queue, None, None, None, None, None,
                                                 None, None, None,  self.unfinished_downloads)
-        self.stop_download.connect(self.reddit_extractor.stop_download)
-
-        self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.finish_downloads)
-        self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.reset_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        self.thread.start()
+        self.start_reddit_extractor_thread('unfinished')
 
     def start_reddit_extractor_thread(self, download_type):
+        """Moves the extractor to a different thread and calls the appropriate function for the type of download"""
+        self.stop_download.connect(self.reddit_extractor.stop_download)
         self.thread = QtCore.QThread()
         self.reddit_extractor.moveToThread(self.thread)
-        self.thread.started.connect(self.reddit_extractor.download_type)
+        if download_type == 'user':
+            self.thread.started.connect(self.reddit_extractor.validate_users)
+        elif download_type == 'subreddit':
+            self.thread.started.connect(self.reddit_extractor.validate_subreddits)
+        elif download_type == 'users_and_subreddits':
+            self.thread.started.connect(self.reddit_extractor.validate_users_and_subreddits)
+        elif download_type == 'unfinished':
+            self.thread.started.connect(self.reddit_extractor.finish_downloads)
         self.reddit_extractor.remove_invalid_user.connect(self.remove_invalid_user)
         self.reddit_extractor.downloaded_users_signal.connect(self.fill_downloaded_users_list)
         self.reddit_extractor.status_bar_update.connect(self.update_status_bar)
-        self.reddit_extractor.update_download_count.connect(self.update_status_bar_download_count)
+        self.reddit_extractor.setup_progress_bar.connect(self.setup_progress_bar)
+        self.reddit_extractor.update_progress_bar.connect(self.update_progress_bar)
         self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
         self.reddit_extractor.finished.connect(self.thread.quit)
         self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
@@ -596,6 +531,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.statusbar.showMessage('Downloaded: %s  of  %s' % (self.download_count, self.soft_downloaded), -1)
 
     def setup_progress_bar(self, limit):
+        self.progress_bar.setVisible(True)
         if limit < 100:
             minimum = 0
             maximum = limit
@@ -608,8 +544,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_progress_bar(self):
         self.progress_bar.setValue(self.progress_bar.value() + 1)
-        if self.progress_bar.value() == self.progress_bar.maximum():
+        if self.progress_bar.value() == self.progress_bar.maximum() and self.bar_count == 1:
             self.progress_bar.setVisible(False)
+            self.statusbar.addPermanentWidget(self.progress_label)
+        elif self.progress_bar.value() == self.progress_bar.maximum() and self.bar_count == 0:
+            self.bar_count += 1
 
     def add_user_list(self):
         new_user_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog", "Enter the new user list:")
@@ -889,6 +828,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
         self.update_number_of_downloads()
+        self.progress_label.setText('Download complete')
         if self.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()
         self.download_count = 0

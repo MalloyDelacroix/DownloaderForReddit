@@ -88,6 +88,7 @@ class RedditExtractor(QObject):
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
         self.status_bar_update.emit('Validating Users...')
+        self.setup_progress_bar.emit(len(self.user_list))
         for user in self.user_list:
             redditor = self._r.redditor(user.name)
             try:
@@ -112,6 +113,7 @@ class RedditExtractor(QObject):
                 user.check_save_path()
             else:
                 self.queue.put("%s does not exist" % user.name)
+            self.update_progress_bar.emit()
         self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
         self.run_user()
 
@@ -217,7 +219,7 @@ class RedditExtractor(QObject):
             sub.clear_download_session_data()
         for user in self.validated_users:
             user.clear_download_session_data()
-        self.queue.put('\nFinished')
+        self.queue.put('\nFinished - %s downloads' % self.download_number)
         self.send_unfinished_downloads()
         if len(self.downloaded_users) > 0:
             self.send_downloaded_users()
@@ -230,9 +232,9 @@ class RedditExtractor(QObject):
         self.downloader.moveToThread(self.downloader_thread)
         self.downloader_thread.started.connect(self.downloader.download)
         self.downloader.finished.connect(self.downloader_thread.quit)
-        self.downloader.finished.connect(self.deleteLater)
+        self.downloader.finished.connect(self.downloader.deleteLater)
         self.downloader.finished.connect(self.downloads_finished)
-        self.downloader_thread.finished.connect(self.deleteLater)
+        self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
         self.downloader_thread.start()
 
     def get_submissions_user(self, user, date_limit, post_limit):  # 0 = greater than, 1 = less than
