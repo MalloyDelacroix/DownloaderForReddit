@@ -36,7 +36,7 @@
     <normaloff>Images/settings_single_gear.png</normaloff>Images/settings_single_gear.png</iconset>
   </property>
   <property name="whatsThis">
-   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This is a section to watch subreddits for top posts, and add users to userlist that are in the top&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This is the settings dialog where the settings used throughout the program are determined.  See the user manual for more information (it can be accessed through the help menu)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <widget class="QWidget" name="gridLayoutWidget_2">
    <property name="geometry">
@@ -675,33 +675,32 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>379</y>
-          <width>111</width>
+          <y>380</y>
+          <width>321</width>
           <height>21</height>
          </rect>
         </property>
         <property name="text">
-         <string>Sort lists by:</string>
+         <string>Number of simultaneous download threads:</string>
         </property>
        </widget>
-       <widget class="QComboBox" name="list_sort_combo">
+       <widget class="QSpinBox" name="thread_limit_spinbox">
         <property name="geometry">
          <rect>
-          <x>140</x>
+          <x>330</x>
           <y>380</y>
-          <width>171</width>
-          <height>21</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QComboBox" name="list_sort_order_combo">
-        <property name="geometry">
-         <rect>
-          <x>320</x>
-          <y>380</y>
-          <width>111</width>
+          <width>51</width>
           <height>22</height>
          </rect>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;This is the number of download threads that will be spawned to download content simultaneously.  The max number is set based on your computers number of processor cores (real and logical)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="maximum">
+         <number>12</number>
+        </property>
+        <property name="value">
+         <number>4</number>
         </property>
        </widget>
       </widget>

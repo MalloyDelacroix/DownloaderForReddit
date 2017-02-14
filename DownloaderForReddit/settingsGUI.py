@@ -124,13 +124,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
                                                'User Name/Subreddit Name'))
         self.subreddit_save_by_combo.setCurrentIndex(self.settings.value('subreddit_save_by_combo', 0, type=int))
         self.name_downloads_by_combo.addItems(('Image/Album Id', 'Post Title'))
-        self.name_downloads_by_combo.setCurrentIndex(self.settings.value('name_downloads_by_combo', 0, type=int))
 
-        self.list_sort_combo.addItems(('Name', 'Date Added', 'Number of Downloads'))
-        self.list_sort_order_combo.addItems(('Ascending', 'Descending'))
-        self.list_sort_combo.setCurrentIndex(self.settings.value('list_sort_combo', 0, type=int))
-        self.list_sort_order_combo.setCurrentIndex(self.settings.value('list_sort_order_combo', 0, type=int))
-        self.list_sort_method = (self.list_sort_combo.currentIndex(), self.list_sort_order_combo.currentIndex())
+        self.thread_limit_spinbox.setValue(self.settings.value('thread_limit_spinbox', 4, type=int))
+        self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
 
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
@@ -277,8 +273,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             else:
                 self.custom_date = 0
 
-            self.list_sort_method = (self.list_sort_combo.currentIndex(), self.list_sort_order_combo.currentIndex())
-
             self.settings.setValue('imgur_client_id', self.imgur_client_id)
             self.settings.setValue('imgur_client_secret', self.imgur_client_secret)
             self.settings.setValue('reddit_account_username', self.reddit_account_username)
@@ -307,8 +301,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             self.settings.setValue('restrict_by_custom_date_checkbox',
                                    self.restrict_by_custom_date_checkbox.isChecked())
             self.settings.setValue('settings_custom_date', self.custom_date)
-            self.settings.setValue('list_sort_combo', self.list_sort_combo.currentIndex())
-            self.settings.setValue('list_sort_order_combo', self.list_sort_order_combo.currentIndex())
+            self.settings.setValue('thread_limit_spinbox', self.thread_limit_spinbox.value())
             super().accept()
 
     def restore_defaults(self):

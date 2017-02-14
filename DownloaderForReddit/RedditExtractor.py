@@ -305,10 +305,9 @@ class RedditExtractor(QObject):
 
     def finish_downloads(self):
         self.queued_posts = self.unfinished_downloads_list
-        self.status_bar_update.emit('Downloaded: 0  of  %s' % len(self.queued_posts))
-        self.download_posts()
-        self.queue.put('\nFinished')
-        self.finished.emit()
+        self.download_number = len(self.queued_posts)
+        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+        self.start_downloader()
 
     def skip_user_validation(self):
         self.validated_users = self.user_list

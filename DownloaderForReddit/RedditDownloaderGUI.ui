@@ -277,7 +277,30 @@
     <addaction name="separator"/>
     <addaction name="file_about"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="view_sort_lists_by">
+     <property name="title">
+      <string>Sort Lists By</string>
+     </property>
+     <addaction name="view_sort_list_by_name"/>
+     <addaction name="view_sort_list_by_date_added"/>
+     <addaction name="view_sort_list_by_number_of_downloads"/>
+    </widget>
+    <widget class="QMenu" name="view_sort_order">
+     <property name="title">
+      <string>Sort Order</string>
+     </property>
+     <addaction name="view_order_by_ascending"/>
+     <addaction name="view_order_by_descending"/>
+    </widget>
+    <addaction name="view_sort_lists_by"/>
+    <addaction name="view_sort_order"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
    <addaction name="menuLists"/>
    <addaction name="menuUser_Finder"/>
    <addaction name="menuHelp"/>
@@ -369,6 +392,46 @@
   <action name="file_check_for_updates">
    <property name="text">
     <string>Check For Update</string>
+   </property>
+  </action>
+  <action name="view_sort_list_by_name">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Name</string>
+   </property>
+  </action>
+  <action name="view_sort_list_by_date_added">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Date Added</string>
+   </property>
+  </action>
+  <action name="view_sort_list_by_number_of_downloads">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Number of Downloads</string>
+   </property>
+  </action>
+  <action name="view_order_by_ascending">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ascending</string>
+   </property>
+  </action>
+  <action name="view_order_by_descending">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Descending</string>
    </property>
   </action>
  </widget>

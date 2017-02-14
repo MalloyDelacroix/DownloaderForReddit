@@ -322,15 +322,20 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
             else:
                 opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
                 subprocess.call([opener, sub_folder])
+        except AttributeError:
+            Message.no_user_selected(self)
         except FileNotFoundError:
             Message.no_subreddit_download_folder(self)
 
     def open_file(self, position):
-        if sys.platform == 'win32':
-            os.startfile(self.picture_list[position])
-        else:
-            opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-            subprocess.call([opener, self.picture_list[position]])
+        try:
+            if sys.platform == 'win32':
+                os.startfile(self.picture_list[position])
+            else:
+                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+                subprocess.call([opener, self.picture_list[position]])
+        except (AttributeError, FileNotFoundError):
+            pass
 
     def set_icons_full_width(self):
         self.subreddit_content_icons_full_width = True

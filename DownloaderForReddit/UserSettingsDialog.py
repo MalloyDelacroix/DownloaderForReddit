@@ -306,22 +306,28 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     def open_user_download_folder(self, position):
         selected_user = self.user_list[position]
-
-        if sys.platform == 'win32':
-            os.startfile(selected_user.save_path)
-        else:
-            opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-            subprocess.call([opener, selected_user.save_path])
+        try:
+            if sys.platform == 'win32':
+                os.startfile(selected_user.save_path)
+            else:
+                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+                subprocess.call([opener, selected_user.save_path])
+        except AttributeError:
+            Message.no_user_selected(self)
+        except FileNotFoundError:
+            Message.no_user_download_folder(self)
 
     def open_file(self, position):
         file = '%s%s%s' % (self.current_user.save_path, '/' if not self.current_user.save_path.endswith('/') else
                            '', self.user_folder[position])
-
-        if sys.platform == 'win32':
-            os.startfile(file)
-        else:
-            opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-            subprocess.call([opener, file])
+        try:
+            if sys.platform == 'win32':
+                os.startfile(file)
+            else:
+                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+                subprocess.call([opener, file])
+        except (AttributeError, FileNotFoundError):
+            pass
 
     def set_icons_full_width(self):
         self.user_content_icons_full_width = True

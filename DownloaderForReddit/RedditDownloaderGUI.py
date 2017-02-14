@@ -113,7 +113,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.restrict_by_custom_date = self.settings.value('restrict_by_custom_date', False, type=bool)
         self.custom_date = self.settings.value('custom__date', 0, type=int)
 
-        self.list_sort_method = (self.settings.value('list_sort_method', (0, 0), type=tuple))
+        self.max_download_thread_count = self.settings.value('max_download_thread_count', 4, type=int)
+
+        self.list_sort_method = self.settings.value('list__sort_method', 0, type=int)
+        self.list_order_method = self.settings.value('list_order_method', 0, type=int)
         # End of settings
 
         self.queue = queue
@@ -137,6 +140,20 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_about.triggered.connect(self.display_about_dialog)
         self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
         self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(0, True))
+
+        self.list_view_group = QtWidgets.QActionGroup(self)
+        self.list_view_group.addAction(self.view_sort_list_by_name)
+        self.list_view_group.addAction(self.view_sort_list_by_date_added)
+        self.list_view_group.addAction(self.view_sort_list_by_number_of_downloads)
+        self.view_sort_list_by_name.triggered.connect(lambda: self.set_list_sort_method(0))
+        self.view_sort_list_by_date_added.triggered.connect(lambda: self.set_list_sort_method(1))
+        self.view_sort_list_by_number_of_downloads.triggered.connect(lambda: self.set_list_sort_method(2))
+
+        self.list_view_order = QtWidgets.QActionGroup(self)
+        self.list_view_order.addAction(self.view_order_by_ascending)
+        self.list_view_order.addAction(self.view_order_by_descending)
+        self.view_order_by_ascending.triggered.connect(lambda: self.set_list_order_method(0))
+        self.view_order_by_descending.triggered.connect(lambda: self.set_list_order_method(1))
 
         self.refresh_user_count()
         self.refresh_subreddit_count()
@@ -878,10 +895,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.custom_date = settings.custom_date
             self.change_custom_date()
 
-            if settings.list_sort_method != self.list_sort_method:
-                self.list_sort_method = settings.list_sort_method
-                self.change_list_sort_method()
-
             self.save_state()
 
     """
@@ -948,12 +961,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         for key, value in self.subreddit_view_chooser_dict.items():
             for sub in value.reddit_object_list:
                 sub.update_custom_date_limit(self.custom_date)
-
-    def change_list_sort_method(self):
-        for key, value in self.user_view_chooser_dict.items():
-            value.sort_lists(self.list_sort_method)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            value.sort_lists(self.list_sort_method)
 
     def update_number_of_downloads(self):
         for key, value in self.user_view_chooser_dict.items():
@@ -1082,6 +1089,24 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.subreddit_count = 0
         self.file_subreddit_list_count.setText('Subreddit List Count: %s' % self.subreddit_count)
 
+    def set_list_sort_method(self, method):
+        self.list_sort_method = method
+        self.change_list_sort_method()
+
+    def set_list_order_method(self, method):
+        self.list_order_method = method
+        self.change_list_sort_method()
+
+    def change_list_sort_method(self):
+        for key, value in self.user_view_chooser_dict.items():
+            value.sort_lists((self.list_sort_method, self.list_order_method))
+        for key, value in self.subreddit_view_chooser_dict.items():
+            value.sort_lists((self.list_sort_method, self.list_order_method))
+
+    def set_view_menu_items_checked(self):
+        self.view_sort_lists_by[self.list_sort_method].setChecked(True)
+        self.view_sort_order[self.list_order_method].setChecked(True)
+
     def closeEvent(self, QCloseEvent):
         if self.unfinished_downloads_available:
             unfinished_dialog = UnfinishedDownloadsWarning()
@@ -1189,7 +1214,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue('restrict_by_custom_date', self.restrict_by_custom_date)
         self.settings.setValue('custom__date', self.custom_date)
 
-        self.settings.setValue('list_sort_method', self.list_sort_method)
+        self.settings.setValue('max_download_thread_count', self.max_download_thread_count)
+
+        self.settings.setValue('list__sort_method', self.list_sort_method)
+        self.settings.setValue('list_order_method', self.list_order_method)
 
     def check_for_updates(self, from_menu):
         self.update_thread = QtCore.QThread()
