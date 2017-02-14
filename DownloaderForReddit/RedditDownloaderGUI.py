@@ -590,7 +590,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.user_lists_combo.removeItem(self.user_lists_combo.currentIndex())
                 if self.user_lists_combo.currentText() != '':
                     self.user_list_view.setModel(self.user_view_chooser_dict[self.user_lists_combo.currentText()])
-                    self.user_view_chooser_dict[self.user_lists_combo.currentText()].sort_lists(self.list_sort_method)
+                    self.user_view_chooser_dict[
+                        self.user_lists_combo.currentText()].sort_lists((self.list_sort_method, self.list_order_method))
                 else:
                     self.user_list_view.setModel(None)
                 self.refresh_user_count()
@@ -601,7 +602,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Changes the user list model based on the user_list_combo"""
         new_list_view = self.user_lists_combo.currentText()
         self.user_list_view.setModel(self.user_view_chooser_dict[new_list_view])
-        self.user_view_chooser_dict[new_list_view].sort_lists(self.list_sort_method)
+        self.user_view_chooser_dict[new_list_view].sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_user_count()
 
     def add_subreddit_list(self):
@@ -630,7 +631,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[
                                                           self.subreddit_list_combo.currentText()])
                     self.subreddit_view_chooser_dict[
-                        self.subreddit_lists_combo.currentText()].sort_lists(self.list_sort_method)
+                        self.subreddit_lists_combo.currentText()].sort_lists((self.list_sort_method,
+                                                                              self.list_order_method))
                 else:
                     self.subreddit_list_view.setModel(None)
                 self.refresh_subreddit_count()
@@ -640,7 +642,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def change_subreddit_list(self):
         new_list_view = self.subreddit_list_combo.currentText()
         self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[new_list_view])
-        self.subreddit_view_chooser_dict[new_list_view].sort_lists(self.list_sort_method)
+        self.subreddit_view_chooser_dict[new_list_view].sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_subreddit_count()
 
     def add_user_dialog(self):
@@ -665,7 +667,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                      self.avoid_duplicates, self.download_videos, self.download_images, datetime.now().timestamp())
             insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
             insertion_list.setData(insertion_list.rowCount() - 1, x)
-        insertion_list.sort_lists(self.list_sort_method)
+        insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_user_count()
 
     def add_user(self, new_user):
@@ -681,7 +683,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                              datetime.now().timestamp())
                     insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
                     insertion_list.setData(insertion_list.rowCount() - 1, x)
-                    insertion_list.sort_lists(self.list_sort_method)
+                    insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
                     self.refresh_user_count()
             else:
                 Message.not_valid_name(self)
@@ -736,7 +738,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                   self.download_images, datetime.now().timestamp())
                     insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
                     insertion_list.setData(insertion_list.rowCount() - 1, x)
-                    insertion_list.sort_lists(self.list_sort_method)
+                    insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
                     self.refresh_subreddit_count()
             else:
                 Message.not_valid_name(self)

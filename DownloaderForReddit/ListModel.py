@@ -55,7 +55,8 @@ class ListModel(QAbstractListModel):
         else:
             att_method = 'number_of_downloads'
 
-        self.reddit_object_list = sorted(self.reddit_object_list, key=attrgetter(att_method), reverse=method[1])
+        self.reddit_object_list = sorted(self.reddit_object_list, key=lambda x: getattr(x, att_method).lower(),
+                                         reverse=method[1])
         self.display_list = [x.name for x in self.reddit_object_list]
 
     def insertRows(self, position, rows, parent=QModelIndex(), *args, **kwargs):

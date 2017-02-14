@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import praw
 import prawcore
-from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool, QThread
+from PyQt5.QtCore import QObject, QSettings, pyqtSignal, QThreadPool, QThread
 from queue import Queue
 
 from version import __version__
@@ -69,6 +69,8 @@ class RedditExtractor(QObject):
         self.failed_downloads = []
         self.downloaded_users = []
         self.unfinished_downloads = []
+
+        self.settings = QSettings("SomeGuySoftware", "RedditDownloader")
 
         self.post_limit = post_limit
         self.save_path = save_path
@@ -328,8 +330,10 @@ class Downloader(QObject):
         self.queue = queue
         self.run = True
 
+        self.settings = QSettings("SomeGuySoftware", "RedditDownloader")
+
         self.download_pool = QThreadPool()
-        # self.download_pool.setMaxThreadCount(4)
+        self.download_pool.setMaxThreadCount(self.settings.value('thread_limit_spinbox'))
 
     def download(self):
         """Spawns the download pool threads"""

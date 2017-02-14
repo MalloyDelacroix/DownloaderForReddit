@@ -125,7 +125,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         self.subreddit_save_by_combo.setCurrentIndex(self.settings.value('subreddit_save_by_combo', 0, type=int))
         self.name_downloads_by_combo.addItems(('Image/Album Id', 'Post Title'))
 
-        self.thread_limit_spinbox.setValue(self.settings.value('thread_limit_spinbox', 4, type=int))
+        self.thread_limit_spinbox.setValue(self.settings.value('thread_limit', 4, type=int))
         self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
 
     def set_imgur_client(self):
@@ -301,7 +301,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             self.settings.setValue('restrict_by_custom_date_checkbox',
                                    self.restrict_by_custom_date_checkbox.isChecked())
             self.settings.setValue('settings_custom_date', self.custom_date)
-            self.settings.setValue('thread_limit_spinbox', self.thread_limit_spinbox.value())
+            self.settings.setValue('thread_limit', self.thread_limit_spinbox.value())
             super().accept()
 
     def restore_defaults(self):
