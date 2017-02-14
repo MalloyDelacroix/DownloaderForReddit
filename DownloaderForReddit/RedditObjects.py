@@ -60,7 +60,7 @@ class RedditObject(object):
         self.already_downloaded = []
         self.date_limit = 1
         self.custom_date_limit = None
-        self.content = []  # Will be erased at end of download
+        self.content = []  # Anything that has been downloaded will be cleared from this list and close
         self.failed_extracts = []  # This will be erased at the end of download
         self.number_of_downloads = len(self.already_downloaded)
 
@@ -184,7 +184,9 @@ class RedditObject(object):
             os.makedirs(self.save_path)
 
     def clear_download_session_data(self):
-        self.content.clear()
+        for x in self.content:
+            if x.downloaded:
+                self.content.remove(x)
         self.new_submissions = None
         self.failed_extracts.clear()
 
