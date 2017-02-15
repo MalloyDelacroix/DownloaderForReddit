@@ -92,86 +92,92 @@ class RedditExtractor(QObject):
         self.status_bar_update.emit('Validating Users...')
         self.setup_progress_bar.emit(len(self.user_list))
         for user in self.user_list:
-            redditor = self._r.redditor(user.name)
-            try:
-                test = redditor.fullname
-            except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
-                redditor = None
-                self.remove_invalid_user.emit(user)
+            if self.run:
+                redditor = self._r.redditor(user.name)
+                try:
+                    test = redditor.fullname
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
+                    redditor = None
+                    self.remove_invalid_user.emit(user)
 
-            if redditor is not None:
-                self.queue.put("%s is valid" % user.name)
-                # Sets date limit according to settings GUI
-                if not self.restrict_date:
-                    date_limit = 1
-                elif user.custom_date_limit is not None:
-                    date_limit = user.custom_date_limit
+                if redditor is not None:
+                    self.queue.put("%s is valid" % user.name)
+                    # Sets date limit according to settings GUI
+                    if not self.restrict_date:
+                        date_limit = 1
+                    elif user.custom_date_limit is not None:
+                        date_limit = user.custom_date_limit
+                    else:
+                        date_limit = user.date_limit
+                    post_limit = user.post_limit
+                    submissions = self.get_submissions_user(redditor, date_limit, post_limit)
+                    user.get_new_submissions(submissions)
+                    self.validated_users.append(user)
+                    user.check_save_path()
                 else:
-                    date_limit = user.date_limit
-                post_limit = user.post_limit
-                submissions = self.get_submissions_user(redditor, date_limit, post_limit)
-                user.get_new_submissions(submissions)
-                self.validated_users.append(user)
-                user.check_save_path()
-            else:
-                self.queue.put("%s does not exist" % user.name)
-            self.update_progress_bar.emit()
-        self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
+                    self.queue.put("%s does not exist" % user.name)
+                self.update_progress_bar.emit()
+        self.queue.put(' ')  # Adds small separation in the output box between users being validated and downloaded
         self.run_user()
 
     def validate_subreddits(self):
         """See validate_users"""
         self.status_bar_update.emit('Validating Subreddits...')
         for sub in self.subreddit_list:
-            subreddit = self._r.subreddit(sub.name)
-            try:
-                test = subreddit.fullname
-            except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
-                subreddit = None
-                self.remove_invalid_subreddit.emit(sub)
+            if self.run:
+                subreddit = self._r.subreddit(sub.name)
+                try:
+                    test = subreddit.fullname
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
+                    subreddit = None
+                    self.remove_invalid_subreddit.emit(sub)
 
-            if subreddit is not None:
-                self.queue.put("%s is valid" % sub.name)
-                date_limit = sub.date_limit if self.restrict_date else 1
-                post_limit = sub.post_limit
-                submissions = self.get_submissions_subreddit(subreddit, date_limit, post_limit)
-                print(len(submissions))
-                sub.get_new_submissions(submissions)
-                self.validated_subreddits.append(sub)
-            else:
-                self.queue.put("%s is not a valid subreddit" % sub.name)
-        self.queue.put(' ')  # Adds some small separation in the output box between subs being validated and downloaded
-        self.run_subreddit()
+                if subreddit is not None:
+                    self.queue.put("%s is valid" % sub.name)
+                    date_limit = sub.date_limit if self.restrict_date else 1
+                    post_limit = sub.post_limit
+                    submissions = self.get_submissions_subreddit(subreddit, date_limit, post_limit)
+                    print(len(submissions))
+                    sub.get_new_submissions(submissions)
+                    self.validated_subreddits.append(sub)
+                else:
+                    self.queue.put("%s is not a valid subreddit" % sub.name)
+        if self.run:
+            self.queue.put(' ')  # Adds small separation in the output box between subs being validated and downloaded
+            self.run_subreddit()
 
     def validate_users_and_subreddits(self):
         """See validate_users"""
         self.status_bar_update.emit('Validating Subreddits...')
         for sub in self.subreddit_list:
-            try:
-                subreddit = self._r.subreddit(sub.name)
-                self.validated_subreddits.append(subreddit.display_name)
-                self.queue.put("%s is a valid subreddit" % subreddit.display_name)
-            except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
-                self.queue.put("%s is not valid" % sub.name)
+            if self.run:
+                try:
+                    subreddit = self._r.subreddit(sub.name)
+                    self.validated_subreddits.append(subreddit.display_name)
+                    self.queue.put("%s is a valid subreddit" % subreddit.display_name)
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
+                    self.queue.put("%s is not valid" % sub.name)
 
-        self.status_bar_update.emit('Validating Users...')
-        for user in self.user_list:
-            redditor = self._r.redditor(user.name)
-            try:
-                test = redditor.fullname
-            except prawcore.exceptions.NotFound:
-                redditor = None
-                self.queue.put('%s is not valid' % user.name)
+        if self.run:
+            self.status_bar_update.emit('Validating Users...')
+            for user in self.user_list:
+                redditor = self._r.redditor(user.name)
+                try:
+                    test = redditor.fullname
+                except prawcore.exceptions.NotFound:
+                    redditor = None
+                    self.queue.put('%s is not valid' % user.name)
 
-            if redditor is not None:
-                self.queue.put('%s is a valid user' % user.name)
-                submissions = [x for x in redditor.get_submitted(limit=self.post_limit) if x.created > user.date_limit
-                               and x.subreddit.display_name in self.validated_subreddits]
-                user.get_new_submissions(submissions)
-                self.validated_users.append(user)
-                user.check_save_path()
-        self.queue.put(' ')  # Adds some small separation in the output box between users being validated and downloaded
-        self.run_user()
+                if redditor is not None:
+                    self.queue.put('%s is a valid user' % user.name)
+                    submissions = [x for x in redditor.get_submitted(limit=self.post_limit) if x.created >
+                                   user.date_limit and x.subreddit.display_name in self.validated_subreddits]
+                    user.get_new_submissions(submissions)
+                    self.validated_users.append(user)
+                    user.check_save_path()
+        if self.run:
+            self.queue.put(' ')  # Adds small separation in the output box between users being validated and downloaded
+            self.run_user()
 
     def run_user(self):
         """
@@ -183,19 +189,20 @@ class RedditExtractor(QObject):
         self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         self.setup_progress_bar.emit(len(self.validated_users))
         for user in self.validated_users:
-            user.extract_content()
-            if len(user.failed_extracts) > 0:
-                for entry in user.failed_extracts:
-                    self.queue.put(entry)
+            if self.run:
+                user.extract_content()
+                if len(user.failed_extracts) > 0:
+                    for entry in user.failed_extracts:
+                        self.queue.put(entry)
 
-            if len(user.content) > 0:
-                self.downloaded_users.append(user.name)
-            for post in user.content:
-                post.install_queue(self.queue)
-                self.queued_posts.put(post)
-                self.download_number += 1
-                self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
-            self.update_progress_bar.emit()
+                if len(user.content) > 0:
+                    self.downloaded_users.append(user.name)
+                for post in user.content:
+                    post.install_queue(self.queue)
+                    self.queued_posts.put(post)
+                    self.download_number += 1
+                    self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+                self.update_progress_bar.emit()
         self.queued_posts.put(None)
 
     def run_subreddit(self):
@@ -204,16 +211,18 @@ class RedditExtractor(QObject):
         # self.status_bar_update.emit('Extracting Subreddit Content...')
         self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         for sub in self.validated_subreddits:
-            sub.extract_content()
-            if len(sub.failed_extracts) > 0:
-                for entry in sub.failed_extracts:
-                    self.queue.put(entry)
+            if self.run:
+                sub.extract_content()
+                if len(sub.failed_extracts) > 0:
+                    for entry in sub.failed_extracts:
+                        self.queue.put(entry)
 
-            for post in sub.content:
-                post.install_queue(self.queue)  # Gives each QRunnable an instance of the main queue to update the GUI
-                self.queued_posts.put(post)
-                self.download_number += 1
-                self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+                for post in sub.content:
+                    # Gives each QRunnable an instance of the main queue to update the GUI
+                    post.install_queue(self.queue)
+                    self.queued_posts.put(post)
+                    self.download_number += 1
+                    self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         self.queued_posts.put(None)
 
     def downloads_finished(self):
