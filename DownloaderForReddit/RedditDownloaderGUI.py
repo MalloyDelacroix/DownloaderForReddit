@@ -219,6 +219,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.first_run:
             self.cleanup_outdated_code_items()
 
+        for key, value in self.user_view_chooser_dict.items():
+            for user in value.reddit_object_list:
+                print(user.name)
+                print(len(user.saved_content))
+
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
         try:
@@ -1267,42 +1272,3 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 subprocess.Popen([updater, updater])
         except:
             self.update_output(updater)
-
-    def cleanup_outdated_code_items(self):
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                try:
-                    test = user.save_undownloaded_content
-                except AttributeError:
-                    x = User(user.name, user.save_path[:(-1 - len(user.name))], user.imgur_client, user.post_limit,
-                             user.name_downloads_by, user.avoid_duplicates, user.download_videos, user.download_images,
-                             user.user_added)
-                    print(x.save_path)
-                    x.do_not_edit = user.do_not_edit
-                    x.already_downloaded = user.already_downloaded
-                    x.date_limit = user.date_limit
-                    x.custom_date_limit = user.custom_date_limit
-                    x.number_of_downloads = user.number_of_downloads
-                    value.reddit_object_list.remove(user)
-                    value.reddit_object_list.append(x)
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                try:
-                    test = sub.save_undownloaded_content
-                except AttributeError:
-                    x = Subreddit(sub.name, sub.save_path[:(-1 - len(sub.name))], sub.post_limit,
-                                  sub.subreddit_save_method, sub.imgur_client, sub.name_downloads_by,
-                                  sub.avoid_duplicates, sub.download_videos, sub.download_images, sub.user_added)
-                    print(x.save_path)
-                    x.do_not_edit = sub.do_not_edit
-                    x.already_downloaded = sub.already_downloaded
-                    x.date_limit = sub.date_limit
-                    x.custom_date_limit = sub.custom_date_limit
-                    value.reddit_object_list.remove(sub)
-                    value.reddit_object_list.append(x)
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-        print('cleanup done')
-
-        self.settings.setValue('first_run', False)

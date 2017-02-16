@@ -63,9 +63,7 @@ class RedditObject(object):
         self.custom_date_limit = None
         self.content = []  # Will be erased at end of download (QRunnable objects cannot be pickled)
         self.failed_extracts = []  # This will be erased at the end of download
-        self.saved_content = {}
         self.number_of_downloads = len(self.already_downloaded)
-        self.save_undownloaded_content = True
 
     def extract_content(self):
         for post in self.new_submissions:
@@ -138,20 +136,6 @@ class RedditObject(object):
                             self.content.append(x)
                             self.already_downloaded.append(x.url)
 
-    def save_unfinished_downloads(self):
-        for content in self.content:
-            if not content.downloaded:
-                self.saved_content[content.url] = [content.user, content.post_title, content.subreddit,
-                                                   content.submission_id, content.number_in_seq, content.file_ext,
-                                                   content.save_path, content.subreddit_save_method]
-                print('Saved download: %s %s' % (content.post_title, content.number_in_seq))
-
-    def load_unfinished_downloads(self):
-        for key, value in self.saved_content.items():
-            x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], value[6], value[7])
-            self.content.append(x)
-            print('Loaded Download: %s %s' % (x.post_title, x.number_in_seq))
-
     def set_date_limit(self, last_download_time):
         if self.date_limit is not None and last_download_time > self.date_limit:
             self.date_limit = last_download_time
@@ -166,9 +150,6 @@ class RedditObject(object):
             os.makedirs(self.save_path)
 
     def clear_download_session_data(self):
-        settings = QSettings("SomeGuySoftware", "RedditDownloader")
-        if settings.value('save_undownloaded_content'):
-            self.save_unfinished_downloads()
         self.content.clear()
         self.new_submissions = None
         self.failed_extracts.clear()
