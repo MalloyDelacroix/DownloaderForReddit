@@ -27,6 +27,7 @@ import os
 
 from Content import Content
 from Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, EroshareExtractor, RedditUploadsExtractor
+from PyQt5.QtCore import QSettings
 
 
 class RedditObject(object):
@@ -60,9 +61,11 @@ class RedditObject(object):
         self.already_downloaded = []
         self.date_limit = 1
         self.custom_date_limit = None
-        self.content = []  # Anything that has been downloaded will be cleared from this list and close
+        self.content = []  # Will be erased at end of download (QRunnable objects cannot be pickled)
         self.failed_extracts = []  # This will be erased at the end of download
+        self.saved_content = {}
         self.number_of_downloads = len(self.already_downloaded)
+        self.save_undownloaded_content = True
 
     def extract_content(self):
         for post in self.new_submissions:
@@ -73,84 +76,36 @@ class RedditObject(object):
                                                 'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s' %
                                                 (post.title, post.author, post.subreddit, post.url))
                 else:
-                    imgur_extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
+                    extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
                                                      self.subreddit_save_method, self.imgur_client,
                                                      self.name_downloads_by)
-                    imgur_extractor.extract_content()
-                    for x in imgur_extractor.extracted_content:
-                        if type(x) == str and x.startswith('Failed'):
-                            self.failed_extracts.append(x)
-                        else:
-                            if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                                if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                                    if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                                   '.webm', '.png')):
-                                        self.content.append(x)
-                                        self.already_downloaded.append(x.url)
+                    self.extract(extractor)
 
             elif "vidble" in post.url:
-                vidble_extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
+                extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
                                                    self.subreddit_save_method, self.name_downloads_by)
-                vidble_extractor.extract_content()
-                for x in vidble_extractor.extracted_content:
-                    if type(x) == str and x.startswith('Failed'):
-                        self.failed_extracts.append(x)
-                    else:
-                        if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                            if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                                if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                               '.webm', '.png')):
-                                    self.content.append(x)
-                                    self.already_downloaded.append(x.url)
+                self.extract(extractor)
 
             elif "gfycat" in post.url:
-                gfycat_extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
+                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
                                                    self.subreddit_save_method, self.name_downloads_by)
-                gfycat_extractor.extract_content()
-                for x in gfycat_extractor.extracted_content:
-                    if type(x) == str and x.startswith('Failed'):
-                        self.failed_extracts.append(x)
-                    else:
-                        if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                            if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                                if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                               '.webm', '.png')):
-                                    self.content.append(x)
-                                    self.already_downloaded.append(x.url)
+                self.extract(extractor)
 
             elif "eroshare" in post.url:
-                eroshare_extractor = EroshareExtractor(post.url, post.author, post.title, post.subreddit,
+                extractor = EroshareExtractor(post.url, post.author, post.title, post.subreddit,
                                                        self.save_path, self.subreddit_save_method,
                                                        self.name_downloads_by)
-                eroshare_extractor.extract_content()
-                for x in eroshare_extractor.extracted_content:
-                    if type(x) == str and x.startswith('Failed'):
-                        self.failed_extracts.append(x)
-                    else:
-                        if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                            if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                                if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                               '.webm', '.png')):
-                                    self.content.append(x)
-                                    self.already_downloaded.append(x.url)
+                self.extract(extractor)
 
             elif "reddituploads" in post.url:
                 pass
-                reddit_uploads_extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit,
+                extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit,
                                                                   self.save_path, self.subreddit_save_method,
                                                                   self.name_downloads_by)
-                reddit_uploads_extractor.extract_content()
-                for x in reddit_uploads_extractor.extracted_content:
-                    if type(x) == str and x.startswith('Failed'):
-                        self.failed_extracts.append(x)
-                    else:
-                        if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                            if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                                if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                               '.webm', '.png')):
-                                    self.content.append(x)
-                                    self.already_downloaded.append(x.url)
+                self.extract(extractor)
 
+            # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
+            # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
             elif post.url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')):
                 domain, id_with_ext = post.url.rsplit('/', 1)
                 image_id, extension = id_with_ext.rsplit('.', 1)
@@ -170,6 +125,33 @@ class RedditObject(object):
 
             self.set_date_limit(post.created)
 
+    def extract(self, extractor):
+        extractor.extract_content()
+        for x in extractor.extracted_content:
+            if type(x) == str and x.startswith('Failed'):
+                self.failed_extracts.append(x)
+            else:
+                if not self.avoid_duplicates or x.url not in self.already_downloaded:
+                    if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
+                        if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
+                                                                       '.webm', '.png')):
+                            self.content.append(x)
+                            self.already_downloaded.append(x.url)
+
+    def save_unfinished_downloads(self):
+        for content in self.content:
+            if not content.downloaded:
+                self.saved_content[content.url] = [content.user, content.post_title, content.subreddit,
+                                                   content.submission_id, content.number_in_seq, content.file_ext,
+                                                   content.save_path, content.subreddit_save_method]
+                print('Saved download: %s %s' % (content.post_title, content.number_in_seq))
+
+    def load_unfinished_downloads(self):
+        for key, value in self.saved_content.items():
+            x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], value[6], value[7])
+            self.content.append(x)
+            print('Loaded Download: %s %s' % (x.post_title, x.number_in_seq))
+
     def set_date_limit(self, last_download_time):
         if self.date_limit is not None and last_download_time > self.date_limit:
             self.date_limit = last_download_time
@@ -184,9 +166,10 @@ class RedditObject(object):
             os.makedirs(self.save_path)
 
     def clear_download_session_data(self):
-        for x in self.content:
-            if x.downloaded:
-                self.content.remove(x)
+        settings = QSettings("SomeGuySoftware", "RedditDownloader")
+        if settings.value('save_undownloaded_content'):
+            self.save_unfinished_downloads()
+        self.content.clear()
         self.new_submissions = None
         self.failed_extracts.clear()
 

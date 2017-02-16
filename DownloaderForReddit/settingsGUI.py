@@ -128,6 +128,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         self.thread_limit_spinbox.setValue(self.settings.value('thread_limit', 4, type=int))
         self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
 
+        self.save_undownloaded_content_checkbox.setChecked(self.settings.value('save_undownloaded_content', True,
+                                                                               type=bool))
+
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
         imgur_dialog = ImgurClientDialog()
@@ -302,6 +305,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
                                    self.restrict_by_custom_date_checkbox.isChecked())
             self.settings.setValue('settings_custom_date', self.custom_date)
             self.settings.setValue('thread_limit', self.thread_limit_spinbox.value())
+            self.settings.setValue('save_undownloaded_content', self.save_undownloaded_content_checkbox.isChecked())
             super().accept()
 
     def restore_defaults(self):

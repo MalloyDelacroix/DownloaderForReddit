@@ -81,6 +81,7 @@ class RedditExtractor(QObject):
         self.restrict_score_method = restrict_score_method
         self.restrict_score_limit = restrict_score_limit
         self.unfinished_downloads_list = unfinished_downloads_list
+        self.load_undownloaded_content = self.settings.value('save_undownloaded_content')
 
         self.queued_posts = Queue()
         self.run = True
@@ -190,6 +191,8 @@ class RedditExtractor(QObject):
         self.setup_progress_bar.emit(len(self.validated_users))
         for user in self.validated_users:
             if self.run:
+                if self.load_undownloaded_content:
+                    user.load_unfinished_downloads()
                 user.extract_content()
                 if len(user.failed_extracts) > 0:
                     for entry in user.failed_extracts:
@@ -203,6 +206,8 @@ class RedditExtractor(QObject):
                     self.download_number += 1
                     self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
                 self.update_progress_bar.emit()
+            else:
+                self.downloads_finished()
         self.queued_posts.put(None)
 
     def run_subreddit(self):
@@ -212,6 +217,8 @@ class RedditExtractor(QObject):
         self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         for sub in self.validated_subreddits:
             if self.run:
+                if self.load_undownloaded_content:
+                    sub.load_unfinished_downloads()
                 sub.extract_content()
                 if len(sub.failed_extracts) > 0:
                     for entry in sub.failed_extracts:
@@ -223,6 +230,8 @@ class RedditExtractor(QObject):
                     self.queued_posts.put(post)
                     self.download_number += 1
                     self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+            else:
+                self.downloads_finished()
         self.queued_posts.put(None)
 
     def downloads_finished(self):
@@ -306,8 +315,8 @@ class RedditExtractor(QObject):
 
     def stop_download(self):
         self.run = False
-        self.queue.put('\nStopped\n')
         self.stop_download_thread.emit()
+        self.queue.put('\nStopped\n')
 
     def send_unfinished_downloads(self):
         if not self.queued_posts.empty():
@@ -358,3 +367,5 @@ class Downloader(QObject):
 
     def stop(self):
         self.run = False
+        print('\nStop signal received\n')
+        print('Run: %s' % self.run)

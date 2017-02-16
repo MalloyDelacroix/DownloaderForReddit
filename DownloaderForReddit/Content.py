@@ -54,7 +54,6 @@ class Content(QRunnable):
         self.file_ext = file_ext
         self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
         self.subreddit_save_method = subreddit_save_method
-        self.successful = None
         self.output = ''
         # self.setAutoDelete(False)
         self.downloaded = False
