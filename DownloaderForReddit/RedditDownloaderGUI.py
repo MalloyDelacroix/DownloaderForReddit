@@ -216,13 +216,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
 
         self.check_for_updates(False)
-        if self.first_run:
-            self.cleanup_outdated_code_items()
-
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                print(user.name)
-                print(len(user.saved_content))
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
