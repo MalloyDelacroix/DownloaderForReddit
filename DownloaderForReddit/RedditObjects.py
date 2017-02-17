@@ -166,6 +166,8 @@ class RedditObject(object):
             self.date_limit = last_download_time
         elif self.date_limit is None:
             self.date_limit = last_download_time
+        if not self.do_not_edit and None is not self.custom_date_limit < last_download_time:
+            self.custom_date_limit = None
 
     def get_new_submissions(self, submissions):
         self.new_submissions = submissions
