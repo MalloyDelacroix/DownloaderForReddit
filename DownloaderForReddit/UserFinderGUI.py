@@ -315,23 +315,23 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         Creates an instance of the RedditExtractor class and moves it to another thread where it then downloads the
         specified number of posts from the found users
         """
-        if len(self.found_users) > 0:
+        if len(self.found_users) > 0 and self.watchlist_download_sample_spinbox_2.value() > 0:
             self.found_user_output.append('Starting Download\n')
 
             self.reddit_extractor = RedditExtractor(self.found_users, None, self.queue,
                                                     self.watchlist_download_sample_spinbox_2.value(), self.save_path,
                                                     None, None, False, False, None, None, None)
 
-            self.download_thread = QtCore.QThread()
-            self.reddit_extractor.moveToThread(self.download_thread)
-            self.download_thread.started.connect(self.reddit_extractor.validate_users)
-            self.reddit_extractor.status_bar_update.connect(self.setup_progress_bar)
-            self.reddit_extractor.update_download_count.connect(self.update_progress_bar)
-            self.reddit_extractor.finished.connect(self.download_thread.quit)
+            self.user_finder_download_thread = QtCore.QThread()
+            self.reddit_extractor.moveToThread(self.user_finder_download_thread)
+            self.user_finder_download_thread.started.connect(self.reddit_extractor.validate_users)
+            self.reddit_extractor.finished.connect(self.user_finder_download_thread.quit)
             self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
-            self.download_thread.finished.connect(self.download_thread.deleteLater)
-            self.download_thread.finished.connect(self.download_finished)
-            self.download_thread.start()
+            self.user_finder_download_thread.finished.connect(self.user_finder_download_thread.deleteLater)
+            self.user_finder_download_thread.finished.connect(self.download_finished)
+            self.user_finder_download_thread.start()
+        elif len(self.found_users) > 0 >= self.watchlist_download_sample_spinbox_2.value():
+            pass
         else:
             self.found_user_output.append('No users found that meet criteria\n')
             self.download_finished()
@@ -507,7 +507,6 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         self.found_users.append(user)
         self.found_count += 1
         self.found_users_label.setText('Users Found: %s' % self.found_count)
-        self.update_found_users_list_view()
 
     def change_page_right(self):
         right_limit = 2 if self.running else 1
@@ -533,7 +532,7 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
                 except AttributeError:
                     pass
                 try:
-                    self.download_thread.terminate()
+                    self.user_finder_download_thread.terminate()
                 except AttributeError:
                     pass
                 self.close_finder()

@@ -29,6 +29,7 @@ import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from RedditObjects import User
+from version import __version__
 
 
 class UserFinder(QObject):
@@ -63,8 +64,8 @@ class UserFinder(QObject):
         :param previously_found: A list of users that have been previously found and will not be included in the search
         """
         super().__init__()
-        self.reddit = praw.Reddit(user_agent="python:RedditDownloader:V1.0 (by /u/rdl9462)",
-                                  client_id='frGEUVAuHGL2PQ', client_secret=None)
+        self.reddit = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
+                              client_id='frGEUVAuHGL2PQ', client_secret=None)
         self.sub_list = sub_list
         self.black_list = black_list
         self.top_sort_method = top_sort_method
