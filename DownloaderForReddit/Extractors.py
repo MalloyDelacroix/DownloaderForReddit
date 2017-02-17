@@ -24,7 +24,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import requests
-import imgurpython
+from imgurpython import ImgurClient
+from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
 from bs4 import BeautifulSoup
 
 from Content import Content
@@ -53,6 +54,7 @@ class Extractor(object):
         self.subreddit_save_method = subreddit_save_method
         self.name_downloads_by = name_downloads_by
         self.extracted_content = []
+        self.failed_extracts_to_save = []
 
     def get_json(self, url):
         """Makes sure that a request is valid and handles without errors if the connection is not successful"""
@@ -85,7 +87,7 @@ class ImgurExtractor(Extractor):
         tuple is supplied to imgurpython to establish an imgur client
         """
         super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
-        self.client = imgurpython.ImgurClient(imgur_client[0], imgur_client[1])
+        self.client = ImgurClient(imgur_client[0], imgur_client[1])
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
@@ -104,9 +106,43 @@ class ImgurExtractor(Extractor):
                 self.extract_direct_mislinked()
             else:
                 self.extract_single()
-        except:
-            self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
-                                          (self.url, self.user, self.subreddit, self.post_title))
+        except ImgurClientError as e:
+            if e.status_code == 403:
+                if self.client.credits['ClientRemaining'] <= 0:
+                    self.no_credit_error()
+                else:
+                    self.failed_to_locate_error()
+            if e.status_code == 429:
+                self.rate_limit_exceeded_error()
+
+    def rate_limit_exceeded_error(self):
+        x = Post(self.url, self.user, self.post_title, self.subreddit)
+        self.failed_extracts_to_save.append(x)
+        self.extracted_content.append('\nImgur rate limit exceeded.  This post has been saved and will be downloaded '
+                                      'the next time the application is run.  Please make sure you have adequate user '
+                                      'credits upon the next run.  User credits can be checked in the help menu\n'
+                                      'Title: %s,  User: %s,  Subreddit: %s' % (self.post_title, self.user,
+                                                                                self.subreddit))
+
+    def no_credit_error(self):
+        x = Post(self.url, self.user, self.post_title, self.subreddit)
+        self.failed_extracts_to_save.append(x)
+        self.extracted_content.append('\nYou do not have enough imgur credits left to extract this '
+                                      'content.  This post will be saved and extraction attempted '
+                                      'the next time the program is run.  Please make sure that you '
+                                      'have adequate credits upon next run.\nTitle: %s,  User: %s,  '
+                                      'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
+
+    def over_capacity_error(self):
+        x = Post(self.url, self.user, self.post_title, self.subreddit)
+        self.failed_extracts_to_save.append(x)
+        self.extracted_content.append('\nImgur is currently over capacity.  This post has been saved and extraction '
+                                      'will be attempted the next time the program is run.\nTitle: %s,  User: %s,  '
+                                      'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
+
+    def failed_to_locate_error(self):
+        self.extracted_content.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s\n' %
+                                      (self.url, self.user, self.subreddit, self.post_title))
 
     def extract_direct_link(self):
         for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
@@ -363,3 +399,11 @@ class RedditUploadsExtractor(Extractor):
         except:
             self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
                                           (self.url, self.user, self.subreddit, self.post_title))
+
+
+class Post(object):
+    def __init__(self, url, author, title, subreddit):
+        self.url = url
+        self.author = author
+        self.title = title
+        self.subreddit = subreddit

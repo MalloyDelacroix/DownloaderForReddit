@@ -58,6 +58,7 @@ class RedditObject(object):
         self.user_added = user_added
         self.do_not_edit = False
         self.new_submissions = None  # Will be erased at end of download
+        self.saved_submissions = []
         self.already_downloaded = []
         self.date_limit = 1
         self.custom_date_limit = None
@@ -68,12 +69,18 @@ class RedditObject(object):
         self.save_undownloaded_content = True
 
     def extract_content(self):
-        for post in self.new_submissions:
+        if len(self.saved_submissions) > 0:
+            self.assign_extractor(self.saved_submissions)
+        if len(self.new_submissions) > 0:
+            self.assign_extractor(self.new_submissions)
+
+    def assign_extractor(self, post_list):
+        for post in post_list:
             if "imgur" in post.url:
                 if self.imgur_client[0] is None or self.imgur_client[1] is None:
-                    self.failed_extracts.append('Failed: No valid Imgur client is detected. In order to download '
+                    self.failed_extracts.append('\nFailed: No valid Imgur client is detected. In order to download '
                                                 'content from imgur.com you must have a valid Imugr client. Please see'
-                                                'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s' %
+                                                'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s\n' %
                                                 (post.title, post.author, post.subreddit, post.url))
                 else:
                     extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
@@ -127,6 +134,9 @@ class RedditObject(object):
 
     def extract(self, extractor):
         extractor.extract_content()
+        for x in extractor.failed_extracts_to_save:
+            if not any(x.url == y.url for y in self.saved_submissions):
+                self.saved_submissions.append(x)
         for x in extractor.extracted_content:
             if type(x) == str and x.startswith('Failed'):
                 self.failed_extracts.append(x)

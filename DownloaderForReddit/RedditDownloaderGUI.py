@@ -73,8 +73,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder_open = False
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
-        self.first_run = self.settings.value('first_run', False, type=bool)
-        # self.first_run = True
+        # self.first_run = self.settings.value('first_run', False, type=bool)
+        self.first_run = True
 
         self.last_update = self.settings.value('last_update', None, type=str)
         # self.last_update = None
@@ -1288,12 +1288,17 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def cleanup_outdated_code_items(self):
         """Used to clean up any code items that need to be changed when the program is updated"""
         count = 0
+        new_users = []
+        new_subs = []
         for key, value in self.user_view_chooser_dict.items():
             print('user list length: %s' % len(value.reddit_object_list))
-            for user in value.reddit_object_list:
+            for x in range(len(value.reddit_object_list)):
+                user = value.reddit_object_list.pop(0)
                 try:
                     print(len(user.saved_content))
-                    count = 'try'
+                    print(len(user.saved_submissions))
+                    print('Keeping: %s' % user.name)
+                    new_users.append(user)
                 except AttributeError:
                     print('Making new user: %s' % user.name)
                     x = User(user.name, user.save_path[:(-1 - len(user.name))], user.imgur_client, user.post_limit,
@@ -1306,15 +1311,20 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     x.custom_date_limit = user.custom_date_limit
                     x.number_of_downloads = user.number_of_downloads
                     x.saved_content = {}
-                    value.reddit_object_list.remove(user)
-                    value.reddit_object_list.append(x)
+                    x.saved_submissions = []
+                    new_users.append(x)
                     count += 1
+            value.reddit_object_list = new_users
             value.sort_lists((self.list_sort_method, self.list_order_method))
 
         for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
+            for x in range(len(value.reddit_object_list)):
+                sub = value.reddit_object_list.pop(0)
                 try:
                     print(len(sub.saved_content))
+                    print(len(sub.saved_submissions))
+                    print('Keeping: %s' % sub.name)
+                    new_subs.append(sub)
                 except AttributeError:
                     x = Subreddit(sub.name, sub.save_path[:(-1 - len(sub.name))], sub.post_limit,
                                   sub.subreddit_save_method, sub.imgur_client, sub.name_downloads_by,
@@ -1324,8 +1334,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     x.already_downloaded = sub.already_downloaded
                     x.date_limit = sub.date_limit
                     x.custom_date_limit = sub.custom_date_limit
-                    value.reddit_object_list.remove(sub)
-                    value.reddit_object_list.append(x)
+                    new_subs.append(x)
+            value.reddit_object_list = new_subs
             value.sort_lists((self.list_sort_method, self.list_order_method))
         print('cleanup done')
         print('count: %s' % count)
