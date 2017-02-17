@@ -114,6 +114,10 @@ class ImgurExtractor(Extractor):
                     self.failed_to_locate_error()
             if e.status_code == 429:
                 self.rate_limit_exceeded_error()
+        except ImgurClientRateLimitError:
+            self.rate_limit_exceeded_error()
+        except:
+            self.failed_to_locate_error()
 
     def rate_limit_exceeded_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit)
@@ -331,12 +335,16 @@ class EroshareExtractor(Extractor):
         self.api_caller = "https://api.eroshare.com/api/v1/albums/"
 
     def extract_content(self):
-        if self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', 'webm')):
-            self.extract_direct()
-        elif '/i/' in self.url:
-            self.extract_single()
-        else:
-            self.extract_album()
+        try:
+            if self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', 'webm')):
+                self.extract_direct()
+            elif '/i/' in self.url:
+                self.extract_single()
+            else:
+                self.extract_album()
+        except:
+            self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
+                                          (self.url, self.user, self.subreddit, self.post_title))
 
     def extract_direct(self):
         address, ending = self.url.rsplit('/', 1)
@@ -349,26 +357,22 @@ class EroshareExtractor(Extractor):
         self.create_content_from_extract(new_url, parts[2], '')
 
     def extract_album(self):
-        try:
-            domain, album_id = self.url.rsplit('/', 1)
-            extract = self.api_caller + album_id
-            json = self.get_json(extract)
-            album = json.get('items')
-            count = 1
-            for entry in album:
-                if entry.get('type') == "Video":
-                    number = count if len(album) > 1 else ""
-                    self.create_content_from_extract(entry.get('url_mp4'), album_id, number)
-                    count += 1
-                elif entry.get('type') == "Image":
-                    number = count if len(album) > 1 else ""
-                    self.create_content_from_extract(entry.get('url_full_protocol'), album_id, number)
-                    count += 1
-                else:
-                    print("The type of this file is unknown, cannot extract url")
-        except:
-            self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
-                                          (self.url, self.user, self.subreddit, self.post_title))
+        domain, album_id = self.url.rsplit('/', 1)
+        extract = self.api_caller + album_id
+        json = self.get_json(extract)
+        album = json.get('items')
+        count = 1
+        for entry in album:
+            if entry.get('type') == "Video":
+                number = count if len(album) > 1 else ""
+                self.create_content_from_extract(entry.get('url_mp4'), album_id, number)
+                count += 1
+            elif entry.get('type') == "Image":
+                number = count if len(album) > 1 else ""
+                self.create_content_from_extract(entry.get('url_full_protocol'), album_id, number)
+                count += 1
+            else:
+                print("The type of this file is unknown, cannot extract url")
 
     def create_content_from_extract(self, url, url_id, number):
         address, extension = url.rsplit('.', 1)
