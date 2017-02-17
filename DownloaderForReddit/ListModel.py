@@ -47,15 +47,19 @@ class ListModel(QAbstractListModel):
         self.display_list = [x.name for x in self.reddit_object_list]
 
     def sort_lists(self, method):
-        """Sorts the lists according to the method set in the settings dialog"""
+        """
+        Takes a tuple set by the view menu in the GUI, the first variable being the sort method and the second being
+        the sort order (as an int which is interpreted as True or False), and sorts the display list accordingly
+        Note: I know the lambda function below violates PEP8, but I don't care. That's how I'm doing it
+        """
         if method[0] == 0:
-            att_method = 'name'
+            att_method = lambda x: getattr(x, 'name').lower()
         elif method[0] == 1:
-            att_method = 'user_added'
+            att_method = attrgetter('user_added')
         else:
-            att_method = 'number_of_downloads'
+            att_method = attrgetter('number_of_downloads')
 
-        self.reddit_object_list = sorted(self.reddit_object_list, key=lambda x: getattr(x, att_method).lower(),
+        self.reddit_object_list = sorted(self.reddit_object_list, key=att_method,
                                          reverse=method[1])
         self.display_list = [x.name for x in self.reddit_object_list]
 

@@ -73,8 +73,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder_open = False
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
-        # self.first_run = self.settings.value('first_run', False, type=bool)
-        self.first_run = True
+        self.first_run = self.settings.value('first_run', False, type=bool)
+        # self.first_run = True
 
         self.last_update = self.settings.value('last_update', None, type=str)
         # self.last_update = None
@@ -157,6 +157,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.list_view_order.addAction(self.view_order_by_descending)
         self.view_order_by_ascending.triggered.connect(lambda: self.set_list_order_method(0))
         self.view_order_by_descending.triggered.connect(lambda: self.set_list_order_method(1))
+        self.set_view_menu_items_checked()
 
         self.refresh_user_count()
         self.refresh_subreddit_count()
@@ -983,6 +984,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens a dialog with information about any content that was not able to be downloaded for whatever reason"""
         failed_dialog = FailedDownloadsDialog(self.failed_list)
         failed_dialog.auto_display_checkbox.setChecked(not self.auto_display_failed_list)
+        failed_dialog.show()
         dialog = failed_dialog.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
             self.auto_display_failed_list = not failed_dialog.auto_display_checkbox.isChecked()
@@ -1069,6 +1071,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         about_dialog.exec_()
 
     def open_user_manual(self):
+        """Opens the user manual using the default PDF viewer"""
         manual = 'The Downloader For Reddit - User Manual.pdf'
         if os.path.isfile(os.path.join(os.getcwd(), manual)):
             file = os.path.join(os.getcwd(), manual)
@@ -1086,7 +1089,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             Message.user_manual_not_found(self)
 
     def refresh_user_count(self):
-        """Updates the shown user count seen in the file menu"""
+        """Updates the shown user count seen in the list menu"""
         try:
             self.user_count = len(self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list)
         except:
@@ -1094,6 +1097,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_user_list_count.setText('User List Count: %s' % self.user_count)
 
     def refresh_subreddit_count(self):
+        """Updates the shown subreddit count seen in the list menu"""
         try:
             self.subreddit_count = len(self.subreddit_view_chooser_dict[
                                            self.subreddit_list_combo.currentText()].reddit_object_list)
@@ -1110,14 +1114,21 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.change_list_sort_method()
 
     def change_list_sort_method(self):
+        """Applies the sort and order function to each list model"""
         for key, value in self.user_view_chooser_dict.items():
             value.sort_lists((self.list_sort_method, self.list_order_method))
         for key, value in self.subreddit_view_chooser_dict.items():
             value.sort_lists((self.list_sort_method, self.list_order_method))
 
     def set_view_menu_items_checked(self):
-        self.view_sort_lists_by[self.list_sort_method].setChecked(True)
-        self.view_sort_order[self.list_order_method].setChecked(True)
+        """A dispatch table to set the correct view menu item checked"""
+        view_sort_dict = {0: self.view_sort_list_by_name,
+                          1: self.view_sort_list_by_date_added,
+                          2: self.view_sort_list_by_number_of_downloads}
+        view_order_dict = {0: self.view_order_by_ascending,
+                           1: self.view_order_by_descending}
+        view_sort_dict[self.list_sort_method].setChecked(True)
+        view_order_dict[self.list_order_method].setChecked(True)
 
     def closeEvent(self, QCloseEvent):
         if self.unfinished_downloads_available:
@@ -1141,6 +1152,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.save_state()
 
     def load_state(self):
+        """Attempts to load the user and subreddit lists from the pickled state"""
         with shelve.open('save_file', 'c') as shelf:
             try:
                 user_list_models = shelf['user_list_models']
@@ -1172,6 +1184,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 pass
 
     def save_state(self):
+        """Pickles the user and subreddit lists and saves any settings that need to be saved"""
         user_list_models = {}
         subreddit_list_models = {}
         current_user_view = self.user_lists_combo.currentText()
@@ -1232,6 +1245,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue('list_order_method', self.list_order_method)
 
     def check_for_updates(self, from_menu):
+        """Opens and runs the update checker on a separate thread"""
         self.update_thread = QtCore.QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
@@ -1245,6 +1259,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_thread.start()
 
     def update_dialog(self, update_variables):
+        """Opens the update dialog"""
         if self.last_update != update_variables[0]:
             update_checker = UpdateDialog(update_variables)
             update_checker.show()
@@ -1271,6 +1286,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.update_output(updater)
 
     def cleanup_outdated_code_items(self):
+        """Used to clean up any code items that need to be changed when the program is updated"""
         count = 0
         for key, value in self.user_view_chooser_dict.items():
             print('user list length: %s' % len(value.reddit_object_list))
