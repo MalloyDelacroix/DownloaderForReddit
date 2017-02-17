@@ -27,7 +27,7 @@ import os
 import sys
 import subprocess
 import shelve
-from datetime import datetime
+from datetime import datetime, date
 import time
 import imgurpython
 from PyQt5 import QtWidgets, QtCore, QtGui
@@ -1063,7 +1063,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                           '\nUser credits remaining: %s\nTime user credits reset: %s' %\
                           (credits_dict['ClientLimit'], credits_dict['ClientRemaining'], credits_dict['UserLimit'],
                            credits_dict['UserRemaining'],
-                           time.strftime('%I:%M %p', time.localtime(credits_dict['UserReset'])))
+                           date.strftime(datetime.fromtimestamp(credits_dict['UserReset']), '%m-%d-%Y at %I:%M %p'))
             reply = QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
 
     def display_about_dialog(self):
