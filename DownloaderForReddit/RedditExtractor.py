@@ -81,6 +81,7 @@ class RedditExtractor(QObject):
         self.restrict_score_method = restrict_score_method
         self.restrict_score_limit = restrict_score_limit
         self.unfinished_downloads_list = unfinished_downloads_list
+        self.load_undownloaded_content = self.settings.value('save_undownloaded_content')
 
         self.queued_posts = Queue()
         self.run = True
@@ -185,11 +186,12 @@ class RedditExtractor(QObject):
         the content
         """
         self.start_downloader()
-        # self.status_bar_update.emit('Extracting User Content...')
         self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         self.setup_progress_bar.emit(len(self.validated_users))
         for user in self.validated_users:
             if self.run:
+                if self.load_undownloaded_content:
+                    user.load_unfinished_downloads()
                 user.extract_content()
                 if len(user.failed_extracts) > 0:
                     for entry in user.failed_extracts:
@@ -213,6 +215,8 @@ class RedditExtractor(QObject):
         self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
         for sub in self.validated_subreddits:
             if self.run:
+                if self.load_undownloaded_content:
+                    sub.load_unfinished_downloads()
                 sub.extract_content()
                 if len(sub.failed_extracts) > 0:
                     for entry in sub.failed_extracts:
@@ -233,7 +237,7 @@ class RedditExtractor(QObject):
             sub.clear_download_session_data()
         for user in self.validated_users:
             user.clear_download_session_data()
-        self.queue.put('\nFinished - %s downloads' % self.download_number)
+        self.queue.put('\nFinished')
         self.send_unfinished_downloads()
         if len(self.downloaded_users) > 0:
             self.send_downloaded_users()
@@ -361,5 +365,4 @@ class Downloader(QObject):
 
     def stop(self):
         self.run = False
-        print('\nStop signal received\n')
-        print('Run: %s' % self.run)
+        self.download_pool.clear()

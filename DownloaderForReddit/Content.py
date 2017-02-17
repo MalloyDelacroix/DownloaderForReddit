@@ -55,7 +55,7 @@ class Content(QRunnable):
         self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
         self.subreddit_save_method = subreddit_save_method
         self.output = ''
-        # self.setAutoDelete(False)
+        self.setAutoDelete(False)
         self.downloaded = False
 
         self.queue = None

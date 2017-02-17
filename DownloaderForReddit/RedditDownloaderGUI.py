@@ -73,8 +73,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder_open = False
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
-        self.first_run = self.settings.value('first_run', False, type=bool)
-        # self.first_run = True
+        # self.first_run = self.settings.value('first_run', False, type=bool)
+        self.first_run = True
 
         self.last_update = self.settings.value('last_update', None, type=str)
         # self.last_update = None
@@ -216,6 +216,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
 
         self.check_for_updates(False)
+        if self.first_run:
+            self.cleanup_outdated_code_items()
+
+        self.test()
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -850,7 +854,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
         self.update_number_of_downloads()
-        self.progress_label.setText('Download complete')
+        self.progress_label.setText('Download complete - Downloaded: %s' % self.download_count)
         if self.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()
         self.download_count = 0
@@ -1265,3 +1269,57 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 subprocess.Popen([updater, updater])
         except:
             self.update_output(updater)
+
+    def cleanup_outdated_code_items(self):
+        count = 0
+        for key, value in self.user_view_chooser_dict.items():
+            print('user list length: %s' % len(value.reddit_object_list))
+            for user in value.reddit_object_list:
+                try:
+                    print(len(user.saved_content))
+                    count = 'try'
+                except AttributeError:
+                    print('Making new user: %s' % user.name)
+                    x = User(user.name, user.save_path[:(-1 - len(user.name))], user.imgur_client, user.post_limit,
+                             user.name_downloads_by, user.avoid_duplicates, user.download_videos, user.download_images,
+                             user.user_added)
+                    print(x.save_path)
+                    x.do_not_edit = user.do_not_edit
+                    x.already_downloaded = user.already_downloaded
+                    x.date_limit = user.date_limit
+                    x.custom_date_limit = user.custom_date_limit
+                    x.number_of_downloads = user.number_of_downloads
+                    x.saved_content = {}
+                    value.reddit_object_list.remove(user)
+                    value.reddit_object_list.append(x)
+                    count += 1
+            value.sort_lists((self.list_sort_method, self.list_order_method))
+
+        for key, value in self.subreddit_view_chooser_dict.items():
+            for sub in value.reddit_object_list:
+                try:
+                    print(len(sub.saved_content))
+                except AttributeError:
+                    x = Subreddit(sub.name, sub.save_path[:(-1 - len(sub.name))], sub.post_limit,
+                                  sub.subreddit_save_method, sub.imgur_client, sub.name_downloads_by,
+                                  sub.avoid_duplicates, sub.download_videos, sub.download_images, sub.user_added)
+                    print(x.save_path)
+                    x.do_not_edit = sub.do_not_edit
+                    x.already_downloaded = sub.already_downloaded
+                    x.date_limit = sub.date_limit
+                    x.custom_date_limit = sub.custom_date_limit
+                    value.reddit_object_list.remove(sub)
+                    value.reddit_object_list.append(x)
+            value.sort_lists((self.list_sort_method, self.list_order_method))
+        print('cleanup done')
+        print('count: %s' % count)
+
+        self.settings.setValue('first_run', False)
+
+    def test(self):
+        for key, value in self.user_view_chooser_dict.items():
+            for user in value.reddit_object_list:
+                try:
+                    print(len(user.saved_content))
+                except AttributeError:
+                    print('Problem: %s' % user.name)

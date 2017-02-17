@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>513</width>
-    <height>561</height>
+    <height>570</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,13 +19,13 @@
   <property name="minimumSize">
    <size>
     <width>513</width>
-    <height>561</height>
+    <height>570</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>513</width>
-    <height>561</height>
+    <height>570</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -190,7 +190,7 @@
      <x>10</x>
      <y>110</y>
      <width>491</width>
-     <height>401</height>
+     <height>431</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_6">
@@ -703,6 +703,22 @@
          <number>4</number>
         </property>
        </widget>
+       <widget class="QCheckBox" name="save_undownloaded_content_checkbox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>400</y>
+          <width>181</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked, content that has been extracted but not downloaded will be saved and redownloaded during the next run. This prevents content from having to be extracted more than once&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Save undownloaded content</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -712,7 +728,7 @@
    <property name="geometry">
     <rect>
      <x>340</x>
-     <y>520</y>
+     <y>530</y>
      <width>161</width>
      <height>41</height>
     </rect>
@@ -728,7 +744,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>530</y>
+     <y>540</y>
      <width>171</width>
      <height>16</height>
     </rect>
@@ -746,7 +762,7 @@
    <property name="geometry">
     <rect>
      <x>200</x>
-     <y>530</y>
+     <y>540</y>
      <width>121</width>
      <height>23</height>
     </rect>
