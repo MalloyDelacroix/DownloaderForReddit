@@ -295,7 +295,7 @@ class Ui_Settings(object):
         self.thread_limit_spinbox.setProperty("value", 4)
         self.thread_limit_spinbox.setObjectName("thread_limit_spinbox")
         self.save_undownloaded_content_checkbox = QtWidgets.QCheckBox(self.page)
-        self.save_undownloaded_content_checkbox.setGeometry(QtCore.QRect(20, 400, 241, 17))
+        self.save_undownloaded_content_checkbox.setGeometry(QtCore.QRect(10, 400, 241, 17))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.save_undownloaded_content_checkbox.setFont(font)
