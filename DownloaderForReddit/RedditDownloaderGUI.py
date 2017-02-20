@@ -1335,11 +1335,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     new_subs.append(x)
             value.reddit_object_list = new_subs
             value.sort_lists((self.list_sort_method, self.list_order_method))
-        print('cleanup done')
+        self.cleanup_updater()
 
         self.settings.setValue('first_run', False)
 
-    def cleanup_downloader(self):
+    def cleanup_updater(self):
         try:
             shutil.rmtree(os.getcwd() + 'drf_updater')
             os.rename('dfr_updater_temp', 'dfr_updater')
