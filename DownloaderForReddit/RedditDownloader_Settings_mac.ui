@@ -764,7 +764,7 @@
        <widget class="QCheckBox" name="save_undownloaded_content_checkbox">
         <property name="geometry">
          <rect>
-          <x>20</x>
+          <x>10</x>
           <y>400</y>
           <width>241</width>
           <height>17</height>
