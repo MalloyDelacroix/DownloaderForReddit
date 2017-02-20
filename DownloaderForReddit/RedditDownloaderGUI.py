@@ -25,10 +25,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import sys
+import shutil
 import subprocess
 import shelve
 from datetime import datetime, date
-import time
 import imgurpython
 from PyQt5 import QtWidgets, QtCore, QtGui
 
@@ -1287,7 +1287,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def cleanup_outdated_code_items(self):
         """Used to clean up any code items that need to be changed when the program is updated"""
-        count = 0
         new_users = []
         new_subs = []
         for key, value in self.user_view_chooser_dict.items():
@@ -1313,7 +1312,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     x.saved_content = {}
                     x.saved_submissions = []
                     new_users.append(x)
-                    count += 1
             value.reddit_object_list = new_users
             value.sort_lists((self.list_sort_method, self.list_order_method))
 
@@ -1338,9 +1336,15 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             value.reddit_object_list = new_subs
             value.sort_lists((self.list_sort_method, self.list_order_method))
         print('cleanup done')
-        print('count: %s' % count)
 
         self.settings.setValue('first_run', False)
+
+    def cleanup_downloader(self):
+        try:
+            shutil.rmtree(os.getcwd() + 'drf_updater')
+            os.rename('dfr_updater_temp', 'dfr_updater')
+        except:
+            print('Could not perform delete and rename of the dfr_updater package')
 
     def test(self):
         for key, value in self.user_view_chooser_dict.items():

@@ -116,8 +116,9 @@ class Updater(QObject):
                     file_list = os.listdir(unpacked_directory)
                     self.setup_progress_bar.emit(len(file_list))
                     for file in file_list:
-                        shutil.move(os.path.join(unpacked_directory, file), self.program_files_location)
-                        self.update_progress_bar.emit(1)
+                        if file != 'dfr_updater':
+                            shutil.move(os.path.join(unpacked_directory, file), self.program_files_location)
+                            self.update_progress_bar.emit(1)
 
         except:
             self.run = False
