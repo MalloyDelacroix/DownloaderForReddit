@@ -349,7 +349,7 @@ class Downloader(QObject):
         self.settings = QSettings("SomeGuySoftware", "RedditDownloader")
 
         self.download_pool = QThreadPool()
-        self.download_pool.setMaxThreadCount(self.settings.value('thread_limit_spinbox'))
+        self.download_pool.setMaxThreadCount(self.settings.value('thread_limit', 4, type=int))
 
     def download(self):
         """Spawns the download pool threads"""

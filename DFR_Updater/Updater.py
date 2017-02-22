@@ -74,11 +74,12 @@ class Updater(QObject):
         sure the target source folder that was supplied is the actual source folder for the program.  It checks for
         praw.ini simply because that is a file that is guaranteed to be in the source directory for the program
         """
+        progress_adjustment = 4 if self.platform == 'win32' else 2  # Adjust count for save files and updater
         self.update_label.emit('Removing outdated program files...')
         if 'praw.ini' in os.listdir(self.program_files_location):
             if self.run:
                 file_list = os.listdir(self.program_files_location)
-                self.setup_progress_bar.emit(len(file_list))
+                self.setup_progress_bar.emit(len(file_list) - progress_adjustment)
                 for item in file_list:
                     if self.run:
                         if os.path.isfile(os.path.join(self.program_files_location, item)) and not \
@@ -114,7 +115,7 @@ class Updater(QObject):
 
                 if unpacked_directory is not None and self.run:
                     file_list = os.listdir(unpacked_directory)
-                    self.setup_progress_bar.emit(len(file_list))
+                    self.setup_progress_bar.emit(len(file_list) - 1)
                     for file in file_list:
                         if file != 'dfr_updater':
                             shutil.move(os.path.join(unpacked_directory, file), self.program_files_location)
