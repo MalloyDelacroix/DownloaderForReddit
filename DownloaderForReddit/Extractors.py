@@ -54,6 +54,7 @@ class Extractor(object):
         self.subreddit_save_method = subreddit_save_method
         self.name_downloads_by = name_downloads_by
         self.extracted_content = []
+        self.failed_extract_messages = []
         self.failed_extracts_to_save = []
 
     def get_json(self, url):
@@ -87,7 +88,11 @@ class ImgurExtractor(Extractor):
         tuple is supplied to imgurpython to establish an imgur client
         """
         super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
-        self.client = ImgurClient(imgur_client[0], imgur_client[1])
+        try:
+            self.client = ImgurClient(imgur_client[0], imgur_client[1])
+        except ImgurClientError as e:
+            if e.status_code == 500:
+                self.over_capacity_error()
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
@@ -114,6 +119,8 @@ class ImgurExtractor(Extractor):
                     self.failed_to_locate_error()
             if e.status_code == 429:
                 self.rate_limit_exceeded_error()
+            if e.status_code == 500:
+                self.over_capacity_error()
         except ImgurClientRateLimitError:
             self.rate_limit_exceeded_error()
         except:
@@ -122,7 +129,7 @@ class ImgurExtractor(Extractor):
     def rate_limit_exceeded_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit)
         self.failed_extracts_to_save.append(x)
-        self.extracted_content.append('\nImgur rate limit exceeded.  This post has been saved and will be downloaded '
+        self.failed_extract_messages.append('\nFailed: Imgur rate limit exceeded.  This post has been saved and will be downloaded '
                                       'the next time the application is run.  Please make sure you have adequate user '
                                       'credits upon the next run.  User credits can be checked in the help menu\n'
                                       'Title: %s,  User: %s,  Subreddit: %s' % (self.post_title, self.user,
@@ -131,7 +138,7 @@ class ImgurExtractor(Extractor):
     def no_credit_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit)
         self.failed_extracts_to_save.append(x)
-        self.extracted_content.append('\nYou do not have enough imgur credits left to extract this '
+        self.failed_extract_messages.append('\nFailed: You do not have enough imgur credits left to extract this '
                                       'content.  This post will be saved and extraction attempted '
                                       'the next time the program is run.  Please make sure that you '
                                       'have adequate credits upon next run.\nTitle: %s,  User: %s,  '
@@ -140,12 +147,12 @@ class ImgurExtractor(Extractor):
     def over_capacity_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit)
         self.failed_extracts_to_save.append(x)
-        self.extracted_content.append('\nImgur is currently over capacity.  This post has been saved and extraction '
+        self.failed_extract_messages.append('\nFailed: Imgur is currently over capacity.  This post has been saved and extraction '
                                       'will be attempted the next time the program is run.\nTitle: %s,  User: %s,  '
                                       'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
 
     def failed_to_locate_error(self):
-        self.extracted_content.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s\n' %
+        self.failed_extract_messages.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s\n' %
                                       (self.url, self.user, self.subreddit, self.post_title))
 
     def extract_direct_link(self):

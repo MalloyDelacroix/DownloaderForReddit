@@ -137,6 +137,9 @@ class RedditObject(object):
         for x in extractor.failed_extracts_to_save:
             if not any(x.url == y.url for y in self.saved_submissions):
                 self.saved_submissions.append(x)
+        for x in extractor.failed_extract_messages:
+            print(x)
+            self.failed_extracts.append(x)
         for x in extractor.extracted_content:
             if type(x) == str and x.startswith('Failed'):
                 self.failed_extracts.append(x)

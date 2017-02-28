@@ -1344,3 +1344,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except:
             print('Could not perform delete and rename of the dfr_updater package')
 
+    def test(self):
+        for key, value in self.user_view_chooser_dict.items():
+            for x in value.reddit_object_list:
+                print(x.saved_submissions)
+                print(x.saved_content)
