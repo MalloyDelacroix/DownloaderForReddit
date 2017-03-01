@@ -113,7 +113,9 @@ class ImgurExtractor(Extractor):
                 self.extract_single()
         except ImgurClientError as e:
             if e.status_code == 403:
-                if self.client.credits['ClientRemaining'] <= 0:
+                if self.client.credits['ClientRemaining'] is None:
+                    self.failed_to_locate_error()
+                elif self.client.credits['ClientRemaining'] <= 0:
                     self.no_credit_error()
                 else:
                     self.failed_to_locate_error()
