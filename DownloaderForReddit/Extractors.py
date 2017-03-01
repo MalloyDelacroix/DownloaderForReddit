@@ -123,6 +123,8 @@ class ImgurExtractor(Extractor):
                 self.rate_limit_exceeded_error()
             if e.status_code == 500:
                 self.over_capacity_error()
+            if e.status_code == 404:
+                self.does_not_exist_error()
         except ImgurClientRateLimitError:
             self.rate_limit_exceeded_error()
         except:
@@ -152,6 +154,13 @@ class ImgurExtractor(Extractor):
         self.failed_extract_messages.append('\nFailed: Imgur is currently over capacity.  This post has been saved and extraction '
                                       'will be attempted the next time the program is run.\nTitle: %s,  User: %s,  '
                                       'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
+
+    def does_not_exist_error(self):
+        self.failed_extract_messages.append('\nFailed: The content does not exist.  This most likely means that the '
+                                            'image has been deleted on Imgur, but the post still remains on reddit\n'
+                                            'Url: %s,  User: %s,  Subreddit: %s,  Title: %s' % (self.url, self.user,
+                                                                                                self.subreddit,
+                                                                                                self.post_title))
 
     def failed_to_locate_error(self):
         self.failed_extract_messages.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s\n' %
