@@ -124,6 +124,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
                                                'User Name/Subreddit Name'))
         self.subreddit_save_by_combo.setCurrentIndex(self.settings.value('subreddit_save_by_combo', 0, type=int))
         self.name_downloads_by_combo.addItems(('Image/Album Id', 'Post Title'))
+        self.name_downloads_by_combo.setCurrentIndex(self.settings.value('name_downloads_by_combo', 0, type=int))
 
         self.thread_limit_spinbox.setValue(self.settings.value('thread_limit', 4, type=int))
         self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
