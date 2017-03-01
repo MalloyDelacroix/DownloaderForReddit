@@ -1347,5 +1347,4 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             shutil.rmtree('dfr_updater')
             os.rename('dfr_updater_temp', 'dfr_updater')
         except:
-            print('Could not perform delete and rename of the dfr_updater package')
-            Message.up_to_date_message(self)
+            Message.updater_cleanup_failure(self)

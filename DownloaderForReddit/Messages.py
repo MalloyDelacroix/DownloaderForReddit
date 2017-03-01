@@ -224,6 +224,19 @@ class Message(object):
         else:
             return False
 
+    def updater_cleanup_failure(self):
+        text = 'This new version of The Downloader for Reddit came with a new updater.  There has been a problem in ' \
+               'making the change to the new updater package.  What this means is that the program should still ' \
+               'alert you that a new version is available, but it will most likely be unable to download and install ' \
+               'it automatically.  In this event simply go to ' \
+               'https://github.com/MalloyDelacroix/DownloaderForReddit/releases and manually download the release.  ' \
+               'Make sure to copy your save_file from the current program location to the new location'
+        reply = message.information(self, 'Updater Cleanup Failure', text, message.Ok)
+        if reply == message.Ok:
+            return True
+        else:
+            return False
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
