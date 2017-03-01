@@ -570,6 +570,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if self.progress_bar.value() == self.progress_bar.maximum() and self.bar_count == 1:
             self.progress_bar.setVisible(False)
             self.statusbar.addPermanentWidget(self.progress_label)
+            self.progress_label.setVisible(True)
         elif self.progress_bar.value() == self.progress_bar.maximum() and self.bar_count == 0:
             self.bar_count += 1
 
@@ -828,7 +829,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
         self.running = True
+        self.download_count = 0
         self.output_box.clear()
+        self.progress_label.setVisible(False)
+        self.progress_label.setText('Extraction Complete')
         self.download_button.setText('Downloading...Click to Stop Download')
         self.add_user_button.setDisabled(True)
         self.remove_user_button.setDisabled(True)

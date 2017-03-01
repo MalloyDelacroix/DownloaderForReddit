@@ -360,7 +360,6 @@ class Downloader(QObject):
             else:
                 self.run = False
         self.download_pool.waitForDone()
-        print('Downloader Finished')
         self.finished.emit()
 
     def stop(self):
