@@ -139,7 +139,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
         self.file_user_manual.triggered.connect(self.open_user_manual)
-        self.file_check_for_updates.triggered.connect(self.check_for_updates)
+        self.file_check_for_updates.triggered.connect(lambda: self.check_for_updates(True))
         self.file_about.triggered.connect(self.display_about_dialog)
         self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
         self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(0, True))
@@ -1243,7 +1243,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings.setValue('list_order_method', self.list_order_method)
 
     def check_for_updates(self, from_menu):
-        """Opens and runs the update checker on a separate thread"""
+        """
+        Opens and runs the update checker on a separate thread. Sets self.from_menu so that other dialogs know the
+        updater has been ran by the user, this will result in different dialog behaviour
+        """
+        self.from_menu = from_menu
         self.update_thread = QtCore.QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
@@ -1258,7 +1262,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_dialog(self, update_variables):
         """Opens the update dialog"""
-        if self.last_update != update_variables[0]:
+        if self.last_update != update_variables[0] or self.version != update_variables[0] and self.from_menu:
             update_checker = UpdateDialog(update_variables)
             update_checker.show()
             dialog = update_checker.exec_()

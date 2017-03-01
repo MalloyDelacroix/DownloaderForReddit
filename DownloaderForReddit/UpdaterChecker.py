@@ -35,6 +35,8 @@ class UpdateChecker(QObject):
         response = requests.get(self.release_api_caller)
         if response.status_code == 200:
             self._json = response.json()
+        else:
+            print('Failed connection: %s' % response.status_code)
 
     def check_releases(self):
         """
