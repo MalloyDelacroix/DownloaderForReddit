@@ -1289,6 +1289,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def cleanup_outdated_code_items(self):
         """Used to clean up any code items that need to be changed when the program is updated"""
+        print('cleaning')
         new_users = []
         new_subs = []
         for key, value in self.user_view_chooser_dict.items():
@@ -1343,13 +1344,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def cleanup_updater(self):
         try:
-            shutil.rmtree(os.getcwd() + 'drf_updater')
+            shutil.rmtree('dfr_updater')
             os.rename('dfr_updater_temp', 'dfr_updater')
         except:
             print('Could not perform delete and rename of the dfr_updater package')
-
-    def test(self):
-        for key, value in self.user_view_chooser_dict.items():
-            for x in value.reddit_object_list:
-                print(x.saved_submissions)
-                print(x.saved_content)
+            Message.up_to_date_message(self)
