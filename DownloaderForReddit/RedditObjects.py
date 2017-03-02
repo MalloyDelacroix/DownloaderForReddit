@@ -83,9 +83,9 @@ class RedditObject(object):
                                                 'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s\n' %
                                                 (post.title, post.author, post.subreddit, post.url))
                 else:
-                    extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
-                                                     self.subreddit_save_method, self.imgur_client,
-                                                     self.name_downloads_by)
+                    extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                                               self.save_path, self.subreddit_save_method, self.imgur_client,
+                                               self.name_downloads_by)
                     self.extract(extractor)
 
             elif "vidble" in post.url:

@@ -33,7 +33,7 @@ from Content import Content
 
 class Extractor(object):
 
-    def __init__(self, url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by):
+    def __init__(self, url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method, name_downloads_by):
         """
         A class that handles extracting individual item urls from the hosting websites.  Iteracts with website APIs if
         available and directly with requests if not.
@@ -50,6 +50,7 @@ class Extractor(object):
         self.user = user
         self.post_title = post_title
         self.subreddit = subreddit
+        self.creation_date = creation_date
         self.save_path = save_path
         self.subreddit_save_method = subreddit_save_method
         self.name_downloads_by = name_downloads_by
@@ -78,7 +79,7 @@ class Extractor(object):
 
 class ImgurExtractor(Extractor):
 
-    def __init__(self, url, user, post_title, subreddit, save_path, subreddit_save_method, imgur_client,
+    def __init__(self, url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method, imgur_client,
                  name_downloads_by):
         """
         A subclass of the Extractor class.  This class interacts exclusively with the imgur website through the imgur
@@ -87,7 +88,7 @@ class ImgurExtractor(Extractor):
         :param imgur_client: A tuple of the client id and client secret provided by imgur to access their api.  This
         tuple is supplied to imgurpython to establish an imgur client
         """
-        super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
+        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method, name_downloads_by)
         try:
             self.client = ImgurClient(imgur_client[0], imgur_client[1])
         except ImgurClientError as e:
@@ -240,11 +241,13 @@ class ImgurExtractor(Extractor):
 
 class GfycatExtractor(Extractor):
 
-    def __init__(self, url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by):
+    def __init__(self, url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                 name_downloads_by):
         """
         A subclass of the Extractor class.  This class interacts exclusively with the gfycat website through their api
         """
-        super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
+        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                         name_downloads_by)
         self.api_caller = "https://gfycat.com/cajax/get/"
 
     def extract_content(self):
@@ -278,11 +281,13 @@ class GfycatExtractor(Extractor):
 
 class VidbleExtractor(Extractor):
 
-    def __init__(self, url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by):
+    def __init__(self, url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                 name_downloads_by):
         """
         A sublcass of the Extractor class.  This class interacts exclusively with the Vidble website via BeautifulSoup4
         """
-        super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
+        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                         name_downloads_by)
         self.vidble_base = "https://vidble.com"
 
     def extract_content(self):
@@ -345,11 +350,13 @@ class VidbleExtractor(Extractor):
 
 class EroshareExtractor(Extractor):
 
-    def __init__(self, url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by):
+    def __init__(self, url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                 name_downloads_by):
         """
         A sublcass of the Extractor class.  This class interacts with Eroshare exclusively through their api
         """
-        super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
+        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                         name_downloads_by)
         self.api_caller = "https://api.eroshare.com/api/v1/albums/"
 
     def extract_content(self):
@@ -402,7 +409,8 @@ class EroshareExtractor(Extractor):
 
 class RedditUploadsExtractor(Extractor):
 
-    def __init__(self, url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by):
+    def __init__(self, url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                 name_downloads_by):
         """
         A subclass of the Extractor class.  This class interacts with reddit's own image hosting exclusively.
 
@@ -410,7 +418,8 @@ class RedditUploadsExtractor(Extractor):
         and will likely often result in failed extractions. When an inevitable api is made public for this platform,
         this class will be updated to interact with it.
         """
-        super().__init__(url, user, post_title, subreddit, save_path, subreddit_save_method, name_downloads_by)
+        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                         name_downloads_by)
 
     def extract_content(self):
         try:
@@ -424,8 +433,9 @@ class RedditUploadsExtractor(Extractor):
 
 
 class Post(object):
-    def __init__(self, url, author, title, subreddit):
+    def __init__(self, url, author, title, subreddit, created):
         self.url = url
         self.author = author
         self.title = title
         self.subreddit = subreddit
+        self.created = created
