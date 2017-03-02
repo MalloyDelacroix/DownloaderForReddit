@@ -88,7 +88,8 @@ class ImgurExtractor(Extractor):
         :param imgur_client: A tuple of the client id and client secret provided by imgur to access their api.  This
         tuple is supplied to imgurpython to establish an imgur client
         """
-        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method, name_downloads_by)
+        super().__init__(url, user, post_title, subreddit, creation_date, save_path, subreddit_save_method,
+                         name_downloads_by)
         try:
             self.client = ImgurClient(imgur_client[0], imgur_client[1])
         except ImgurClientError as e:
@@ -132,7 +133,7 @@ class ImgurExtractor(Extractor):
             self.failed_to_locate_error()
 
     def rate_limit_exceeded_error(self):
-        x = Post(self.url, self.user, self.post_title, self.subreddit)
+        x = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date)
         self.failed_extracts_to_save.append(x)
         self.failed_extract_messages.append('\nFailed: Imgur rate limit exceeded.  This post has been saved and will be downloaded '
                                       'the next time the application is run.  Please make sure you have adequate user '
@@ -141,7 +142,7 @@ class ImgurExtractor(Extractor):
                                                                                 self.subreddit))
 
     def no_credit_error(self):
-        x = Post(self.url, self.user, self.post_title, self.subreddit)
+        x = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date)
         self.failed_extracts_to_save.append(x)
         self.failed_extract_messages.append('\nFailed: You do not have enough imgur credits left to extract this '
                                       'content.  This post will be saved and extraction attempted '
@@ -150,11 +151,12 @@ class ImgurExtractor(Extractor):
                                       'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
 
     def over_capacity_error(self):
-        x = Post(self.url, self.user, self.post_title, self.subreddit)
+        x = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date)
         self.failed_extracts_to_save.append(x)
-        self.failed_extract_messages.append('\nFailed: Imgur is currently over capacity.  This post has been saved and extraction '
-                                      'will be attempted the next time the program is run.\nTitle: %s,  User: %s,  '
-                                      'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
+        self.failed_extract_messages.append('\nFailed: Imgur is currently over capacity.  This post has been saved and '
+                                            'extraction will be attempted the next time the program is run.\nTitle: '
+                                            '%s, User: %s,  Subreddit: %s' % (self.post_title, self.user,
+                                                                              self.subreddit))
 
     def does_not_exist_error(self):
         self.failed_extract_messages.append('\nFailed: The content does not exist.  This most likely means that the '
@@ -164,8 +166,8 @@ class ImgurExtractor(Extractor):
                                                                                                 self.post_title))
 
     def failed_to_locate_error(self):
-        self.failed_extract_messages.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s\n' %
-                                      (self.url, self.user, self.subreddit, self.post_title))
+        self.failed_extract_messages.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s'
+                                            '\n' % (self.url, self.user, self.subreddit, self.post_title))
 
     def extract_direct_link(self):
         for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:

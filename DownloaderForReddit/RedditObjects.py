@@ -130,7 +130,10 @@ class RedditObject(object):
                 self.failed_extracts.append("Could not extract links from post: %s submitted by: %s\nUrl domain not "
                                             "supported.  Url: %s" % (post.title, post.author, post.url))
 
-            self.set_date_limit(post.created)
+            try:
+                self.set_date_limit(post.created)
+            except AttributeError:
+                pass
 
     def extract(self, extractor):
         extractor.extract_content()
