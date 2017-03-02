@@ -89,26 +89,26 @@ class RedditObject(object):
                     self.extract(extractor)
 
             elif "vidble" in post.url:
-                extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
-                                                   self.subreddit_save_method, self.name_downloads_by)
+                extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit,  post.created,
+                                            self.save_path, self.subreddit_save_method, self.name_downloads_by)
                 self.extract(extractor)
 
             elif "gfycat" in post.url:
-                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit, self.save_path,
-                                                   self.subreddit_save_method, self.name_downloads_by)
+                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit,  post.created,
+                                            self.save_path, self.subreddit_save_method, self.name_downloads_by)
                 self.extract(extractor)
 
             elif "eroshare" in post.url:
-                extractor = EroshareExtractor(post.url, post.author, post.title, post.subreddit,
-                                                       self.save_path, self.subreddit_save_method,
-                                                       self.name_downloads_by)
+                extractor = EroshareExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                                              self.save_path, self.subreddit_save_method,
+                                              self.name_downloads_by)
                 self.extract(extractor)
 
             elif "reddituploads" in post.url:
                 pass
-                extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit,
-                                                                  self.save_path, self.subreddit_save_method,
-                                                                  self.name_downloads_by)
+                extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                                                   self.save_path, self.subreddit_save_method,
+                                                   self.name_downloads_by)
                 self.extract(extractor)
 
             # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
