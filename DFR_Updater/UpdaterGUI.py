@@ -19,6 +19,7 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
         super().__init__()
         self.setupUi(self)
         self.settings = QtCore.QSettings('SomeGuySoftware', 'dfr_updater')
+        self.dfr_settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
         self.restoreGeometry(self.settings.value('geometry', self.saveGeometry()))
         self.download_url = self.settings.value('download_url', None, type=str)
         self.download_name = self.settings.value('download_name', None, type=str)
@@ -84,6 +85,7 @@ class UpdaterWidget(QtWidgets.QWidget, Ui_updater_gui):
         self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setText('Open exe location')
         self.button_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
         self.launch_checkbox.setVisible(True)
+        self.dfr_settings.setValue('first_run', True)
 
     def stopped_gui_shift(self):
         """A different GUI shift that provides a way to restart the updater if it is stopped"""
