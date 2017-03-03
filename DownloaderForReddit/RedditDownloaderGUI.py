@@ -74,10 +74,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
         self.first_run = self.settings.value('first_run', True, type=bool)
-        # self.first_run = True
 
         self.last_update = self.settings.value('last_update', None, type=str)
-        # self.last_update = None
 
         self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
         self.restoreGeometry(self.settings.value('window_geometry', self.saveGeometry()))
