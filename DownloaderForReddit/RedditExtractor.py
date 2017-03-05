@@ -41,7 +41,7 @@ class RedditExtractor(QObject):
     status_bar_update = pyqtSignal(str)
     setup_progress_bar = pyqtSignal(int)
     update_progress_bar = pyqtSignal()
-    stop_download_thread = pyqtSignal()
+    stop = pyqtSignal()
 
     def __init__(self, user_list, subreddit_list, queue, post_limit, save_path, subreddit_sort_method,
                  subreddit_sort_top_method, restrict_date, restrict_by_score, restrict_score_method,
@@ -64,8 +64,7 @@ class RedditExtractor(QObject):
         self.user_list = user_list
         self.subreddit_list = subreddit_list
         self.queue = queue
-        self.validated_users = []
-        self.validated_subreddits = []
+        self.validated_objects = Queue()
         self.failed_downloads = []
         self.downloaded_users = []
         self.unfinished_downloads = []
@@ -110,10 +109,9 @@ class RedditExtractor(QObject):
                         date_limit = user.custom_date_limit
                     else:
                         date_limit = user.date_limit
-                    post_limit = user.post_limit
-                    submissions = self.get_submissions_user(redditor, date_limit, post_limit)
+                    submissions = self.get_submissions_user(redditor, date_limit, user.post_limit)
                     user.get_new_submissions(submissions)
-                    self.validated_users.append(user)
+                    self.validated_objects.put(user)
                     user.check_save_path()
                 else:
                     self.queue.put("%s does not exist" % user.name)
@@ -136,11 +134,9 @@ class RedditExtractor(QObject):
                 if subreddit is not None:
                     self.queue.put("%s is valid" % sub.name)
                     date_limit = sub.date_limit if self.restrict_date else 1
-                    post_limit = sub.post_limit
-                    submissions = self.get_submissions_subreddit(subreddit, date_limit, post_limit)
-                    print(len(submissions))
+                    submissions = self.get_submissions_subreddit(subreddit, date_limit, sub.post_limit)
                     sub.get_new_submissions(submissions)
-                    self.validated_subreddits.append(sub)
+                    self.validated_objects.put(sub)
                 else:
                     self.queue.put("%s is not a valid subreddit" % sub.name)
         if self.run:
@@ -174,63 +170,11 @@ class RedditExtractor(QObject):
                     submissions = [x for x in redditor.get_submitted(limit=self.post_limit) if x.created >
                                    user.date_limit and x.subreddit.display_name in self.validated_subreddits]
                     user.get_new_submissions(submissions)
-                    self.validated_users.append(user)
+                    self.validated_objects.put(user)
                     user.check_save_path()
         if self.run:
             self.queue.put(' ')  # Adds small separation in the output box between users being validated and downloaded
             self.run_user()
-
-    def run_user(self):
-        """
-        Handles calling the appropriate functions to extract the content from the users reddit links and download
-        the content
-        """
-        self.start_downloader()
-        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
-        self.setup_progress_bar.emit(len(self.validated_users))
-        for user in self.validated_users:
-            if self.run:
-                if self.load_undownloaded_content:
-                    user.load_unfinished_downloads()
-                user.extract_content()
-                if len(user.failed_extracts) > 0:
-                    for entry in user.failed_extracts:
-                        self.queue.put(entry)
-
-                if len(user.content) > 0:
-                    self.downloaded_users.append(user.name)
-                for post in user.content:
-                    post.install_queue(self.queue)
-                    self.queued_posts.put(post)
-                    self.download_number += 1
-                    self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
-                self.update_progress_bar.emit()
-            else:
-                self.downloads_finished()
-        self.queued_posts.put(None)
-
-    def run_subreddit(self):
-        """See run_user"""
-        self.start_downloader()
-        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
-        for sub in self.validated_subreddits:
-            if self.run:
-                if self.load_undownloaded_content:
-                    sub.load_unfinished_downloads()
-                sub.extract_content()
-                if len(sub.failed_extracts) > 0:
-                    for entry in sub.failed_extracts:
-                        self.queue.put(entry)
-
-                for post in sub.content:
-                    # Gives each QRunnable an instance of the main queue to update the GUI
-                    post.install_queue(self.queue)
-                    self.queued_posts.put(post)
-                    self.download_number += 1
-                    self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
-            else:
-                self.downloads_finished()
-        self.queued_posts.put(None)
 
     def downloads_finished(self):
         for sub in self.validated_subreddits:
@@ -243,9 +187,20 @@ class RedditExtractor(QObject):
             self.send_downloaded_users()
         self.finished.emit()
 
+    def start_extractor(self):
+        self.extractor = Extractor(self.queue, self.validated_objects, self.queued_posts)
+        self.stop.connect(self.extractor.stop)
+        self.extractor_thread = QThread()
+        self.extractor.moveToThread(self.extractor_thread)
+        self.extractor_thread.started.connect(self.extractor.run)
+        self.extractor.finished.connect(self.extractor_thread.quit)
+        self.extractor.finished.connect(self.extractor.deleteLater)
+        self.extractor_thread.finished.connect(self.extractor_thread.deleteLater)
+        self.extractor_thread.start()
+
     def start_downloader(self):
         self.downloader = Downloader(self.queued_posts)
-        self.stop_download_thread.connect(self.downloader.stop)
+        self.stop.connect(self.downloader.stop)
         self.downloader_thread = QThread()
         self.downloader.moveToThread(self.downloader_thread)
         self.downloader_thread.started.connect(self.downloader.download)
@@ -313,7 +268,7 @@ class RedditExtractor(QObject):
 
     def stop_download(self):
         self.run = False
-        self.stop_download_thread.emit()
+        self.stop.emit()
         self.queue.put('\nStopped\n')
 
     def send_unfinished_downloads(self):
@@ -328,7 +283,50 @@ class RedditExtractor(QObject):
         self.start_downloader()
 
     def skip_user_validation(self):
-        self.validated_users = self.user_list
+        for x in self.user_list:
+            self.validated_objects.put(x)
+
+
+class Extractor(QObject):
+
+    finished = pyqtSignal()
+
+    def __init__(self, queue, valid_objects, post_queue):
+        """
+        A class that is extracts downloadable links from container websites who's links have been posted to reddit
+
+        :param queue: The main window queue used to update the GUI output box
+        :param valid_objects: Users or subreddits that have been validated
+        :param post_queue: The queue where downloadable links are passed to be downloaded by the downloader thread
+        """
+        super().__init__()
+        self.queue = queue
+        self.validated_objects = valid_objects
+        self.post_queue = post_queue
+        self.run = True
+
+    def run(self):
+        """Calls the extract processes for each user or subreddit"""
+        self.start_downloader()
+        while self.run:
+            item = self.validated_objects.get()
+            if item is not None:
+                item.load_unfinished_downloads()
+                item.extract_content()
+                if len(item.failed_extracts) > 0:
+                    for entry in item.failed_extracts:
+                        self.queue.put(entry)
+                for post in item.content:
+                    post.install_queue(self.queue)
+                    self.post_queue.put(post)
+                    self.download_number += 1
+            else:
+                self.run = False
+        self.post_queue.put(None)
+        self.finished.emit()
+
+    def stop(self):
+        self.run = False
 
 
 class Downloader(QObject):
