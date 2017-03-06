@@ -69,6 +69,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.failed_list = []
         self.last_downloaded_users = []
         self.download_count = 0
+        self.downloaded = 0
         self.running = False
         self.user_finder_open = False
 
@@ -532,24 +533,20 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         bar, failed download dialog box, and if the user finder is open, will emit a signal to update the user finder
         progress bar
         """
-        if not self.user_finder_open:
-            if text.lower().startswith('failed'):
-                self.failed_list.append(text)
-            elif text.startswith('Saved'):
-                self.update_status_bar_download_count()
-        self.output_box.append(text)
-        if self.user_finder_open and text.startswith('Saved') or text.lower().startswith('failed'):
-            self.update_user_finder_progress_bar()
-
-    def update_status_bar(self, text):
-        self.statusbar.showMessage(text, -1)
-        if text.startswith('Downloaded'):
-            x, self.soft_downloaded = text.rsplit(' ', 1)
+        if text.lower().startswith('failed'):
+            self.failed_list.append(text)
+            self.output_box.append(text)
+        elif text.startswith('Saved'):
+            self.update_status_bar_download_count()
+            self.output_box.append(text)
+        elif text.startswith('Count'):
+            t, count = text.rsplit(' ', 1)
+            self.download_count += int(count)
 
     def update_status_bar_download_count(self):
-        self.download_count += 1
+        self.downloaded += 1
         self.total_files_downloaded += 1
-        self.statusbar.showMessage('Downloaded: %s  of  %s' % (self.download_count, self.soft_downloaded), -1)
+        self.statusbar.showMessage('Downloaded: %s  of  %s' % (self.downloaded, self.download_count), -1)
 
     def setup_progress_bar(self, limit):
         self.progress_bar.setVisible(True)
@@ -565,12 +562,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_progress_bar(self):
         self.progress_bar.setValue(self.progress_bar.value() + 1)
-        if self.progress_bar.value() == self.progress_bar.maximum() and self.bar_count == 1:
-            self.progress_bar.setVisible(False)
-            self.statusbar.addPermanentWidget(self.progress_label)
-            self.progress_label.setVisible(True)
-        elif self.progress_bar.value() == self.progress_bar.maximum() and self.bar_count == 0:
-            self.bar_count += 1
 
     def add_user_list(self):
         new_user_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog", "Enter the new user list:")

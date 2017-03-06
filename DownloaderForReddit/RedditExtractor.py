@@ -40,7 +40,7 @@ class RedditExtractor(QObject):
     unfinished_downloads_signal = pyqtSignal(list)
     status_bar_update = pyqtSignal(str)
     setup_progress_bar = pyqtSignal(int)
-    update_progress_bar = pyqtSignal()
+    update_progress_bar_signal = pyqtSignal()
     stop = pyqtSignal()
 
     def __init__(self, user_list, subreddit_list, queue, post_limit, save_path, subreddit_sort_method,
@@ -65,6 +65,7 @@ class RedditExtractor(QObject):
         self.subreddit_list = subreddit_list
         self.queue = queue
         self.validated_objects = Queue()
+        self.validated_subreddits = []
         self.failed_downloads = []
         self.downloaded_users = []
         self.unfinished_downloads = []
@@ -84,13 +85,14 @@ class RedditExtractor(QObject):
 
         self.queued_posts = Queue()
         self.run = True
+        self.start_extractor()
+        self.start_downloader()
 
         self.download_number = 0
 
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
-        self.status_bar_update.emit('Validating Users...')
-        self.setup_progress_bar.emit(len(self.user_list))
+        self.setup_progress_bar.emit(len(self.user_list) * 2)
         for user in self.user_list:
             if self.run:
                 redditor = self._r.redditor(user.name)
@@ -113,15 +115,16 @@ class RedditExtractor(QObject):
                     user.get_new_submissions(submissions)
                     self.validated_objects.put(user)
                     user.check_save_path()
+                    self.update_progress_bar()
                 else:
                     self.queue.put("%s does not exist" % user.name)
-                self.update_progress_bar.emit()
-        self.queue.put(' ')  # Adds small separation in the output box between users being validated and downloaded
-        self.run_user()
+                    self.update_progress_bar()
+                    self.update_progress_bar()
 
     def validate_subreddits(self):
         """See validate_users"""
         self.status_bar_update.emit('Validating Subreddits...')
+        self.setup_progress_bar.emit(len(self.subreddit_list) * 2)
         for sub in self.subreddit_list:
             if self.run:
                 subreddit = self._r.subreddit(sub.name)
@@ -137,26 +140,25 @@ class RedditExtractor(QObject):
                     submissions = self.get_submissions_subreddit(subreddit, date_limit, sub.post_limit)
                     sub.get_new_submissions(submissions)
                     self.validated_objects.put(sub)
+                    sub.check_save_path()
+                    self.update_progress_bar()
                 else:
                     self.queue.put("%s is not a valid subreddit" % sub.name)
-        if self.run:
-            self.queue.put(' ')  # Adds small separation in the output box between subs being validated and downloaded
-            self.run_subreddit()
+                    self.update_progress_bar()
+                    self.update_progress_bar()
 
     def validate_users_and_subreddits(self):
         """See validate_users"""
-        self.status_bar_update.emit('Validating Subreddits...')
         for sub in self.subreddit_list:
             if self.run:
                 try:
                     subreddit = self._r.subreddit(sub.name)
                     self.validated_subreddits.append(subreddit.display_name)
-                    self.queue.put("%s is a valid subreddit" % subreddit.display_name)
+                    self.queue.put('%s is valid' % subreddit.display_name)
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
-                    self.queue.put("%s is not valid" % sub.name)
+                    self.queue.put('%s is not valid' % sub.name)
 
         if self.run:
-            self.status_bar_update.emit('Validating Users...')
             for user in self.user_list:
                 redditor = self._r.redditor(user.name)
                 try:
@@ -164,17 +166,17 @@ class RedditExtractor(QObject):
                 except prawcore.exceptions.NotFound:
                     redditor = None
                     self.queue.put('%s is not valid' % user.name)
+                    self.update_progress_bar()
+                    self.update_progress_bar()
 
                 if redditor is not None:
-                    self.queue.put('%s is a valid user' % user.name)
+                    self.queue.put('%s is valid' % user.name)
                     submissions = [x for x in redditor.get_submitted(limit=self.post_limit) if x.created >
                                    user.date_limit and x.subreddit.display_name in self.validated_subreddits]
                     user.get_new_submissions(submissions)
                     self.validated_objects.put(user)
                     user.check_save_path()
-        if self.run:
-            self.queue.put(' ')  # Adds small separation in the output box between users being validated and downloaded
-            self.run_user()
+                    self.update_progress_bar()
 
     def downloads_finished(self):
         for sub in self.validated_subreddits:
@@ -193,6 +195,7 @@ class RedditExtractor(QObject):
         self.extractor_thread = QThread()
         self.extractor.moveToThread(self.extractor_thread)
         self.extractor_thread.started.connect(self.extractor.run)
+        self.extractor.update_progress_bar.connect(self.update_progress_bar)
         self.extractor.finished.connect(self.extractor_thread.quit)
         self.extractor.finished.connect(self.extractor.deleteLater)
         self.extractor_thread.finished.connect(self.extractor_thread.deleteLater)
@@ -286,10 +289,14 @@ class RedditExtractor(QObject):
         for x in self.user_list:
             self.validated_objects.put(x)
 
+    def update_progress_bar(self):
+        self.update_progress_bar_signal.emit()
+
 
 class Extractor(QObject):
 
     finished = pyqtSignal()
+    update_progress_bar = pyqtSignal()
 
     def __init__(self, queue, valid_objects, post_queue):
         """
@@ -307,7 +314,6 @@ class Extractor(QObject):
 
     def run(self):
         """Calls the extract processes for each user or subreddit"""
-        self.start_downloader()
         while self.run:
             item = self.validated_objects.get()
             if item is not None:
@@ -316,12 +322,13 @@ class Extractor(QObject):
                 if len(item.failed_extracts) > 0:
                     for entry in item.failed_extracts:
                         self.queue.put(entry)
+                self.queue.put('Count %s' % len(item.content))
                 while len(item.content) > 0:
                     post = item.content.pop(0)
                     post.install_queue(self.queue)
                     self.post_queue.put(post)
-                    self.download_number += 1
                 item.clear_download_session_data()
+                self.update_progress_bar.emit()
             else:
                 self.run = False
         self.post_queue.put(None)
