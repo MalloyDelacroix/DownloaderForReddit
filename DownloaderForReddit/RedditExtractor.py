@@ -316,10 +316,12 @@ class Extractor(QObject):
                 if len(item.failed_extracts) > 0:
                     for entry in item.failed_extracts:
                         self.queue.put(entry)
-                for post in item.content:
+                while len(item.content) > 0:
+                    post = item.content.pop(0)
                     post.install_queue(self.queue)
                     self.post_queue.put(post)
                     self.download_number += 1
+                item.clear_download_session_data()
             else:
                 self.run = False
         self.post_queue.put(None)
