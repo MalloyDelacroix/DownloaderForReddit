@@ -113,6 +113,7 @@ class RedditExtractor(QObject):
                         date_limit = user.date_limit
                     submissions = self.get_submissions_user(redditor, date_limit, user.post_limit)
                     user.get_new_submissions(submissions)
+                    print('Validated: User')
                     self.validated_objects.put(user)
                     user.check_save_path()
                     self.update_progress_bar()
@@ -194,7 +195,7 @@ class RedditExtractor(QObject):
         self.stop.connect(self.extractor.stop)
         self.extractor_thread = QThread()
         self.extractor.moveToThread(self.extractor_thread)
-        self.extractor_thread.started.connect(self.extractor.run)
+        self.extractor_thread.started.connect(self.extractor.extract)
         self.extractor.update_progress_bar.connect(self.update_progress_bar)
         self.extractor.finished.connect(self.extractor_thread.quit)
         self.extractor.finished.connect(self.extractor.deleteLater)
@@ -311,11 +312,13 @@ class Extractor(QObject):
         self.validated_objects = valid_objects
         self.post_queue = post_queue
         self.run = True
+        print('extractor initialized')
 
-    def run(self):
+    def extract(self):
         """Calls the extract processes for each user or subreddit"""
         while self.run:
             item = self.validated_objects.get()
+            print('Extractor %s' % item.name)
             if item is not None:
                 item.load_unfinished_downloads()
                 item.extract_content()
@@ -362,6 +365,7 @@ class Downloader(QObject):
         """Spawns the download pool threads"""
         while self.run:
             post = self.queue.get()
+            print('Url: %s' % post.url)
             if post is not None:
                 self.download_pool.start(post)
             else:
