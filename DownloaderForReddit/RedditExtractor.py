@@ -181,7 +181,6 @@ class RedditExtractor(QObject):
         self.validated_objects.put(None)
 
     def downloads_finished(self):
-        self.queue.put('Finishing downloads')
         try:
             for sub in self.subreddit_list:
                 sub.clear_download_session_data()
@@ -189,7 +188,6 @@ class RedditExtractor(QObject):
             pass
         try:
             for user in self.user_list:
-                print(user.name)
                 user.clear_download_session_data()
         except TypeError:
             pass

@@ -210,10 +210,12 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_bar = QtWidgets.QProgressBar()
         self.statusbar.addPermanentWidget(self.progress_bar)
         self.bar_count = 0
-        self.progress_bar.setToolTip('Displays the progress of user/subreddit validation, then link extraction')
+        self.progress_bar.setToolTip('Displays the progress of user/subreddit validation and link extraction')
         self.progress_bar.setVisible(False)
         self.progress_label = QtWidgets.QLabel()
+        self.statusbar.addPermanentWidget(self.progress_label)
         self.progress_label.setText('Extraction Complete')
+        self.progress_label.setVisible(False)
 
         self.check_for_updates(False)
         if self.first_run:
@@ -563,6 +565,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_progress_bar(self):
         self.progress_bar.setValue(self.progress_bar.value() + 1)
+        if self.progress_bar.value() == self.progress_bar.maximum():
+            self.progress_bar.setVisible(False)
+            self.progress_label.setVisible(True)
 
     def add_user_list(self):
         new_user_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog", "Enter the new user list:")
@@ -821,8 +826,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.running = True
         self.download_count = 0
         self.output_box.clear()
-        self.progress_label.setVisible(False)
-        self.progress_label.setText('Extraction Complete')
         self.download_button.setText('Downloading...Click to Stop Download')
         self.add_user_button.setDisabled(True)
         self.remove_user_button.setDisabled(True)
@@ -832,6 +835,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_add_subreddit_list.setDisabled(True)
         self.file_remove_user_list.setDisabled(True)
         self.file_remove_subreddit_list.setDisabled(True)
+        self.progress_label.setVisible(False)
         self.progress_bar.setVisible(True)
 
     def finished_download_gui_shift(self):
@@ -847,7 +851,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
         self.update_number_of_downloads()
-        self.progress_bar.setVisible(False)
         self.progress_label.setText('Download complete - Downloaded: %s' % self.download_count)
         if self.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()

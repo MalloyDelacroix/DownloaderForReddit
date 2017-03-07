@@ -189,7 +189,6 @@ class RedditObject(object):
         self.content.clear()
         self.new_submissions = None
         self.failed_extracts.clear()
-        print('Session data cleared for: %s' % self.name)
 
     def update_post_limit(self, new_limit):
         if not self.do_not_edit:
