@@ -541,6 +541,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         elif text.startswith('Count'):
             t, count = text.rsplit(' ', 1)
             self.download_count += int(count)
+        else:
+            self.output_box.append(text)
 
     def update_status_bar_download_count(self):
         self.downloaded += 1
@@ -845,6 +847,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
         self.update_number_of_downloads()
+        self.progress_bar.setVisible(False)
         self.progress_label.setText('Download complete - Downloaded: %s' % self.download_count)
         if self.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()

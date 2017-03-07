@@ -113,7 +113,6 @@ class RedditExtractor(QObject):
                         date_limit = user.date_limit
                     submissions = self.get_submissions_user(redditor, date_limit, user.post_limit)
                     user.get_new_submissions(submissions)
-                    print('Validated: User')
                     self.validated_objects.put(user)
                     user.check_save_path()
                     self.update_progress_bar()
@@ -121,10 +120,10 @@ class RedditExtractor(QObject):
                     self.queue.put("%s does not exist" % user.name)
                     self.update_progress_bar()
                     self.update_progress_bar()
+        self.validated_objects.put(None)
 
     def validate_subreddits(self):
         """See validate_users"""
-        self.status_bar_update.emit('Validating Subreddits...')
         self.setup_progress_bar.emit(len(self.subreddit_list) * 2)
         for sub in self.subreddit_list:
             if self.run:
@@ -147,6 +146,7 @@ class RedditExtractor(QObject):
                     self.queue.put("%s is not a valid subreddit" % sub.name)
                     self.update_progress_bar()
                     self.update_progress_bar()
+        self.validated_objects.put(None)
 
     def validate_users_and_subreddits(self):
         """See validate_users"""
@@ -178,14 +178,23 @@ class RedditExtractor(QObject):
                     self.validated_objects.put(user)
                     user.check_save_path()
                     self.update_progress_bar()
+        self.validated_objects.put(None)
 
     def downloads_finished(self):
-        for sub in self.validated_subreddits:
-            sub.clear_download_session_data()
-        for user in self.validated_users:
-            user.clear_download_session_data()
+        self.queue.put('Finishing downloads')
+        try:
+            for sub in self.subreddit_list:
+                sub.clear_download_session_data()
+        except TypeError:
+            pass
+        try:
+            for user in self.user_list:
+                print(user.name)
+                user.clear_download_session_data()
+        except TypeError:
+            pass
         self.queue.put('\nFinished')
-        self.send_unfinished_downloads()
+        # self.send_unfinished_downloads()
         if len(self.downloaded_users) > 0:
             self.send_downloaded_users()
         self.finished.emit()
@@ -210,8 +219,8 @@ class RedditExtractor(QObject):
         self.downloader_thread.started.connect(self.downloader.download)
         self.downloader.finished.connect(self.downloader_thread.quit)
         self.downloader.finished.connect(self.downloader.deleteLater)
-        self.downloader.finished.connect(self.downloads_finished)
         self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
+        self.downloader_thread.finished.connect(self.downloads_finished)
         self.downloader_thread.start()
 
     def get_submissions_user(self, user, date_limit, post_limit):  # 0 = greater than, 1 = less than
@@ -293,11 +302,15 @@ class RedditExtractor(QObject):
     def update_progress_bar(self):
         self.update_progress_bar_signal.emit()
 
+    def add_downloaded_user(self, user):
+        self.downloaded_users.append(user)
+
 
 class Extractor(QObject):
 
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
+    send_user = pyqtSignal(str)
 
     def __init__(self, queue, valid_objects, post_queue):
         """
@@ -312,25 +325,23 @@ class Extractor(QObject):
         self.validated_objects = valid_objects
         self.post_queue = post_queue
         self.run = True
-        print('extractor initialized')
 
     def extract(self):
         """Calls the extract processes for each user or subreddit"""
         while self.run:
             item = self.validated_objects.get()
-            print('Extractor %s' % item.name)
             if item is not None:
                 item.load_unfinished_downloads()
                 item.extract_content()
                 if len(item.failed_extracts) > 0:
                     for entry in item.failed_extracts:
                         self.queue.put(entry)
-                self.queue.put('Count %s' % len(item.content))
-                while len(item.content) > 0:
-                    post = item.content.pop(0)
+                if len(item.content) > 0:
+                    self.send_user.emit(item.name)
+                    self.queue.put('Count %s' % len(item.content))
+                for post in item.content:
                     post.install_queue(self.queue)
                     self.post_queue.put(post)
-                item.clear_download_session_data()
                 self.update_progress_bar.emit()
             else:
                 self.run = False
@@ -365,7 +376,6 @@ class Downloader(QObject):
         """Spawns the download pool threads"""
         while self.run:
             post = self.queue.get()
-            print('Url: %s' % post.url)
             if post is not None:
                 self.download_pool.start(post)
             else:
