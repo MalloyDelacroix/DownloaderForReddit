@@ -47,6 +47,7 @@ from UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from AboutDialog import AboutDialog
 from UpdaterChecker import UpdateChecker
 from version import __version__
+from DownloadedUsersDialog import DownloadedUsersDialog
 
 
 class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -68,6 +69,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.version = __version__
         self.failed_list = []
         self.last_downloaded_users = []
+        self.last_downloaded_content = []
         self.download_count = 0
         self.downloaded = 0
         self.running = False
@@ -806,18 +808,17 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def open_last_downloaded_users(self):
         """
         Opens a dialog that shows the downloads of any user that has been added to the last downloaded users list.
-        The dialog that is opened is the user settings dialog with certain restrictions implemented and buttons set to
-        not visible.
         """
         if len(self.last_downloaded_users) > 0:
-            users_dialog = UserSettingsDialog(self.last_downloaded_users, self.last_downloaded_users[0], True)
-            users_dialog.change_to_downloads_view()
-            users_dialog.view_downloads_button.setText('Show Downloads')
+            downloaded_users_dialog = DownloadedUsersDialog(self.last_downloaded_users, self.last_downloaded_users[0],
+                                                            self.last_downloaded_content)
+            downloaded_users_dialog.change_to_downloads_view()
+            downloaded_users_dialog.view_downloads_button.setText('Show Downloads')
             # users_dialog.view_downloads_button.setVisible(False)
-            users_dialog.restore_defaults_button.setVisible(False)
-            users_dialog.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
-            users_dialog.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
-            users_dialog.exec_()
+            downloaded_users_dialog.restore_defaults_button.setVisible(False)
+            downloaded_users_dialog.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
+            downloaded_users_dialog.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
+            downloaded_users_dialog.show()
         else:
             Message.no_users_downloaded(self)
 
@@ -1346,3 +1347,17 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             os.rename('dfr_updater_temp', 'dfr_updater')
         except:
             Message.updater_cleanup_failure(self)
+
+
+
+    def downloaded_users_test(self, page):
+        current_list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+        downloaded_users_dialog = DownloadedUsersDialog(current_list_model,
+                                                  current_list_model.reddit_object_list[0], False)
+        downloaded_users_dialog.single_download.connect(self.run_single_user)
+        downloaded_users_dialog.show()
+        if page == 1:
+            downloaded_users_dialog.change_to_downloads_view()
+        if not downloaded_users_dialog.closed:
+            downloaded_users_dialog.show()
+

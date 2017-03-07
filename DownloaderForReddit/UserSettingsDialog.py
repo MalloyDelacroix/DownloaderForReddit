@@ -39,7 +39,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     single_download = QtCore.pyqtSignal(object)
 
-    def __init__(self, list_model, clicked_user, downloaded_users_mode):
+    def __init__(self, list_model, clicked_user):
         """
         Class that forms the user dialog box that is accessed by right-clicking a user in the GUI window to adjust
         settings for individual users. Also contains a list model of all other users in the same list so other users can
@@ -50,7 +50,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
         :param list_model: The underlying list model that is currently displayed in the GUI
         :param clicked_user: The user name that is right-clicked to bring the menu up.
-        :param downloaded_users_mode: When opened as the recently downloaded users dialog, this will be True, else False
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
@@ -60,7 +59,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.user_list = list_model
         self.display_list = [x.name for x in self.user_list]
         self.current_user = clicked_user
-        self.downloaded_users_mode = downloaded_users_mode
         self.restore_defaults = False
         self.closed = False
 
@@ -72,10 +70,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.show_downloads = True
 
         self.download_user_button.clicked.connect(self.download_single)
-        if not self.downloaded_users_mode:
-            self.view_downloads_button.clicked.connect(self.change_page)
-        else:
-            self.view_downloads_button.clicked.connect(self.toggle_download_views)
+        self.view_downloads_button.clicked.connect(self.change_page)
 
         self.cust_save_path_dialog.clicked.connect(self.select_save_path_dialog)
 
@@ -353,13 +348,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
                 self.icon_size_large.setChecked(True)
             else:
                 self.icon_size_extra_large.setChecked(True)
-
-    def toggle_download_views(self):
-        if self.show_downloads:
-            self.show_downloads = False
-        else:
-            self.show_downloads = True
-        self.setup_user_content_list()
 
     def resizeEvent(self, event):
         if self.user_content_icons_full_width:
