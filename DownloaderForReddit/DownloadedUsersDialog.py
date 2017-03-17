@@ -1,12 +1,8 @@
 import os
-import sys
-import subprocess
-import time
 import re
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from UserSettingsDialog import UserSettingsDialog
-from Messages import Message
 
 
 class DownloadedUsersDialog(UserSettingsDialog):

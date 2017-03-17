@@ -69,6 +69,7 @@ class RedditExtractor(QObject):
         self.failed_downloads = []
         self.downloaded_users = []
         self.unfinished_downloads = []
+        self.user_run = True if self.user_list is not None else False
 
         self.settings = QSettings("SomeGuySoftware", "RedditDownloader")
 
@@ -198,12 +199,13 @@ class RedditExtractor(QObject):
         self.finished.emit()
 
     def start_extractor(self):
-        self.extractor = Extractor(self.queue, self.validated_objects, self.queued_posts)
+        self.extractor = Extractor(self.queue, self.validated_objects, self.queued_posts, self.user_run)
         self.stop.connect(self.extractor.stop)
         self.extractor_thread = QThread()
         self.extractor.moveToThread(self.extractor_thread)
         self.extractor_thread.started.connect(self.extractor.extract)
         self.extractor.update_progress_bar.connect(self.update_progress_bar)
+        self.extractor.send_user.connect(self.add_downloaded_user)
         self.extractor.finished.connect(self.extractor_thread.quit)
         self.extractor.finished.connect(self.extractor.deleteLater)
         self.extractor_thread.finished.connect(self.extractor_thread.deleteLater)
@@ -274,6 +276,9 @@ class RedditExtractor(QObject):
                 posts = sub.top('all', limit=post_limit)
         return posts
 
+    def add_downloaded_user(self, user_tuple):
+        self.downloaded_users.append(user_tuple)
+
     def send_downloaded_users(self):
         self.downloaded_users_signal.emit(self.downloaded_users)
 
@@ -300,17 +305,14 @@ class RedditExtractor(QObject):
     def update_progress_bar(self):
         self.update_progress_bar_signal.emit()
 
-    def add_downloaded_user(self, user):
-        self.downloaded_users.append(user)
-
 
 class Extractor(QObject):
 
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
-    send_user = pyqtSignal(str)
+    send_user = pyqtSignal(tuple)
 
-    def __init__(self, queue, valid_objects, post_queue):
+    def __init__(self, queue, valid_objects, post_queue, user_extract):
         """
         A class that is extracts downloadable links from container websites who's links have been posted to reddit
 
@@ -322,6 +324,7 @@ class Extractor(QObject):
         self.queue = queue
         self.validated_objects = valid_objects
         self.post_queue = post_queue
+        self.user_extract = user_extract
         self.run = True
 
     def extract(self):
@@ -335,8 +338,9 @@ class Extractor(QObject):
                     for entry in item.failed_extracts:
                         self.queue.put(entry)
                 if len(item.content) > 0:
-                    self.send_user.emit(item.name)
                     self.queue.put('Count %s' % len(item.content))
+                    if self.user_extract:
+                        self.send_user.emit((item.name, [x.submission_id for x in item.content]))
                 for post in item.content:
                     post.install_queue(self.queue)
                     self.post_queue.put(post)

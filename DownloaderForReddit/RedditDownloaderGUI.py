@@ -307,7 +307,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 position = 0
             user_settings_dialog = UserSettingsDialog(current_list_model,
-                                                      current_list_model.reddit_object_list[position], False)
+                                                      current_list_model.reddit_object_list[position])
             user_settings_dialog.single_download.connect(self.run_single_user)
             user_settings_dialog.show()
             if page == 1:
@@ -798,11 +798,12 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             index = indicies[0]
         return index
 
-    def fill_downloaded_users_list(self, users):
+    def fill_downloaded_users_list(self, user_tuple_list):
         """Adds a users name to a list if they had content downloaded while the program is open"""
-        for user in self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list:
-            if user.name in users:
-                self.last_downloaded_users.append(user)
+        for a, b in user_tuple_list:
+            self.last_downloaded_users.append(a)
+            for x in b:
+                self.last_downloaded_content.append(x)
         self.file_last_downloaded_users.setEnabled(True)
 
     def open_last_downloaded_users(self):
@@ -810,14 +811,13 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Opens a dialog that shows the downloads of any user that has been added to the last downloaded users list.
         """
         if len(self.last_downloaded_users) > 0:
-            downloaded_users_dialog = DownloadedUsersDialog(self.last_downloaded_users, self.last_downloaded_users[0],
+            user_display_list = [user for user in
+                                 self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
+                                 if user.name in self.last_downloaded_users]
+
+            downloaded_users_dialog = DownloadedUsersDialog(user_display_list, user_display_list[0],
                                                             self.last_downloaded_content)
             downloaded_users_dialog.change_to_downloads_view()
-            downloaded_users_dialog.view_downloads_button.setText('Show Downloads')
-            # users_dialog.view_downloads_button.setVisible(False)
-            downloaded_users_dialog.restore_defaults_button.setVisible(False)
-            downloaded_users_dialog.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
-            downloaded_users_dialog.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
             downloaded_users_dialog.show()
         else:
             Message.no_users_downloaded(self)
