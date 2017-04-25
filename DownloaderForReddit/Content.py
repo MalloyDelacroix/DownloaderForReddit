@@ -60,44 +60,43 @@ class Content(QRunnable):
 
         self.queue = None
 
-    def run(self):
-        """
-        The method that actually does the downloading of the content.  This method also saves the file to the specified
-        folder with the specified naming convention and is where each file will ultimately be named
-        """
         if self.subreddit_save_method is None:
-            filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
-                                     self.file_ext)
+            self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
+                                          self.file_ext)
             self.check_save_path_subreddit(self.save_path)
 
         elif self.subreddit_save_method == 'User Name':
-            filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
-                                        self.number_in_seq, self.file_ext)
+            self.filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
+                                             self.number_in_seq, self.file_ext)
             self.check_save_path_subreddit('%s%s/' % (self.save_path, self.user))
 
         elif self.subreddit_save_method == 'Subreddit Name':
-            filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit, self.clean_filename(self.submission_id),
-                                        self.number_in_seq, self.file_ext)
+            self.filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit, self.clean_filename(self.submission_id),
+                                             self.number_in_seq, self.file_ext)
             self.check_save_path_subreddit('%s%s' % (self.save_path, self.subreddit))
 
         elif self.subreddit_save_method == 'Subreddit Name/User Name':
-            filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
-                                         self.clean_filename(self.submission_id), self.number_in_seq, self.file_ext)
+            self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
+                                                self.clean_filename(self.submission_id), self.number_in_seq,
+                                                self.file_ext)
             self.check_save_path_subreddit('%s%s/%s/' % (self.save_path, self.subreddit, self.user))
 
         elif self.subreddit_save_method == 'User Name/Subreddit Name':
-            filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
-                                         self.clean_filename(self.submission_id), self.number_in_seq, self.file_ext)
+            self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
+                                                self.clean_filename(self.submission_id), self.number_in_seq,
+                                                self.file_ext)
             self.check_save_path_subreddit('%s%s/%s' % (self.save_path, self.user, self.subreddit))
         else:
-            filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
-                                     self.file_ext)
+            self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
+                                          self.file_ext)
+
+    def run(self):
         response = requests.get(self.url, stream=True)
         if response.status_code == 200:
-            with open(filename, 'wb') as file:
+            with open(self.filename, 'wb') as file:
                 for chunk in response.iter_content(1024):
                     file.write(chunk)
-            self.queue.put('Saved %s' % filename)
+            self.queue.put('Saved %s' % self.filename)
             self.downloaded = True
             return None
         self.queue.put('Failed Download:  File %s%s posted by %s failed to download...try link to download '

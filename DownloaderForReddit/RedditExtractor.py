@@ -340,7 +340,7 @@ class Extractor(QObject):
                 if len(item.content) > 0:
                     self.queue.put('Count %s' % len(item.content))
                     if self.user_extract:
-                        self.send_user.emit((item.name, [x.submission_id for x in item.content]))
+                        self.send_user.emit((item.name, [x.filename for x in item.content]))
                 for post in item.content:
                     post.install_queue(self.queue)
                     self.post_queue.put(post)
