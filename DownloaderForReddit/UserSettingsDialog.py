@@ -68,6 +68,10 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_content_icon_size = self.settings.value('user_content_icon_size', 110, type=int)
 
         self.show_downloads = True
+        self.current_item_display_list = self.settings.value('current_item_display_list', 'previous_downloads',
+                                                             type=str)
+        self.item_display_reddit_object_link_dict = {'previous_downloads': self.current_user.already_downloaded,
+                                                     'saved_content': self.current_user.saved_submissions}
 
         self.download_user_button.clicked.connect(self.download_single)
         self.view_downloads_button.clicked.connect(self.change_page)
@@ -85,8 +89,8 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
         self.name_downloads_combo.addItems(('Image/Album Id', 'Post Title'))
 
-        self.previous_downloads_list.acceptRichText()
-        self.previous_downloads_list.setOpenExternalLinks(True)
+        # self.previous_downloads_list.acceptRichText()
+        # self.previous_downloads_list.setOpenExternalLinks(True)
 
         self.setup()
 
@@ -102,16 +106,19 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_content_list.customContextMenuRequested.connect(self.user_content_list_right_click)
         self.user_content_list.doubleClicked.connect(lambda: self.open_file(self.user_content_list.currentRow()))
 
+        self.item_display_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.item_display_list.customContextMenuRequested.connect(self.item_display_list_right_click)
+
     def setup(self):
         """
         Sets up parts of the dialog that are dependant upon which user is selected.  It is used as an independent
         function instead of in __init__ because as different users are selected from the user list, these items need to
         be reset and applied to the newly selected user
         """
-        self.previous_downloads_list.clear()
-        for item in self.current_user.already_downloaded:
-            self.previous_downloads_list.append('<a href=%s>%s</a>' % (item, item))
-
+        if self.current_item_display_list == 'previous_downloads':
+            self.setup_previous_downloads_list()
+        else:
+            self.setup_saved_content_list()
         self.name_downloads_combo.setCurrentText(self.current_user.name_downloads_by)
 
         self.do_not_edit_checkbox.setChecked(self.current_user.do_not_edit)
@@ -133,6 +140,22 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_added_label.setText('User Added On: %s' % datetime.date.strftime(datetime.datetime.fromtimestamp(
                                       self.current_user.user_added), '%m-%d-%Y at %I:%M %p'))
         self.user_downloads_label.setText(str(len(self.current_user.already_downloaded)))
+
+    def setup_previous_downloads_list(self):
+        self.current_item_display_list = 'previous_downloads'
+        for item in self.current_user.already_downloaded:
+            self.item_display_list.addItem(item)
+
+    def setup_saved_content_list(self):
+        self.current_item_display_list = 'saved_content'
+        self.item_display_list.clear()
+        for item in self.current_user.saved_submissions:
+            pass
+
+    def remove_item_from_item_display_list(self):
+        for item in self.item_display_list.selectedItems():
+            self.item_display_list.takeItem(self.item_display_list.row(item))
+            self.item_display_reddit_object_link_dict[self.current_item_display_list].remove(item.text())
 
     def list_item_change(self):
         self.save_temporary_user()
@@ -258,6 +281,20 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             Message.no_user_download_folder(self)
         menu.exec(QtGui.QCursor.pos())
 
+    def item_display_list_right_click(self):
+        menu = QtWidgets.QMenu()
+        button_text = 'Remove Item' if len(self.item_display_list.selectedItems()) < 2 else 'Remove Items'
+        alt_list = 'Previously Downloaded List' if self.current_item_display_list != 'previous_downloads' else \
+            'Saved Content List'
+        remove_item = menu.addAction(button_text)
+        menu.addSeparator()
+        switch_lists = menu.addAction(alt_list)
+        remove_item.triggered.connect(self.remove_item_from_item_display_list)
+        next_list = self.setup_saved_content_list if self.current_item_display_list == 'previous_downloads' else \
+            self.setup_previous_downloads_list
+        switch_lists.triggered.connect(next_list)
+        menu.exec(QtGui.QCursor.pos())
+
     def user_content_list_right_click(self):
         self.menu = QtWidgets.QMenu()
         try:
@@ -358,6 +395,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.closed = True
         self.settings.setValue('user_content_icons_full_width', self.user_content_icons_full_width)
         self.settings.setValue('user_content_icon_size', self.user_content_icon_size)
+        self.settings.setValue('current_item_display_list', self.current_item_display_list)
 
 
 # Functions that sort the displayed content in an expected manner

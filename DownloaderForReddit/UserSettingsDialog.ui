@@ -182,8 +182,12 @@
          <property name="sizeConstraint">
           <enum>QLayout::SetNoConstraint</enum>
          </property>
-         <item row="0" column="0" colspan="3">
-          <widget class="QTextBrowser" name="previous_downloads_list"/>
+         <item row="2" column="0" colspan="3">
+          <widget class="QLabel" name="user_added_label">
+           <property name="text">
+            <string>User Added On:</string>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_3">
@@ -199,10 +203,13 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0" colspan="3">
-          <widget class="QLabel" name="user_added_label">
-           <property name="text">
-            <string>User Added On:</string>
+         <item row="0" column="0" colspan="3">
+          <widget class="QListWidget" name="item_display_list">
+           <property name="showDropIndicator" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
            </property>
           </widget>
          </item>
