@@ -99,7 +99,7 @@ class RedditExtractor(QObject):
                 redditor = self._r.redditor(user.name)
                 try:
                     test = redditor.fullname
-                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     redditor = None
                     self.remove_invalid_user.emit(user)
 
@@ -131,7 +131,7 @@ class RedditExtractor(QObject):
                 subreddit = self._r.subreddit(sub.name)
                 try:
                     test = subreddit.fullname
-                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     subreddit = None
                     self.remove_invalid_subreddit.emit(sub)
 
@@ -157,7 +157,7 @@ class RedditExtractor(QObject):
                     subreddit = self._r.subreddit(sub.name)
                     self.validated_subreddits.append(subreddit.display_name)
                     self.queue.put('%s is valid' % subreddit.display_name)
-                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound):
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     self.queue.put('%s is not valid' % sub.name)
 
         if self.run:
@@ -165,7 +165,7 @@ class RedditExtractor(QObject):
                 redditor = self._r.redditor(user.name)
                 try:
                     test = redditor.fullname
-                except prawcore.exceptions.NotFound:
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     redditor = None
                     self.queue.put('%s is not valid' % user.name)
                     self.update_progress_bar()
