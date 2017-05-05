@@ -36,7 +36,7 @@ class RedditExtractor(QObject):
     remove_invalid_user = pyqtSignal(object)
     remove_invalid_subreddit = pyqtSignal(object)
     finished = pyqtSignal()
-    downloaded_users_signal = pyqtSignal(list)
+    downloaded_users_signal = pyqtSignal(dict)
     unfinished_downloads_signal = pyqtSignal(list)
     status_bar_update = pyqtSignal(str)
     setup_progress_bar = pyqtSignal(int)
@@ -67,7 +67,7 @@ class RedditExtractor(QObject):
         self.validated_objects = Queue()
         self.validated_subreddits = []
         self.failed_downloads = []
-        self.downloaded_users = []
+        self.downloaded_users = {}
         self.unfinished_downloads = []
         self.user_run = True if self.user_list is not None else False
 
@@ -277,7 +277,10 @@ class RedditExtractor(QObject):
         return posts
 
     def add_downloaded_user(self, user_tuple):
-        self.downloaded_users.append(user_tuple)
+        if user_tuple[0] in self.downloaded_users:
+            self.downloaded_users[user_tuple[0]].extend(user_tuple[1])
+        else:
+            self.downloaded_users[user_tuple[0]] = user_tuple[1]
 
     def send_downloaded_users(self):
         self.downloaded_users_signal.emit(self.downloaded_users)

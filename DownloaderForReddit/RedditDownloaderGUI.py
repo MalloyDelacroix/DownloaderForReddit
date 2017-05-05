@@ -68,8 +68,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.version = __version__
         self.failed_list = []
-        self.last_downloaded_users = []
-        self.last_downloaded_content = []
+        self.last_downloaded_users = {}
         self.download_count = 0
         self.downloaded = 0
         self.running = False
@@ -219,9 +218,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.check_for_updates(False)
-        if self.first_run:
-            self.cleanup_outdated_code_items()
+        # self.check_for_updates(False)
+        # if self.first_run:
+            # self.cleanup_outdated_code_items()
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -798,12 +797,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             index = indicies[0]
         return index
 
-    def fill_downloaded_users_list(self, user_tuple_list):
+    def fill_downloaded_users_list(self, downloaded_user_dict):
         """Adds a users name to a list if they had content downloaded while the program is open"""
-        for a, b in user_tuple_list:
-            self.last_downloaded_users.append(a)
-            for x in b:
-                self.last_downloaded_content.append(x)
+        self.last_downloaded_users = downloaded_user_dict
         self.file_last_downloaded_users.setEnabled(True)
 
     def open_last_downloaded_users(self):
@@ -816,7 +812,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                  if user.name in self.last_downloaded_users]
 
             downloaded_users_dialog = DownloadedUsersDialog(user_display_list, user_display_list[0],
-                                                            self.last_downloaded_content)
+                                                            self.last_downloaded_users)
             downloaded_users_dialog.change_to_downloads_view()
             downloaded_users_dialog.show()
         else:
@@ -1360,4 +1356,3 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             downloaded_users_dialog.change_to_downloads_view()
         if not downloaded_users_dialog.closed:
             downloaded_users_dialog.show()
-
