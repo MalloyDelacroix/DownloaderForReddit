@@ -59,8 +59,6 @@ class DownloadedUsersDialog(UserSettingsDialog):
         if self.page_two_geom is not None:
             self.resize(self.page_two_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(1)
-        self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(False)
-        self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
         self.setup_user_content_list()
 
     def list_item_change(self):

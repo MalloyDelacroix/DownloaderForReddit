@@ -89,9 +89,6 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
         self.name_downloads_combo.addItems(('Image/Album Id', 'Post Title'))
 
-        # self.previous_downloads_list.acceptRichText()
-        # self.previous_downloads_list.setOpenExternalLinks(True)
-
         self.setup()
 
         self.page_one_geom = None
@@ -286,9 +283,11 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         button_text = 'Remove Item' if len(self.item_display_list.selectedItems()) < 2 else 'Remove Items'
         alt_list = 'Previously Downloaded List' if self.current_item_display_list != 'previous_downloads' else \
             'Saved Content List'
+        open_link = menu.addAction('Open Link')
         remove_item = menu.addAction(button_text)
         menu.addSeparator()
         switch_lists = menu.addAction(alt_list)
+        open_link.triggerd.connect(self.open_link)
         remove_item.triggered.connect(self.remove_item_from_item_display_list)
         next_list = self.setup_saved_content_list if self.current_item_display_list == 'previous_downloads' else \
             self.setup_previous_downloads_list
@@ -338,12 +337,9 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     def open_user_download_folder(self, position):
         selected_user = self.user_list[position]
+        open_item = selected_user.save_path
         try:
-            if sys.platform == 'win32':
-                os.startfile(selected_user.save_path)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, selected_user.save_path])
+            self.open_in_system(open_item)
         except AttributeError:
             Message.no_user_selected(self)
         except FileNotFoundError:
@@ -353,13 +349,20 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         file = '%s%s%s' % (self.current_user.save_path, '/' if not self.current_user.save_path.endswith('/') else
                            '', self.user_folder[position])
         try:
-            if sys.platform == 'win32':
-                os.startfile(file)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, file])
+            self.open_in_system(file)
         except (AttributeError, FileNotFoundError):
             pass
+
+    def open_link(self):
+        link = self.current_user.already_downloaded[self.item_display_list.currentIndex()]
+        self.open_in_system(link)
+
+    def open_in_system(self, item):
+        if sys.platform == 'win32':
+            os.startfile(item)
+        else:
+            opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
+            subprocess.call([opener, item])
 
     def set_icons_full_width(self):
         self.user_content_icons_full_width = True
