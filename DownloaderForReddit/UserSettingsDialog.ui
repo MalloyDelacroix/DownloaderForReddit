@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>505</width>
-    <height>511</height>
+    <width>485</width>
+    <height>542</height>
    </rect>
   </property>
   <property name="font">
@@ -87,6 +87,12 @@
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="1" column="0">
         <layout class="QFormLayout" name="formLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMaximumSize</enum>
+         </property>
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+         </property>
          <item row="0" column="1">
           <widget class="QDateTimeEdit" name="date_limit_edit">
            <property name="toolTip">
@@ -112,13 +118,6 @@
          </item>
          <item row="2" column="1">
           <widget class="QComboBox" name="name_downloads_combo"/>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Previous Downloads:</string>
-           </property>
-          </widget>
          </item>
          <item row="5" column="1">
           <widget class="QCheckBox" name="avoid_duplicates_checkbox">
@@ -177,44 +176,6 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="0">
-        <layout class="QGridLayout" name="gridLayout_2">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetNoConstraint</enum>
-         </property>
-         <item row="2" column="0" colspan="3">
-          <widget class="QLabel" name="user_added_label">
-           <property name="text">
-            <string>User Added On:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Total User Downloads: </string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLabel" name="user_downloads_label">
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0" colspan="3">
-          <widget class="QListWidget" name="item_display_list">
-           <property name="showDropIndicator" stdset="0">
-            <bool>false</bool>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item row="0" column="0">
         <layout class="QGridLayout" name="gridLayout_3">
          <item row="0" column="0">
@@ -234,6 +195,51 @@
            </property>
            <property name="text">
             <string>Do not overwrite these settings</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0" rowspan="2">
+        <layout class="QGridLayout" name="gridLayout_2">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetNoConstraint</enum>
+         </property>
+         <item row="3" column="0" colspan="3">
+          <widget class="QLabel" name="user_added_label">
+           <property name="text">
+            <string>User Added On:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Total User Downloads: </string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="user_downloads_label">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="3">
+          <widget class="QListWidget" name="item_display_list">
+           <property name="showDropIndicator" stdset="0">
+            <bool>false</bool>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="item_display_list_label">
+           <property name="text">
+            <string>Previous Downloads:</string>
            </property>
           </widget>
          </item>

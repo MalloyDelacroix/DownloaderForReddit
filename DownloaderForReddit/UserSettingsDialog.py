@@ -64,6 +64,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
         self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
 
+        self.restoreGeometry(self.settings.value('user_settings_dialog_geometry', self.saveGeometry()))
         self.user_content_icons_full_width = self.settings.value('user_content_icons_full_width', False, type=bool)
         self.user_content_icon_size = self.settings.value('user_content_icon_size', 110, type=int)
 
@@ -71,7 +72,8 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.current_item_display_list = self.settings.value('current_item_display_list', 'previous_downloads',
                                                              type=str)
         self.item_display_reddit_object_link_dict = {'previous_downloads': self.current_user.already_downloaded,
-                                                     'saved_content': self.current_user.saved_submissions}
+                                                     'saved_content': self.current_user.saved_content,
+                                                     'saved_submissions': self.current_user.saved_submissions}
 
         self.download_user_button.clicked.connect(self.download_single)
         self.view_downloads_button.clicked.connect(self.change_page)
@@ -140,14 +142,25 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     def setup_previous_downloads_list(self):
         self.current_item_display_list = 'previous_downloads'
+        self.item_display_list.clear()
+        self.item_display_list_label.setText('Previous Downloads:')
         for item in self.current_user.already_downloaded:
             self.item_display_list.addItem(item)
 
     def setup_saved_content_list(self):
         self.current_item_display_list = 'saved_content'
         self.item_display_list.clear()
+        self.item_display_list_label.setText('Saved Content:')
+        for key, value in self.current_user.saved_content.items():
+            list_item = '%s:  %s' % (value[1], key)
+            self.item_display_list.addItem(list_item)
+
+    def setup_saved_submission_list(self):
+        self.current_item_display_list = 'saved_submissions'
+        self.item_display_list.clear()
+        self.item_display_list_label.setText('Saved Submissions:')
         for item in self.current_user.saved_submissions:
-            pass
+            self.item_display_list.addItem(item)
 
     def remove_item_from_item_display_list(self):
         for item in self.item_display_list.selectedItems():
@@ -281,17 +294,21 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
     def item_display_list_right_click(self):
         menu = QtWidgets.QMenu()
         button_text = 'Remove Item' if len(self.item_display_list.selectedItems()) < 2 else 'Remove Items'
-        alt_list = 'Previously Downloaded List' if self.current_item_display_list != 'previous_downloads' else \
-            'Saved Content List'
         open_link = menu.addAction('Open Link')
         remove_item = menu.addAction(button_text)
         menu.addSeparator()
-        switch_lists = menu.addAction(alt_list)
-        open_link.triggerd.connect(self.open_link)
+        previous_downloads_list = menu.addAction('Previous Downloads')
+        saved_content_list = menu.addAction('Saved Content')
+        saved_submissions_list = menu.addAction('Saved Submissions')
+        menu_dict = {'previous_downloads': previous_downloads_list,
+                     'saved_content': saved_content_list,
+                     'saved_submissions': saved_submissions_list}
+        open_link.triggered.connect(self.open_link)
         remove_item.triggered.connect(self.remove_item_from_item_display_list)
-        next_list = self.setup_saved_content_list if self.current_item_display_list == 'previous_downloads' else \
-            self.setup_previous_downloads_list
-        switch_lists.triggered.connect(next_list)
+        previous_downloads_list.triggered.connect(self.setup_previous_downloads_list)
+        saved_content_list.triggered.connect(self.setup_saved_content_list)
+        saved_submissions_list.triggered.connect(self.setup_saved_submission_list)
+        menu_dict[self.current_item_display_list].setEnabled(False)
         menu.exec(QtGui.QCursor.pos())
 
     def user_content_list_right_click(self):
@@ -354,7 +371,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             pass
 
     def open_link(self):
-        link = self.current_user.already_downloaded[self.item_display_list.currentIndex()]
+        link = self.current_user.already_downloaded[self.item_display_list.currentIndex().row()]
         self.open_in_system(link)
 
     def open_in_system(self, item):
@@ -396,6 +413,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     def closeEvent(self, event):
         self.closed = True
+        self.settings.setValue('user_settings_dialog_geometry', self.saveGeometry())
         self.settings.setValue('user_content_icons_full_width', self.user_content_icons_full_width)
         self.settings.setValue('user_content_icon_size', self.user_content_icon_size)
         self.settings.setValue('current_item_display_list', self.current_item_display_list)
