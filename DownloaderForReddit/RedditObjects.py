@@ -98,11 +98,13 @@ class RedditObject(object):
                                             self.save_path, self.subreddit_save_method, self.name_downloads_by)
                 self.extract(extractor)
 
+                """
             elif "eroshare" in post.url:
                 extractor = EroshareExtractor(post.url, post.author, post.title, post.subreddit, post.created,
                                               self.save_path, self.subreddit_save_method,
                                               self.name_downloads_by)
                 self.extract(extractor)
+                """
 
             elif "reddituploads" in post.url:
                 pass
