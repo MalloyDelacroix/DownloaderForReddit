@@ -74,7 +74,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         self.date_restriction_checkbox.setCheckState(self.settings.value('date_restriction_checkbox', 0, type=int))
         self.restrict_by_custom_date_checkbox.setChecked(self.settings.value('restrict_by_custom_date_checkbox', False,
                                                                              type=bool))
-        self.custom_date = self.settings.value('settings_custom_date', 0, type=int)
+        self.custom_date = self.settings.value('settings_custom_date', 86400, type=int)
+        if self.custom_date < 86400:
+            self.custom_date = 86400
         self.restrict_to_score_checkbox.setCheckState(self.settings.value('restrict_to_score_checkbox', 0, type=int))
         self.sub_sort_hot_radio.setChecked(self.settings.value('sub_sort_hot_radio', False, type=bool))
         self.sub_sort_rising_radio.setChecked(self.settings.value('sub_sort_rising_radio', False, type=bool))

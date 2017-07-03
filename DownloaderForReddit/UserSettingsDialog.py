@@ -123,6 +123,8 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.do_not_edit_checkbox.setChecked(self.current_user.do_not_edit)
         date_limit = self.current_user.date_limit if self.current_user.custom_date_limit is None else \
             self.current_user.custom_date_limit
+        if date_limit < 86400:
+            date_limit = 86400
         if self.current_user.custom_date_limit is None:
             self.restrict_date_checkbox.setChecked(True)
         elif self.current_user.custom_date_limit == 1:

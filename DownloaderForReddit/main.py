@@ -32,6 +32,7 @@ import ctypes
 from RedditDownloaderGUI import RedditDownloaderGUI
 from version import __version__
 
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
 
 if sys.platform == 'win32':
     myappid = 'SomeGuySoftware.DownloaderForReddit.%s' % __version__
