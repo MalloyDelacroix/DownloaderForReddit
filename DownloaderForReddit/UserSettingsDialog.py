@@ -91,6 +91,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
         self.name_downloads_combo.addItems(('Image/Album Id', 'Post Title'))
 
+        self.saved_content_name_dict = {}
         self.setup()
 
         self.page_one_geom = None
@@ -153,8 +154,10 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.current_item_display_list = 'saved_content'
         self.item_display_list.clear()
         self.item_display_list_label.setText('Saved Content:')
+        self.saved_content_name_dict.clear()
         for key, value in self.current_user.saved_content.items():
             list_item = '%s:  %s' % (value[1], key)
+            self.saved_content_name_dict[list_item] = key
             self.item_display_list.addItem(list_item)
 
     def setup_saved_submission_list(self):
@@ -165,9 +168,19 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.item_display_list.addItem(item)
 
     def remove_item_from_item_display_list(self):
+        if self.current_item_display_list == 'saved_content':
+            self.remove_saved_content()
+        else:
+            for item in self.item_display_list.selectedItems():
+                self.item_display_list.takeItem(self.item_display_list.row(item))
+                self.item_display_reddit_object_link_dict[self.current_item_display_list].remove(item.text())
+
+    def remove_saved_content(self):
         for item in self.item_display_list.selectedItems():
+            key = self.saved_content_name_dict[item.text()]
+            current_content_dict = self.item_display_reddit_object_link_dict[self.current_item_display_list]
             self.item_display_list.takeItem(self.item_display_list.row(item))
-            self.item_display_reddit_object_link_dict[self.current_item_display_list].remove(item.text())
+            del current_content_dict[key]
 
     def list_item_change(self):
         self.save_temporary_user()
