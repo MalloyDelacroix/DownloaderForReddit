@@ -333,18 +333,18 @@ class Extractor(QObject):
     def extract(self):
         """Calls the extract processes for each user or subreddit"""
         while self.run:
-            item = self.validated_objects.get()
-            if item is not None:
-                item.load_unfinished_downloads()
-                item.extract_content()
-                if len(item.failed_extracts) > 0:
-                    for entry in item.failed_extracts:
+            working_object = self.validated_objects.get()
+            if working_object is not None:
+                working_object.load_unfinished_downloads()
+                working_object.extract_content()
+                if len(working_object.failed_extracts) > 0:
+                    for entry in working_object.failed_extracts:
                         self.queue.put(entry)
-                if len(item.content) > 0:
-                    self.queue.put('Count %s' % len(item.content))
+                if len(working_object.content) > 0:
+                    self.queue.put('Count %s' % len(working_object.content))
                     if self.user_extract:
-                        self.send_user.emit((item.name, [x.filename for x in item.content]))
-                for post in item.content:
+                        self.send_user.emit((working_object.name, [x.filename for x in working_object.content]))
+                for post in working_object.content:
                     post.install_queue(self.queue)
                     self.post_queue.put(post)
                 self.update_progress_bar.emit()

@@ -182,7 +182,10 @@ class RedditObject(object):
 
     def check_save_path(self):
         if not os.path.isdir(self.save_path):
-            os.makedirs(self.save_path)
+            try:
+                os.makedirs(self.save_path)
+            except FileExistsError:
+                pass
 
     def clear_download_session_data(self):
         settings = QSettings("SomeGuySoftware", "RedditDownloader")
