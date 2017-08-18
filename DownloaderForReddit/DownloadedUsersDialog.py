@@ -87,7 +87,7 @@ class DownloadedUsersDialog(UserSettingsDialog):
         if self.show_downloads:
             try:
                 if len(self.file_dict) > 0:
-                    self.file_dict[self.current_user].sort(key=alphanum_key)
+                    self.file_dict[self.current_user.name].sort(key=alphanum_key)
                     # for file in sorted(self.file_dict[self.current_user.name], key=alphanum_key):
                     for file in self.file_dict[self.current_user.name]:
                         file_name = file.rsplit('/', 1)[1]
