@@ -78,10 +78,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager = Core.Injector.get_settings_manager()
 
         self.restoreGeometry(self.settings_manager.main_window_geom)
-        self.first_run = self.settings_manager.first_run
-        self.last_update = self.settings_manager.last_update
-        self.total_files_downloaded = self.settings_manager.total_files_downloaded
 
+        self.list_sort_method = self.settings_manager.list_sort_method
+        self.list_order_method = self.settings_manager.list_order_method
         self.download_users_checkbox.setCheckState(self.settings_manager.download_users)
         self.download_subreddit_checkbox.setCheckState(self.settings_manager.download_subreddits)
         self.run_user_finder_auto = self.settings_manager.run_user_finder_auto
@@ -1093,23 +1092,25 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             unfinished_dialog = UnfinishedDownloadsWarning()
             dialog = unfinished_dialog.exec_()
             if dialog == QtWidgets.QMessageBox.Accepted:
-                self.receiver.stop_run()
-                # self.settings.setValue('window_geometry', self.saveGeometry())
-                self.settings_manager.save_main_window()
-                self.settings.setValue('total_files_downloaded', self.total_files_downloaded)
-                self.settings.setValue('last_update', self.last_update)
-                if self.auto_save_on_close:
-                    self.save_state()
+                self.close()
             else:
                 QCloseEvent.ignore()
         else:
-            self.receiver.stop_run()
-            # self.settings.setValue('window_geometry', self.saveGeometry())
-            self.settings_manager.save_main_window()
-            self.settings.setValue('total_files_downloaded', self.total_files_downloaded)
-            self.settings.setValue('last_update', self.last_update)
-            if self.auto_save_on_close:
-                self.save_state()
+            self.close()
+
+    def close(self):
+        self.receiver.stop_run()
+        self.save_main_window_settings()
+        if self.settings_manager.auto_save_on_close:
+            self.save_state()
+
+    def save_main_window_settings(self):
+        self.settings_manager.main_window_geom = self.geometry()
+        self.settings_manager.list_sort_method = self.list_sort_method
+        self.settings_manager.list_order_method = self.list_order_method
+        self.settings_manager.download_users = self.download_users_checkbox.isChecked()
+        self.settings_manager.download_subreddits = self.download_subreddit_checkbox.isChecked()
+        self.settings_manager.save_main_window()
 
     def load_state(self):
         """Gets the loaded items from the settings manager and supplies the information to the GUI and List Models"""
@@ -1225,7 +1226,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def run_updater(self):
         platform = sys.platform
         split_char = '\\' if platform == 'win32' else '/'
-        updater = '%s%s%sdfr_updater%s' % (os.getcwd(), split_char, 'dfr_updater/', '.exe' if platform == 'win32' else '')
+        updater = '%s%s%sdfr_updater%s' % (os.getcwd(), split_char, 'dfr_updater/', '.exe' if platform == 'win32'
+                                           else '')
         updater = ''.join([x if x != '\\' else '/' for x in updater])
         try:
             if platform == 'win32':

@@ -31,6 +31,7 @@ import time
 
 from PyQt5 import QtWidgets, QtCore
 
+import Core.Injector
 from Core.Messages import Message
 from GUI.ImgurClientDialog import ImgurClientDialog
 
@@ -52,7 +53,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         self.setupUi(self)
         self._restore_defaults = False
 
-        self.settings = QtCore.QSettings("SomeGuySoftware", "RedditDownloader")
+        self.settings_manager = Core.Injector.get_settings_manager()
 
         self.reddit_account_link_button.setVisible(False)
         self.reddit_account_link_button.setEnabled(False)

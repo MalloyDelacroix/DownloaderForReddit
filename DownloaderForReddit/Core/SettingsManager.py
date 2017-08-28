@@ -156,6 +156,12 @@ class SettingsManager:
         except:
             return False
 
+    def save_all(self):
+        self.save_core_settings()
+        self.save_main_window()
+        self.save_user_settings_dialog()
+        self.save_subreddit_settings_dialog()
+
     def save_core_settings(self):
         self.settings.setValue("run_user_finder_auto", self.run_user_finder_auto)
         self.settings.setValue('auto_display_failed_list', self.auto_display_failed_list)
