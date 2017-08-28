@@ -27,7 +27,7 @@ import os
 
 from PyQt5.QtCore import QSettings
 
-from Core.Content import Content
+from .Content import Content
 from Extractors.Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, RedditUploadsExtractor
 
 

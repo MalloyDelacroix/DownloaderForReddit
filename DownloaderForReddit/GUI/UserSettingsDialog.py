@@ -32,6 +32,7 @@ import time
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+import Core.Injector
 from Core.Messages import Message
 from GUI_Resources.UserSettingsDialog_auto import Ui_user_settings_dialog
 
@@ -63,15 +64,14 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.restore_defaults = False
         self.closed = False
 
-        self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
-
-        self.restoreGeometry(self.settings.value('user_settings_dialog_geometry', self.saveGeometry()))
-        self.user_content_icons_full_width = self.settings.value('user_content_icons_full_width', False, type=bool)
-        self.user_content_icon_size = self.settings.value('user_content_icon_size', 110, type=int)
+        self.settings_manager = Core.Injector.get_settings_manager()
+        self.restoreGeometry(self.settings_manager.user_settings_dialog_geom)
+        self.user_content_icons_full_width = self.settings_manager.user_content_icons_full_width
+        self.user_content_icon_size = self.settings_manager.user_content_icon_size
+        self.current_item_display_list = self.settings_manager.current_user_settings_item_display_list
 
         self.show_downloads = True
-        self.current_item_display_list = self.settings.value('current_item_display_list', 'previous_downloads',
-                                                             type=str)
+
         self.item_display_reddit_object_link_dict = {'previous_downloads': self.current_user.already_downloaded,
                                                      'saved_content': self.current_user.saved_content,
                                                      'saved_submissions': self.current_user.saved_submissions}
@@ -365,7 +365,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
 
         except AttributeError:
-            print('UserSettingsDialog AttributeError: line 303')
+            print('UserSettingsDialog AttributeError: user_content_right_click')
         self.menu.exec(QtGui.QCursor.pos())
 
     def open_user_download_folder(self, position):
@@ -429,10 +429,11 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
 
     def closeEvent(self, event):
         self.closed = True
-        self.settings.setValue('user_settings_dialog_geometry', self.saveGeometry())
-        self.settings.setValue('user_content_icons_full_width', self.user_content_icons_full_width)
-        self.settings.setValue('user_content_icon_size', self.user_content_icon_size)
-        self.settings.setValue('current_item_display_list', self.current_item_display_list)
+        self.settings_manager.user_settings_dialog_geom = self.saveGeometry()
+        self.settings_manager.user_content_icons_full_width = self.user_content_icons_full_width
+        self.settings_manager.user_content_icon_size = self.user_content_icon_size
+        self.settings_manager.current_item_display_list = self.current_item_display_list
+        self.settings_manager.save_user_settings_dialog()
 
 
 # Functions that sort the displayed content in an expected manner

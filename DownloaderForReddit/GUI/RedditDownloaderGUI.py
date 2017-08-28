@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import shelve
 import shutil
 import subprocess
 import sys
@@ -44,6 +43,7 @@ from Core.UpdaterChecker import UpdateChecker
 from GUI.UserFinderGUI import UserFinderGUI
 from GUI.UserSettingsDialog import UserSettingsDialog
 from GUI.settingsGUI import RedditDownloaderSettingsGUI
+import Core.Injector
 
 from Core.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
@@ -75,61 +75,25 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.running = False
         self.user_finder_open = False
 
-        self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
-        self.first_run = self.settings.value('first_run', True, type=bool)
+        self.settings_manager = Core.Injector.get_settings_manager()
 
-        self.last_update = self.settings.value('last_update', None, type=str)
+        self.restoreGeometry(self.settings_manager.main_window_geom)
+        self.first_run = self.settings_manager.first_run
+        self.last_update = self.settings_manager.last_update
+        self.total_files_downloaded = self.settings_manager.total_files_downloaded
 
-        self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
-        self.restoreGeometry(self.settings.value('window_geometry', self.saveGeometry()))
-        self.download_users_checkbox.setCheckState(self.settings.value('download_users_checkbox', 0, type=int))
-        self.download_subreddit_checkbox.setCheckState(self.settings.value('download_subreddit_checkbox', 0, type=int))
-        self.run_user_finder_auto = self.settings.value('run_user_finder_auto', False, type=bool)
+        self.download_users_checkbox.setCheckState(self.settings_manager.download_users)
+        self.download_subreddit_checkbox.setCheckState(self.settings_manager.download_subreddits)
+        self.run_user_finder_auto = self.settings_manager.run_user_finder_auto
 
         self.unfinished_downloads_available = False
         self.unfinished_downloads = None
-
-        # Settings supplied to other parts of the program
-        self.imgur_client = self.settings.value('imgur_client', (None, None), type=tuple)
-        self.reddit_username = self.settings.value('reddit_username', None, type=str)
-        self.reddit_password = self.settings.value('reddit_password', None, type=str)
-        self.auto_save_on_close = self.settings.value('auto_save_on_close', False, type=bool)
-
-        self.restrict_date = self.settings.value('restrict_date', False, type=bool)
-        self.post_limit = self.settings.value('post_limit', 25, type=int)
-        self.download_videos = self.settings.value('download_video', True, type=bool)
-        self.download_images = self.settings.value('download_images', True, type=bool)
-        self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
-
-        self.restrict_by_submission_score = self.settings.value('restrict_by_submission_score', False, type=bool)
-        self.restrict_by_submission_score_method = self.settings.value('restrict_by_submission_score_method', 0,
-                                                                       type=int)
-        self.restrict_by_submission_score_limit = self.settings.value('restrict_by_submission_score_limit', 3000,
-                                                                      type=int)
-
-        self.subreddit_sort_method = self.settings.value('subreddit_sort_method', 0, type=int)
-        self.subreddit_sort_top_method = self.settings.value('subreddit_sort_top_method', 0, type=int)
-
-        self.save_subreddits_by = self.settings.value('save_subreddits_by', 'Subreddit Name', type=str)
-        self.name_downloads_by = self.settings.value('name_downloads_by', 'Image/Album Id', type=str)
-        self.save_path = self.settings.value('save_path', "%s%s" % (os.path.expanduser('~'), '/Downloads/'), type=str)
-
-        self.restrict_by_custom_date = self.settings.value('restrict_by_custom_date', False, type=bool)
-        self.custom_date = self.settings.value('custom__date', 0, type=int)
-
-        self.max_download_thread_count = self.settings.value('max_download_thread_count', 4, type=int)
-
-        self.list_sort_method = self.settings.value('list__sort_method', 0, type=int)
-        self.list_order_method = self.settings.value('list_order_method', 0, type=int)
-        # End of settings
 
         self.queue = queue
         self.receiver = receiver
         self.user_view_chooser_dict = {}
         self.subreddit_view_chooser_dict = {}
         self.load_state()
-
-        self.auto_display_failed_list = self.settings.value('auto_display_failed_list', True, type=bool)
 
         self.file_add_user_list.triggered.connect(self.add_user_list)
         self.file_remove_user_list.triggered.connect(self.remove_user_list)
@@ -1130,7 +1094,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             dialog = unfinished_dialog.exec_()
             if dialog == QtWidgets.QMessageBox.Accepted:
                 self.receiver.stop_run()
-                self.settings.setValue('window_geometry', self.saveGeometry())
+                # self.settings.setValue('window_geometry', self.saveGeometry())
+                self.settings_manager.save_main_window()
                 self.settings.setValue('total_files_downloaded', self.total_files_downloaded)
                 self.settings.setValue('last_update', self.last_update)
                 if self.auto_save_on_close:
@@ -1139,43 +1104,31 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 QCloseEvent.ignore()
         else:
             self.receiver.stop_run()
-            self.settings.setValue('window_geometry', self.saveGeometry())
+            # self.settings.setValue('window_geometry', self.saveGeometry())
+            self.settings_manager.save_main_window()
             self.settings.setValue('total_files_downloaded', self.total_files_downloaded)
             self.settings.setValue('last_update', self.last_update)
             if self.auto_save_on_close:
                 self.save_state()
 
     def load_state(self):
-        """Attempts to load the user and subreddit lists from the pickled state"""
-        with shelve.open('save_file', 'c') as shelf:
-            try:
-                user_list_models = shelf['user_list_models']
-                subreddit_list_models = shelf['subreddit_list_models']
-                last_user_view = shelf['current_user_view']
-                last_subreddit_view = shelf['current_subreddit_view']
-
-                for name, user_list in user_list_models.items():
-                    x = ListModel(name, 'user')
-                    x.reddit_object_list = user_list
-                    x.display_list = [i.name for i in user_list]
-                    self.user_view_chooser_dict[x.name] = x
-                    self.user_lists_combo.addItem(x.name)
-
-                for name, subreddit_list in subreddit_list_models.items():
-                    x = ListModel(name, 'subreddit')
-                    x.reddit_object_list = subreddit_list
-                    x.display_list = [i.name for i in subreddit_list]
-                    self.subreddit_view_chooser_dict[x.name] = x
-                    self.subreddit_list_combo.addItem(x.name)
-
-                self.user_lists_combo.setCurrentText(last_user_view)
-                self.subreddit_list_combo.setCurrentText(last_subreddit_view)
-
-                self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
-                self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
-
-            except KeyError:
-                pass
+        """Gets the loaded items from the settings manager and supplies the information to the GUI and List Models"""
+        reddit_object_lists = self.settings_manager.load_pickeled_state()
+        last_user_view = reddit_object_lists[2]
+        last_subreddit_view = reddit_object_lists[3]
+        try:
+            self.user_view_chooser_dict = reddit_object_lists[0]
+            self.subreddit_view_chooser_dict = reddit_object_lists[1]
+            for name, item in self.user_view_chooser_dict.items():
+                self.user_lists_combo.addItem(name)
+            for name, item in self.subreddit_view_chooser_dict.items():
+                self.subreddit_list_combo.addItem(name)
+            self.user_lists_combo.setCurrentText(last_user_view)
+            self.subreddit_list_combo.setCurrentText(last_subreddit_view)
+            self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
+            self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
+        except KeyError:
+            pass
 
     def save_state(self):
         """Pickles the user and subreddit lists and saves any settings that need to be saved"""
@@ -1193,15 +1146,13 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             name = value.name
             object_list = value.reddit_object_list
             subreddit_list_models[name] = object_list
-        try:
-            with shelve.open('save_file', 'c') as shelf:
-                shelf['user_list_models'] = user_list_models
-                shelf['subreddit_list_models'] = subreddit_list_models
-                shelf['current_user_view'] = current_user_view
-                shelf['current_subreddit_view'] = current_subreddit_view
-        except:
+        # TODO: Find someway to show that this has been saved on the GUI
+        if self.settings_manager.save_pickle_state(user_list_models, subreddit_list_models, current_user_view,
+                                                   current_subreddit_view) is not False:
             Message.failed_to_save(self)
 
+
+        """
         self.settings.setValue('imgur_client', self.imgur_client)
         self.settings.setValue('reddit_username', self.reddit_username)
         self.settings.setValue('reddit_password', self.reddit_password)
@@ -1237,6 +1188,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.settings.setValue('list__sort_method', self.list_sort_method)
         self.settings.setValue('list_order_method', self.list_order_method)
+        """
 
     def check_for_updates(self, from_menu):
         """

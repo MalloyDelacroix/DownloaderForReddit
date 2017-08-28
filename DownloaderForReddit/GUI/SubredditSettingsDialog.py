@@ -32,6 +32,7 @@ import time
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+import Core.Injector
 from Core.Messages import Message
 from GUI_Resources.SubredditSettingsDialog_auto import Ui_subreddit_settings_dialog
 
@@ -57,11 +58,9 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.restore_defaults = False
         self.closed = False
 
-        self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
-
-        self.subreddit_content_icons_full_width = self.settings.value('subreddit_content_icons_full_width', False,
-                                                                      type=bool)
-        self.subreddit_content_icon_size = self.settings.value('subreddit_content_icon_size', 110, type=int)
+        self.settings_manager = Core.Injector.get_settings_manager()
+        self.subreddit_content_icons_full_width = self.settings_manager.subreddit_content_icons_full_width
+        self.subreddit_content_icon_size = self.settings_manager.subreddit_content_icon_size
 
         self.download_subreddit_button.clicked.connect(self.download_single)
         self.view_downloads_button.clicked.connect(self.change_page)
@@ -373,8 +372,9 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
 
     def closeEvent(self, event):
         self.closed = True
-        self.settings.setValue('subreddit_content_icons_full_width', self.subreddit_content_icons_full_width)
-        self.settings.setValue('subreddit_content_icon_size', self.subreddit_content_icon_size)
+        self.settings_manager.subreddit_content_icons_full_width = self.subreddit_content_icons_full_width
+        self.settings_manager.subreddit_content_icon_size = self.subreddit_content_icon_size
+        self.settings_manager.save_subreddit_settings_dialog()
 
 
 # Functions that sort the displayed content in an expected manner
