@@ -25,27 +25,16 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets
 
-from FailedDownloadsDialog_auto import Ui_failed_downloads_dialog
+from GUI_Resources.UnfinishedDownloadsDialog_auto import Ui_unfinished_downloads_dialog
 
 
-class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
+class UnfinishedDownloadsDialog(QtWidgets.QDialog, Ui_unfinished_downloads_dialog):
 
-    def __init__(self, fail_list):
-        """
-        A dialog box that shows the failed downloads and any relevent information about them, such as: the user that
-        posted the content to reddit, the subreddit it was posted in, the title of the post, the url that failed and
-        a reason as to why it failed (ex: download or extraction error)
-
-        :param fail_list: A list supplied to the dialog of the failed content
-        """
+    def __init__(self):
+        """The unfinished dialog box setup class"""
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
 
-        for x in fail_list:
-            self.textBrowser.append(x)
-            self.textBrowser.append(' ')
-
-        self.buttonBox.accepted.connect(self.accept)
-
-    def accept(self):
-        super().accept()
+        self.close_and_keep_button.clicked.connect(self.close)
+        self.close_and_delete_button.clicked.connect(self.close)
+        self.download_button.clicked.connect(self.close)

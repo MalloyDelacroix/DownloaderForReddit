@@ -24,11 +24,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import requests
+from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
-from bs4 import BeautifulSoup
 
-from Content import Content
+from Core.Content import Content
 
 
 class Extractor(object):

@@ -25,9 +25,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
-from Content import Content
-from Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, EroshareExtractor, RedditUploadsExtractor
 from PyQt5.QtCore import QSettings
+
+from Core.Content import Content
+from Extractors.Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, RedditUploadsExtractor
 
 
 class RedditObject(object):

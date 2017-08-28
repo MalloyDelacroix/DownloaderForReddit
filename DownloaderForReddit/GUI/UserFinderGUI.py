@@ -24,16 +24,17 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import sys
 import shutil
 import subprocess
+import sys
+
+from Core.Messages import Message
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from UserFinderGUI_auto import Ui_user_finder_widget
+from Core.RedditExtractor import RedditExtractor
+from GUI.AddUserDialog import AddUserDialog
+from GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
 from UserFinder import UserFinder
-from RedditExtractor import RedditExtractor
-from AddUserDialog import AddUserDialog
-from Messages import Message
 
 
 class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):

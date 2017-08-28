@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets, QtCore
 
-from RedditAccoundDialog_auto import Ui_reddit_account_dialog
+from GUI_Resources.RedditAccoundDialog_auto import Ui_reddit_account_dialog
 
 
 class RedditAccountDialog(QtWidgets.QDialog, Ui_reddit_account_dialog):

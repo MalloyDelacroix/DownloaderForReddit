@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets, QtCore
 
-from ImgurClientDialog_auto import Ui_imgur_client_dialog
+from GUI_Resources.ImgurClientDialog_auto import Ui_imgur_client_dialog
 
 
 class ImgurClientDialog(QtWidgets.QDialog, Ui_imgur_client_dialog):

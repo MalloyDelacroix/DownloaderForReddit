@@ -23,12 +23,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from PyQt5.QtWidgets import QMessageBox as message
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QMessageBox as message
+from GUI_Resources.UpdateDialog_auto import Ui_update_dialog_box
 
-from UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
-from UpdateDialog_auto import Ui_update_dialog_box
+from GUI_Resources.UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
 
 no_user_list_message = 'There are no user lists available. To add a user, please add a user list'
 no_subreddit_list_message = 'There are no subreddit lists available. To add a subreddit please add a subreddit list'

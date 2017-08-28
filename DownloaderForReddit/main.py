@@ -24,12 +24,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import ctypes
 import sys
 from queue import Queue
 from PyQt5 import QtWidgets, QtCore
-import ctypes
 
-from RedditDownloaderGUI import RedditDownloaderGUI
+from GUI.RedditDownloaderGUI import RedditDownloaderGUI
 from version import __version__
 
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)

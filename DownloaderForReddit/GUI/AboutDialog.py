@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from AboutDialog_auto import Ui_About
+from GUI_Resources.AboutDialog_auto import Ui_About
 from version import __version__
 
 

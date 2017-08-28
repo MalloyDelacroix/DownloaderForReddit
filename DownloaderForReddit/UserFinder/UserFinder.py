@@ -24,11 +24,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from queue import Queue
+
 import praw
 import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from RedditObjects import User
+from Core.RedditObjects import User
 from version import __version__
 
 

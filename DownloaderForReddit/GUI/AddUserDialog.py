@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets, QtCore
 
-from AddUserDialog_auto import Ui_add_user_dialog
+from GUI_Resources.AddUserDialog_auto import Ui_add_user_dialog
 
 
 class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):

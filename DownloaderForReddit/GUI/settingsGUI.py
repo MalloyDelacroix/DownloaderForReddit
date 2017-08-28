@@ -23,20 +23,23 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
-import sys
-import shutil
 import datetime
+import os
+import shutil
+import sys
 import time
+
 from PyQt5 import QtWidgets, QtCore
-from ImgurClientDialog import ImgurClientDialog
-from Messages import Message
+
+from Core.Messages import Message
+from GUI.ImgurClientDialog import ImgurClientDialog
+
 if sys.platform == 'win32':
-    from RD_settings_auto import Ui_Settings
+    from GUI_Resources.RD_settings_auto import Ui_Settings
 elif sys.platform == 'darwin':
-    from SettingsGUI_mac_auto import Ui_Settings
+    from GUI_Resources.SettingsGUI_mac_auto import Ui_Settings
 else:
-    from SettingsGUI_linux_auto import Ui_Settings
+    from GUI_Resources.SettingsGUI_linux_auto import Ui_Settings
 
 
 class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):

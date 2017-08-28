@@ -23,16 +23,17 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
-import sys
-import subprocess
 import datetime
-import time
+import os
 import re
+import subprocess
+import sys
+import time
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from UserSettingsDialog_auto import Ui_user_settings_dialog
-from Messages import Message
+from Core.Messages import Message
+from GUI_Resources.UserSettingsDialog_auto import Ui_user_settings_dialog
 
 
 class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):

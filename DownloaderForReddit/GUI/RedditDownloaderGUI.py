@@ -24,30 +24,31 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import sys
+import shelve
 import shutil
 import subprocess
-import shelve
+import sys
 from datetime import datetime, date
-import imgurpython
-from PyQt5 import QtWidgets, QtCore, QtGui
 
-from RD_GUI_auto import Ui_MainWindow
-from RedditObjects import User, Subreddit
-from ListModel import ListModel
-from RedditExtractor import RedditExtractor
-from AddUserDialog import AddUserDialog
-from settingsGUI import RedditDownloaderSettingsGUI
-from UserSettingsDialog import UserSettingsDialog
-from SubredditSettingsDialog import SubredditSettingsDialog
-from Messages import Message, UnfinishedDownloadsWarning, UpdateDialog
-from FailedDownloadsDialog import FailedDownloadsDialog
-from UserFinderGUI import UserFinderGUI
-from UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
-from AboutDialog import AboutDialog
-from UpdaterChecker import UpdateChecker
+import imgurpython
+from GUI.AboutDialog import AboutDialog
+from GUI.DownloadedUsersDialog import DownloadedUsersDialog
+from GUI.FailedDownloadsDialog import FailedDownloadsDialog
+from Core.Messages import Message, UnfinishedDownloadsWarning, UpdateDialog
+from PyQt5 import QtWidgets, QtCore, QtGui
+from Core.RedditExtractor import RedditExtractor
+from Core.RedditObjects import User, Subreddit
+from GUI.SubredditSettingsDialog import SubredditSettingsDialog
+from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
+from Core.UpdaterChecker import UpdateChecker
+from GUI.UserFinderGUI import UserFinderGUI
+from GUI.UserSettingsDialog import UserSettingsDialog
+from GUI.settingsGUI import RedditDownloaderSettingsGUI
+
+from Core.ListModel import ListModel
+from GUI.AddUserDialog import AddUserDialog
+from GUI_Resources.RD_GUI_auto import Ui_MainWindow
 from version import __version__
-from DownloadedUsersDialog import DownloadedUsersDialog
 
 
 class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
