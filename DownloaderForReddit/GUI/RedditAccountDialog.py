@@ -37,19 +37,13 @@ class RedditAccountDialog(QtWidgets.QDialog, Ui_reddit_account_dialog):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
 
-        self.settings = QtCore.QSettings('ApexSoftware', 'RedditDownloader')
 
         self.reddit_account_help_button.clicked.connect(self.help_dialog)
         self.save_cancel_button_box.accepted.connect(self.accept)
         self.save_cancel_button_box.rejected.connect(self.close)
 
-        self.username_line_edit.setText(self.settings.value('username_line_edit', '', type=str))
-        self.password_line_edit.setText(self.settings.value('password_line_edit', '', type=str))
-
     def help_dialog(self):
         pass
 
     def accept(self):
-        self.settings.setValue('username_line_edit', self.username_line_edit.text())
-        self.settings.setValue('password_line_edit', self.password_line_edit.text())
         super().accept()

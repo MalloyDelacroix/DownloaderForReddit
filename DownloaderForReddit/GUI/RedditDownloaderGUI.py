@@ -75,15 +75,17 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.running = False
         self.user_finder_open = False
 
+        # region Settings
         self.settings_manager = Core.Injector.get_settings_manager()
 
-        self.restoreGeometry(self.settings_manager.main_window_geom)
-
+        geom = self.settings_manager.main_window_geom
+        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method
         self.download_users_checkbox.setCheckState(self.settings_manager.download_users)
         self.download_subreddit_checkbox.setCheckState(self.settings_manager.download_subreddits)
-        self.run_user_finder_auto = self.settings_manager.run_user_finder_auto
+        self.run_user_finder_auto = self.settings_manager.user_finder_run_with_main
+        # endregion
 
         self.unfinished_downloads_available = False
         self.unfinished_downloads = None
@@ -820,7 +822,6 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def open_settings_dialog(self):
         """Displays the main settings dialog"""
         settings = RedditDownloaderSettingsGUI()
-        settings.total_files_downloaded_label.setText('Total Files Downloaded: %s' % self.total_files_downloaded)
         dialog = settings.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
             self.reddit_username = settings.reddit_account_username
@@ -1101,11 +1102,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def close(self):
         self.receiver.stop_run()
         self.save_main_window_settings()
-        if self.settings_manager.auto_save_on_close:
+        if self.settings_manager.auto_save:
             self.save_state()
 
     def save_main_window_settings(self):
-        self.settings_manager.main_window_geom = self.geometry()
+        self.settings_manager.main_window_geom = self.saveGeometry()
         self.settings_manager.list_sort_method = self.list_sort_method
         self.settings_manager.list_order_method = self.list_order_method
         self.settings_manager.download_users = self.download_users_checkbox.isChecked()

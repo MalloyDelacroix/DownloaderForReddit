@@ -70,35 +70,15 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
 
         self.save_directory_dialog_button.clicked.connect(self.select_save_path)
 
-        self.imgur_client_id = self.settings.value('imgur_client_id', None, type=str)
-        self.imgur_client_secret = self.settings.value('imgur_client_secret', None, type=str)
-        self.reddit_account_username = self.settings.value('reddit_account_username', None, type=str)
-        self.reddit_account_password = self.settings.value('reddit_account_password', None, type=str)
-        self.auto_save_checkbox.setCheckState(self.settings.value('auto_save_checkbox', 0, type=int))
-        self.date_restriction_checkbox.setCheckState(self.settings.value('date_restriction_checkbox', 0, type=int))
-        self.restrict_by_custom_date_checkbox.setChecked(self.settings.value('restrict_by_custom_date_checkbox', False,
-                                                                             type=bool))
-        self.custom_date = self.settings.value('settings_custom_date', 86400, type=int)
-        if self.custom_date < 86400:
-            self.custom_date = 86400
-        self.restrict_to_score_checkbox.setCheckState(self.settings.value('restrict_to_score_checkbox', 0, type=int))
-        self.sub_sort_hot_radio.setChecked(self.settings.value('sub_sort_hot_radio', False, type=bool))
-        self.sub_sort_rising_radio.setChecked(self.settings.value('sub_sort_rising_radio', False, type=bool))
-        self.sub_sort_controversial_radio.setChecked(self.settings.value('sub_sort_controversial_radio', False,
-                                                                         type=bool))
-        self.sub_sort_new_radio.setChecked(self.settings.value('sub_sort_new_radio', False, type=bool))
-        self.sub_sort_top_radio.setChecked(self.settings.value('sub_sort_top_radio', False, type=bool))
-        self.post_score_limit_spin_box.setValue(self.settings.value('post_score_limit_spinbox', 0, type=int))
-        self.post_limit_spinbox.setValue(self.settings.value('post_limit_spinbox', 25, type=int))
-        self.link_filter_video_checkbox.setCheckState(self.settings.value('link_filter_video_checkbox', 0, type=int))
-        self.link_filter_image_checkbox.setCheckState(self.settings.value('link_filter_image_checkbox', 0, type=int))
-        self.link_filter_avoid_duplicates_checkbox.setCheckState(self.settings.value('link_filter_avoid_duplicates_'
-                                                                                     'checkbox', 0, type=int))
-        self.save_directory_line_edit.setText(self.settings.value('save_directory_line_edit', "", type=str))
+        self.imgur_client_id = self.settings_manager.imgur_client_id
+        self.imgur_client_secret = self.settings_manager.imgur_client_secret
+        self.auto_save_checkbox.setCheckState(self.settings_manager.auto_save)
 
+        self.restrict_to_score_checkbox.setChecked(self.settings_manager.restrict_by_score)
+        self.post_limit_spinbox.setValue(self.settings_manager.post_score_limit)
         self.post_score_combo.addItems(('Greater Than', 'Less Than'))  # 0: Greather than, 1: Less than
-        self.post_score_combo.setCurrentIndex(self.settings.value('post_score_combo', 0, type=int))
-        if self.restrict_to_score_checkbox.isChecked():
+        self.post_score_combo.setCurrentIndex(self.settings_manager.score_limit_operator)
+        if self.settings_manager.restrict_by_score:
             self.post_score_combo.setDisabled(False)
             self.post_score_limit_spin_box.setDisabled(False)
             self.post_score_method = self.post_score_combo.currentIndex()
@@ -106,54 +86,64 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             self.post_score_combo.setDisabled(True)
             self.post_score_limit_spin_box.setDisabled(True)
 
+        self.setup_sort_radios(self.settings_manager.subreddit_sort_method)
+
+        self.set_post_limit = self.post_limit_spinbox.value()
+
         # Controls for the date restriction portion of the settings
-        self.restrict_date = self.date_restriction_checkbox.isChecked()
+        self.date_restriction_checkbox.setChecked(self.settings_manager.restrict_by_date)
         self.date_restriction_checkbox.stateChanged.connect(self.date_restriction_checkbox_change)
-        self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(self.custom_date))
+        self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(self.settings_manager.custom_date))
         self.restrict_by_custom_date_checkbox.stateChanged.connect(self.restrict_by_custom_date_checkbox_change)
         if self.date_restriction_checkbox.isChecked():
             self.date_limit_edit.setEnabled(False)
         else:
             self.date_limit_edit.setEnabled(True)
 
-        self.set_post_limit = self.post_limit_spinbox.value()
-        self.subreddit_sort_method = 0  # new: 0, top: 1, hot: 2, rising: 3, controversial: 4
+        self.link_filter_video_checkbox.setCheckState(self.settings_manager.download_videos)
+        self.link_filter_image_checkbox.setCheckState(self.settings_manager.download_images)
+        self.link_filter_avoid_duplicates_checkbox.setCheckState(self.settings_manager.avoid_duplicates)
+
+        self.save_directory_line_edit.setText(self.settings_manager.save_directory)
+
         self.sub_sort_top_combo.addItems(('Hour', 'Day', 'Week', 'Month', 'Year', 'All Time'))
-        self.sub_sort_top_combo.setCurrentIndex(self.settings.value('sub_sort_top_combo', 0, type=int))
+        self.sub_sort_top_combo.setCurrentIndex(self.settings_manager.subreddit_sort_top_method)
         if self.sub_sort_top_radio.isChecked():
             self.sub_sort_top_combo.setDisabled(False)
         else:
             self.sub_sort_top_combo.setDisabled(True)
-        self.sub_sort_top_method = self.sub_sort_top_combo.currentIndex()
 
         self.subreddit_save_by_combo.addItems(('Subreddit Name', 'User Name', 'Subreddit Name/User Name',
                                                'User Name/Subreddit Name'))
-        self.subreddit_save_by_combo.setCurrentIndex(self.settings.value('subreddit_save_by_combo', 0, type=int))
+        self.subreddit_save_by_combo.setCurrentText(self.settings_manager.save_subreddits_by)
         self.name_downloads_by_combo.addItems(('Image/Album Id', 'Post Title'))
-        self.name_downloads_by_combo.setCurrentIndex(self.settings.value('name_downloads_by_combo', 0, type=int))
+        self.name_downloads_by_combo.setCurrentText(self.settings_manager.name_downloads_by)
 
-        self.thread_limit_spinbox.setValue(self.settings.value('thread_limit', 4, type=int))
+        self.thread_limit_spinbox.setValue(self.settings_manager.max_download_thread_count)
         self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
 
-        self.save_undownloaded_content_checkbox.setChecked(self.settings.value('save_undownloaded_content', True,
-                                                                               type=bool))
+        self.save_undownloaded_content_checkbox.setChecked(self.settings_manager.save_undownloaded_content)
+
+        self.total_files_downloaded_label.setText("Total Files Downloaded: " +
+                                                  str(self.settings_manager.total_files_downloaded))
+
+    def setup_sort_radios(self, method):
+        radio_dict = {0: self.sub_sort_new_radio,
+                      1: self.sub_sort_top_radio,
+                      2: self.sub_sort_hot_radio,
+                      3: self.sub_sort_rising_radio,
+                      4: self.sub_sort_controversial_radio}
+        radio_dict[method].setChecked(True)
 
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
         imgur_dialog = ImgurClientDialog()
+        imgur_dialog.client_id_line_edit.setText(self.imgur_client_id)
+        imgur_dialog.client_secret_line_edit.setText(self.imgur_client_secret)
         dialog = imgur_dialog.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
             self.imgur_client_id = imgur_dialog.client_id_line_edit.text()
             self.imgur_client_secret = imgur_dialog.client_secret_line_edit.text()
-
-    """
-    def set_reddit_account(self):
-        reddit_account_dialog = RedditAccountDialog()
-        dialog = reddit_account_dialog.exec_()
-        if dialog == QtWidgets.QDialog.Accepted:
-            self.reddit_account_username = reddit_account_dialog.username_line_edit.text()
-            self.reddit_account_password = reddit_account_dialog.password_line_edit.text()
-    """
 
     def backup_save_file(self):
         """Makes a copy of the programs save_file data and moves it to the specified location"""
@@ -271,49 +261,50 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             ret = True
 
         if ret:
-            self.set_post_limit = self.post_limit_spinbox.value()
-            self.restrict_download_by_score = self.restrict_to_score_checkbox.isChecked()
-            if self.restrict_download_by_score:
-                self.post_score_method = self.post_score_combo.currentIndex()
-            self.subreddit_sort_change()
-            self.sub_sort_top_method = self.sub_sort_top_combo.currentIndex()
-
-            if self.restrict_by_custom_date_checkbox.isChecked():
-                self.custom_date = int(time.mktime(time.strptime(self.date_limit_edit.text(), '%m/%d/%Y %H:%M:%S')))
-            else:
-                self.custom_date = 0
-
-            self.settings.setValue('imgur_client_id', self.imgur_client_id)
-            self.settings.setValue('imgur_client_secret', self.imgur_client_secret)
-            self.settings.setValue('reddit_account_username', self.reddit_account_username)
-            self.settings.setValue('reddit_account_password', self.reddit_account_password)
-            self.settings.setValue('auto_save_checkbox', self.auto_save_checkbox.checkState())
-            self.settings.setValue('date_restriction_checkbox', self.date_restriction_checkbox.checkState())
-            self.settings.setValue('restrict_to_score_checkbox', self.restrict_to_score_checkbox.checkState())
-            self.settings.setValue('post_score_combo_text', self.post_score_combo.currentText())
-            self.settings.setValue('restrict_to_score_checkbox', self.restrict_to_score_checkbox.checkState())
-            self.settings.setValue('sub_sort_hot_radio', self.sub_sort_hot_radio.isChecked())
-            self.settings.setValue('sub_sort_rising_radio', self.sub_sort_rising_radio.isChecked())
-            self.settings.setValue('sub_sort_controversial_radio', self.sub_sort_controversial_radio.isChecked())
-            self.settings.setValue('sub_sort_new_radio', self.sub_sort_new_radio.isChecked())
-            self.settings.setValue('sub_sort_top_radio', self.sub_sort_top_radio.isChecked())
-            self.settings.setValue('sub_sort_top_combo', self.sub_sort_top_combo.currentIndex())
-            self.settings.setValue('post_score_combo', self.post_score_combo.currentIndex())
-            self.settings.setValue('post_score_limit_spinbox', self.post_score_limit_spin_box.value())
-            self.settings.setValue('post_limit_spinbox', self.post_limit_spinbox.value())
-            self.settings.setValue('link_filter_video_checkbox', self.link_filter_video_checkbox.checkState())
-            self.settings.setValue('link_filter_image_checkbox', self.link_filter_image_checkbox.checkState())
-            self.settings.setValue('link_filter_avoid_duplicates_checkbox',
-                                   self.link_filter_avoid_duplicates_checkbox.checkState())
-            self.settings.setValue('subreddit_save_by_combo', self.subreddit_save_by_combo.currentIndex())
-            self.settings.setValue('name_downloads_by_combo', self.name_downloads_by_combo.currentIndex())
-            self.settings.setValue('save_directory_line_edit', self.save_directory_line_edit.text())
-            self.settings.setValue('restrict_by_custom_date_checkbox',
-                                   self.restrict_by_custom_date_checkbox.isChecked())
-            self.settings.setValue('settings_custom_date', self.custom_date)
-            self.settings.setValue('thread_limit', self.thread_limit_spinbox.value())
-            self.settings.setValue('save_undownloaded_content', self.save_undownloaded_content_checkbox.isChecked())
+            self.save_settings()
             super().accept()
+
+    def save_settings(self):
+        self.settings_manager.imgur_client_id = self.imgur_client_id
+        self.settings_manager.imgur_client_secret = self.imgur_client_secret
+        self.settings_manager.auto_save = self.auto_save_checkbox.isChecked()
+
+        self.settings_manager.restrict_by_score = self.restrict_to_score_checkbox.isChecked()
+        self.settings_manager.score_limit_operator = self.post_score_combo.currentIndex()
+        self.settings_manager.post_score_limit = self.post_score_limit_spin_box.value()
+
+        self.settings_manager.restrict_by_date = self.date_restriction_checkbox.isChecked()
+        self.settings_manager.restrict_by_custom_date = self.restrict_by_custom_date_checkbox.isChecked()
+        self.settings_manager.custom_date = int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                          '%m/%d/%Y %H:%M:%S')))
+
+        self.settings_manager.subreddit_sort_method = self.get_sort_by_method()
+        self.settings_manager.subreddit_sort_top_method = self.sub_sort_top_combo.currentIndex()
+
+        self.settings_manager.post_limit = self.post_score_limit_spin_box.value()
+
+        self.settings_manager.download_videos = self.link_filter_video_checkbox.isChecked()
+        self.settings_manager.download_images = self.link_filter_image_checkbox.isChecked()
+        self.settings_manager.avoid_duplicates = self.link_filter_avoid_duplicates_checkbox.isChecked()
+
+        self.settings_manager.save_subreddits_by = self.subreddit_save_by_combo.currentText()
+        self.settings_manager.name_downloads_by = self.name_downloads_by_combo.currentText()
+
+        self.settings_manager.save_directory = self.save_directory_line_edit.text()
+        self.settings_manager.max_download_thread_count = self.thread_limit_spinbox.value()
+        self.settings_manager.save_undownloaded_content = self.save_undownloaded_content_checkbox.isChecked()
+
+    def get_sort_by_method(self):
+        if self.sub_sort_new_radio.isChecked():
+            return 0
+        elif self.sub_sort_top_radio.isChecked():
+            return 1
+        elif self.sub_sort_hot_radio.isChecked():
+            return 2
+        elif self.sub_sort_rising_radio.isChecked():
+            return 3
+        else:
+            return 4
 
     def restore_defaults(self):
         self.auto_save_checkbox.setChecked(False)

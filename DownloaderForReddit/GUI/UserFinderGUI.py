@@ -74,29 +74,23 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
 
         self.close_dialog_button.setVisible(False)
 
-        self.subreddit_watchlist = self.settings.value('sub_watchlist', ['filler'], type=str)
-        self.user_blacklist = self.settings.value('user_blacklist', ['filler'], type=str)
+        self.subreddit_watchlist = self.settings_manager.user_finder_subreddit_watchlist
+        self.user_blacklist = self.settings_manager.user_finder_user_blacklist
 
         self.subreddit_watchlist.remove('filler') if 'filler' in self.subreddit_watchlist else None
         self.user_blacklist.remove('filler') if 'filler' in self.user_blacklist else None
 
-        self.sub_sort_hour_radio.setChecked(self.settings.value('sub_sort_hour_radio', False, type=bool))
-        self.sub_sort_day_radio.setChecked(self.settings.value('sub_sort_day_radio', False, type=bool))
-        self.sub_sort_week_radio.setChecked(self.settings.value('sub_sort_week_radio', False, type=bool))
-        self.sub_sort_month_radio.setChecked(self.settings.value('sub_sort_month_radio', False, type=bool))
-        self.sub_sort_year_radio.setChecked(self.settings.value('sub_sort_year_radio', False, type=bool))
-        self.sub_sort_all_raido.setChecked(self.settings.value('sub_sort_all_radio', False, type=bool))
+        self.sub_sort_method = self.settings_manager.user_finder_sort_method
+        self.set_sort_by_radios(self.sub_sort_method)
+        self.top_sort_groupbox.changeEvent.connect(self.set_sub_sort_method)  # TODO: Check to make sure this works
 
-        self.watchlist_score_spinbox_2.setValue(self.settings.value('watchlist_score_spinbox', 5000, type=int))
-        self.watchlist_download_sample_spinbox_2.setValue(self.settings.value('download_sample_size_spinbox', 1,
-                                                                              type=int))
-        self.watchlist_when_run_checkbox_2.setChecked(self.settings.value('watchlist_when_run_checkbox', False,
-                                                                          type=bool))
-        self.automatically_add_user_checkbox.setChecked(self.settings.value('automatically_add_user_checkbox', False,
-                                                                            type=bool))
+        self.watchlist_score_spinbox_2.setValue(self.settings_manager.user_finder_watch_list_score_limit)
+        self.watchlist_download_sample_spinbox_2.setValue(self.settings_manager.user_finder_download_sample_size)
+        self.watchlist_when_run_checkbox_2.setChecked(self.settings_manager.user_finder_run_with_main)
+        self.automatically_add_user_checkbox.setChecked(self.settings_manager.user_finder_auto_add_users)
         self.automatically_add_user_checkbox.stateChanged.connect(self.auto_add_users_gui_change)
         self.auto_add_users_gui_change()
-        self.watchlist_add_to_list_combo_2.setCurrentIndex(self.settings.value('watchlist_add_to_combo', 0, type=int))
+        self.watchlist_add_to_list_combo_2.setCurrentIndex(self.settings_manager.user_finder_add_to_index)
 
         for x in self.subreddit_watchlist:
             self.sub_watchlist_listview.addItem(x)
@@ -125,8 +119,8 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
 
         self.found_user_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
-        self.content_list_icons_full_width = self.settings.value('content_list_icons_full_width', False, type=bool)
-        self.content_list_icon_size = self.settings.value('content_list_icon_size', 110, type=int)
+        self.content_list_icons_full_width = self.settings_manager.user_finder_content_list_icons_full_width
+        self.content_list_icon_size = self.settings_manager.user_finder_content_list_icon_size
 
         self.user_display_list = []
 
@@ -157,8 +151,6 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         self.blacklist_users_listview.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.blacklist_users_listview.customContextMenuRequested.connect(self.blacklist_users_right_click)
 
-        # self.add_selected_button.clicked.connect(self.test)
-
         self.found_user_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.found_user_list.customContextMenuRequested.connect(self.found_user_list_right_click)
 
@@ -170,6 +162,29 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         self.found_users_label.setText('Users Found: 0')
         self.found_count = 0
         self.step_count = 0
+
+    def set_sort_by_radios(self, method):
+        radio_dict = {0: self.sub_sort_hour_radio,
+                      1: self.sub_sort_day_radio,
+                      2: self.sub_sort_week_radio,
+                      3: self.sub_sort_month_radio,
+                      4: self.sub_sort_year_radio,
+                      5: self.sub_sort_all_raido}
+        radio_dict[method].setChecked(True)
+
+    def set_sub_sort_method(self):
+        if self.sub_sort_hour_radio.isChecked():
+            self.sub_sort_method = 0
+        elif self.sub_sort_day_radio.isChecked():
+            self.sub_sort_method = 1
+        elif self.sub_sort_week_radio.isChecked():
+            self.sub_sort_method = 2
+        elif self.sub_sort_month_radio.isChecked():
+            self.sub_sort_method = 3
+        elif self.sub_sort_year_radio.isChecked():
+            self.sub_sort_method = 4
+        else:
+            self.sub_sort_method = 5
 
     def sub_watchlist_right_click(self):
         menu = QtWidgets.QMenu()
@@ -289,7 +304,7 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         self.save_user_finder(False)
         self.running = True
         self.stacked_widget.setCurrentIndex(2)
-        self.user_finder = UserFinder(self.subreddit_watchlist, self.user_blacklist, self.top_sort_method(),
+        self.user_finder = UserFinder(self.subreddit_watchlist, self.user_blacklist, self.sub_sort_method,
                                  self.watchlist_score_spinbox_2.value(),
                                  self.watchlist_download_sample_spinbox_2.value(), self.all_users, self.save_path,
                                  self.imgur_client, self.user_folders)
@@ -554,23 +569,17 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
                                                                self.content_display_list.width()))
 
     def save_user_finder(self, close):
-        self.settings.setValue('geometry', self.saveGeometry())
+        self.settings_manager.user_finder_GUI_geom = self.saveGeometry()
+        self.settings_manager.user_finder_subreddit_watchlist = self.subreddit_watchlist
+        self.settings_manager.user_finder_user_blacklist = self.user_blacklist
+        self.settings_manager.user_finder_sort_method = self.sub_sort_method
+        self.settings_manager.user_finder_watch_list_score_limit = self.watchlist_score_spinbox_2.value()
+        self.settings_manager.user_finder_download_sample_size = self.watchlist_download_sample_spinbox_2.value()
+        self.settings_manager.user_finder_run_with_main = self.watchlist_when_run_checkbox_2.isChecked()
+        self.settings_manager.user_finder_auto_add_users = self.automatically_add_user_checkbox.isChecked()
+        self.settings_manager.user_finder_add_to_index = self.watchlist_add_to_list_combo_2.currentIndex()
+        self.settings_manager.save_user_settings_dialog()
 
-        self.settings.setValue('sub_watchlist', self.subreddit_watchlist)
-        self.settings.setValue('user_blacklist', self.user_blacklist)
-
-        self.settings.setValue('sub_sort_hour_radio', self.sub_sort_hour_radio.isChecked())
-        self.settings.setValue('sub_sort_day_radio', self.sub_sort_day_radio.isChecked())
-        self.settings.setValue('sub_sort_week_radio', self.sub_sort_week_radio.isChecked())
-        self.settings.setValue('sub_sort_month_radio', self.sub_sort_month_radio.isChecked())
-        self.settings.setValue('sub_sort_year_radio', self.sub_sort_year_radio.isChecked())
-        self.settings.setValue('sub_sort_all_radio', self.sub_sort_all_raido.isChecked())
-
-        self.settings.setValue('watchlist_score_spinbox', self.watchlist_score_spinbox_2.value())
-        self.settings.setValue('download_sample_size_spinbox', self.watchlist_download_sample_spinbox_2.value())
-        self.settings.setValue('watchlist_when_run_checkbox', self.watchlist_when_run_checkbox_2.isChecked())
-        self.settings.setValue('automatically_add_user_checkbox', self.automatically_add_user_checkbox.isChecked())
-        self.settings.setValue('watchlist_add_to_combo', self.watchlist_add_to_list_combo_2.currentIndex())
         if close:
             self.closed.emit()
             super().accept()

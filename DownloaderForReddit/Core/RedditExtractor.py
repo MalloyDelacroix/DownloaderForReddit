@@ -25,9 +25,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import praw
 import prawcore
-from PyQt5.QtCore import QObject, QSettings, pyqtSignal, QThreadPool, QThread
+from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool, QThread
 from queue import Queue
 
+import Core.Injector
 from version import __version__
 
 
@@ -43,9 +44,7 @@ class RedditExtractor(QObject):
     update_progress_bar_signal = pyqtSignal()
     stop = pyqtSignal()
 
-    def __init__(self, user_list, subreddit_list, queue, post_limit, save_path, subreddit_sort_method,
-                 subreddit_sort_top_method, restrict_date, restrict_by_score, restrict_score_method,
-                 restrict_score_limit, unfinished_downloads_list):
+    def __init__(self, user_list, subreddit_list, queue, unfinished_downloads_list):
         """
         Class that does the main part of the work for the program.  This class contains the praw instance that is used
         for actually extracting the content from reddit.  When an instance is created all settings parameters must be
@@ -61,6 +60,7 @@ class RedditExtractor(QObject):
         super().__init__()
         self._r = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
                               client_id='frGEUVAuHGL2PQ', client_secret=None)
+        self.settings_manager = Core.Injector.get_settings_manager()
         self.user_list = user_list
         self.subreddit_list = subreddit_list
         self.queue = queue
@@ -71,18 +71,16 @@ class RedditExtractor(QObject):
         self.unfinished_downloads = []
         self.user_run = True if self.user_list is not None else False
 
-        self.settings = QSettings("SomeGuySoftware", "RedditDownloader")
-
-        self.post_limit = post_limit
-        self.save_path = save_path
-        self.subreddit_sort_method = subreddit_sort_method
-        self.subreddit_sort_top_method = subreddit_sort_top_method
-        self.restrict_date = restrict_date
-        self.restrict_by_score = restrict_by_score
-        self.restrict_score_method = restrict_score_method
-        self.restrict_score_limit = restrict_score_limit
+        self.post_limit = self.settings_manager.post_limit
+        self.save_path = self.settings_manager.save_directory
+        self.subreddit_sort_method = self.settings_manager.subreddit_sort_method
+        self.subreddit_sort_top_method = self.settings_manager.subreddit_sort_top_method
+        self.restrict_date = self.settings_manager.restrict_by_date
+        self.restrict_by_score = self.settings_manager.restrict_by_score
+        self.restrict_score_method = self.settings_manager.score_limit_operator
+        self.restrict_score_limit = self.settings_manager.post_score_limit
         self.unfinished_downloads_list = unfinished_downloads_list
-        self.load_undownloaded_content = self.settings.value('save_undownloaded_content')
+        self.load_undownloaded_content = self.settings_manager.save_undownloaded_content
 
         self.queued_posts = Queue()
         self.run = True
@@ -212,7 +210,7 @@ class RedditExtractor(QObject):
         self.extractor_thread.start()
 
     def start_downloader(self):
-        self.downloader = Downloader(self.queued_posts)
+        self.downloader = Downloader(self.queued_posts, self.settings_manager.max_download_thread_count)
         self.stop.connect(self.downloader.stop)
         self.downloader_thread = QThread()
         self.downloader.moveToThread(self.downloader_thread)
@@ -361,7 +359,7 @@ class Downloader(QObject):
 
     finished = pyqtSignal()
 
-    def __init__(self, queue):
+    def __init__(self, queue, thread_limit):
         """
         Class that spawns the separate download threads.  This is a separate class so it can be moved to its own thread
         and run simultaneously with post extraction.
@@ -372,10 +370,8 @@ class Downloader(QObject):
         self.queue = queue
         self.run = True
 
-        self.settings = QSettings("SomeGuySoftware", "RedditDownloader")
-
         self.download_pool = QThreadPool()
-        self.download_pool.setMaxThreadCount(self.settings.value('thread_limit', 4, type=int))
+        self.download_pool.setMaxThreadCount(thread_limit)
 
     def download(self):
         """Spawns the download pool threads"""

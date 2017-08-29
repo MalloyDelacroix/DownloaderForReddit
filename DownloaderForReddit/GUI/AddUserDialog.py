@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5 import QtWidgets, QtCore
 
 from GUI_Resources.AddUserDialog_auto import Ui_add_user_dialog
+import Core.Injector
 
 
 class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
@@ -39,6 +40,7 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
+        self.restoreGeometry(Core.Injector.get_settings_manager().add_user_dialog_geom)
         self.name = None
 
         self.ok_cancel_button_box.accepted.connect(self.accept)
@@ -65,3 +67,6 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
     def accept(self):
         self.name = self.user_name_line_edit.text()
         super().accept()
+
+    def closeEvent(self, QCloseEvent):
+        Core.Injector.get_settings_manager().add_user_dialog_geom = self.saveGeometry()
