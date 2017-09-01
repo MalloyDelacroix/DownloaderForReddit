@@ -88,11 +88,19 @@ class ImgurExtractor(Extractor):
         tuple is supplied to imgurpython to establish an imgur client
         """
         super().__init__(url, user, post_title, subreddit, creation_date)
-        try:
-            self.client = ImgurClient(self.settings_manager.imgur_client_id, self.settings_manager.imgur_client_secret)
-        except ImgurClientError as e:
-            if e.status_code == 500:
-                self.over_capacity_error()
+        self.imgur_client_id = self.settings_manager.imgur_client_id
+        self.imgur_client_secret = self.settings_manager.imgur_client_secret
+        if self.imgur_client_id is None or self.imgur_client_secret is None:
+            self.failed_extract_messages.append('\nFailed: No valid Imgur client is detected. In order to download '
+                                                'content from imgur.com you must have a valid Imugr client. Please see'
+                                                'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s\n' %
+                                                (self.post_title, self.user, self.subreddit, self.url))
+        else:
+            try:
+                self.client = ImgurClient(self.imgur_client_id, self.imgur_client_secret)
+            except ImgurClientError as e:
+                if e.status_code == 500:
+                    self.over_capacity_error()
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""

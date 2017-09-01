@@ -79,14 +79,8 @@ class RedditObject(object):
     def assign_extractor(self, post_list):
         for post in post_list:
             if "imgur" in post.url:
-                if self.imgur_client[0] is None or self.imgur_client[1] is None:
-                    self.failed_extracts.append('\nFailed: No valid Imgur client is detected. In order to download '
-                                                'content from imgur.com you must have a valid Imugr client. Please see'
-                                                'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s\n' %
-                                                (post.title, post.author, post.subreddit, post.url))
-                else:
-                    extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created)
-                    self.extract(extractor)
+                extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created)
+                self.extract(extractor)
 
             elif "gfycat" in post.url:
                 extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit,  post.created)

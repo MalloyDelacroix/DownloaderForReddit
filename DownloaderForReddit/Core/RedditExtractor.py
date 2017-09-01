@@ -287,7 +287,6 @@ class RedditExtractor(QObject):
         self.stop.emit()
         self.queue.put('\nStopped\n')
 
-    # TODO: make sure this is still used
     def send_unfinished_downloads(self):
         if not self.queued_posts.empty():
             for post in self.queued_posts.get():
