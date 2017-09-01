@@ -40,7 +40,9 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.restoreGeometry(Core.Injector.get_settings_manager().add_user_dialog_geom)
+        self.settings_manager = Core.Injector.get_settings_manager()
+        geom = self.settings_manager.add_user_dialog_geom
+        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         self.name = None
 
         self.ok_cancel_button_box.accepted.connect(self.accept)
@@ -66,7 +68,12 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
 
     def accept(self):
         self.name = self.user_name_line_edit.text()
+        self.save_settings()
         super().accept()
 
     def closeEvent(self, QCloseEvent):
-        Core.Injector.get_settings_manager().add_user_dialog_geom = self.saveGeometry()
+        self.save_settings()
+
+    def save_settings(self):
+        self.settings_manager.add_user_dialog_geom = self.saveGeometry()
+        self.settings_manager.save_add_user_dialog()

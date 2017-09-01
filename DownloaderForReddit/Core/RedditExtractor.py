@@ -191,7 +191,6 @@ class RedditExtractor(QObject):
         except TypeError:
             pass
         self.queue.put('\nFinished')
-        # self.send_unfinished_downloads()
         if len(self.downloaded_users) > 0:
             self.send_downloaded_users()
         self.finished.emit()
@@ -288,6 +287,7 @@ class RedditExtractor(QObject):
         self.stop.emit()
         self.queue.put('\nStopped\n')
 
+    # TODO: make sure this is still used
     def send_unfinished_downloads(self):
         if not self.queued_posts.empty():
             for post in self.queued_posts.get():

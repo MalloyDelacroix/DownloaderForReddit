@@ -102,7 +102,8 @@ class Content(QRunnable):
         self.queue.put('Failed Download:  File %s%s posted by %s failed to download...try link to download '
                        'manually: %s\n' % (self.submission_id, self.number_in_seq, self.user, self.url))
 
-    def clean_filename(self, name):
+    @staticmethod
+    def clean_filename(name):
         """Ensures each file name does not contain forbidden characters and is within the character limit"""
         forbidden_chars = '"*\\/\'.|?:<>'
         filename = ''.join([x if x not in forbidden_chars else '#' for x in name])
@@ -110,7 +111,8 @@ class Content(QRunnable):
             filename = filename[:237] + '...'
         return filename
 
-    def check_save_path_subreddit(self, path):
+    @staticmethod
+    def check_save_path_subreddit(path):
         """
         Checks that the supplied directory path is an existing directory and if not, creates the directory.  The try
         except operation is because with multiple numbers of these classes existing at the same time on different

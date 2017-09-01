@@ -82,8 +82,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method
-        self.download_users_checkbox.setCheckState(self.settings_manager.download_users)
-        self.download_subreddit_checkbox.setCheckState(self.settings_manager.download_subreddits)
+        self.download_users_checkbox.setChecked(self.settings_manager.download_users)
+        self.download_subreddit_checkbox.setChecked(self.settings_manager.download_subreddits)
         self.run_user_finder_auto = self.settings_manager.user_finder_run_with_main
         # endregion
 
@@ -400,13 +400,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_user(self):
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, self.post_limit,
-                                                self.save_path, self.subreddit_sort_method,
-                                                self.subreddit_sort_top_method, self.restrict_date,
-                                                self.restrict_by_submission_score,
-                                                self.restrict_by_submission_score_method,
-                                                self.restrict_by_submission_score_limit, None)
-        self.start_reddit_extractor_thread('user')
+        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, None)
+        self.start_reddit_extractor_thread('USER')
 
     def run_single_user(self, user):
         """
@@ -415,23 +410,13 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.started_download_gui_shift()
         user_list = [user]
-        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, self.post_limit,
-                                                self.save_path, self.subreddit_sort_method,
-                                                self.subreddit_sort_top_method, self.restrict_date,
-                                                self.restrict_by_submission_score,
-                                                self.restrict_by_submission_score_method,
-                                                self.restrict_by_submission_score_limit, None)
-        self.start_reddit_extractor_thread('user')
+        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, None)
+        self.start_reddit_extractor_thread('USER')
 
     def run_subreddit(self):
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, self.post_limit,
-                                                self.save_path, self.subreddit_sort_method,
-                                                self.subreddit_sort_top_method, self.restrict_date,
-                                                self.restrict_by_submission_score,
-                                                self.restrict_by_submission_score_method,
-                                                self.restrict_by_submission_score_limit, None)
-        self.start_reddit_extractor_thread('subreddit')
+        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, None)
+        self.start_reddit_extractor_thread('SUBREDDIT')
 
     def run_single_subreddit(self, subreddit):
         """
@@ -440,13 +425,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.started_download_gui_shift()
         subreddit_list = [subreddit]
-        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, self.post_limit,
-                                                self.save_path, self.subreddit_sort_method,
-                                                self.subreddit_sort_top_method, self.restrict_date,
-                                                self.restrict_by_submission_score,
-                                                self.restrict_by_submission_score_method,
-                                                self.restrict_by_submission_score_limit, None)
-        self.start_reddit_extractor_thread('subreddit')
+        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, None)
+        self.start_reddit_extractor_thread('SUBREDDIT')
 
     def run_user_and_subreddit(self):
         """
@@ -455,34 +435,28 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(user_list, subreddit_list, self.queue, self.post_limit,
-                                                self.save_path, self.subreddit_sort_method,
-                                                self.subreddit_sort_top_method, self.restrict_date,
-                                                self.restrict_by_submission_score,
-                                                self.restrict_by_submission_score_method,
-                                                self.restrict_by_submission_score_limit, None)
-        self.start_reddit_extractor_thread('users_and_subreddits')
+        self.reddit_extractor = RedditExtractor(user_list, subreddit_list, self.queue, None)
+        self.start_reddit_extractor_thread('USERS_AND_SUBREDDITS')
 
     def run_unfinished_downloads(self):
         """Downloads the content that was left during the last run if the user clicked the stop download button"""
         self.download_count = 0
         self.started_download_gui_shift()
-        self.reddit_extractor = RedditExtractor(None, None, self.queue, None, None, None, None, None,
-                                                None, None, None,  self.unfinished_downloads)
-        self.start_reddit_extractor_thread('unfinished')
+        self.reddit_extractor = RedditExtractor(None, None, self.queue, self.unfinished_downloads)
+        self.start_reddit_extractor_thread('UNFINISHED')
 
     def start_reddit_extractor_thread(self, download_type):
         """Moves the extractor to a different thread and calls the appropriate function for the type of download"""
         self.stop_download.connect(self.reddit_extractor.stop_download)
         self.thread = QtCore.QThread()
         self.reddit_extractor.moveToThread(self.thread)
-        if download_type == 'user':
+        if download_type == 'USER':
             self.thread.started.connect(self.reddit_extractor.validate_users)
-        elif download_type == 'subreddit':
+        elif download_type == 'SUBREDDIT':
             self.thread.started.connect(self.reddit_extractor.validate_subreddits)
-        elif download_type == 'users_and_subreddits':
+        elif download_type == 'USERS_AND_SUBREDDITS':
             self.thread.started.connect(self.reddit_extractor.validate_users_and_subreddits)
-        elif download_type == 'unfinished':
+        elif download_type == 'UNFINISHED':
             self.thread.started.connect(self.reddit_extractor.finish_downloads)
         self.reddit_extractor.remove_invalid_user.connect(self.remove_invalid_user)
         self.reddit_extractor.downloaded_users_signal.connect(self.fill_downloaded_users_list)
@@ -632,8 +606,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if any(new_user.lower() == name.lower() for name in insertion_list.display_list):
             Message.name_in_list(self)
         else:
-            x = User(new_user, self.save_path, self.imgur_client, self.post_limit, self.name_downloads_by,
-                     self.avoid_duplicates, self.download_videos, self.download_images, datetime.now().timestamp())
+            x = self.make_user(new_user)
             insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
             insertion_list.setData(insertion_list.rowCount() - 1, x)
         insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
@@ -647,9 +620,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if any(new_user.lower() == name.lower() for name in insertion_list.display_list):
                     Message.name_in_list(self)
                 else:
-                    x = User(new_user, self.save_path, self.imgur_client, self.post_limit, self.name_downloads_by,
-                             self.avoid_duplicates, self.download_videos, self.download_images,
-                             datetime.now().timestamp())
+                    x = self.make_user(new_user)
                     insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
                     insertion_list.setData(insertion_list.rowCount() - 1, x)
                     insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
@@ -659,6 +630,18 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         except KeyError:
             Message.no_user_list(self)
+
+    def make_user(self, name):
+        """
+        Makes a new User object
+        :param name: The name of the user object
+        :return: A new user object with the supplied name
+        """
+        new_user = User(self.version, name, self.settings_manager.save_directory, self.settings_manager.post_limit,
+                 self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
+                 self.settings_manager.download_images, self.settings_manager.save_subreddits_by,
+                 self.settings_manager.name_downloads_by, datetime.now().timestamp())
+        return new_user
 
     def remove_user(self):
         try:
@@ -702,9 +685,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if any(new_sub.lower() == name.lower() for name in insertion_list.display_list):
                     Message.name_in_list(self)
                 else:
-                    x = Subreddit(new_sub, self.save_path, self.post_limit, self.save_subreddits_by, self.imgur_client,
-                                  self.name_downloads_by, self.avoid_duplicates, self.download_videos,
-                                  self.download_images, datetime.now().timestamp())
+                    x = self.make_subreddit(new_sub)
                     insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
                     insertion_list.setData(insertion_list.rowCount() - 1, x)
                     insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
@@ -713,6 +694,18 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 Message.not_valid_name(self)
         except KeyError:
             Message.no_subreddit_list(self)
+
+    def make_subreddit(self, name):
+        """
+        Makes a new subreddit object
+        :param name: The name of the subreddit
+        :return: A new subreddit object with the supplied name
+        """
+        new_sub = Subreddit(self.version, name, self.settings_manager.save_directory, self.settings_manager.post_limit,
+                            self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
+                            self.settings_manager.download_images, self.settings_manager.save_subreddits_by,
+                            self.settings_manager.name_downloads_by, datetime.now().timestamp())
+        return new_sub
 
     def remove_subreddit(self):
         try:
@@ -814,129 +807,57 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
         self.update_number_of_downloads()
-        self.progress_label.setText('Download complete - Downloaded: %s' % self.download_count)
         if self.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()
         self.download_count = 0
+
+    def finish_progress_bar(self):
+        """
+        Changes the progress bar text to show that it is complete and also moves the progress bar value to the maximum
+        if for whatever reason it was not already there
+        """
+        self.progress_label.setText('Download complete - Downloaded: %s' % self.download_count)
+        if self.progress_bar.value() < self.progress_bar.maximum():
+            self.progress_bar.setValue(self.progress_bar.maximum())
 
     def open_settings_dialog(self):
         """Displays the main settings dialog"""
         settings = RedditDownloaderSettingsGUI()
         dialog = settings.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
-            self.reddit_username = settings.reddit_account_username
-            self.reddit_password = settings.reddit_account_password
-            self.auto_save_on_close = settings.auto_save_checkbox.isChecked()
-            if settings.date_restriction_checkbox.isChecked() or settings.restrict_by_custom_date_checkbox.isChecked():
-                self.restrict_date = True
-            else:
-                self.restrict_date = False
-            self.download_videos = settings.link_filter_video_checkbox.isChecked()
-            if settings.link_filter_avoid_duplicates_checkbox.isChecked() != self.avoid_duplicates:
-                self.change_avoid_duplicates(settings.link_filter_avoid_duplicates_checkbox.isChecked())
-            self.subreddit_sort_method = settings.subreddit_sort_method
-            self.subreddit_sort_top_method = settings.sub_sort_top_method
-
-            if settings.restrict_to_score_checkbox.isChecked():
-                self.restrict_by_submission_score = True
-                self.restrict_by_submission_score_method = settings.post_score_method
-                self.restrict_by_submission_score_limit = settings.post_score_limit_spin_box.value()
-            else:
-                self.restrict_by_submission_score = False
-                self.restrict_by_submission_score_limit = 1
-
-            self.subreddit_sort_top_method = settings.sub_sort_top_method
-            self.change_post_limit(settings.set_post_limit)
-            if settings.subreddit_save_by_combo.currentText() != self.save_subreddits_by:
-                self.change_save_subreddits_by(settings.subreddit_save_by_combo.currentText())
-            if settings.name_downloads_by_combo.currentText() != self.name_downloads_by:
-                self.change_name_downloads_by(settings.name_downloads_by_combo.currentText())
-
-            if settings.save_directory_line_edit.text() != self.save_path:
-                self.change_save_path(settings.save_directory_line_edit.text())
-
-            imgur_client = (settings.imgur_client_id, settings.imgur_client_secret)
-            if imgur_client != self.imgur_client:
-                self.change_imgur_client(imgur_client)
-
-            # if settings.custom_date != self.custom_date:
-            self.custom_date = settings.custom_date
-            self.change_custom_date()
-
+            self.update_user_settings()
+            self.update_subreddit_settings()
             self.save_state()
 
-    """
-    The following functions change options set in the settings menu that must be provided to each list model object.
-    These functions go through each object in every list and update the individual options
-    """
-    def change_post_limit(self, new_limit):
-        self.post_limit = new_limit
+    def update_user_settings(self):
+        """Iterates through the user list and calls update settings for each user"""
         for key, value in self.user_view_chooser_dict.items():
             for user in value.reddit_object_list:
-                user.update_post_limit(new_limit)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_post_limit(new_limit)
+                if not user.do_not_edit:
+                    self.update_object_settings(user)
 
-    def change_save_subreddits_by(self, new_method):
-        self.save_subreddits_by = new_method
+    def update_subreddit_settings(self):
+        """Iterates through the subreddit list and calls update settings for each sub"""
         for key, value in self.subreddit_view_chooser_dict.items():
             for sub in value.reddit_object_list:
-                sub.update_subreddit_save_by_method(new_method)
+                if not sub.do_not_edit:
+                    self.update_object_settings(sub)
 
-    def change_save_path(self, new_save_path):
-        self.save_path = new_save_path
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                user.update_save_path(new_save_path)
-        method = None if self.save_subreddits_by != 'Subreddit Name' else 'Subreddit Name'
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_save_path(new_save_path)
-                sub.update_subreddit_save_by_method(method)
+    def update_object_settings(self, object):
+        """Updates object specific settings for the supplied object"""
+        object.update_post_limit(self.settings_manager.post_limit)
+        object.update_save_path(self.settings_manager.save_directory)
+        object.update_name_downloads_by(self.settings_manager.name_downloads_by)
+        object.update_avoid_duplicates(self.settings_manager.avoid_duplicates)
+        object.update_download_videos(self.settings_manager.download_videos)
+        object.update_download_images(self.settings_manager.download_images)
+        self.update_custom_dates(object)
 
-    def change_imgur_client(self, new_client):
-        self.imgur_client = new_client
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                user.update_imgur_client(new_client)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_imgur_client(new_client)
-
-    def change_name_downloads_by(self, new_method):
-        self.name_downloads_by = new_method
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                user.update_name_downloads_by(new_method)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_name_downloads_by(new_method)
-
-    def change_avoid_duplicates(self, state):
-        self.avoid_duplicates = state
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                user.update_avoid_duplicates(state)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_avoid_duplicates(state)
-
-    def change_custom_date(self):
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                user.update_custom_date_limit(self.custom_date)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_custom_date_limit(self.custom_date)
-
-    def update_number_of_downloads(self):
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                user.update_number_of_downloads()
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                sub.update_number_of_downloads()
+    def update_custom_dates(self, object):
+        if self.settings_manager.restrict_by_custom_date:
+            object.update_custom_date_limit(self.settings_manager.custom_date)
+        else:
+            object.update_custom_date_limit(None)
 
     def display_failed_downloads(self):
         """Opens a dialog with information about any content that was not able to be downloaded for whatever reason"""
@@ -1004,7 +925,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.unfinished_downloads_available = False
 
     def display_imgur_client_information(self):
-        """Opens a dialog that tells the user how many imgur creadits they have remaining"""
+        """Opens a dialog that tells the user how many imgur credits they have remaining"""
         if self.imgur_client[0] is not None and self.imgur_client[1] is not None:
             try:
                 imgur_client = imgurpython.ImgurClient(self.imgur_client[0], self.imgur_client[1])
@@ -1134,6 +1055,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def save_state(self):
         """Pickles the user and subreddit lists and saves any settings that need to be saved"""
+        self.settings_manager.save_all()
         user_list_models = {}
         subreddit_list_models = {}
         current_user_view = self.user_lists_combo.currentText()
@@ -1149,48 +1071,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             object_list = value.reddit_object_list
             subreddit_list_models[name] = object_list
         # TODO: Find someway to show that this has been saved on the GUI
-        if self.settings_manager.save_pickle_state(user_list_models, subreddit_list_models, current_user_view,
-                                                   current_subreddit_view) is not False:
+        if not self.settings_manager.save_pickle_state(user_list_models, subreddit_list_models, current_user_view,
+                                                       current_subreddit_view):
             Message.failed_to_save(self)
-
-
-        """
-        self.settings.setValue('imgur_client', self.imgur_client)
-        self.settings.setValue('reddit_username', self.reddit_username)
-        self.settings.setValue('reddit_password', self.reddit_password)
-        self.settings.setValue('auto_save_on_close', self.auto_save_on_close)
-        self.settings.setValue('run_user_finder_auto', self.run_user_finder_auto)
-
-        self.settings.setValue('restrict_date', self.restrict_date)
-        self.settings.setValue('post_limit', self.post_limit)
-        self.settings.setValue('download_videos', self.download_videos)
-        self.settings.setValue('download_images', self.download_images)
-        self.settings.setValue('avoid_duplicates', self.avoid_duplicates)
-
-        self.settings.setValue('restrict_by_submission_score', self.restrict_by_submission_score)
-        self.settings.setValue('restrict_by_submission_score_method', self.restrict_by_submission_score_method)
-        self.settings.setValue('restrict_by_submission_score_limit', self.restrict_by_submission_score_limit)
-
-        self.settings.setValue('subreddit_sort_method', self.subreddit_sort_method)
-        self.settings.setValue('subreddit_sort_top_method', self.subreddit_sort_top_method)
-
-        self.settings.setValue('save_subreddits_by', self.save_subreddits_by)
-        self.settings.setValue('name_downloads_by', self.name_downloads_by)
-        self.settings.setValue('save_path', self.save_path)
-
-        self.settings.setValue('auto_display_failed_list', self.auto_display_failed_list)
-
-        self.settings.setValue('download_users_checkbox', self.download_users_checkbox.checkState())
-        self.settings.setValue('download_subreddit_checkbox', self.download_subreddit_checkbox.checkState())
-
-        self.settings.setValue('restrict_by_custom_date', self.restrict_by_custom_date)
-        self.settings.setValue('custom__date', self.custom_date)
-
-        self.settings.setValue('max_download_thread_count', self.max_download_thread_count)
-
-        self.settings.setValue('list__sort_method', self.list_sort_method)
-        self.settings.setValue('list_order_method', self.list_order_method)
-        """
 
     def check_for_updates(self, from_menu):
         """
@@ -1238,6 +1121,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except:
             self.update_output(updater)
 
+    # TODO: Implement a reddit object version check to make sure they are compatible
     def cleanup_outdated_code_items(self):
         """Used to clean up any code items that need to be changed when the program is updated"""
         print('cleaning')

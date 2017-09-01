@@ -25,16 +25,16 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 
-from PyQt5.QtCore import QSettings
-
 from .Content import Content
-from Extractors.Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, RedditUploadsExtractor
+from Extractors.Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, RedditUploadsExtractor, \
+    DirectExtractor
+import Core.Injector
 
 
 class RedditObject(object):
 
-    def __init__(self, name, save_path, imgur_client, post_limit, name_downloads_by, avoid_duplicates, download_videos,
-                 download_images, user_added):
+    def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
+                 save_subreddits_by, name_downlads_by, user_added):
         """
         Class that holds the name and list of submissions for Reddit objects.  Also contains an empty content list that
         will be filled with Content objects that contain links for download.
@@ -47,15 +47,16 @@ class RedditObject(object):
         the user/sub had content.  If this variable is anything but 'None' it will be considered. If a user/sub setting
         is set to not restrict download date, it becomes 1.
         """
+        self.version = version
         self.name = name
         self.subreddit_save_method = None
         self.save_path = save_path
-        self.imgur_client = imgur_client
         self.post_limit = post_limit
-        self.name_downloads_by = name_downloads_by
         self.avoid_duplicates = avoid_duplicates
         self.download_videos = download_videos
         self.download_images = download_images
+        self.save_subreddits_by = save_subreddits_by
+        self.name_downloads_by = name_downlads_by
         self.user_added = user_added
         self.do_not_edit = False
         self.new_submissions = None  # Will be erased at end of download
@@ -84,19 +85,15 @@ class RedditObject(object):
                                                 'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s\n' %
                                                 (post.title, post.author, post.subreddit, post.url))
                 else:
-                    extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                               self.save_path, self.subreddit_save_method, self.imgur_client,
-                                               self.name_downloads_by)
+                    extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created)
                     self.extract(extractor)
 
-            elif "vidble" in post.url:
-                extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit,  post.created,
-                                            self.save_path, self.subreddit_save_method, self.name_downloads_by)
+            elif "gfycat" in post.url:
+                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit,  post.created)
                 self.extract(extractor)
 
-            elif "gfycat" in post.url:
-                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit,  post.created,
-                                            self.save_path, self.subreddit_save_method, self.name_downloads_by)
+            elif "vidble" in post.url:
+                extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, post.created)
                 self.extract(extractor)
 
                 """
@@ -109,25 +106,14 @@ class RedditObject(object):
 
             elif "reddituploads" in post.url:
                 pass
-                extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                                   self.save_path, self.subreddit_save_method,
-                                                   self.name_downloads_by)
+                extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit, post.created)
                 self.extract(extractor)
 
             # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
             # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
             elif post.url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')):
-                domain, id_with_ext = post.url.rsplit('/', 1)
-                image_id, extension = id_with_ext.rsplit('.', 1)
-                file_name = post.title if self.name_downloads_by == 'Post Title' else image_id
-                x = Content(post.url, post.author, post.title, post.subreddit, file_name, "", '.' + extension,
-                            self.save_path, self.subreddit_save_method)
-                if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                    if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                        if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                       '.webm', '.png')):
-                            self.content.append(x)
-                            self.already_downloaded.append(x.url)
+                extractor = DirectExtractor(post.url, post.author, post.title, post.subreddit, post.created)
+                self.extract(extractor)
 
             else:
                 self.failed_extracts.append("Could not extract links from post: %s submitted by: %s\nUrl domain not "
@@ -150,12 +136,19 @@ class RedditObject(object):
             if type(x) == str and x.startswith('Failed'):
                 self.failed_extracts.append(x)
             else:
-                if not self.avoid_duplicates or x.url not in self.already_downloaded:
-                    if self.download_videos or not x.url.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx')):
-                        if self.download_images or not x.url.endswith(('.jpg', '.jpeg', '.gif', '.gifv',
-                                                                       '.webm', '.png')):
-                            self.content.append(x)
-                            self.already_downloaded.append(x.url)
+                if self.check_image(x) and self.check_video(x) and self.check_downloaded_content(x):
+                    self.content.append(x)
+                    self.already_downloaded.append(x.url)
+
+    def check_image(self, item):
+        return self.download_images or item.endswith(('.jpg', '.jpeg', '.gif', '.gifv', '.webm',
+                                                                       '.png'))
+
+    def check_video(self, item):
+        return self.download_videos or item.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx'))
+
+    def check_downloaded_content(self, item):
+        return not self.avoid_duplicates or item.url not in self.already_downloaded
 
     def save_unfinished_downloads(self):
         for content in self.content:
@@ -189,34 +182,32 @@ class RedditObject(object):
                 pass
 
     def clear_download_session_data(self):
-        settings = QSettings("SomeGuySoftware", "RedditDownloader")
-        if settings.value('save_undownloaded_content'):
+        if Core.Injector.get_settings_manager().save_undownloaded_content:
             self.save_unfinished_downloads()
         self.content.clear()
         self.new_submissions = None
         self.failed_extracts.clear()
 
     def update_post_limit(self, new_limit):
-        if not self.do_not_edit:
-            self.post_limit = new_limit
+        self.post_limit = new_limit
 
-    def update_imgur_client(self, new_imgur_client):
-        self.imgur_client = new_imgur_client
+    def update_save_path(self, new_path):
+        self.save_path = new_path
 
     def update_name_downloads_by(self, new_method):
-        if not self.do_not_edit:
-            self.name_downloads_by = new_method
+        self.name_downloads_by = new_method
 
     def update_avoid_duplicates(self, state):
-        if not self.do_not_edit:
-            self.avoid_duplicates = state
+        self.avoid_duplicates = state
+
+    def update_download_videos(self, value):
+        self.download_videos = value
+
+    def update_download_images(self, value):
+        self.download_images = value
 
     def update_custom_date_limit(self, new_limit):
-        if not self.do_not_edit:
-            if new_limit == 0:
-                self.custom_date_limit = None
-            else:
-                self.custom_date_limit = new_limit
+        self.custom_date_limit = new_limit
 
     def update_number_of_downloads(self):
         self.number_of_downloads = len(self.already_downloaded)
@@ -224,16 +215,15 @@ class RedditObject(object):
 
 class User(RedditObject):
 
-    def __init__(self, name, save_path, imgur_client, post_limit, name_downloads_by, avoid_duplicates, download_videos,
-                 download_images, user_added):
+    def __init__(self, version,  name, save_path, post_limit, avoid_duplicates, download_videos,
+                 download_images, save_subreddits_by, name_downloads_by, user_added):
         """
         A subclass of the RedditObject class.  This class is used exclusively to hold users and their information
         """
-        super().__init__(name, save_path, imgur_client, post_limit, name_downloads_by, avoid_duplicates,
-                         download_videos, download_images, user_added)
+        super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
+                         save_subreddits_by, name_downloads_by, user_added)
         self.save_path = "%s%s/" % (self.save_path, self.name)
-        self.subreddit_save_method = None
-        self.imgur_client = imgur_client
+        self.save_subreddits_by = None
 
     def update_save_path(self, save_path):
         self.save_path = "%s%s%s" % (save_path, self.name, '/' if not save_path.endswith('/') else '')
@@ -241,16 +231,14 @@ class User(RedditObject):
 
 class Subreddit(RedditObject):
 
-    def __init__(self, name, save_path, post_limit, subreddit_save_method, imgur_client, name_downloads_by,
-                 avoid_duplicates, download_videos, download_images, user_added):
+    def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
+                 save_subreddits_by, name_downloads_by, user_added):
         """
         A subclass of the RedditObject class. This class is used exclusively to hold subreddits and their information.
         Also contains an extra method not used for users to update the subreddit_save_by_method
         """
-        super().__init__(name, save_path, imgur_client, post_limit, name_downloads_by, avoid_duplicates,
-                         download_videos, download_images, user_added)
-        self.subreddit_save_method = subreddit_save_method
-        self.imgur_client = imgur_client
+        super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
+                         save_subreddits_by, name_downloads_by, user_added)
 
     def update_save_path(self, save_path):
         self.save_path = save_path

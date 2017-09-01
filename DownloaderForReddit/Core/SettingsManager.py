@@ -93,38 +93,8 @@ class SettingsManager:
         # region Misc Dialogs
         self.add_user_dialog_geom = self.settings.value("add_user_dialog_geom")
         self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
+        self.about_dialog_geom = self.settings.value("about_dialog_geom")
         # endregion
-
-    def save_settings(self):
-        self.settings.setValue('imgur_client', self.imgur_client)
-        self.settings.setValue('reddit_username', self.reddit_username)
-        self.settings.setValue('reddit_password', self.reddit_password)
-        self.settings.setValue('auto_save_on_close', self.auto_save_on_close)
-
-        self.settings.setValue('restrict_date', self.restrict_date)
-        self.settings.setValue('post_limit', self.post_limit)
-        self.settings.setValue('download_videos', self.download_videos)
-        self.settings.setValue('download_images', self.download_images)
-        self.settings.setValue('avoid_duplicates', self.avoid_duplicates)
-
-        self.settings.setValue('restrict_by_submission_score', self.restrict_by_submission_score)
-        self.settings.setValue('restrict_by_submission_score_method', self.restrict_by_submission_score_method)
-        self.settings.setValue('restrict_by_submission_score_limit', self.restrict_by_submission_score_limit)
-
-        self.settings.setValue('subreddit_sort_method', self.subreddit_sort_method)
-        self.settings.setValue('subreddit_sort_top_method', self.subreddit_sort_top_method)
-
-        self.settings.setValue('save_subreddits_by', self.save_subreddits_by)
-        self.settings.setValue('name_downloads_by', self.name_downloads_by)
-        self.settings.setValue('save_path', self.save_path)
-
-        self.settings.setValue('restrict_by_custom_date', self.restrict_by_custom_date)
-        self.settings.setValue('custom__date', self.custom_date)
-
-        self.settings.setValue('max_download_thread_count', self.max_download_thread_count)
-
-        self.settings.setValue('list__sort_method', self.list_sort_method)
-        self.settings.setValue('list_order_method', self.list_order_method)
 
     def load_pickeled_state(self):
         """Attempts to load the user and subreddit list from the pickled state and returns a list of the items loaded"""
@@ -227,7 +197,14 @@ class SettingsManager:
         self.settings.setValue("user_finder_content_list_icons_full_size", self.user_finder_content_list_icons_full_width)
         self.settings.setValue("user_finder_content_list_icon_size", self.user_finder_content_list_icon_size)
 
+    def save_add_user_dialog(self):
+        self.settings.setValue("add_user_dialog_geom", self.add_user_dialog_geom)
 
+    def save_failed_downloads_dialog(self):
+        self.settings.setValue("failed_downloads_dialog_geom", self.failed_downloads_dialog_geom)
+
+    def save_about_dialog(self):
+        self.settings.setValue("about_dialog_geom", self.about_dialog_geom)
 
 
 

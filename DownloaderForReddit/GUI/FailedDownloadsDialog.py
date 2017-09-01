@@ -41,7 +41,9 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.restoreGeometry(Core.Injector.get_settings_manager().failed_downloads_dialog_geom)
+        self.settings_manager = Core.Injector.get_settings_manager()
+        geom = self.settings_manager.failed_downloads_dialog_geom
+        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
 
         for x in fail_list:
             self.textBrowser.append(x)
@@ -50,7 +52,12 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         self.buttonBox.accepted.connect(self.accept)
 
     def accept(self):
+        self.save_settings()
         super().accept()
 
     def closeEvent(self, event):
-        Core.Injector.get_settings_manager().failed_downloads_dialog_geom = self.saveGeometry()
+        self.save_settings()
+
+    def save_settings(self):
+        self.settings_manager.failed_downloads_dialog_geom = self.saveGeometry()
+        self.settings_manager.save_failed_downloads_dialog()
