@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import shutil
 import subprocess
 import sys
 from datetime import datetime, date
@@ -185,8 +184,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setVisible(False)
 
         # self.check_for_updates(False)
-        # if self.first_run:
-            # self.cleanup_outdated_code_items()
+        # self.check_first_run()
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -1121,78 +1119,29 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except:
             self.update_output(updater)
 
-    # TODO: Implement a reddit object version check to make sure they are compatible
-    def cleanup_outdated_code_items(self):
-        """Used to clean up any code items that need to be changed when the program is updated"""
-        print('cleaning')
-        new_users = []
-        new_subs = []
+    def check_first_run(self):
+        if self.settings_manager.check_first_run():
+            self.check_reddit_objects()
+
+    def check_reddit_objects(self):
         for key, value in self.user_view_chooser_dict.items():
-            print('user list length: %s' % len(value.reddit_object_list))
-            for x in range(len(value.reddit_object_list)):
-                user = value.reddit_object_list.pop(0)
+            for user in value.reddit_object_list:
                 try:
-                    print(len(user.saved_content))
-                    print(len(user.saved_submissions))
-                    print('Keeping: %s' % user.name)
-                    new_users.append(user)
+                    if user.version != self.version:
+                        self.update_object_version(value.reddit_object_list, user)
                 except AttributeError:
-                    print('Making new user: %s' % user.name)
-                    x = User(user.name, user.save_path[:(-1 - len(user.name))], user.imgur_client, user.post_limit,
-                             user.name_downloads_by, user.avoid_duplicates, user.download_videos, user.download_images,
-                             user.user_added)
-                    print(x.save_path)
-                    x.do_not_edit = user.do_not_edit
-                    x.already_downloaded = user.already_downloaded
-                    x.date_limit = user.date_limit
-                    x.custom_date_limit = user.custom_date_limit
-                    x.number_of_downloads = user.number_of_downloads
-                    x.saved_content = {}
-                    x.saved_submissions = []
-                    new_users.append(x)
-            value.reddit_object_list = new_users
-            value.sort_lists((self.list_sort_method, self.list_order_method))
+                    self.update_object_version(value.reddit_object_list, user)
 
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for x in range(len(value.reddit_object_list)):
-                sub = value.reddit_object_list.pop(0)
-                try:
-                    print(len(sub.saved_content))
-                    print(len(sub.saved_submissions))
-                    print('Keeping: %s' % sub.name)
-                    new_subs.append(sub)
-                except AttributeError:
-                    x = Subreddit(sub.name, sub.save_path[:(-1 - len(sub.name))], sub.post_limit,
-                                  sub.subreddit_save_method, sub.imgur_client, sub.name_downloads_by,
-                                  sub.avoid_duplicates, sub.download_videos, sub.download_images, sub.user_added)
-                    print(x.save_path)
-                    x.do_not_edit = sub.do_not_edit
-                    x.already_downloaded = sub.already_downloaded
-                    x.date_limit = sub.date_limit
-                    x.custom_date_limit = sub.custom_date_limit
-                    new_subs.append(x)
-            value.reddit_object_list = new_subs
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-        self.cleanup_updater()
-
-        self.settings.setValue('first_run', False)
-
-    def cleanup_updater(self):
-        try:
-            shutil.rmtree('dfr_updater')
-            os.rename('dfr_updater_temp', 'dfr_updater')
-        except:
-            Message.updater_cleanup_failure(self)
-
-
-
-    def downloaded_users_test(self, page):
-        current_list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
-        downloaded_users_dialog = DownloadedUsersDialog(current_list_model,
-                                                  current_list_model.reddit_object_list[0], False)
-        downloaded_users_dialog.single_download.connect(self.run_single_user)
-        downloaded_users_dialog.show()
-        if page == 1:
-            downloaded_users_dialog.change_to_downloads_view()
-        if not downloaded_users_dialog.closed:
-            downloaded_users_dialog.show()
+    def update_object_version(self, object_list, reddit_object):
+        x = User(self.version, reddit_object.name, reddit_object.save_path, reddit_object.post_limit,
+                 reddit_object.avoid_duplicates, reddit_object.download_videos, reddit_object.download_images,
+                 reddit_object.save_subreddits_by, reddit_object.name_downloads_by, reddit_object.user_added)
+        x.do_not_edit = reddit_object.do_not_edit
+        x.saved_submissions = reddit_object.saved_submissions
+        x.already_downloaded = reddit_object.already_downloaded
+        x.date_limit = reddit_object.date_limit
+        x.custom_date_limit = reddit_object.custom_date_limit
+        x.saved_content = reddit_object.saved_content
+        x.number_of_downloads = reddit_object.number_of_downloads
+        object_list.remove(reddit_object)
+        object_list.append(x)

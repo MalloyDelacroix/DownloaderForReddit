@@ -4,6 +4,7 @@ from PyQt5.QtCore import QSettings
 import shelve
 
 from Core.ListModel import ListModel
+from version import __version__
 
 
 class SettingsManager:
@@ -12,6 +13,10 @@ class SettingsManager:
         self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
         self.load_settings()
         self.count = 0
+
+    def check_first_run(self):
+        cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
+        return cached_version != __version__
 
     def load_settings(self):
         # region Core Settings
@@ -205,21 +210,3 @@ class SettingsManager:
 
     def save_about_dialog(self):
         self.settings.setValue("about_dialog_geom", self.about_dialog_geom)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
