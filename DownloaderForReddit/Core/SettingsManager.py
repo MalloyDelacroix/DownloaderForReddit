@@ -1,5 +1,29 @@
-import os
+"""
+Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
+users or on the subreddits.
 
+
+Copyright (C) 2017, Kyle Hickey
+
+
+This file is part of the Downloader for Reddit.
+
+Downloader for Reddit is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Downloader for Reddit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
+import os
 from PyQt5.QtCore import QSettings
 import shelve
 
@@ -20,6 +44,7 @@ class SettingsManager:
 
     def load_settings(self):
         # region Core Settings
+        self.do_not_notify_update = self.settings.value("do_not_notify_update", "v0.0.0", type=str)
         self.first_run = self.settings.value('first_run', True, type=bool)
         self.last_update = self.settings.value('last_update', None, type=str)
         self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
@@ -99,6 +124,7 @@ class SettingsManager:
         self.add_user_dialog_geom = self.settings.value("add_user_dialog_geom")
         self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
         self.about_dialog_geom = self.settings.value("about_dialog_geom")
+        self.update_dialog_geom = self.settings.value("update_dialog_geom")
         # endregion
 
     def load_pickeled_state(self):
@@ -210,3 +236,7 @@ class SettingsManager:
 
     def save_about_dialog(self):
         self.settings.setValue("about_dialog_geom", self.about_dialog_geom)
+
+    def save_update_dialog(self):
+        self.settings.setValue("do_not_notify_update", self.do_not_notify_update)
+        self.settings.setValue("update_dialog_geom", self.update_dialog_geom)

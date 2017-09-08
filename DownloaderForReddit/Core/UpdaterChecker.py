@@ -1,12 +1,36 @@
+"""
+Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
+users or on the subreddits.
+
+
+Copyright (C) 2017, Kyle Hickey
+
+
+This file is part of the Downloader for Reddit.
+
+Downloader for Reddit is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Downloader for Reddit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
 import requests
-import os
 import sys
-from PyQt5.QtCore import QObject, QSettings, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
 
 class UpdateChecker(QObject):
 
-    update_available_signal = pyqtSignal(tuple)
+    update_available_signal = pyqtSignal(str)
     no_update_signal = pyqtSignal()
     finished = pyqtSignal()
 
@@ -49,18 +73,6 @@ class UpdateChecker(QObject):
                     self.download_name = asset['name']
                     self.download_size = asset['size']
                     self.download_url = asset['browser_download_url']
-                    self.update_available_signal.emit((self.newest_version, self.download_size))
-                    self.save_download_url()
+                    self.update_available_signal.emit(self.newest_version)
         else:
             self.no_update_signal.emit()
-
-    def save_download_url(self):
-        """
-        These variables are saved and then used by the updater application so it does not have to make the same call to
-        the github api to retrieve the same information as above
-        """
-        settings = QSettings('SomeGuySoftware', 'dfr_updater')
-        settings.setValue('download_url', self.download_url)
-        settings.setValue('download_name', self.download_name)
-        settings.setValue('new_version', self.newest_version)
-        settings.setValue('program_files_location', os.getcwd())

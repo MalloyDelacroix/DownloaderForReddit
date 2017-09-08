@@ -32,12 +32,13 @@ import imgurpython
 from GUI.AboutDialog import AboutDialog
 from GUI.DownloadedUsersDialog import DownloadedUsersDialog
 from GUI.FailedDownloadsDialog import FailedDownloadsDialog
-from Core.Messages import Message, UnfinishedDownloadsWarning, UpdateDialog
+from Core.Messages import Message, UnfinishedDownloadsWarning
 from PyQt5 import QtWidgets, QtCore, QtGui
 from Core.RedditExtractor import RedditExtractor
 from Core.RedditObjects import User, Subreddit
 from GUI.SubredditSettingsDialog import SubredditSettingsDialog
 from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
+from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
 from GUI.UserFinderGUI import UserFinderGUI
 from GUI.UserSettingsDialog import UserSettingsDialog
@@ -183,7 +184,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        # self.check_for_updates(False)
+        self.check_for_updates(False)
         # self.check_first_run()
 
     def user_list_right_click(self):
@@ -1078,12 +1079,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Opens and runs the update checker on a separate thread. Sets self.from_menu so that other dialogs know the
         updater has been ran by the user, this will result in different dialog behaviour
         """
-        self.from_menu = from_menu
         self.update_thread = QtCore.QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
         self.update_thread.started.connect(self.update_checker.run)
-        self.update_checker.update_available_signal.connect(self.update_dialog)
+        self.update_checker.update_available_signal.connect(self.display_update)
         if from_menu:
             self.update_checker.no_update_signal.connect(self.no_update_available_dialog)
         self.update_checker.finished.connect(self.update_thread.quit)
@@ -1091,39 +1091,35 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_thread.finished.connect(self.update_thread.deleteLater)
         self.update_thread.start()
 
+    def display_update(self, latest_version):
+        if self.settings_manager.do_not_notify_update != latest_version:
+            self.update_dialog(latest_version)
+
     def update_dialog(self, update_variables):
         """Opens the update dialog"""
-        if self.last_update != update_variables[0] or self.version != update_variables[0] and self.from_menu:
-            update_checker = UpdateDialog(update_variables)
-            update_checker.show()
-            dialog = update_checker.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                self.run_updater()
-            else:
-                self.last_update = update_checker.set_last_update
+        update_checker = UpdateDialog(update_variables)
+        update_checker.show()
+        dialog = update_checker.exec_()
 
     def no_update_available_dialog(self):
         Message.up_to_date_message(self)
 
-    def run_updater(self):
-        platform = sys.platform
-        split_char = '\\' if platform == 'win32' else '/'
-        updater = '%s%s%sdfr_updater%s' % (os.getcwd(), split_char, 'dfr_updater/', '.exe' if platform == 'win32'
-                                           else '')
-        updater = ''.join([x if x != '\\' else '/' for x in updater])
-        try:
-            if platform == 'win32':
-                os.startfile(updater)
-            else:
-                subprocess.Popen([updater, updater])
-        except:
-            self.update_output(updater)
-
     def check_first_run(self):
         if self.settings_manager.check_first_run():
-            self.check_reddit_objects()
+            if self.check_reddit_objects():
+                if Message.update_reddit_objects_message(self):
+                    self.update_reddit_objects()
 
     def check_reddit_objects(self):
+        for key, value in self.user_view_chooser_dict.items():
+            for user in value.reddit_object_list:
+                try:
+                    if user.version != self.version:
+                        return True
+                except AttributeError:
+                    return True
+
+    def update_reddit_objects(self):
         for key, value in self.user_view_chooser_dict.items():
             for user in value.reddit_object_list:
                 try:
