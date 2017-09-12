@@ -74,6 +74,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.downloaded = 0
         self.running = False
         self.user_finder_open = False
+        self.saved = True
 
         # region Settings
         self.settings_manager = Core.Injector.get_settings_manager()
@@ -187,6 +188,14 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.check_for_updates(False)
         # self.check_first_run()
 
+    def set_saved(self):
+        self.saved = True
+        self.setWindowTitle("Downloader For Reddit")
+
+    def set_not_saved(self):
+        self.saved = False
+        self.setWindowTitle("Downloader For Reddit  *")
+
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
         try:
@@ -279,6 +288,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if not user_settings_dialog.closed:
             dialog = user_settings_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
+                self.set_not_saved()
                 if not user_settings_dialog.restore_defaults:
                     current_list_model.reddit_object_list = user_settings_dialog.user_list
                 else:
@@ -328,6 +338,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if not subreddit_settings_dialog.closed:
                 dialog = subreddit_settings_dialog.exec_()
                 if dialog == QtWidgets.QDialog.Accepted:
+                    self.set_not_saved()
                     if not subreddit_settings_dialog.restore_defaults:
                         current_list_model.reddit_object_list = subreddit_settings_dialog.subreddit_list
                     else:
@@ -519,6 +530,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.user_view_chooser_dict[new_user_list] = x
                 self.user_list_view.setModel(x)
                 self.refresh_user_count()
+                self.set_not_saved()
             else:
                 Message.not_valid_name(self)
         else:
@@ -537,6 +549,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 else:
                     self.user_list_view.setModel(None)
                 self.refresh_user_count()
+                self.set_not_saved()
         except KeyError:
             Message.no_user_list(self)
 
@@ -546,6 +559,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_list_view.setModel(self.user_view_chooser_dict[new_list_view])
         self.user_view_chooser_dict[new_list_view].sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_user_count()
+        self.set_not_saved()
 
     def add_subreddit_list(self):
         new_subreddit_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog",
@@ -558,6 +572,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.subreddit_view_chooser_dict[new_subreddit_list] = x
                 self.subreddit_list_view.setModel(x)
                 self.refresh_subreddit_count()
+                self.set_not_saved()
             else:
                 Message.not_valid_name(self)
         else:
@@ -578,6 +593,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 else:
                     self.subreddit_list_view.setModel(None)
                 self.refresh_subreddit_count()
+                self.set_not_saved()
         except KeyError:
             Message.no_subreddit_list(self)
 
@@ -586,6 +602,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[new_list_view])
         self.subreddit_view_chooser_dict[new_list_view].sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_subreddit_count()
+        self.set_not_saved()
 
     def add_user_dialog(self):
         """Opens the dialog to enter the user name"""
@@ -610,6 +627,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             insertion_list.setData(insertion_list.rowCount() - 1, x)
         insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_user_count()
+        self.set_not_saved()
 
     def add_user(self, new_user):
         """Adds a user to the current list"""
@@ -624,6 +642,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     insertion_list.setData(insertion_list.rowCount() - 1, x)
                     insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
                     self.refresh_user_count()
+                    self.set_not_saved()
             else:
                 Message.not_valid_name(self)
 
@@ -648,6 +667,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 working_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
                 working_list.removeRows(self.get_selected_view_index(self.user_list_view).row(), 1)
                 self.refresh_user_count()
+                self.set_not_saved()
             else:
                 pass
         except (KeyError, AttributeError):
@@ -689,6 +709,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     insertion_list.setData(insertion_list.rowCount() - 1, x)
                     insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
                     self.refresh_subreddit_count()
+                    self.set_not_saved()
             else:
                 Message.not_valid_name(self)
         except KeyError:
@@ -712,6 +733,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 working_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
                 working_list.removeRows(self.get_selected_view_index(self.subreddit_list_view).row(), 1)
                 self.refresh_subreddit_count()
+                self.set_not_saved()
             else:
                 pass
         except (KeyError, AttributeError):
@@ -724,6 +746,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             working_list.reddit_object_list.remove(sub)
             working_list.display_list.remove(sub.name)
             self.refresh_subreddit_count()
+            self.set_not_saved()
 
     def import_user_list_from_folder(self):
         """Opens a file dialog and then imports the names of the subfolders as users to the current user list"""
@@ -778,6 +801,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
+        self.set_not_saved()
         self.running = True
         self.download_count = 0
         self.output_box.clear()
@@ -830,6 +854,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_user_settings(self):
         """Iterates through the user list and calls update settings for each user"""
+        self.set_not_saved()
         for key, value in self.user_view_chooser_dict.items():
             for user in value.reddit_object_list:
                 if not user.do_not_edit:
@@ -837,6 +862,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_subreddit_settings(self):
         """Iterates through the subreddit list and calls update settings for each sub"""
+        self.set_not_saved()
         for key, value in self.subreddit_view_chooser_dict.items():
             for sub in value.reddit_object_list:
                 if not sub.do_not_edit:
@@ -997,6 +1023,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             value.sort_lists((self.list_sort_method, self.list_order_method))
         for key, value in self.subreddit_view_chooser_dict.items():
             value.sort_lists((self.list_sort_method, self.list_order_method))
+        self.set_not_saved()
 
     def set_view_menu_items_checked(self):
         """A dispatch table to set the correct view menu item checked"""
@@ -1009,21 +1036,38 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         view_order_dict[self.list_order_method].setChecked(True)
 
     def closeEvent(self, QCloseEvent):
+        if self.check_unfinished_downloads() and self.check_save_status():
+            self.close()
+        else:
+            QCloseEvent.ignore()
+
+    def check_unfinished_downloads(self):
         if self.unfinished_downloads_available:
             unfinished_dialog = UnfinishedDownloadsWarning()
             dialog = unfinished_dialog.exec_()
-            if dialog == QtWidgets.QMessageBox.Accepted:
-                self.close()
-            else:
-                QCloseEvent.ignore()
+            return dialog == QtWidgets.QMessageBox.Accepted
         else:
-            self.close()
+            return True
+
+    def check_save_status(self):
+        if self.settings_manager.auto_save:
+            self.save_state()
+            return True
+        elif not self.saved:
+            ret = Message.unsaved_close_message(self)
+            if ret == "SAVE":
+                self.save_state()
+                return True
+            elif ret == "CLOSE":
+                return True
+            else:
+                return False
+        else:
+            return True
 
     def close(self):
         self.receiver.stop_run()
         self.save_main_window_settings()
-        if self.settings_manager.auto_save:
-            self.save_state()
 
     def save_main_window_settings(self):
         self.settings_manager.main_window_geom = self.saveGeometry()
@@ -1069,10 +1113,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             name = value.name
             object_list = value.reddit_object_list
             subreddit_list_models[name] = object_list
-        # TODO: Find someway to show that this has been saved on the GUI
         if not self.settings_manager.save_pickle_state(user_list_models, subreddit_list_models, current_user_view,
                                                        current_subreddit_view):
             Message.failed_to_save(self)
+            self.set_not_saved()
+        self.set_saved()
 
     def check_for_updates(self, from_menu):
         """

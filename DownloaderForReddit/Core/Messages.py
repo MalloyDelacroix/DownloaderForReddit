@@ -181,6 +181,16 @@ class Message(object):
         reply = message.information(self, "Update Reddit Objects", text, message.Ok, message.Cancel)
         return reply == message.Ok
 
+    def unsaved_close_message(self):
+        text = "Save changes to Downloader For Reddit?"
+        reply = message.question(self, "Save Changes?", text, message.Yes | message.No | message.Cancel, message.Cancel)
+        if reply == message.Yes:
+            return "SAVE"
+        elif reply == message.No:
+            return "CLOSE"
+        else:
+            return "CANCEL"
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
