@@ -27,8 +27,6 @@ import os
 import shutil
 import subprocess
 import sys
-
-from Core.Messages import Message
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import Core.Injector
@@ -36,6 +34,7 @@ from Core.RedditExtractor import RedditExtractor
 from GUI.AddUserDialog import AddUserDialog
 from GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
 from UserFinder import UserFinder
+from Core.Messages import Message
 
 
 class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
@@ -63,11 +62,12 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         self.running = False
         self.auto_opened = False
 
-        # self.settings = QtCore.QSettings('SomeGuySoftware', 'RedditDownloader')
         self.settings_manager = Core.Injector.get_settings_manager()
 
-        self.setupUi(self)
+        geom = self.settings_manager.user_finder_GUI_geom
+        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
 
+        self.setupUi(self)
         self.found_users = []
 
         self.stacked_widget.setCurrentIndex(0)

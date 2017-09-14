@@ -29,7 +29,6 @@ import re
 import subprocess
 import sys
 import time
-
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import Core.Injector
@@ -65,7 +64,9 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.closed = False
 
         self.settings_manager = Core.Injector.get_settings_manager()
-        self.restoreGeometry(self.settings_manager.user_settings_dialog_geom)
+
+        geom = self.settings_manager.user_settings_dialog_geom
+        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         self.user_content_icons_full_width = self.settings_manager.user_content_icons_full_width
         self.user_content_icon_size = self.settings_manager.user_content_icon_size
         self.current_item_display_list = self.settings_manager.current_user_settings_item_display_list
@@ -145,6 +146,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_downloads_label.setText(str(len(self.current_user.already_downloaded)))
 
     def setup_previous_downloads_list(self):
+        """Displays previously downloaded urls in the item_display_list"""
         self.current_item_display_list = 'previous_downloads'
         self.item_display_list.clear()
         self.item_display_list_label.setText('Previous Downloads:')
@@ -152,6 +154,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.item_display_list.addItem(item)
 
     def setup_saved_content_list(self):
+        """Displays any saved content that a user has in the item_display_list"""
         self.current_item_display_list = 'saved_content'
         self.item_display_list.clear()
         self.item_display_list_label.setText('Saved Content:')
@@ -162,6 +165,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
             self.item_display_list.addItem(list_item)
 
     def setup_saved_submission_list(self):
+        """Displays any saved submissions that have not yet been extracted in the item_display_list"""
         self.current_item_display_list = 'saved_submissions'
         self.item_display_list.clear()
         self.item_display_list_label.setText('Saved Submissions:')
@@ -177,6 +181,10 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
                 self.item_display_reddit_object_link_dict[self.current_item_display_list].remove(item.text())
 
     def remove_saved_content(self):
+        """
+        Saved content has its own removal method because it is stored slightly different that previously downloaded
+        urls and saved submissions
+        """
         for item in self.item_display_list.selectedItems():
             key = self.saved_content_name_dict[item.text()]
             current_content_dict = self.item_display_reddit_object_link_dict[self.current_item_display_list]
@@ -407,6 +415,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
         self.user_content_list.setIconSize(QtCore.QSize(size, size))
 
     def set_context_menu_items_checked(self):
+        """Sets context menu items with the correct check status based on the users settings"""
         if self.user_content_icons_full_width:
             self.icons_full_width.setChecked(True)
         else:
@@ -423,6 +432,7 @@ class UserSettingsDialog(QtWidgets.QDialog, Ui_user_settings_dialog):
                 self.icon_size_extra_large.setChecked(True)
 
     def resizeEvent(self, event):
+        """This resize event resizes displayed icons if the user sets icons to display at full width"""
         if self.user_content_icons_full_width:
             self.user_content_list.setIconSize(QtCore.QSize(self.user_content_list.width(),
                                                             self.user_content_list.width()))

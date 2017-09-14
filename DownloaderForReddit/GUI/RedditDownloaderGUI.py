@@ -27,8 +27,8 @@ import os
 import subprocess
 import sys
 from datetime import datetime, date
-
 import imgurpython
+
 from GUI.AboutDialog import AboutDialog
 from GUI.DownloadedUsersDialog import DownloadedUsersDialog
 from GUI.FailedDownloadsDialog import FailedDownloadsDialog
@@ -44,7 +44,6 @@ from GUI.UserFinderGUI import UserFinderGUI
 from GUI.UserSettingsDialog import UserSettingsDialog
 from GUI.settingsGUI import RedditDownloaderSettingsGUI
 import Core.Injector
-
 from Core.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
 from GUI_Resources.RD_GUI_auto import Ui_MainWindow
@@ -186,7 +185,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setVisible(False)
 
         self.check_for_updates(False)
-        # self.check_first_run()
+        self.check_first_run()
 
     def set_saved(self):
         self.saved = True
@@ -499,7 +498,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def update_status_bar_download_count(self):
         self.downloaded += 1
-        self.total_files_downloaded += 1
+        self.settings_manager.total_files_downloaded += 1
         self.statusbar.showMessage('Downloaded: %s  of  %s' % (self.downloaded, self.download_count), -1)
 
     def setup_progress_bar(self, limit):
@@ -656,9 +655,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :return: A new user object with the supplied name
         """
         new_user = User(self.version, name, self.settings_manager.save_directory, self.settings_manager.post_limit,
-                 self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
-                 self.settings_manager.download_images, self.settings_manager.save_subreddits_by,
-                 self.settings_manager.name_downloads_by, datetime.now().timestamp())
+                        self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
+                        self.settings_manager.download_images, self.settings_manager.name_downloads_by,
+                        datetime.now().timestamp())
         return new_user
 
     def remove_user(self):
@@ -829,8 +828,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_add_subreddit_list.setDisabled(False)
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
-        self.update_number_of_downloads()
-        if self.auto_display_failed_list and len(self.failed_list) > 0:
+        if self.settings_manager.auto_display_failed_list and len(self.failed_list) > 0:
             self.display_failed_downloads()
         self.download_count = 0
 
@@ -887,11 +885,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def display_failed_downloads(self):
         """Opens a dialog with information about any content that was not able to be downloaded for whatever reason"""
         failed_dialog = FailedDownloadsDialog(self.failed_list)
-        failed_dialog.auto_display_checkbox.setChecked(not self.auto_display_failed_list)
+        failed_dialog.auto_display_checkbox.setChecked(not self.settings_manager.auto_display_failed_list)
         failed_dialog.show()
         dialog = failed_dialog.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
-            self.auto_display_failed_list = not failed_dialog.auto_display_checkbox.isChecked()
+            self.settings_manager.auto_display_failed_list = not failed_dialog.auto_display_checkbox.isChecked()
 
     def display_user_finder(self, auto):
         """Opens the UserFinder dialog"""
@@ -1150,6 +1148,10 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Message.up_to_date_message(self)
 
     def check_first_run(self):
+        """
+        Checks to see if this is the first time the application has been ran since being updated.  If it is the first
+        run, it will then check to see if reddit obejects need to be updated and then update them if they do
+        """
         if self.settings_manager.check_first_run():
             if self.check_reddit_objects():
                 if Message.update_reddit_objects_message(self):
@@ -1163,26 +1165,85 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                         return True
                 except AttributeError:
                     return True
+        for key, value in self.subreddit_view_chooser_dict.items():
+            for sub in value.reddit_object_list:
+                try:
+                    if sub.version != self.version:
+                        return True
+                except AttributeError:
+                    return True
+        return False
 
     def update_reddit_objects(self):
+        self.update_objects_gui_shift()
+        self.update_user_objects()
+        self.update_subreddit_objects()
+        self.save_state()
+        self.finish_update_objects_gui_shift()
+
+    def update_objects_gui_shift(self):
+        """Sets the status bar and progress bar up for updating reddit objects"""
+        self.statusbar.showMessage("Updating reddit objects", -1)
+        count = 0
+        for key, value in self.user_view_chooser_dict.items():
+            count += len(value.reddit_object_list)
+        for key, value in self.subreddit_view_chooser_dict.items():
+            count += len(value.reddit_object_list)
+        self.setup_progress_bar(count)
+        self.progress_label.setText("Updating")
+
+    def finish_update_objects_gui_shift(self):
+        """Sets the GUI back to normal after updating reddit objects"""
+        self.statusbar.showMessage("Update Complete", -1)
+        self.progress_bar.setVisible(False)
+        self.progress_label.setVisible(False)
+        self.progress_label.setText("Extraction Complete")
+
+    def update_user_objects(self):
         for key, value in self.user_view_chooser_dict.items():
             for user in value.reddit_object_list:
                 try:
                     if user.version != self.version:
-                        self.update_object_version(value.reddit_object_list, user)
+                        self.update_user_object_version(value.reddit_object_list, user)
                 except AttributeError:
-                    self.update_object_version(value.reddit_object_list, user)
+                    self.update_user_object_version(value.reddit_object_list, user)
+                self.update_progress_bar()
+            value.sort_lists((self.list_sort_method, self.list_order_method))
 
-    def update_object_version(self, object_list, reddit_object):
-        x = User(self.version, reddit_object.name, reddit_object.save_path, reddit_object.post_limit,
-                 reddit_object.avoid_duplicates, reddit_object.download_videos, reddit_object.download_images,
-                 reddit_object.save_subreddits_by, reddit_object.name_downloads_by, reddit_object.user_added)
-        x.do_not_edit = reddit_object.do_not_edit
-        x.saved_submissions = reddit_object.saved_submissions
-        x.already_downloaded = reddit_object.already_downloaded
-        x.date_limit = reddit_object.date_limit
-        x.custom_date_limit = reddit_object.custom_date_limit
-        x.saved_content = reddit_object.saved_content
-        x.number_of_downloads = reddit_object.number_of_downloads
-        object_list.remove(reddit_object)
+    def update_subreddit_objects(self):
+        for key, value in self.subreddit_view_chooser_dict.items():
+            for sub in value.reddit_object_list:
+                try:
+                    if sub.version != self.version:
+                        self.update_subreddit_object_version(value.reddit_object_list, sub)
+                except AttributeError:
+                    self.update_subreddit_object_version(value.reddit_object_list, sub)
+                self.update_progress_bar()
+            value.sort_lists((self.list_sort_method, self.list_order_method))
+
+    def update_user_object_version(self, object_list, user):
+        x = User(self.version, user.name, self.settings_manager.save_directory, user.post_limit, user.avoid_duplicates,
+                 user.download_videos, user.download_images, user.name_downloads_by, user.user_added)
+        x.do_not_edit = user.do_not_edit
+        x.saved_submissions = user.saved_submissions
+        x.already_downloaded = user.already_downloaded
+        x.date_limit = user.date_limit
+        x.custom_date_limit = user.custom_date_limit
+        x.saved_content = user.saved_content
+        x.number_of_downloads = user.number_of_downloads
+        object_list.remove(user)
+        object_list.append(x)
+
+    def update_subreddit_object_version(self, object_list, sub):
+        x = Subreddit(self.version, sub.name, sub.save_path, sub.post_limit, sub.avoid_duplicates, sub.download_videos,
+                      sub.download_images, sub.subreddit_save_method, sub.name_downloads_by, sub.user_added)
+        x.subreddit_save_method = sub.subreddit_save_method
+        x.do_not_edit = sub.do_not_edit
+        x.saved_submissions = sub.saved_submissions
+        x.already_downloaded = sub.already_downloaded
+        x.date_limit = sub.date_limit
+        x.custom_date_limit = sub.custom_date_limit
+        x.saved_content = sub.saved_content
+        x.number_of_downloads = sub.number_of_downloads
+        object_list.remove(sub)
         object_list.append(x)

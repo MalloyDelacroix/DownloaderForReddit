@@ -29,7 +29,6 @@ import re
 import subprocess
 import sys
 import time
-
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import Core.Injector
@@ -348,6 +347,7 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
         self.subreddit_content_list.setIconSize(QtCore.QSize(size, size))
 
     def set_context_menu_items_checked(self):
+        """Sets context menu items with the correct check status based on the users settings"""
         if self.subreddit_content_icons_full_width:
             self.icons_full_width.setChecked(True)
         else:
@@ -364,6 +364,7 @@ class SubredditSettingsDialog(QtWidgets.QDialog, Ui_subreddit_settings_dialog):
                 self.icon_size_extra_large.setChecked(True)
 
     def resizeEvent(self, event):
+        """This resize event resizes displayed icons if the user sets icons to display at full width"""
         if self.subreddit_content_icons_full_width:
             icon_size = self.subreddit_content_list.width()
         else:

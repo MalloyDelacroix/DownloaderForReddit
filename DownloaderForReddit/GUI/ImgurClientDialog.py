@@ -30,7 +30,7 @@ from GUI_Resources.ImgurClientDialog_auto import Ui_imgur_client_dialog
 
 class ImgurClientDialog(QtWidgets.QDialog, Ui_imgur_client_dialog):
     """
-    A dialog where the users person imgur client information is entered.  Also contains instructions on how to get an
+    A dialog where the users personal imgur client information is entered.  Also contains instructions on how to get an
     imgur client
     """
     def __init__(self):
@@ -58,7 +58,6 @@ class ImgurClientDialog(QtWidgets.QDialog, Ui_imgur_client_dialog):
                              'will work here and it does not matter for anonymous usage)<br>Application '
                              'website: https://github.com/MalloyDelacroix/DownloaderForReddit<br>Email: '
                              'Your email address to email your credentials to.')
-        # TODO: Once a git-hub page is set up for this, change the website above to the git-gub page
         help_message.setTextFormat(QtCore.Qt.RichText)
         help_message.setInformativeText("<a href='https://api.imgur.com/oauth2/addclient'>https://api.imgur.com/oauth2/addclient<a/>")
         help_message.exec_()

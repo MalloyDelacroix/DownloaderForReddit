@@ -28,7 +28,6 @@ import os
 import shutil
 import sys
 import time
-
 from PyQt5 import QtWidgets, QtCore
 
 import Core.Injector
@@ -75,7 +74,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         self.auto_save_checkbox.setCheckState(self.settings_manager.auto_save)
 
         self.restrict_to_score_checkbox.setChecked(self.settings_manager.restrict_by_score)
-        self.post_limit_spinbox.setValue(self.settings_manager.post_score_limit)
+        self.post_limit_spinbox.setValue(self.settings_manager.post_limit)
         self.post_score_combo.addItems(('Greater Than', 'Less Than'))  # 0: Greather than, 1: Less than
         self.post_score_combo.setCurrentIndex(self.settings_manager.score_limit_operator)
         if self.settings_manager.restrict_by_score:
@@ -87,8 +86,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
             self.post_score_limit_spin_box.setDisabled(True)
 
         self.setup_sort_radios(self.settings_manager.subreddit_sort_method)
-
-        self.set_post_limit = self.post_limit_spinbox.value()
 
         # Controls for the date restriction portion of the settings
         self.date_restriction_checkbox.setChecked(self.settings_manager.restrict_by_date)
@@ -281,7 +278,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         self.settings_manager.subreddit_sort_method = self.get_sort_by_method()
         self.settings_manager.subreddit_sort_top_method = self.sub_sort_top_combo.currentIndex()
 
-        self.settings_manager.post_limit = self.post_score_limit_spin_box.value()
+        self.settings_manager.post_limit = self.post_limit_spinbox.value()
 
         self.settings_manager.download_videos = self.link_filter_video_checkbox.isChecked()
         self.settings_manager.download_images = self.link_filter_image_checkbox.isChecked()

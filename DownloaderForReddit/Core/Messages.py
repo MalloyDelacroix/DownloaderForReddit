@@ -52,28 +52,23 @@ class Message(object):
 
     def no_user_list(self):
         reply = message.warning(self, 'Warning', no_user_list_message, message.Ok)
-        if reply == message.Ok:
-            pass
+        return reply == message.Ok
 
     def no_subreddit_list(self):
         reply = message.warning(self, 'No Subreddit List', no_subreddit_list_message, message.Ok)
-        if reply == message.Ok:
-            pass
+        return reply == message.Ok
 
     def no_user_selected(self):
         reply = message.information(self, 'No User Selected', no_user_selected_message, message.Ok)
-        if reply == message.Ok:
-            pass
+        return reply == message.Ok
 
     def no_subreddit_selected(self):
         reply = message.information(self, 'No Subreddit Selected', no_subreddit_selected_message, message.Ok)
-        if reply == message.Ok:
-            pass
+        return reply == message.Ok
 
     def failed_to_save(self):
         reply = message.information(self, 'Save Failed', failed_to_save_message, message.Ok)
-        if reply == message.Ok:
-            pass
+        return reply == message.Ok
 
     def remove_user(self):
         reply = message.information(self, 'Remove User?', remove_user_message, message.Ok, message.Cancel)
@@ -165,6 +160,7 @@ class Message(object):
                'please move the user manual back to the source folder and ensure it is named ' \
                '"The Downloader For Reddit - User Manual.pdf"'
         reply = message.information(self, 'User Manual Not Found', text, message.Ok)
+        return reply == message.Ok
 
     def up_to_date_message(self):
         text = 'You are running the latest version of The Downloader for Reddit'
@@ -195,6 +191,10 @@ class Message(object):
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
     def __init__(self):
+        """
+        A small class to display an unfinished dialog message to the user.  It is made into its own class so the names
+        of the buttons can be renamed to be better understood in the situation it is used in
+        """
         QDialog.__init__(self)
         self.setupUi(self)
 

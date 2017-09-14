@@ -27,7 +27,6 @@ import os
 import re
 import subprocess
 import sys
-
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from GUI.UserSettingsDialog import UserSettingsDialog
@@ -114,7 +113,6 @@ class DownloadedUsersDialog(UserSettingsDialog):
             try:
                 if len(self.file_dict) > 0:
                     self.file_dict[self.current_user.name].sort(key=alphanum_key)
-                    # for file in sorted(self.file_dict[self.current_user.name], key=alphanum_key):
                     for file in self.file_dict[self.current_user.name]:
                         file_name = file.rsplit('/', 1)[1]
                         item = QtWidgets.QListWidgetItem()
