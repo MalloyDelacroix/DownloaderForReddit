@@ -107,8 +107,8 @@ class Content(QRunnable):
         """Ensures each file name does not contain forbidden characters and is within the character limit"""
         forbidden_chars = '"*\\/\'.|?:<>'
         filename = ''.join([x if x not in forbidden_chars else '#' for x in name])
-        if len(filename) >= 240:
-            filename = filename[:237] + '...'
+        if len(filename) >= 230:
+            filename = filename[:225] + '...'
         return filename
 
     @staticmethod
