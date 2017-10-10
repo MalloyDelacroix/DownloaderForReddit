@@ -1091,7 +1091,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.subreddit_list_combo.setCurrentText(last_subreddit_view)
             self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
             self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
-        except (KeyError, ValueError):
+        except (KeyError, TypeError):
             pass
 
     def save_state(self):
