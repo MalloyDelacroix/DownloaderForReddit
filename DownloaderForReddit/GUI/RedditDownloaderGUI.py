@@ -1078,9 +1078,9 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def load_state(self):
         """Gets the loaded items from the settings manager and supplies the information to the GUI and List Models"""
         reddit_object_lists = self.settings_manager.load_pickeled_state()
-        last_user_view = reddit_object_lists[2]
-        last_subreddit_view = reddit_object_lists[3]
         try:
+            last_user_view = reddit_object_lists[2]
+            last_subreddit_view = reddit_object_lists[3]
             self.user_view_chooser_dict = reddit_object_lists[0]
             self.subreddit_view_chooser_dict = reddit_object_lists[1]
             for name, item in self.user_view_chooser_dict.items():
@@ -1091,7 +1091,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.subreddit_list_combo.setCurrentText(last_subreddit_view)
             self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
             self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
-        except KeyError:
+        except (KeyError, ValueError):
             pass
 
     def save_state(self):
