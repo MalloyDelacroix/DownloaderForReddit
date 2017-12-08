@@ -1075,24 +1075,43 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager.download_subreddits = self.download_subreddit_checkbox.isChecked()
         self.settings_manager.save_main_window()
 
+    # def load_state(self):
+    #     """Gets the loaded items from the settings manager and supplies the information to the GUI and List Models"""
+    #     reddit_object_lists = self.settings_manager.load_picked_objects()
+    #     print(reddit_object_lists)
+    #     try:
+    #         last_user_view = reddit_object_lists[2]
+    #         last_subreddit_view = reddit_object_lists[3]
+    #         self.user_view_chooser_dict = reddit_object_lists[0]
+    #         self.subreddit_view_chooser_dict = reddit_object_lists[1]
+    #         for name, item in self.user_view_chooser_dict.items():
+    #             self.user_lists_combo.addItem(name)
+    #         for name, item in self.subreddit_view_chooser_dict.items():
+    #             self.subreddit_list_combo.addItem(name)
+    #         self.user_lists_combo.setCurrentText(last_user_view)
+    #         self.subreddit_list_combo.setCurrentText(last_subreddit_view)
+    #         self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
+    #         self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
+    #     except (KeyError, TypeError):
+    #         pass
+
     def load_state(self):
-        """Gets the loaded items from the settings manager and supplies the information to the GUI and List Models"""
-        reddit_object_lists = self.settings_manager.load_pickeled_state()
+        reddit_object_list = self.settings_manager.load_picked_objects()
         try:
-            last_user_view = reddit_object_lists[2]
-            last_subreddit_view = reddit_object_lists[3]
-            self.user_view_chooser_dict = reddit_object_lists[0]
-            self.subreddit_view_chooser_dict = reddit_object_lists[1]
-            for name, item in self.user_view_chooser_dict.items():
+            last_user_view = reddit_object_list['last_user_view']
+            last_subreddit_view = reddit_object_list['last_sub_view']
+            self.user_view_chooser_dict = reddit_object_list['user_dict']
+            self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
+            for name in self.user_view_chooser_dict.keys():
                 self.user_lists_combo.addItem(name)
-            for name, item in self.subreddit_view_chooser_dict.items():
+            for name in self.subreddit_view_chooser_dict.keys():
                 self.subreddit_list_combo.addItem(name)
             self.user_lists_combo.setCurrentText(last_user_view)
             self.subreddit_list_combo.setCurrentText(last_subreddit_view)
             self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
             self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
-        except (KeyError, TypeError):
-            pass
+        except KeyError:
+            print("Key error you bitch fuck")
 
     def save_state(self):
         """Pickles the user and subreddit lists and saves any settings that need to be saved"""
