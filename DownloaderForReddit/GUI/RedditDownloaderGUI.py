@@ -1111,27 +1111,18 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
             self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
         except KeyError:
-            print("Key error you bitch fuck")
+            print('Load state key error')
 
     def save_state(self):
         """Pickles the user and subreddit lists and saves any settings that need to be saved"""
         self.settings_manager.save_all()
-        user_list_models = {}
-        subreddit_list_models = {}
-        current_user_view = self.user_lists_combo.currentText()
-        current_subreddit_view = self.subreddit_list_combo.currentText()
-
-        for key, value in self.user_view_chooser_dict.items():
-            name = value.name
-            object_list = value.reddit_object_list
-            user_list_models[name] = object_list
-
-        for key, value in self.subreddit_view_chooser_dict.items():
-            name = value.name
-            object_list = value.reddit_object_list
-            subreddit_list_models[name] = object_list
-        if not self.settings_manager.save_pickle_state(user_list_models, subreddit_list_models, current_user_view,
-                                                       current_subreddit_view):
+        save_object_dict = {
+            'user_view_chooser_dict': self.user_view_chooser_dict,
+            'sub_view_chooser_dict': self.subreddit_view_chooser_dict,
+            'current_user_view': self.user_lists_combo.currentText(),
+            'current_sub_view': self.subreddit_list_combo.currentText()
+        }
+        if not self.settings_manager.save_pickle_state(save_object_dict):
             Message.failed_to_save(self)
             self.set_not_saved()
         self.set_saved()

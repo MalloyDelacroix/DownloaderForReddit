@@ -27,7 +27,7 @@ import os
 from PyQt5.QtCore import QSettings
 import shelve
 
-from Persistence.ObjectLoader import ObjectLoader
+from Persistence.ObjectStateHandler import ObjectStateHandler
 from version import __version__
 
 
@@ -128,47 +128,12 @@ class SettingsManager:
         # endregion
 
     def load_picked_objects(self):
-        object_loader = ObjectLoader()
+        object_loader = ObjectStateHandler()
         return object_loader.load_pickled_state()
 
-    # def load_pickeled_state(self):
-    #     """Attempts to load the user and subreddit list from the pickled state and returns a list of the items loaded"""
-    #     user_view_chooser_dict = {}
-    #     subreddit_view_chooser_dict = {}
-    #     with shelve.open('save_file', 'c') as shelf:
-    #         # try:
-    #         user_list_models = shelf['user_list_models']
-    #         subreddit_list_models = shelf['subreddit_list_models']
-    #         last_user_view = shelf['current_user_view']
-    #         last_subreddit_view = shelf['current_subreddit_view']
-    #
-    #         for name, user_list in user_list_models.items():
-    #             x = ListModel(name, 'user')
-    #             x.reddit_object_list = user_list
-    #             x.display_list = [i.name for i in user_list]
-    #             user_view_chooser_dict[x.name] = x
-    #
-    #         for name, subreddit_list in subreddit_list_models.items():
-    #             x = ListModel(name, 'subreddit')
-    #             x.reddit_object_list = subreddit_list
-    #             x.display_list = [i.name for i in subreddit_list]
-    #             subreddit_view_chooser_dict[x.name] = x
-    #
-    #         return [user_view_chooser_dict, subreddit_view_chooser_dict, last_user_view, last_subreddit_view]
-    #
-    #         # except KeyError:
-    #         #     pass
-    #
-    # def save_pickle_state(self, user_list_models, subreddit_list_models, current_user_view, current_subreddit_view):
-    #     try:
-    #         with shelve.open("save_file", "c") as shelf:
-    #             shelf['user_list_models'] = user_list_models
-    #             shelf['subreddit_list_models'] = subreddit_list_models
-    #             shelf['current_user_view'] = current_user_view
-    #             shelf['current_subreddit_view'] = current_subreddit_view
-    #             return True
-    #     except:
-    #         return False
+    def save_pickle_objects(self, object_dict):
+        object_handler = ObjectStateHandler()
+        return object_handler.save_pickled_state(object_dict)
 
     def save_all(self):
         self.save_core_settings()
