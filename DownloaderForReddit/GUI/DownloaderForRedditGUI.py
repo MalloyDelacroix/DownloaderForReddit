@@ -28,12 +28,13 @@ import subprocess
 import sys
 from datetime import datetime, date
 import imgurpython
+from PyQt5 import QtWidgets, QtCore, QtGui
 
+from GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from GUI.AboutDialog import AboutDialog
 from GUI.DownloadedUsersDialog import DownloadedUsersDialog
 from GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from Core.Messages import Message, UnfinishedDownloadsWarning
-from PyQt5 import QtWidgets, QtCore, QtGui
 from Core.RedditExtractor import RedditExtractor
 from Core.RedditObjects import User, Subreddit
 from GUI.SubredditSettingsDialog import SubredditSettingsDialog
@@ -47,11 +48,10 @@ import Core.Injector
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from Core.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
-from GUI_Resources.RD_GUI_auto import Ui_MainWindow
 from version import __version__
 
 
-class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
+class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     stop_download = QtCore.pyqtSignal()
     update_user_finder = QtCore.pyqtSignal()
@@ -80,7 +80,13 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager = Core.Injector.get_settings_manager()
 
         geom = self.settings_manager.main_window_geom
+        horz_splitter_state = self.settings_manager.horz_splitter_state
+        vert_splitter_state = self.settings_manager.vert_splitter_state
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
+        self.horz_splitter.restoreState(horz_splitter_state if horz_splitter_state is not None else
+                                        self.horz_splitter.saveState())
+        self.vert_splitter.restoreState(vert_splitter_state if vert_splitter_state is not None else
+                                        self.vert_splitter.saveState())
         self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method
         self.download_users_checkbox.setChecked(self.settings_manager.download_users)
@@ -1069,6 +1075,8 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def save_main_window_settings(self):
         self.settings_manager.main_window_geom = self.saveGeometry()
+        self.settings_manager.horz_splitter_state = self.horz_splitter.saveState()
+        self.settings_manager.vert_splitter_state = self.vert_splitter.saveState()
         self.settings_manager.list_sort_method = self.list_sort_method
         self.settings_manager.list_order_method = self.list_order_method
         self.settings_manager.download_users = self.download_users_checkbox.isChecked()

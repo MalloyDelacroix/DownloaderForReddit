@@ -82,6 +82,8 @@ class SettingsManager:
 
         # region Main Window GUI
         self.main_window_geom = self.settings.value('main_window_geometry', None)
+        self.horz_splitter_state = self.settings.value('horz_splitter_state', None)
+        self.vert_splitter_state = self.settings.value('vert_splitter_state', None)
         self.list_sort_method = self.settings.value('list__sort_method', 0, type=int)
         self.list_order_method = self.settings.value('list_order_method', 0, type=int)
         self.download_users = self.settings.value("download_users", False, type=bool)
@@ -167,6 +169,8 @@ class SettingsManager:
 
     def save_main_window(self):
         self.settings.setValue("main_window_geometry", self.main_window_geom)
+        self.settings.setValue('horz_splitter_state', self.horz_splitter_state)
+        self.settings.setValue('vert_splitter_state', self.vert_splitter_state)
         self.settings.setValue("list__sort_method", self.list_sort_method)
         self.settings.setValue("list_order_method", self.list_order_method)
         self.settings.setValue("download_users", self.download_users)

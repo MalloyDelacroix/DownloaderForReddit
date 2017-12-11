@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>732</width>
-    <height>573</height>
+    <width>1138</width>
+    <height>570</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,10 +18,19 @@
     <normaloff>Images/RedditDownloaderIcon.png</normaloff>Images/RedditDownloaderIcon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout_3">
+   <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" rowspan="2" colspan="2">
+     <widget class="QSplitter" name="vert_splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="handleWidth">
+       <number>10</number>
+      </property>
+      <widget class="QSplitter" name="horz_splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
        <widget class="QListView" name="user_list_view">
         <property name="font">
          <font>
@@ -29,8 +38,6 @@
          </font>
         </property>
        </widget>
-      </item>
-      <item row="0" column="2" rowspan="2" colspan="2">
        <widget class="QListView" name="subreddit_list_view">
         <property name="font">
          <font>
@@ -38,188 +45,188 @@
          </font>
         </property>
        </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="1" column="0">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="6">
-       <widget class="QComboBox" name="subreddit_list_combo">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Current subreddit list</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QToolButton" name="add_user_button">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add user to selected list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>+</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QToolButton" name="remove_user_button">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Remove user from selected list</string>
-        </property>
-        <property name="text">
-         <string>-</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="8">
-       <widget class="QToolButton" name="remove_subreddit_button">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Remove subreddit from selected list</string>
-        </property>
-        <property name="text">
-         <string>-</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="7">
-       <widget class="QToolButton" name="add_subreddit_button">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Add subreddit to selected list</string>
-        </property>
-        <property name="text">
-         <string>+</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>30</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="3">
-       <widget class="QCheckBox" name="download_users_checkbox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777201</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Download from User list</string>
-        </property>
-        <property name="text">
-         <string>Download Users</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QComboBox" name="user_lists_combo">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Current user list</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QCheckBox" name="download_subreddit_checkbox">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Download from Subreddit list</string>
-        </property>
-        <property name="text">
-         <string>Download Subreddits</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="2" column="0">
-     <layout class="QGridLayout" name="gridLayout_5">
-      <item row="1" column="0">
-       <widget class="QTextBrowser" name="output_box">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="download_button">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Download selected user or subreddit list</string>
-        </property>
-        <property name="text">
-         <string>Download</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      </widget>
+      <widget class="QWidget" name="">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="6">
+         <widget class="QComboBox" name="subreddit_list_combo">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Current subreddit list</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QToolButton" name="add_user_button">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add user to selected list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>+</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QToolButton" name="remove_user_button">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Remove user from selected list</string>
+          </property>
+          <property name="text">
+           <string>-</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="8">
+         <widget class="QToolButton" name="remove_subreddit_button">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Remove subreddit from selected list</string>
+          </property>
+          <property name="text">
+           <string>-</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="7">
+         <widget class="QToolButton" name="add_subreddit_button">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Add subreddit to selected list</string>
+          </property>
+          <property name="text">
+           <string>+</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QCheckBox" name="download_users_checkbox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777201</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="baseSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Download from User list</string>
+          </property>
+          <property name="text">
+           <string>Download Users</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>30</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="2">
+         <widget class="QComboBox" name="user_lists_combo">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Current user list</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="QCheckBox" name="download_subreddit_checkbox">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Download from Subreddit list</string>
+          </property>
+          <property name="text">
+           <string>Download Subreddits</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="9">
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="0">
+           <widget class="QTextBrowser" name="output_box">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QPushButton" name="download_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Download selected user or subreddit list</string>
+            </property>
+            <property name="text">
+             <string>Download</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -228,8 +235,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>732</width>
-     <height>21</height>
+     <width>1138</width>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
