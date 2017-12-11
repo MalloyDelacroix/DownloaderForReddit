@@ -57,40 +57,43 @@ class Content(QRunnable):
         self.output = ''
         self.setAutoDelete(False)
         self.downloaded = False
+        self.check_path = None
 
         self.queue = None
 
         if self.subreddit_save_method is None:
             self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
-                                          self.file_ext)
-            self.check_save_path_subreddit(self.save_path)
+                                           self.file_ext)
+            self.check_path = self.save_path
 
         elif self.subreddit_save_method == 'User Name':
             self.filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
                                              self.number_in_seq, self.file_ext)
-            self.check_save_path_subreddit('%s%s/' % (self.save_path, self.user))
+            self.check_path = '%s%s/' % (self.save_path, self.user)
 
         elif self.subreddit_save_method == 'Subreddit Name':
             self.filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit, self.clean_filename(self.submission_id),
                                              self.number_in_seq, self.file_ext)
-            self.check_save_path_subreddit('%s%s' % (self.save_path, self.subreddit))
+            self.check_path = '%s%s' % (self.save_path, self.subreddit)
 
         elif self.subreddit_save_method == 'Subreddit Name/User Name':
             self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
                                                 self.clean_filename(self.submission_id), self.number_in_seq,
                                                 self.file_ext)
-            self.check_save_path_subreddit('%s%s/%s/' % (self.save_path, self.subreddit, self.user))
+            self.check_path = '%s%s/%s/' % (self.save_path, self.subreddit, self.user)
 
         elif self.subreddit_save_method == 'User Name/Subreddit Name':
             self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
                                                 self.clean_filename(self.submission_id), self.number_in_seq,
                                                 self.file_ext)
-            self.check_save_path_subreddit('%s%s/%s' % (self.save_path, self.user, self.subreddit))
+            self.check_path = '%s%s/%s' % (self.save_path, self.user, self.subreddit)
         else:
             self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
                                           self.file_ext)
+            self.check_path = self.save_path
 
     def run(self):
+        self.check_save_path_subreddit()
         response = requests.get(self.url, stream=True)
         if response.status_code == 200:
             with open(self.filename, 'wb') as file:
@@ -111,8 +114,7 @@ class Content(QRunnable):
             filename = filename[:225] + '...'
         return filename
 
-    @staticmethod
-    def check_save_path_subreddit(path):
+    def check_save_path_subreddit(self):
         """
         Checks that the supplied directory path is an existing directory and if not, creates the directory.  The try
         except operation is because with multiple numbers of these classes existing at the same time on different
@@ -120,9 +122,9 @@ class Content(QRunnable):
         is creating the directory.  If the first thread then tries to create the directory, it will already exist.
         Multithreading is neat.
         """
-        if not os.path.isdir(path):
+        if not os.path.isdir(self.check_path):
             try:
-                os.makedirs(path)
+                os.makedirs(self.check_path)
             except FileExistsError:
                 pass
 
