@@ -1,4 +1,4 @@
-from Core.RedditObjects import *
+from Core.RedditObjects import User, Subreddit
 from version import __version__
 
 
@@ -9,41 +9,8 @@ class ObjectUpdater:
     objects with current methods and attributes that are needed to be used in the current version of the app.
     """
 
-    def __init__(self, user_view_chooser_dict, subreddit_view_chooser_dict):
-        self.user_view_chooser_dict = user_view_chooser_dict
-        self.subreddit_view_chooser_dict = subreddit_view_chooser_dict
-
-    def update_user_objects(self):
-        """
-        Iterates through the list_models saved in the user_view_chooser_dict and calls the methods to update the object
-        list.
-        """
-        for list_model in self.user_view_chooser_dict.values():
-            self.update_list_model(list_model, 'USER')
-
-    def update_subreddit_objects(self):
-        """
-        Iterates through the list_models saved in the subreddit_view_chooser_dict and calls the methods to update the
-        object list.
-        """
-        for list_model in self.subreddit_view_chooser_dict.values():
-            self.update_list_model(list_model, 'SUB')
-
-    def update_list_model(self, list_model, type):
-        """
-        Builds a new list of updated reddit objects and replaces the supplied list models object list with the updated
-        version.
-        :param list_model: A list model object that holds the reddit objects to be updated.
-        """
-        new_object_list = []
-        for item in list_model.reddit_object_list:
-            if type == 'USER':
-                new_object_list.append(self.update_user(item))
-            else:
-                new_object_list.append(self.update_subreddit(item))
-        list_model.reddit_object_list = new_object_list
-
-    def update_user(self, user):
+    @classmethod
+    def update_user(cls, user):
         """
         Creates a new User object with current methods and attributes and fills in the new users attributes with
         attributes from the old user object.
@@ -52,10 +19,11 @@ class ObjectUpdater:
         """
         new_user = User(__version__, user.name, user.save_path, user.post_limit, user.avoid_duplicates,
                         user.download_videos, user.download_images, user.name_downloads_by, user.user_added)
-        self.update_extras(user, new_user)
+        cls.update_extras(user, new_user)
         return new_user
 
-    def update_subreddit(self, sub):
+    @classmethod
+    def update_subreddit(cls, sub):
         """
         Creates a new Subreddit object with current methods and attributes and fills in the new subs attributes with
         the attributes from the old subreddit object.
@@ -65,17 +33,24 @@ class ObjectUpdater:
         new_sub = Subreddit(__version__, sub.name, sub.save_path, sub.post_limit, sub.avoid_duplicates,
                             sub.download_videos, sub.download_images, sub.subreddit_save_method, sub.name_downloads_by,
                             sub.user_added)
-        self.update_extras(sub, new_sub)
+        cls.update_extras(sub, new_sub)
         return new_sub
 
-    def update_extras(self, old, new):
+    @classmethod
+    def update_extras(cls, old, new):
+        """
+        Updates any object attributes that do not need to be supplied upon object creation.
+        :param old:
+        :param new:
+        :return:
+        """
         new.do_not_edit = old.do_not_edit
         new.date_limit = old.date_limit
         new.custom_date_limit = old.custom_date_limit
-        self.get_already_downloaded(old, new)
-        self.get_saved_content(old, new)
-        self.get_saved_submissions(old, new)
-        self.get_number_of_downloads(old, new)
+        cls.get_already_downloaded(old, new)
+        cls.get_saved_content(old, new)
+        cls.get_saved_submissions(old, new)
+        cls.get_number_of_downloads(old, new)
 
     @staticmethod
     def get_already_downloaded(old, new):

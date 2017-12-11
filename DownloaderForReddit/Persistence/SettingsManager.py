@@ -25,7 +25,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 from PyQt5.QtCore import QSettings
-import shelve
 
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from version import __version__
@@ -128,8 +127,7 @@ class SettingsManager:
         # endregion
 
     def load_picked_objects(self):
-        object_loader = ObjectStateHandler()
-        return object_loader.load_pickled_state()
+        return ObjectStateHandler.load_pickled_state()
 
     def save_pickle_objects(self, object_dict):
         object_handler = ObjectStateHandler()

@@ -44,6 +44,7 @@ from GUI.UserFinderGUI import UserFinderGUI
 from GUI.UserSettingsDialog import UserSettingsDialog
 from GUI.settingsGUI import RedditDownloaderSettingsGUI
 import Core.Injector
+from Persistence.ObjectStateHandler import ObjectStateHandler
 from Core.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
 from GUI_Resources.RD_GUI_auto import Ui_MainWindow
@@ -185,7 +186,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setVisible(False)
 
         self.check_for_updates(False)
-        self.check_first_run()
+        # self.check_first_run()
 
     def set_saved(self):
         self.saved = True
@@ -193,7 +194,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def set_not_saved(self):
         self.saved = False
-        self.setWindowTitle("Downloader For Reddit  *")
+        self.setWindowTitle("Downloader For Reddit *")
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -1075,43 +1076,33 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager.download_subreddits = self.download_subreddit_checkbox.isChecked()
         self.settings_manager.save_main_window()
 
-    # def load_state(self):
-    #     """Gets the loaded items from the settings manager and supplies the information to the GUI and List Models"""
-    #     reddit_object_lists = self.settings_manager.load_picked_objects()
-    #     print(reddit_object_lists)
-    #     try:
-    #         last_user_view = reddit_object_lists[2]
-    #         last_subreddit_view = reddit_object_lists[3]
-    #         self.user_view_chooser_dict = reddit_object_lists[0]
-    #         self.subreddit_view_chooser_dict = reddit_object_lists[1]
-    #         for name, item in self.user_view_chooser_dict.items():
-    #             self.user_lists_combo.addItem(name)
-    #         for name, item in self.subreddit_view_chooser_dict.items():
-    #             self.subreddit_list_combo.addItem(name)
-    #         self.user_lists_combo.setCurrentText(last_user_view)
-    #         self.subreddit_list_combo.setCurrentText(last_subreddit_view)
-    #         self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
-    #         self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
-    #     except (KeyError, TypeError):
-    #         pass
-
     def load_state(self):
-        reddit_object_list = self.settings_manager.load_picked_objects()
+        reddit_object_list = ObjectStateHandler.load_pickled_state()
         try:
             last_user_view = reddit_object_list['last_user_view']
             last_subreddit_view = reddit_object_list['last_sub_view']
             self.user_view_chooser_dict = reddit_object_list['user_dict']
             self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
+
             for name in self.user_view_chooser_dict.keys():
                 self.user_lists_combo.addItem(name)
             for name in self.subreddit_view_chooser_dict.keys():
                 self.subreddit_list_combo.addItem(name)
             self.user_lists_combo.setCurrentText(last_user_view)
             self.subreddit_list_combo.setCurrentText(last_subreddit_view)
-            self.user_list_view.setModel(self.user_view_chooser_dict[last_user_view])
-            self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_subreddit_view])
+            self.set_last_view_model('USER', last_user_view)
+            self.set_last_view_model('SUB', last_subreddit_view)
         except KeyError:
             print('Load state key error')
+
+    def set_last_view_model(self, view_dict, last_view):
+        try:
+            if view_dict == 'USER':
+                self.user_list_view.setModel(self.user_view_chooser_dict[last_view])
+            else:
+                self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_view])
+        except KeyError:
+            pass
 
     def save_state(self):
         """Pickles the user and subreddit lists and saves any settings that need to be saved"""
@@ -1122,10 +1113,11 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             'current_user_view': self.user_lists_combo.currentText(),
             'current_sub_view': self.subreddit_list_combo.currentText()
         }
-        if not self.settings_manager.save_pickle_state(save_object_dict):
+        if not ObjectStateHandler.save_pickled_state(save_object_dict):
             Message.failed_to_save(self)
             self.set_not_saved()
-        self.set_saved()
+        else:
+            self.set_saved()
 
     def check_for_updates(self, from_menu):
         """
@@ -1152,108 +1144,7 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens the update dialog"""
         update_checker = UpdateDialog(update_variables)
         update_checker.show()
-        dialog = update_checker.exec_()
+        update_checker.exec_()
 
     def no_update_available_dialog(self):
         Message.up_to_date_message(self)
-
-    def check_first_run(self):
-        """
-        Checks to see if this is the first time the application has been ran since being updated.  If it is the first
-        run, it will then check to see if reddit obejects need to be updated and then update them if they do
-        """
-        if self.settings_manager.check_first_run():
-            if self.check_reddit_objects():
-                if Message.update_reddit_objects_message(self):
-                    self.update_reddit_objects()
-
-    def check_reddit_objects(self):
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                try:
-                    if user.version != self.version:
-                        return True
-                except AttributeError:
-                    return True
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                try:
-                    if sub.version != self.version:
-                        return True
-                except AttributeError:
-                    return True
-        return False
-
-    def update_reddit_objects(self):
-        self.update_objects_gui_shift()
-        self.update_user_objects()
-        self.update_subreddit_objects()
-        self.save_state()
-        self.finish_update_objects_gui_shift()
-
-    def update_objects_gui_shift(self):
-        """Sets the status bar and progress bar up for updating reddit objects"""
-        self.statusbar.showMessage("Updating reddit objects", -1)
-        count = 0
-        for key, value in self.user_view_chooser_dict.items():
-            count += len(value.reddit_object_list)
-        for key, value in self.subreddit_view_chooser_dict.items():
-            count += len(value.reddit_object_list)
-        self.setup_progress_bar(count)
-        self.progress_label.setText("Updating")
-
-    def finish_update_objects_gui_shift(self):
-        """Sets the GUI back to normal after updating reddit objects"""
-        self.statusbar.showMessage("Update Complete", -1)
-        self.progress_bar.setVisible(False)
-        self.progress_label.setVisible(False)
-        self.progress_label.setText("Extraction Complete")
-
-    def update_user_objects(self):
-        for key, value in self.user_view_chooser_dict.items():
-            for user in value.reddit_object_list:
-                try:
-                    if user.version != self.version:
-                        self.update_user_object_version(value.reddit_object_list, user)
-                except AttributeError:
-                    self.update_user_object_version(value.reddit_object_list, user)
-                self.update_progress_bar()
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-
-    def update_subreddit_objects(self):
-        for key, value in self.subreddit_view_chooser_dict.items():
-            for sub in value.reddit_object_list:
-                try:
-                    if sub.version != self.version:
-                        self.update_subreddit_object_version(value.reddit_object_list, sub)
-                except AttributeError:
-                    self.update_subreddit_object_version(value.reddit_object_list, sub)
-                self.update_progress_bar()
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-
-    def update_user_object_version(self, object_list, user):
-        x = User(self.version, user.name, self.settings_manager.save_directory, user.post_limit, user.avoid_duplicates,
-                 user.download_videos, user.download_images, user.name_downloads_by, user.user_added)
-        x.do_not_edit = user.do_not_edit
-        x.saved_submissions = user.saved_submissions
-        x.already_downloaded = user.already_downloaded
-        x.date_limit = user.date_limit
-        x.custom_date_limit = user.custom_date_limit
-        x.saved_content = user.saved_content
-        x.number_of_downloads = user.number_of_downloads
-        object_list.remove(user)
-        object_list.append(x)
-
-    def update_subreddit_object_version(self, object_list, sub):
-        x = Subreddit(self.version, sub.name, sub.save_path, sub.post_limit, sub.avoid_duplicates, sub.download_videos,
-                      sub.download_images, sub.subreddit_save_method, sub.name_downloads_by, sub.user_added)
-        x.subreddit_save_method = sub.subreddit_save_method
-        x.do_not_edit = sub.do_not_edit
-        x.saved_submissions = sub.saved_submissions
-        x.already_downloaded = sub.already_downloaded
-        x.date_limit = sub.date_limit
-        x.custom_date_limit = sub.custom_date_limit
-        x.saved_content = sub.saved_content
-        x.number_of_downloads = sub.number_of_downloads
-        object_list.remove(sub)
-        object_list.append(x)

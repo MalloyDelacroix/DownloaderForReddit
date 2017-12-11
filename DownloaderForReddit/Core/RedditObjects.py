@@ -31,7 +31,7 @@ from Extractors.Extractors import ImgurExtractor, GfycatExtractor, VidbleExtract
 import Core.Injector
 
 
-class RedditObject(object):
+class RedditObject:
 
     def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
                  name_downlads_by, user_added):
