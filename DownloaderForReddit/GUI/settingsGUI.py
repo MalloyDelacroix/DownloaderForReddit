@@ -30,19 +30,13 @@ import sys
 import time
 from PyQt5 import QtWidgets, QtCore
 
+from GUI_Resources.DownloaderForRedditSettingsGUI_auto import Ui_SettingsGUI
 import Core.Injector
 from Core.Messages import Message
 from GUI.ImgurClientDialog import ImgurClientDialog
 
-if sys.platform == 'win32':
-    from GUI_Resources.RD_settings_auto import Ui_Settings
-elif sys.platform == 'darwin':
-    from GUI_Resources.SettingsGUI_mac_auto import Ui_Settings
-else:
-    from GUI_Resources.SettingsGUI_linux_auto import Ui_Settings
 
-
-class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
+class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
     def __init__(self):
         """
@@ -97,9 +91,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
         else:
             self.date_limit_edit.setEnabled(True)
 
-        self.link_filter_video_checkbox.setCheckState(self.settings_manager.download_videos)
-        self.link_filter_image_checkbox.setCheckState(self.settings_manager.download_images)
-        self.link_filter_avoid_duplicates_checkbox.setCheckState(self.settings_manager.avoid_duplicates)
+        self.link_filter_video_checkbox.setChecked(self.settings_manager.download_videos)
+        self.link_filter_image_checkbox.setChecked(self.settings_manager.download_images)
+        self.link_filter_avoid_duplicates_checkbox.setChecked(self.settings_manager.avoid_duplicates)
 
         self.save_directory_line_edit.setText(self.settings_manager.save_directory)
 
@@ -123,6 +117,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_Settings):
 
         self.total_files_downloaded_label.setText("Total Files Downloaded: " +
                                                   str(self.settings_manager.total_files_downloaded))
+
+        self.save_directory_line_edit.setToolTip(self.save_directory_line_edit.text())
 
     def setup_sort_radios(self, method):
         radio_dict = {0: self.sub_sort_new_radio,

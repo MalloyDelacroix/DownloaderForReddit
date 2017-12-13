@@ -106,15 +106,10 @@ class Message(object):
         reply = message.information(self, 'Existing Name', text, message.Ok)
         return reply == message.Ok
 
-    def no_user_download_folder(self):
-        text = 'The user you selected does not appear to have a download folder. This is likely because nothing has ' \
-               'been downloaded for this user yet.'
-        reply = message.information(self, 'Folder Does Not Exist', text, message.Ok)
-        return reply == message.Ok
-
-    def no_subreddit_download_folder(self):
-        text = 'The subreddit you selected does not appear to have a download folder. This is likely because nothing ' \
-               'has been downloaded for this subreddit yet.'
+    def no_download_folder(self, object_type):
+        object_type = object_type.lower()
+        text = 'The %s you selected does not appear to have a download folder. This is likely because nothing has ' \
+               'been downloaded for this %s yet.' % (object_type, object_type)
         reply = message.information(self, 'Folder Does Not Exist', text, message.Ok)
         return reply == message.Ok
 
@@ -129,7 +124,7 @@ class Message(object):
         return reply == message.Ok
 
     def downloader_running_warning(self):
-        text = 'The user finder is still currently running.  Closing now may cause unexpected behaviour and corrupted ' \
+        text = 'The user finder is still currently running.  Closing now may cause unexpected behaviour and corrupted '\
                'files.  Are you sure you want to close?'
         reply = message.warning(self, 'User Finder Still Running', text, message.Ok, message.Cancel)
         return reply == message.Ok

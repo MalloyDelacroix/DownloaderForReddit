@@ -90,18 +90,14 @@ class SettingsManager:
         self.download_subreddits = self.settings.value("download_subreddits", False, type=bool)
         # endregion
 
-        # region UserSettingsDialog
-        self.user_settings_dialog_geom = self.settings.value('user_settings_dialog_geometry')
-        self.user_content_icons_full_width = self.settings.value('user_content_icons_full_width', False, type=bool)
-        self.user_content_icon_size = self.settings.value('user_content_icon_size', 110, type=int)
-        self.current_user_settings_item_display_list = self.settings.value('current_item_display_list',
-                                                                           'previous_downloads', type=str)
-        # endregion
-
-        # region SubredditSettingsDialog
-        self.subreddit_content_icons_full_width = self.settings.value('subreddit_content_icons_full_width', False,
-                                                                      type=bool)
-        self.subreddit_content_icon_size = self.settings.value('subreddit_content_icon_size', 110, type=int)
+        self.reddit_object_settings_dialog_geom = self.settings.value('reddit_object_settings_dialog_geom', None)
+        self.reddit_object_content_icons_full_width = self.settings.value('reddit_object_content_icons_full_width',
+                                                                          False, type=bool)
+        self.reddit_object_content_icon_size = self.settings.value('reddit_object_content_icon_size', 110, type=int)
+        self.current_reddit_object_settings_item_display_list = \
+            self.settings.value('current_reddit_object_settings_item_display_list', 'previous_downloads', type=str)
+        self.reddit_object_settings_dialog_splitter_state = self.settings.value(
+            'reddit_object_settings_dialog_splitter_state', None)
         # endregion
 
         # region UserFinder GUI
@@ -138,8 +134,7 @@ class SettingsManager:
     def save_all(self):
         self.save_core_settings()
         self.save_main_window()
-        self.save_user_settings_dialog()
-        self.save_subreddit_settings_dialog()
+        self.save_reddit_object_settings_dialog()
 
     def save_core_settings(self):
         self.settings.setValue("first_run", self.first_run)
@@ -176,15 +171,14 @@ class SettingsManager:
         self.settings.setValue("download_users", self.download_users)
         self.settings.setValue("download_subreddits", self.download_subreddits)
 
-    def save_user_settings_dialog(self):
-        self.settings.setValue('user_settings_dialog_geometry', self.user_settings_dialog_geom)
-        self.settings.setValue('user_content_icons_full_width', self.user_content_icons_full_width)
-        self.settings.setValue('user_content_icon_size', self.user_content_icon_size)
-        self.settings.setValue('current_item_display_list', self.current_user_settings_item_display_list)
-
-    def save_subreddit_settings_dialog(self):
-        self.settings.setValue('subreddit_content_icons_full_width', self.subreddit_content_icons_full_width)
-        self.settings.setValue('subreddit_content_icon_size', self.subreddit_content_icon_size)
+    def save_reddit_object_settings_dialog(self):
+        self.settings.setValue('reddit_object_settings_dialog_geom', self.reddit_object_settings_dialog_geom)
+        self.settings.setValue('reddit_object_settings_dialog_splitter_state',
+                               self.reddit_object_settings_dialog_splitter_state)
+        self.settings.setValue('reddit_object_content_icons_full_width', self.reddit_object_content_icons_full_width)
+        self.settings.setValue('reddit_object_content_icon_size', self.reddit_object_content_icon_size)
+        self.settings.setValue('current_reddit_object_settings_item_display_list',
+                               self.current_reddit_object_settings_item_display_list)
 
     def save_user_finder(self):
         self.settings.setValue("user_finder_GUI_geometry", self.user_finder_GUI_geom)

@@ -20,6 +20,7 @@ class ObjectUpdater:
         new_user = User(__version__, user.name, user.save_path, user.post_limit, user.avoid_duplicates,
                         user.download_videos, user.download_images, user.name_downloads_by, user.user_added)
         cls.update_extras(user, new_user)
+        new_user.object_type = 'USER'
         return new_user
 
     @classmethod
@@ -34,6 +35,7 @@ class ObjectUpdater:
                             sub.download_videos, sub.download_images, sub.subreddit_save_method, sub.name_downloads_by,
                             sub.user_added)
         cls.update_extras(sub, new_sub)
+        new_sub.object_type = 'SUBREDDIT'
         return new_sub
 
     @classmethod
@@ -51,6 +53,7 @@ class ObjectUpdater:
         cls.get_saved_content(old, new)
         cls.get_saved_submissions(old, new)
         cls.get_number_of_downloads(old, new)
+
 
     @staticmethod
     def get_already_downloaded(old, new):

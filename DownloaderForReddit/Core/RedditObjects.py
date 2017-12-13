@@ -66,8 +66,12 @@ class RedditObject:
         self.content = []  # Will be erased at end of download (QRunnable objects cannot be pickled)
         self.failed_extracts = []  # This will be erased at the end of download
         self.saved_content = {}
-        self.number_of_downloads = len(self.already_downloaded)
         self.save_undownloaded_content = True
+        self.object_type = None
+
+    @property
+    def number_of_downloads(self):
+        return len(self.already_downloaded)
 
     def extract_content(self):
         if len(self.saved_submissions) > 0:
@@ -213,6 +217,7 @@ class User(RedditObject):
                          name_downloads_by, user_added)
         self.save_path = "%s%s/" % (self.save_path, self.name)
         self.subreddit_save_method = None
+        self.object_type = 'USER'
 
     def update_save_path(self, save_path):
         self.save_path = "%s%s%s" % (save_path, self.name, '/' if not save_path.endswith('/') else '')
@@ -229,6 +234,7 @@ class Subreddit(RedditObject):
         super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
                          name_downloads_by, user_added)
         self.subreddit_save_method = subreddit_save_method
+        self.object_type = 'SUBREDDIT'
 
     def update_save_path(self, save_path):
         self.save_path = save_path

@@ -35,18 +35,17 @@ from GUI.AboutDialog import AboutDialog
 from GUI.DownloadedUsersDialog import DownloadedUsersDialog
 from GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from Core.Messages import Message, UnfinishedDownloadsWarning
+from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from Core.RedditExtractor import RedditExtractor
 from Core.RedditObjects import User, Subreddit
-from GUI.SubredditSettingsDialog import SubredditSettingsDialog
 from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
 from GUI.UserFinderGUI import UserFinderGUI
-from GUI.UserSettingsDialog import UserSettingsDialog
 from GUI.settingsGUI import RedditDownloaderSettingsGUI
 import Core.Injector
 from Persistence.ObjectStateHandler import ObjectStateHandler
-from Core.ListModel import ListModel
+from ViewModels.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
 from version import __version__
 
@@ -284,8 +283,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 position = self.get_selected_view_index(self.user_list_view).row()
             else:
                 position = 0
-            user_settings_dialog = UserSettingsDialog(current_list_model,
-                                                      current_list_model.reddit_object_list[position])
+            user_settings_dialog = RedditObjectSettingsDialog(current_list_model,
+                                                              current_list_model.reddit_object_list[position])
             user_settings_dialog.single_download.connect(self.run_single_user)
             user_settings_dialog.show()
             if page == 1:
@@ -294,9 +293,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 dialog = user_settings_dialog.exec_()
                 if dialog == QtWidgets.QDialog.Accepted:
                     self.set_not_saved()
-                    if not user_settings_dialog.restore_defaults:
-                        current_list_model.reddit_object_list = user_settings_dialog.user_list
-                    else:
+                    if user_settings_dialog.restore_defaults:
                         for user in current_list_model.reddit_object_list:
                             user.custom_date_limit = None
                             user.avoid_duplicates = self.avoid_duplicates
@@ -307,7 +304,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             user.name_downloads_by = self.name_downloads_by
                             user.post_limit = self.post_limit
         except AttributeError:
-            pass
+            print('Attribute Error')
 
     def open_user_download_folder(self):
         """Opens the Folder where the users downloads are saved using the default file manager"""
@@ -324,7 +321,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except AttributeError:
             Message.no_user_selected(self)
         except FileNotFoundError:
-            Message.no_user_download_folder(self)
+            Message.no_download_folder(self)
 
     def subreddit_settings(self, page, from_menu):
         """Operates the same as the user_settings function"""
@@ -334,8 +331,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 position = self.get_selected_view_index(self.subreddit_list_view).row()
             else:
                 position = 0
-            subreddit_settings_dialog = SubredditSettingsDialog(current_list_model,
-                                                                current_list_model.reddit_object_list[position])
+            subreddit_settings_dialog = RedditObjectSettingsDialog(current_list_model,
+                                                                   current_list_model.reddit_object_list[position])
             subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
             subreddit_settings_dialog.show()
             if page == 1:
@@ -345,7 +342,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if dialog == QtWidgets.QDialog.Accepted:
                     self.set_not_saved()
                     if not subreddit_settings_dialog.restore_defaults:
-                        current_list_model.reddit_object_list = subreddit_settings_dialog.subreddit_list
+                        current_list_model.reddit_object_list = subreddit_settings_dialog.object_list
                     else:
                         for sub in current_list_model.reddit_object_list:
                             sub.custom_date_limit = None
@@ -357,7 +354,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                             sub.name_downloads_by = self.name_downloads_by
                             sub.post_limit = self.post_limit
         except AttributeError:
-            pass
+            print('Attribute Error')
 
     def open_subreddit_download_folder(self):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
@@ -374,7 +371,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except AttributeError:
             Message.no_subreddit_selected(self)
         except FileNotFoundError:
-            Message.no_subreddit_download_folder(self)
+            Message.no_download_folder(self)
 
     def button_assignment(self):
         """Assigns what the download button does depending on if the downloader is currently running"""

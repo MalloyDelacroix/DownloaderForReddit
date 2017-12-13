@@ -29,10 +29,10 @@ import subprocess
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from GUI.UserSettingsDialog import UserSettingsDialog
+from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 
 
-class DownloadedUsersDialog(UserSettingsDialog):
+class DownloadedUsersDialog(RedditObjectSettingsDialog):
 
     def __init__(self, list_model, clicked_user, last_downloaded_file_dict):
         """
@@ -84,11 +84,11 @@ class DownloadedUsersDialog(UserSettingsDialog):
         if self.page_two_geom is not None:
             self.resize(self.page_two_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(1)
-        self.setup_user_content_list()
+        self.setup_content_list()
 
     def list_item_change(self):
         self.current_user = self.user_list[self.user_list_widget.currentRow()]
-        self.setup_user_content_list()
+        self.setup_content_list()
 
     def toggle_download_views(self):
         """Toggles if images are shown"""
@@ -96,9 +96,9 @@ class DownloadedUsersDialog(UserSettingsDialog):
             self.show_downloads = False
         else:
             self.show_downloads = True
-        self.setup_user_content_list()
+        self.setup_content_list()
 
-    def setup_user_content_list(self):
+    def setup_content_list(self):
         """
         Overwrites the parent classes method so that only files that were downloaded during the last session and
         supplied via the last_downloaded_file_dict parameter are displayed

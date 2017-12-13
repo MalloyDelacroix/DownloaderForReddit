@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import shelve
 
-from Core.ListModel import ListModel
+from ViewModels.ListModel import ListModel
 from Persistence.ObjectUpdater import ObjectUpdater
 from Core import Injector
 from version import __version__
