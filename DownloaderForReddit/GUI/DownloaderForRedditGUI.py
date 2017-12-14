@@ -204,42 +204,64 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.user_list_view).row()
-            user_settings = user_menu.addAction("User Settings")
-            user_downloads = user_menu.addAction("View User Downloads")
-            user_menu.addSeparator()
-            open_user_folder = user_menu.addAction("Open Download Folder")
-            user_menu.addSeparator()
-            add_user = user_menu.addAction("Add User")
-            remove_user = user_menu.addAction("Remove User")
-            add_user.triggered.connect(self.add_user_dialog)
-            remove_user.triggered.connect(self.remove_user)
-            user_settings.triggered.connect(lambda: self.user_settings(0, False))
-            user_downloads.triggered.connect(lambda: self.user_settings(1, False))
-            open_user_folder.triggered.connect(self.open_user_download_folder)
+            valid = True
         except AttributeError:
-            add_user = user_menu.addAction("Add User")
-            add_user.triggered.connect(self.add_user_dialog)
+            valid = False
+        user_settings = user_menu.addAction("User Settings")
+        user_downloads = user_menu.addAction("View User Downloads")
+        user_menu.addSeparator()
+        open_user_folder = user_menu.addAction("Open Download Folder")
+        user_menu.addSeparator()
+        add_user = user_menu.addAction("Add User")
+        remove_user = user_menu.addAction("Remove User")
+        add_user.triggered.connect(self.add_user_dialog)
+        remove_user.triggered.connect(self.remove_user)
+        user_settings.triggered.connect(lambda: self.user_settings(0, False))
+        user_downloads.triggered.connect(lambda: self.user_settings(1, False))
+        open_user_folder.triggered.connect(self.open_user_download_folder)
+
+        if not valid:
+            user_settings.setEnabled(False)
+            user_downloads.setEnabled(False)
+            open_user_folder.setEnabled(False)
+            remove_user.setEnabled(False)
+
+        if self.running:
+            add_user.setEnabled(False)
+            remove_user.setEnabled(False)
+
         user_menu.exec(QtGui.QCursor.pos())
 
     def subreddit_list_right_click(self):
         subreddit_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
-            subreddit_settings = subreddit_menu.addAction("Subreddit Settings")
-            subreddit_downloads = subreddit_menu.addAction("View Subreddit Downloads")
-            subreddit_menu.addSeparator()
-            open_subreddit_folder = subreddit_menu.addAction("Open Download Folder")
-            subreddit_menu.addSeparator()
-            add_subreddit = subreddit_menu.addAction("Add Subreddit")
-            remove_subreddit = subreddit_menu.addAction("Remove Subreddit")
-            add_subreddit.triggered.connect(self.add_subreddit_dialog)
-            remove_subreddit.triggered.connect(self.remove_subreddit)
-            subreddit_settings.triggered.connect(lambda: self.subreddit_settings(0, False))
-            subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
-            open_subreddit_folder.triggered.connect(self.open_subreddit_download_folder)
+            valid = True
         except AttributeError:
-            add_subreddit = subreddit_menu.addAction("Add Subreddit")
-            add_subreddit.triggered.connect(self.add_subreddit_dialog)
+            valid = False
+        subreddit_settings = subreddit_menu.addAction("Subreddit Settings")
+        subreddit_downloads = subreddit_menu.addAction("View Subreddit Downloads")
+        subreddit_menu.addSeparator()
+        open_subreddit_folder = subreddit_menu.addAction("Open Download Folder")
+        subreddit_menu.addSeparator()
+        add_subreddit = subreddit_menu.addAction("Add Subreddit")
+        remove_subreddit = subreddit_menu.addAction("Remove Subreddit")
+        add_subreddit.triggered.connect(self.add_subreddit_dialog)
+        remove_subreddit.triggered.connect(self.remove_subreddit)
+        subreddit_settings.triggered.connect(lambda: self.subreddit_settings(0, False))
+        subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
+        open_subreddit_folder.triggered.connect(self.open_subreddit_download_folder)
+
+        if not valid:
+            subreddit_settings.setEnabled(False)
+            subreddit_downloads.setEnabled(False)
+            open_subreddit_folder.setEnabled(False)
+            remove_subreddit.setEnabled(False)
+
+        if self.running:
+            add_subreddit.setEnabled(False)
+            remove_subreddit.setEnabled(False)
+
         subreddit_menu.exec(QtGui.QCursor.pos())
 
     def user_list_combo_right_click(self):
