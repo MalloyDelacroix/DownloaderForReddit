@@ -46,6 +46,25 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.setupUi(self)
         self._restore_defaults = False
 
+        self.sub_sort_radio_dict = {
+            'NEW': self.sub_sort_new_radio,
+            'TOP': self.sub_sort_top_radio,
+            'HOT': self.sub_sort_hot_radio,
+            'RISING': self.sub_sort_rising_radio,
+            'CONTROVERSIAL': self.sub_sort_controversial_radio
+        }
+
+        self.sub_sort_top_str_dict = {
+            'Hour': 'HOUR',
+            'Day': 'DAY',
+            'Week': 'WEEK',
+            'Month': 'MONTH',
+            'Year': 'YEAR',
+            'All Time': 'ALL'
+        }
+
+        self.score_operator_dict = {'Greater Than': 'GREATER', 'Less Than': 'LESS'}
+
         self.settings_manager = Core.Injector.get_settings_manager()
 
         self.reddit_account_link_button.setVisible(False)
@@ -67,10 +86,14 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
         self.auto_save_checkbox.setCheckState(self.settings_manager.auto_save)
 
-        self.restrict_to_score_checkbox.setChecked(self.settings_manager.restrict_by_score)
         self.post_limit_spinbox.setValue(self.settings_manager.post_limit)
-        self.post_score_combo.addItems(('Greater Than', 'Less Than'))  # 0: Greather than, 1: Less than
-        self.post_score_combo.setCurrentIndex(self.settings_manager.score_limit_operator)
+
+        self.restrict_to_score_checkbox.setChecked(self.settings_manager.restrict_by_score)
+        self.post_score_combo.addItems(self.score_operator_dict.keys())
+        for key, value in self.score_operator_dict.items():
+            if value == self.settings_manager.score_limit_operator:
+                self.post_score_combo.setCurrentText(key)
+
         if self.settings_manager.restrict_by_score:
             self.post_score_combo.setDisabled(False)
             self.post_score_limit_spin_box.setDisabled(False)
@@ -79,7 +102,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
             self.post_score_combo.setDisabled(True)
             self.post_score_limit_spin_box.setDisabled(True)
 
-        self.setup_sort_radios(self.settings_manager.subreddit_sort_method)
+        self.sub_sort_radio_dict[self.settings_manager.subreddit_sort_method].setChecked(True)
 
         # Controls for the date restriction portion of the settings
         self.date_restriction_checkbox.setChecked(self.settings_manager.restrict_by_date)
@@ -97,8 +120,10 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.save_directory_line_edit.setText(self.settings_manager.save_directory)
 
-        self.sub_sort_top_combo.addItems(('Hour', 'Day', 'Week', 'Month', 'Year', 'All Time'))
-        self.sub_sort_top_combo.setCurrentIndex(self.settings_manager.subreddit_sort_top_method)
+        self.sub_sort_top_combo.addItems(self.sub_sort_top_str_dict.keys())
+        for key, value in self.sub_sort_top_str_dict.items():
+            if value == self.settings_manager.subreddit_sort_top_method:
+                self.sub_sort_top_combo.setCurrentText(key)
         if self.sub_sort_top_radio.isChecked():
             self.sub_sort_top_combo.setDisabled(False)
         else:
@@ -119,14 +144,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
                                                   str(self.settings_manager.total_files_downloaded))
 
         self.save_directory_line_edit.setToolTip(self.save_directory_line_edit.text())
-
-    def setup_sort_radios(self, method):
-        radio_dict = {0: self.sub_sort_new_radio,
-                      1: self.sub_sort_top_radio,
-                      2: self.sub_sort_hot_radio,
-                      3: self.sub_sort_rising_radio,
-                      4: self.sub_sort_controversial_radio}
-        radio_dict[method].setChecked(True)
 
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
@@ -263,7 +280,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.auto_save = self.auto_save_checkbox.isChecked()
 
         self.settings_manager.restrict_by_score = self.restrict_to_score_checkbox.isChecked()
-        self.settings_manager.score_limit_operator = self.post_score_combo.currentIndex()
+        self.settings_manager.score_limit_operator = self.score_operator_dict[self.post_score_combo.currentText()]
         self.settings_manager.post_score_limit = self.post_score_limit_spin_box.value()
 
         self.settings_manager.restrict_by_date = self.date_restriction_checkbox.isChecked()
@@ -272,7 +289,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
                                                                           '%m/%d/%Y %H:%M:%S')))
 
         self.settings_manager.subreddit_sort_method = self.get_sort_by_method()
-        self.settings_manager.subreddit_sort_top_method = self.sub_sort_top_combo.currentIndex()
+        self.settings_manager.subreddit_sort_top_method = \
+            self.sub_sort_top_str_dict[self.sub_sort_top_combo.currentText()]
 
         self.settings_manager.post_limit = self.post_limit_spinbox.value()
 
@@ -288,16 +306,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.save_undownloaded_content = self.save_undownloaded_content_checkbox.isChecked()
 
     def get_sort_by_method(self):
-        if self.sub_sort_new_radio.isChecked():
-            return 0
-        elif self.sub_sort_top_radio.isChecked():
-            return 1
-        elif self.sub_sort_hot_radio.isChecked():
-            return 2
-        elif self.sub_sort_rising_radio.isChecked():
-            return 3
-        else:
-            return 4
+        for key, value in self.sub_sort_radio_dict.items():
+            if value.isChecked():
+                return key
 
     def restore_defaults(self):
         self.auto_save_checkbox.setChecked(False)

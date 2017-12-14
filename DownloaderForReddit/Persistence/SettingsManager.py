@@ -27,6 +27,7 @@ import os
 from PyQt5.QtCore import QSettings
 
 from Persistence.ObjectStateHandler import ObjectStateHandler
+from Persistence.ObjectUpdater import ObjectUpdater
 from version import __version__
 
 
@@ -36,6 +37,8 @@ class SettingsManager:
         self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
         self.load_settings()
         self.count = 0
+        if self.check_first_run():
+            ObjectUpdater.check_settings_manager(self)
 
     def check_first_run(self):
         cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
@@ -44,7 +47,6 @@ class SettingsManager:
     def load_settings(self):
         # region Core Settings
         self.do_not_notify_update = self.settings.value("do_not_notify_update", "v0.0.0", type=str)
-        self.first_run = self.settings.value('first_run', True, type=bool)
         self.last_update = self.settings.value('last_update', None, type=str)
         self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
         self.auto_save = self.settings.value('auto_save', False, type=bool)
@@ -53,11 +55,11 @@ class SettingsManager:
         self.auto_display_failed_list = self.settings.value("auto_display_failed_list", True, type=bool)
 
         self.restrict_by_score = self.settings.value('restrict_by_score', False, type=bool)
-        self.score_limit_operator = self.settings.value("score_limit_operator", 0, type=int)
+        self.score_limit_operator = self.settings.value('score_limit_operator', 'GREATER', type=str)
         self.post_score_limit = self.settings.value("post_score_limit", 3000, type=int)
 
-        self.subreddit_sort_method = self.settings.value('subreddit_sort_method', 0, type=int)
-        self.subreddit_sort_top_method = self.settings.value('subreddit_sort_top_method', 0, type=int)
+        self.subreddit_sort_method = self.settings.value('subreddit_sort_method', 'HOT', type=str)
+        self.subreddit_sort_top_method = self.settings.value('subreddit_sort_top_method', 'DAY', type=str)
 
         self.post_limit = self.settings.value('post_limit', 25, type=int)
 
@@ -137,7 +139,7 @@ class SettingsManager:
         self.save_reddit_object_settings_dialog()
 
     def save_core_settings(self):
-        self.settings.setValue("first_run", self.first_run)
+        self.settings.setValue('cached_version', __version__)
         self.settings.setValue("last_update", self.last_update)
         self.settings.setValue("total_files_downloaded", self.total_files_downloaded)
         self.settings.setValue("auto_save", self.auto_save)

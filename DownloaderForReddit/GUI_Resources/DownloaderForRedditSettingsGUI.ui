@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>696</width>
-    <height>797</height>
+    <width>702</width>
+    <height>804</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -526,6 +526,11 @@
      </item>
      <item>
       <widget class="QPushButton" name="restore_defaults_button">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Restore Defaults</string>
        </property>
@@ -533,6 +538,11 @@
      </item>
      <item>
       <widget class="QDialogButtonBox" name="save_cancel_button_box">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
        <property name="standardButtons">
         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Save</set>
        </property>
