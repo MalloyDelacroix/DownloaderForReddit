@@ -65,6 +65,12 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.score_operator_dict = {'Greater Than': 'GREATER', 'Less Than': 'LESS'}
 
+        self.nsfw_filter_dict = {
+            'Include': 'INCLUDE',
+            'Do Not Include': 'EXCLUDE',
+            'Include Only NSFW': 'ONLY'
+        }
+
         self.settings_manager = Core.Injector.get_settings_manager()
 
         self.reddit_account_link_button.setVisible(False)
@@ -117,6 +123,11 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.link_filter_video_checkbox.setChecked(self.settings_manager.download_videos)
         self.link_filter_image_checkbox.setChecked(self.settings_manager.download_images)
         self.link_filter_avoid_duplicates_checkbox.setChecked(self.settings_manager.avoid_duplicates)
+
+        self.nsfw_filter_combo.addItems(self.nsfw_filter_dict.keys())
+        for key, value in self.nsfw_filter_dict.items():
+            if value == self.settings_manager.nsfw_filter:
+                self.nsfw_filter_combo.setCurrentText(key)
 
         self.save_directory_line_edit.setText(self.settings_manager.save_directory)
 

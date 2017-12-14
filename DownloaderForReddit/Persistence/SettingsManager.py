@@ -73,6 +73,8 @@ class SettingsManager:
         self.download_images = self.settings.value('download_images', True, type=bool)
         self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
 
+        self.nsfw_filter = self.settings.value('nsfw_filter', 'INCLUDE', type=str)
+
         self.save_subreddits_by = self.settings.value('save_subreddits_by', 'Subreddit Name', type=str)
         self.name_downloads_by = self.settings.value('name_downloads_by', 'Image/Album Id', type=str)
 
