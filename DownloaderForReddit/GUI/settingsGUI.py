@@ -107,6 +107,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         else:
             self.post_score_combo.setDisabled(True)
             self.post_score_limit_spin_box.setDisabled(True)
+        self.post_score_limit_spin_box.setValue(self.settings_manager.post_score_limit)
 
         self.sub_sort_radio_dict[self.settings_manager.subreddit_sort_method].setChecked(True)
 
@@ -114,6 +115,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.date_restriction_checkbox.setChecked(self.settings_manager.restrict_by_date)
         self.date_restriction_checkbox.stateChanged.connect(self.date_restriction_checkbox_change)
         self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(self.settings_manager.custom_date))
+        self.restrict_by_custom_date_checkbox.setChecked(self.settings_manager.restrict_by_custom_date)
         self.restrict_by_custom_date_checkbox.stateChanged.connect(self.restrict_by_custom_date_checkbox_change)
         if self.date_restriction_checkbox.isChecked():
             self.date_limit_edit.setEnabled(False)
@@ -308,6 +310,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.download_videos = self.link_filter_video_checkbox.isChecked()
         self.settings_manager.download_images = self.link_filter_image_checkbox.isChecked()
         self.settings_manager.avoid_duplicates = self.link_filter_avoid_duplicates_checkbox.isChecked()
+
+        self.settings_manager.nsfw_filter = self.nsfw_filter_dict[self.nsfw_filter_combo.currentText()]
 
         self.settings_manager.save_subreddits_by = self.subreddit_save_by_combo.currentText()
         self.settings_manager.name_downloads_by = self.name_downloads_by_combo.currentText()
