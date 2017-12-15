@@ -160,6 +160,7 @@ class SettingsManager:
         self.settings.setValue("download_video", self.download_videos)
         self.settings.setValue("download_images", self.download_images)
         self.settings.setValue("avoid_duplicates", self.avoid_duplicates)
+        self.settings.setValue('nsfw_filter', self.nsfw_filter)
         self.settings.setValue("save_subreddits_by", self.save_subreddits_by)
         self.settings.setValue("name_downloads_by", self.name_downloads_by)
         self.settings.setValue("save_directory", self.save_directory)
