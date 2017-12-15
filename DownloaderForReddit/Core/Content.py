@@ -63,7 +63,7 @@ class Content(QRunnable):
 
         if self.subreddit_save_method is None:
             self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
-                                           self.file_ext)
+                                          self.file_ext)
             self.check_path = self.save_path
 
         elif self.subreddit_save_method == 'User Name':
@@ -108,10 +108,13 @@ class Content(QRunnable):
     @staticmethod
     def clean_filename(name):
         """Ensures each file name does not contain forbidden characters and is within the character limit"""
+        # For some reason the file system (Windows at least) is having trouble saving files that are over 180ish
+        # characters.  I'm not sure why this is, as the file name limit should be around 240. But either way, this
+        # method has been adapted to work with the results that I am consistently getting.
         forbidden_chars = '"*\\/\'.|?:<>'
         filename = ''.join([x if x not in forbidden_chars else '#' for x in name])
-        if len(filename) >= 230:
-            filename = filename[:225] + '...'
+        if len(filename) >= 176:
+            filename = filename[:170] + '...'
         return filename
 
     def check_save_path_subreddit(self):
