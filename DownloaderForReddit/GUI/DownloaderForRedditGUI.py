@@ -36,7 +36,7 @@ from GUI.DownloadedUsersDialog import DownloadedUsersDialog
 from GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from Core.Messages import Message, UnfinishedDownloadsWarning
 from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
-from Core.RedditExtractor import RedditExtractor
+from Core.DownloadRunner import DownloadRunner
 from Core.RedditObjects import User, Subreddit
 from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from GUI.UpdateDialogGUI import UpdateDialog
@@ -434,7 +434,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_user(self):
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, None)
+        self.download_runner = DownloadRunner(user_list, None, self.queue, None)
         self.start_reddit_extractor_thread('USER')
 
     def run_single_user(self, user):
@@ -444,12 +444,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.started_download_gui_shift()
         user_list = [user]
-        self.reddit_extractor = RedditExtractor(user_list, None, self.queue, None)
+        self.download_runner = DownloadRunner(user_list, None, self.queue, None)
         self.start_reddit_extractor_thread('USER')
 
     def run_subreddit(self):
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, None)
+        self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
         self.start_reddit_extractor_thread('SUBREDDIT')
 
     def run_single_subreddit(self, subreddit):
@@ -459,7 +459,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.started_download_gui_shift()
         subreddit_list = [subreddit]
-        self.reddit_extractor = RedditExtractor(None, subreddit_list, self.queue, None)
+        self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
         self.start_reddit_extractor_thread('SUBREDDIT')
 
     def run_user_and_subreddit(self):
@@ -469,36 +469,36 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.reddit_extractor = RedditExtractor(user_list, subreddit_list, self.queue, None)
+        self.download_runner = DownloadRunner(user_list, subreddit_list, self.queue, None)
         self.start_reddit_extractor_thread('USERS_AND_SUBREDDITS')
 
     def run_unfinished_downloads(self):
         """Downloads the content that was left during the last run if the user clicked the stop download button"""
         self.download_count = 0
         self.started_download_gui_shift()
-        self.reddit_extractor = RedditExtractor(None, None, self.queue, self.unfinished_downloads)
+        self.download_runner = DownloadRunner(None, None, self.queue, self.unfinished_downloads)
         self.start_reddit_extractor_thread('UNFINISHED')
 
     def start_reddit_extractor_thread(self, download_type):
         """Moves the extractor to a different thread and calls the appropriate function for the type of download"""
-        self.stop_download.connect(self.reddit_extractor.stop_download)
+        self.stop_download.connect(self.download_runner.stop_download)
         self.thread = QtCore.QThread()
-        self.reddit_extractor.moveToThread(self.thread)
+        self.download_runner.moveToThread(self.thread)
         if download_type == 'USER':
-            self.thread.started.connect(self.reddit_extractor.validate_users)
+            self.thread.started.connect(self.download_runner.validate_users)
         elif download_type == 'SUBREDDIT':
-            self.thread.started.connect(self.reddit_extractor.validate_subreddits)
+            self.thread.started.connect(self.download_runner.validate_subreddits)
         elif download_type == 'USERS_AND_SUBREDDITS':
-            self.thread.started.connect(self.reddit_extractor.validate_users_and_subreddits)
+            self.thread.started.connect(self.download_runner.validate_users_and_subreddits)
         elif download_type == 'UNFINISHED':
-            self.thread.started.connect(self.reddit_extractor.finish_downloads)
-        self.reddit_extractor.remove_invalid_user.connect(self.remove_invalid_user)
-        self.reddit_extractor.downloaded_users_signal.connect(self.fill_downloaded_users_list)
-        self.reddit_extractor.setup_progress_bar.connect(self.setup_progress_bar)
-        self.reddit_extractor.update_progress_bar_signal.connect(self.update_progress_bar)
-        self.reddit_extractor.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.reddit_extractor.finished.connect(self.thread.quit)
-        self.reddit_extractor.finished.connect(self.reddit_extractor.deleteLater)
+            self.thread.started.connect(self.download_runner.finish_downloads)
+        self.download_runner.remove_invalid_user.connect(self.remove_invalid_user)
+        self.download_runner.downloaded_users_signal.connect(self.fill_downloaded_users_list)
+        self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
+        self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
+        self.download_runner.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
+        self.download_runner.finished.connect(self.thread.quit)
+        self.download_runner.finished.connect(self.download_runner.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.finished_download_gui_shift)
         self.thread.start()
@@ -869,6 +869,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def open_settings_dialog(self):
         """Displays the main settings dialog"""
         settings = RedditDownloaderSettingsGUI()
+        settings.show()
         dialog = settings.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
             self.update_user_settings()
@@ -891,21 +892,21 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if not sub.do_not_edit:
                     self.update_object_settings(sub)
 
-    def update_object_settings(self, object):
+    def update_object_settings(self, reddit_object):
         """Updates object specific settings for the supplied object"""
-        object.update_post_limit(self.settings_manager.post_limit)
-        object.update_save_path(self.settings_manager.save_directory)
-        object.update_name_downloads_by(self.settings_manager.name_downloads_by)
-        object.update_avoid_duplicates(self.settings_manager.avoid_duplicates)
-        object.update_download_videos(self.settings_manager.download_videos)
-        object.update_download_images(self.settings_manager.download_images)
-        self.update_custom_dates(object)
+        reddit_object.post_limit = self.settings_manager.post_limit
+        reddit_object.save_path = self.settings_manager.save_directory
+        reddit_object.name_downloads_by = self.settings_manager.name_downloads_by
+        reddit_object.avoid_duplicates = self.settings_manager.avoid_duplicates
+        reddit_object.download_videos = self.settings_manager.download_videos
+        reddit_object.download_images = self.settings_manager.download_images
+        self.update_custom_dates(reddit_object)
 
-    def update_custom_dates(self, object):
+    def update_custom_dates(self, reddit_object):
         if self.settings_manager.restrict_by_custom_date:
-            object.update_custom_date_limit(self.settings_manager.custom_date)
+            reddit_object.custom_date_limit = self.settings_manager.custom_date
         else:
-            object.update_custom_date_limit(None)
+            reddit_object.custom_date_limit = None
 
     def display_failed_downloads(self):
         """Opens a dialog with information about any content that was not able to be downloaded for whatever reason"""

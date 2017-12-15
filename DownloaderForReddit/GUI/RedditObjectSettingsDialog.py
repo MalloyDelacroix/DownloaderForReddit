@@ -104,8 +104,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def setup(self):
         self.do_not_edit_checkbox.setChecked(self.current_object.do_not_edit)
-        date_limit = self.current_object.date_limit if self.current_object.date_limit is not None else \
-            self.current_object.custom_date_limit
+        date_limit = self.current_object.custom_date_limit if self.current_object.custom_date_limit is not None else \
+            self.current_object.date_limit
         self.restrict_date_checkbox.setChecked(self.current_object.custom_date_limit != 1)
         if date_limit < 86400:
             date_limit = 86400

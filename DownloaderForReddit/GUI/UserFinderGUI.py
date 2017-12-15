@@ -30,7 +30,7 @@ import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import Core.Injector
-from Core.RedditExtractor import RedditExtractor
+from Core.DownloadRunner import DownloadRunner
 from GUI.AddUserDialog import AddUserDialog
 from GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
 from UserFinder import UserFinder
@@ -328,15 +328,15 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
 
     def download_user_samples(self):
         """
-        Creates an instance of the RedditExtractor class and moves it to another thread where it then downloads the
+        Creates an instance of the DownloadRunner class and moves it to another thread where it then downloads the
         specified number of posts from the found users
         """
         if len(self.found_users) > 0 and self.watchlist_download_sample_spinbox_2.value() > 0:
             self.found_user_output.append('Starting Download\n')
 
-            self.reddit_extractor = RedditExtractor(self.found_users, None, self.queue,
-                                                    self.watchlist_download_sample_spinbox_2.value(), self.save_path,
-                                                    None, None, False, False, None, None, None)
+            self.reddit_extractor = DownloadRunner(self.found_users, None, self.queue,
+                                                   self.watchlist_download_sample_spinbox_2.value(), self.save_path,
+                                                   None, None, False, False, None, None, None)
 
             self.user_finder_download_thread = QtCore.QThread()
             self.reddit_extractor.moveToThread(self.user_finder_download_thread)
