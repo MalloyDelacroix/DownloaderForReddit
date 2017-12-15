@@ -86,6 +86,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.page_one_geom = None
         self.page_two_geom = None
 
+        self.custom_save_path_line_edit.setToolTip(self.custom_save_path_line_edit.text())
+        self.restrict_date_checkbox.setToolTip('Right click to reset to %s date to last downloaded link date' %
+                                               self.object_type_str)
+
         self.object_list_widget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.object_list_widget.customContextMenuRequested.connect(self.object_list_right_click)
         self.object_list_widget.doubleClicked.connect(lambda: self.open_item_download_folder(
@@ -98,18 +102,19 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.item_display_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.item_display_list_view.customContextMenuRequested.connect(self.item_display_list_right_click)
 
+        self.restrict_date_checkbox.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.restrict_date_checkbox.customContextMenuRequested.connect(self.date_right_click)
+
+        self.date_limit_edit.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.date_limit_edit.customContextMenuRequested.connect(self.date_right_click)
+
     @property
     def object_type_str(self):
         return self.object_type[0] + self.object_type[1:].lower()
 
     def setup(self):
         self.do_not_edit_checkbox.setChecked(self.current_object.do_not_edit)
-        date_limit = self.current_object.custom_date_limit if self.current_object.custom_date_limit is not None else \
-            self.current_object.date_limit
         self.restrict_date_checkbox.setChecked(self.current_object.custom_date_limit != 1)
-        if date_limit < 86400:
-            date_limit = 86400
-        self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(date_limit))
         self.post_limit_spinbox.setValue(self.current_object.post_limit)
         self.name_downloads_combo.setCurrentText(self.current_object.name_downloads_by)
         self.custom_save_path_line_edit.setText(self.current_object.save_path)
@@ -125,6 +130,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.item_display_list_model.reddit_object = self.current_object
         self.setup_item_display_list(self.current_item_display)
         self.custom_save_path_line_edit.setToolTip(self.custom_save_path_line_edit.text())
+        self.set_date_display()
+
+    def set_date_display(self):
+        date_limit = self.current_object.custom_date_limit if self.current_object.custom_date_limit is not None else \
+            self.current_object.date_limit
+        if date_limit < 86400:
+            date_limit = 86400
+        self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(date_limit))
 
     def setup_item_display_list(self, display_type):
         display_dict = {'previous_downloads': 'Previous Downloads:', 'saved_submissions': 'Saved Submissions:',
@@ -348,7 +361,15 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
         except AttributeError:
             print('UserSettingsDialog AttributeError: user_content_right_click')
-        self.menu.exec(QtGui.QCursor.pos())
+        menu.exec(QtGui.QCursor.pos())
+
+    def date_right_click(self):
+        menu = QtWidgets.QMenu()
+        reset_date = menu.addAction('Reset Date')
+        set_date_to_now = menu.addAction('Set Date To Now')
+        reset_date.triggered.connect(self.reset_date)
+        set_date_to_now.triggered.connect(self.set_date_to_now)
+        menu.exec_(QtGui.QCursor.pos())
 
     def open_item_download_folder(self, position):
         selected_object = self.object_list[position]
@@ -388,6 +409,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.content_icon_size = size
         self.content_list.iconSize(QtCore.QSize(size, size))
 
+    def reset_date(self):
+        self.current_object.custom_date_limit = None
+        self.set_date_display()
+
+    def set_date_to_now(self):
+        self.current_object.custom_date_limit = datetime.datetime.now().timestamp()
+        self.set_date_display()
+
     def resizeEvent(self, event):
         if self.content_icons_full_width:
             self.content_list.setIconSize(QtCore.QSize(self.content_list.width(), self.content_list.width()))
@@ -400,41 +429,3 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.settings_manager.reddit_object_content_icon_size = self.content_icon_size
         self.settings_manager.current_reddit_object_settings_item_display_list = self.current_item_display
         self.settings_manager.save_reddit_object_settings_dialog()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
