@@ -135,9 +135,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     @property
     def object_type_str(self):
+        """Returns a string of the object type with the first letter capitalized to be used in displays."""
         return self.object_type[0] + self.object_type[1:].lower()
 
     def setup(self):
+        """Sets up each part of the settings dialog for the current reddit object."""
         self.do_not_edit_checkbox.setChecked(self.current_object.do_not_edit)
         self.restrict_date_checkbox.setChecked(self.current_object.custom_date_limit != 1)
         self.post_limit_spinbox.setValue(self.current_object.post_limit)
@@ -158,6 +160,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.set_date_display()
 
     def set_date_display(self):
+        """Sets the date display box.  This is a separate method so it can be called from other class methods."""
         date_limit = self.current_object.custom_date_limit if self.current_object.custom_date_limit is not None else \
             self.current_object.date_limit
         if date_limit < 86400:
@@ -165,6 +168,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(date_limit))
 
     def setup_item_display_list(self, display_type):
+        """
+        Sets up the display list that displays a reddit objects previous downloads, saved submissions, and saved
+        content.
+        """
         display_dict = {'previous_downloads': 'Previous Downloads:', 'saved_submissions': 'Saved Submissions:',
                         'saved_content': 'Saved Content:'}
         self.current_item_display = display_type
@@ -173,10 +180,12 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.item_display_list_label.setText(display_dict[display_type])
 
     def remove_selected(self):
+        """Removes the selected display item from the display list and the reddit objects corresponding item list."""
         index_list = [x.row() for x in self.item_display_list_view.selectedIndexes()]
         self.item_display_list_model.removeRows(index_list)
 
     def list_item_change(self):
+        """Changes the displayed reddit object list."""
         self.save_temp_object()
         self.current_object = self.object_list[self.object_list_widget.currentRow()]
         self.setup()
@@ -184,6 +193,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.setup_content_list()
 
     def save_temp_object(self):
+        """
+        Saves changes made to the current reddit object when the current reddit object is changed.  This allows for a
+        new reddit object to be displayed and changed while preserving the changes made to the current object but also
+        making these changes permanent until the save button is clicked.
+        """
         self.current_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
         if self.current_object.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
                                                                            '%m/%d/%Y %I:%M %p'))):
@@ -203,12 +217,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.current_object.subreddit_save_method = self.save_by_method_combo.currentText()
 
     def download_single(self):
+        """Downloads only the current reddit object."""
         self.download_object_button.setText('Downloading...')
         self.download_object_button.setDisabled(True)
         self.save_temp_object()
         self.single_download.emit(self.current_object)
 
     def select_save_path_dialog(self):
+        """Opens a dialog to choose a directory path to be set as the objects save path."""
         if self.custom_save_path_line_edit.text() != '':
             path = self.custom_save_path_line_edit.text()
         else:
@@ -225,6 +241,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         super().accept()
 
     def change_page(self):
+        """Calls the appropriate method to change the page based on the current page."""
         if self.stacked_widget.currentIndex() == 0:
             self.page_one_geom = (self.width(), self.height())
             self.change_to_downloads_view()
@@ -233,6 +250,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.change_to_settings_view()
 
     def change_to_downloads_view(self):
+        """Changes the stacked widget to the downloads page and sets up the content view."""
         if self.page_two_geom is not None:
             self.resize(self.page_two_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(1)
@@ -242,6 +260,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.setup_content_list()
 
     def change_to_settings_view(self):
+        """Changes the stacked widget to the downloads page and calls the setup method."""
         if self.page_one_geom is not None:
             self.resize(self.page_one_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(0)
@@ -250,6 +269,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Cancel')
 
     def setup_content_list(self):
+        """Sets up the content list based on the current selected users save path."""
         self.content_list.clear()
         if self.content_icons_full_width:
             icon_size = self.content_list.width()
@@ -267,6 +287,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 print('Exception in setup content list')
 
     def get_download_folder(self):
+        """Returns a list of file objects to be displayed in the content view."""
         if self.object_type == 'USER':
             save_path = self.current_object.save_path
             return sorted([os.path.join(save_path, x) for x in os.listdir(save_path) if
@@ -278,6 +299,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             return sorted(file_list, key=ALPHANUM_KEY)
 
     def extract_files_from_sub_folder(self, folder):
+        """Gathers all files from the supplied path and all sub folders."""
         file_list = []
         for item in os.listdir(folder):
             file = os.path.join(folder, item)
@@ -288,6 +310,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         return file_list
 
     def display_content(self):
+        """Sets up a list item for each file in the content folder and adds it to the content display view."""
         for file in self.current_download_folder:
             try:
                 text = file.rsplit('/', 1)[1]
@@ -304,6 +327,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 pass
 
     def object_list_right_click(self):
+        """Displays a context menu for the object list."""
         menu = QtWidgets.QMenu()
         try:
             position = self.object_list_widget.currentRow()
@@ -314,6 +338,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         menu.exec_(QtGui.QCursor.pos())
 
     def item_display_list_right_click(self):
+        """Displays a context menu for the item display list."""
         menu = QtWidgets.QMenu()
         remove_text = '%s' % 'Remove Items' if len(self.item_display_list_view.selectedIndexes()) > 2 else 'Remove Item'
         open_link = menu.addAction('Open Link')
@@ -335,6 +360,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         menu.exec_(QtGui.QCursor.pos())
 
     def content_list_right_click(self):
+        """Displays a context menu for the content list."""
         menu = QtWidgets.QMenu()
         try:
             position = self.content_list.currentRow()
@@ -389,6 +415,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         menu.exec(QtGui.QCursor.pos())
 
     def date_right_click(self):
+        """Displays a context menu for the date items."""
         menu = QtWidgets.QMenu()
         reset_date = menu.addAction('Reset Date')
         set_date_to_now = menu.addAction('Set Date To Now')
@@ -397,6 +424,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         menu.exec_(QtGui.QCursor.pos())
 
     def open_item_download_folder(self, position):
+        """Opens the selected items download folder."""
         selected_object = self.object_list[position]
         open_item = selected_object.save_path
         try:
@@ -407,6 +435,9 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             Message.no_download_folder(self, self.object_type)
 
     def open_file(self):
+        """
+        Selects a file based on the currently selected list item, and calls the method to open it in the file system.
+        """
         file = self.content_list.currentItem().path
         try:
             self.open_in_system(file)
@@ -414,11 +445,13 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             pass
 
     def open_link(self):
+        """Opens a link from the 'previous_downloads' list in the default web browser."""
         if self.current_item_display == 'previous_downloads':
             link = self.current_object.already_downloaded[self.item_display_list_view.currentIndex().row()]
             self.open_in_system(link)
 
     def open_in_system(self, item):
+        """Opens a supplied file or folder in the default system specified application."""
         if sys.platform == 'win32':
             os.startfile(item)
         else:
