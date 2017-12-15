@@ -28,6 +28,7 @@ import os
 import subprocess
 import sys
 import time
+import copy
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
@@ -35,7 +36,7 @@ from Core import Injector
 from Core.Messages import Message
 from Core.AlphanumKey import ALPHANUM_KEY
 from ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
-from Core.RedditObjects import RedditObject
+from Core.RedditObjects import *
 from CustomWidgets.CustomListWidgetItem import CustomListItem
 
 
@@ -61,8 +62,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.display_list = [x.name for x in self.object_list]
         self.current_object = init_item
         self.restore_defaults = False
+        self.saved = False
         self.closed = False
         self.object_type = init_item.object_type
+
+        self.original_object_dict = {}
 
         self.settings_manager = Injector.get_settings_manager()
         geom = self.settings_manager.reddit_object_settings_dialog_geom
@@ -198,6 +202,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         new reddit object to be displayed and changed while preserving the changes made to the current object but also
         making these changes permanent until the save button is clicked.
         """
+        self.save_original_object()
         self.current_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
         if self.current_object.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
                                                                            '%m/%d/%Y %I:%M %p'))):
@@ -215,6 +220,12 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.current_object.avoid_duplicates = self.avoid_duplicates_checkbox.isChecked()
         if self.object_type == 'SUBREDDIT':
             self.current_object.subreddit_save_method = self.save_by_method_combo.currentText()
+
+    def save_original_object(self):
+        try:
+            x = self.original_object_dict[self.current_object.name]
+        except KeyError:
+            self.original_object_dict[self.current_object.name] = copy.deepcopy(self.current_object)
 
     def download_single(self):
         """Downloads only the current reddit object."""
@@ -235,10 +246,6 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def set_restore_defaults(self):
         self.restore_defaults = True
-
-    def accept(self):
-        self.save_temp_object()
-        super().accept()
 
     def change_page(self):
         """Calls the appropriate method to change the page based on the current page."""
@@ -479,7 +486,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         if self.content_icons_full_width:
             self.content_list.setIconSize(QtCore.QSize(self.content_list.width(), self.content_list.width()))
 
+    def accept(self):
+        self.saved = True
+        self.save_temp_object()
+        super().accept()
+
     def closeEvent(self, event):
+        if not self.saved:
+            self.replace_original_items()
         self.closed = True
         self.settings_manager.reddit_object_settings_dialog_geom = self.saveGeometry()
         self.settings_manager.reddit_object_settings_dialog_splitter_state = self.splitter.saveState()
@@ -487,3 +501,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.settings_manager.reddit_object_content_icon_size = self.content_icon_size
         self.settings_manager.current_reddit_object_settings_item_display_list = self.current_item_display
         self.settings_manager.save_reddit_object_settings_dialog()
+
+    def replace_original_items(self):
+        for x in range(len(self.object_list)):
+            if self.object_list[x] in self.original_object_dict:
+                self.object_list[x] = self.original_object_dict[self.object_list[x]]
