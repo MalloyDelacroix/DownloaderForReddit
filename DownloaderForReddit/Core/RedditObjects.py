@@ -164,9 +164,6 @@ class RedditObject:
         if not self.do_not_edit and None is not self.custom_date_limit < last_download_time:
             self.custom_date_limit = None
 
-    def get_new_submissions(self, submissions):
-        self.new_submissions = submissions
-
     def check_save_path(self):
         if not os.path.isdir(self.save_path):
             try:
@@ -180,30 +177,6 @@ class RedditObject:
         self.content.clear()
         self.new_submissions = None
         self.failed_extracts.clear()
-
-    def update_post_limit(self, new_limit):
-        self.post_limit = new_limit
-
-    def update_save_path(self, new_path):
-        self.save_path = new_path
-
-    def update_name_downloads_by(self, new_method):
-        self.name_downloads_by = new_method
-
-    def update_avoid_duplicates(self, state):
-        self.avoid_duplicates = state
-
-    def update_download_videos(self, value):
-        self.download_videos = value
-
-    def update_download_images(self, value):
-        self.download_images = value
-
-    def update_custom_date_limit(self, new_limit):
-        self.custom_date_limit = new_limit
-
-    def update_number_of_downloads(self):
-        self.number_of_downloads = len(self.already_downloaded)
 
 
 class User(RedditObject):
