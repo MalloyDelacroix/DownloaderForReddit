@@ -96,13 +96,13 @@ class Message(object):
         reply = message.information(self, 'Invalid Subreddit', text, message.Yes, message.No)
         return reply == message.Ok
 
-    def not_valid_name(self):
-        text = 'Sorry, that is not a valid name'
+    def not_valid_name(self, name):
+        text = 'Sorry, %s is not a valid name' % name
         reply = message.information(self, 'Invalid Name', text, message.Ok)
         return reply == message.Ok
 
-    def name_in_list(self):
-        text = 'That name is already in the list'
+    def name_in_list(self, name):
+        text = '%s is already in the list' % name
         reply = message.information(self, 'Existing Name', text, message.Ok)
         return reply == message.Ok
 

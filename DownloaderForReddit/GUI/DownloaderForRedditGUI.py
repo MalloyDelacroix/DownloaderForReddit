@@ -659,7 +659,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             if new_user != '' and ' ' not in new_user:
                 if any(new_user.lower() == name.lower() for name in insertion_list.display_list):
-                    Message.name_in_list(self)
+                    Message.name_in_list(self, new_user)
                 else:
                     x = self.make_user(new_user)
                     insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
@@ -668,7 +668,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.refresh_user_count()
                     self.set_not_saved()
             else:
-                Message.not_valid_name(self)
+                Message.not_valid_name(self, new_user)
 
         except KeyError:
             Message.no_user_list(self)
@@ -726,7 +726,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             if new_sub != '' and ' ' not in new_sub:
                 if any(new_sub.lower() == name.lower() for name in insertion_list.display_list):
-                    Message.name_in_list(self)
+                    Message.name_in_list(self, new_sub)
                 else:
                     x = self.make_subreddit(new_sub)
                     insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
@@ -735,7 +735,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.refresh_subreddit_count()
                     self.set_not_saved()
             else:
-                Message.not_valid_name(self)
+                Message.not_valid_name(self, new_sub)
         except KeyError:
             Message.no_subreddit_list(self)
 
