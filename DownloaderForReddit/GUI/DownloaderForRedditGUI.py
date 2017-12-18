@@ -855,18 +855,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.progress_bar.setValue(self.progress_bar.maximum())
 
     def open_settings_dialog(self):
-        """Displays the main settings dialog"""
+        """Displays the main settings dialog and calls methods that update each reddit object if needed."""
         settings = RedditDownloaderSettingsGUI()
         settings.show()
         dialog = settings.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
-            print('Dialog accepted')
             self.update_user_settings()
             self.update_subreddit_settings()
-            # self.save_state()
-            print('Settings manager save dir: %s' % self.settings_manager.save_directory)
-        else:
-            print('Dialog NOT accepted')
 
     def update_user_settings(self):
         """Iterates through the user list and calls update settings for each user"""
@@ -895,6 +890,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_custom_dates(reddit_object)
 
     def update_custom_dates(self, reddit_object):
+        """Updates the custom date attribute of the supplied reddit object."""
         if self.settings_manager.restrict_by_custom_date:
             reddit_object.custom_date_limit = self.settings_manager.custom_date
         else:
