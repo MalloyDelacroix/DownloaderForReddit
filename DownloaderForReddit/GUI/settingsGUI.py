@@ -73,6 +73,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.settings_manager = Core.Injector.get_settings_manager()
 
+        geom = self.settings_manager.settings_dialog_geom
+        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
+
         self.reddit_account_link_button.setVisible(False)
         self.reddit_account_link_button.setEnabled(False)
 
@@ -286,6 +289,10 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         if ret:
             self.save_settings()
             super().accept()
+
+    def closeEvent(self, QCloseEvent):
+        self.settings_manager.settings_dialog_geom = self.saveGeometry()
+        self.settings_manager.save_settings_dialog()
 
     def save_settings(self):
         self.settings_manager.imgur_client_id = self.imgur_client_id

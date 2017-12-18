@@ -122,6 +122,7 @@ class SettingsManager:
         # endregion
 
         # region Misc Dialogs
+        self.settings_dialog_geom = self.settings.value('settings_dialog_geom')
         self.add_user_dialog_geom = self.settings.value("add_user_dialog_geom")
         self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
         self.about_dialog_geom = self.settings.value("about_dialog_geom")
@@ -197,6 +198,9 @@ class SettingsManager:
         self.settings.setValue("user_finder_add_to_index", self.user_finder_add_to_index)
         self.settings.setValue("user_finder_content_list_icons_full_size", self.user_finder_content_list_icons_full_width)
         self.settings.setValue("user_finder_content_list_icon_size", self.user_finder_content_list_icon_size)
+
+    def save_settings_dialog(self):
+        self.settings.setValue('settings_dialog_geom', self.settings_dialog_geom)
 
     def save_add_user_dialog(self):
         self.settings.setValue("add_user_dialog_geom", self.add_user_dialog_geom)
