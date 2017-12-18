@@ -25,8 +25,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
 import os
-import shutil
-import sys
 import time
 from PyQt5 import QtWidgets, QtCore
 
@@ -171,48 +169,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
             self.imgur_client_id = imgur_dialog.client_id_line_edit.text()
             self.imgur_client_secret = imgur_dialog.client_secret_line_edit.text()
 
-    def backup_save_file(self):
-        """Makes a copy of the programs save_file data and moves it to the specified location"""
-        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Backup Directory", "%s%s" %
-                                                                     (os.path.expanduser('~'), '/Downloads/')))
-        if folder_name != "":
-            reply = QtWidgets.QMessageBox.information(self, "Backup File", "Backup settings file to selected location?",
-                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
-            if reply == QtWidgets.QMessageBox.Ok:
-                if sys.platform == 'win32':
-                    shutil.copy('save_file.dat', folder_name)
-                else:
-                    shutil.copy('save_file', folder_name)
-
-    def import_backup_file(self):
-        """Imports a copy of the programs save_file data to the current directory for use by the program"""
-        file_name = str(QtWidgets.QFileDialog.getOpenFileName(self, "Select Backup File To Import", "%s%s" %
-                                                                   (os.path.expanduser('~'), '/Downloads/')))
-        try:
-            if file_name != "":
-                reply = QtWidgets.QMessageBox.warning(self, "Backup File", "Are you sure you want to import this save "
-                                                                           "file? any existing data (user/subreddit "
-                                                                           "lists, etc.) will be deleted.\nBe sure the "
-                                                                           "file you are about to import has been "
-                                                                           "exported by this program and is unaltered. "
-                                                                           "Importing an altered or unexpected file "
-                                                                           "may result in unpredictable behavior",
-                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
-                if reply == QtWidgets.QMessageBox.Ok:
-                    if file_name == 'save_file' or file_name == 'save_file.dat':
-                        shutil.copy(file_name, os.getcwd())
-                else:
-                    pass
-        except PermissionError:
-            reply = QtWidgets.QMessageBox.warning(self, "Backup File", "Permission Denied: the file did not import "
-                                                                       "please make sure you are authorized to make "
-                                                                       "changes to this OS user account",
-                                                  QtWidgets.QMessageBox.Ok)
-            if reply == QtWidgets.QMessageBox.Ok:
-                pass
-            else:
-                pass
-
     def restrict_score_shift(self):
         """Disables certain features if the current options disallow their use"""
         if self.restrict_to_score_checkbox.isChecked():
@@ -263,22 +219,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
     def restrict_by_custom_date_checkbox_change(self):
         if self.restrict_by_custom_date_checkbox.isChecked():
             self.date_restriction_checkbox.setChecked(False)
-
-    """
-    def change_page_right(self):
-        current_index = self.stackedWidget.currentIndex()
-        if current_index < 2:
-            self.stackedWidget.setCurrentIndex(current_index + 1)
-        else:
-            self.stackedWidget.setCurrentIndex(0)
-
-    def change_page_left(self):
-        current_index = self.stackedWidget.currentIndex()
-        if current_index > 0:
-            self.stackedWidget.setCurrentIndex(current_index - 1)
-        else:
-            self.stackedWidget.setCurrentIndex(2)
-    """
 
     def accept(self):
         if self._restore_defaults:
