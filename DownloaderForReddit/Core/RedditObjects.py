@@ -60,7 +60,7 @@ class RedditObject:
         self.do_not_edit = False
         self.new_submissions = None  # Will be erased at end of download
         self.saved_submissions = []
-        self.already_downloaded = []
+        self.previous_downloads = []
         self.date_limit = 1
         self.custom_date_limit = None
         self.content = []  # Will be erased at end of download (QRunnable objects cannot be pickled)
@@ -71,7 +71,7 @@ class RedditObject:
 
     @property
     def number_of_downloads(self):
-        return len(self.already_downloaded)
+        return len(self.previous_downloads)
 
     def extract_content(self):
         if len(self.saved_submissions) > 0:
@@ -124,7 +124,7 @@ class RedditObject:
             if not any(x.url == y.url for y in self.saved_submissions):
                 self.saved_submissions.append(x)
         for x in extractor.failed_extract_messages:
-            print(x)
+            print(x)                                                                                # Print statement
             self.failed_extracts.append(x)
         for x in extractor.extracted_content:
             if type(x) == str and x.startswith('Failed'):
@@ -132,7 +132,7 @@ class RedditObject:
             else:
                 if self.check_image(x) and self.check_video(x) and self.check_downloaded_content(x):
                     self.content.append(x)
-                    self.already_downloaded.append(x.url)
+                    self.previous_downloads.append(x.url)
 
     def check_image(self, item):
         return self.download_images or item.endswith(('.jpg', '.jpeg', '.gif', '.gifv', '.webm', '.png'))
@@ -141,7 +141,7 @@ class RedditObject:
         return self.download_videos or item.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx'))
 
     def check_downloaded_content(self, item):
-        return not self.avoid_duplicates or item.url not in self.already_downloaded
+        return not self.avoid_duplicates or item.url not in self.previous_downloads
 
     def save_unfinished_downloads(self):
         for content in self.content:

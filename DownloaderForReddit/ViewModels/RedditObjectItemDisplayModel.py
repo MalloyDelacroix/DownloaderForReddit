@@ -14,7 +14,7 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
 
     def rowCount(self, parent=None, *args, **kwargs):
         if self.display_list == 'previous_downloads':
-            return len(self.reddit_object.already_downloaded)
+            return len(self.reddit_object.previous_downloads)
         elif self.display_list == 'saved_submissions':
             return len(self.reddit_object.saved_submissions)
         else:
@@ -33,7 +33,7 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
     def remove_previous_downloaded(self, index_list, parent):
         for x in index_list:
             self.beginRemoveRows(parent, x, x)
-            del self.reddit_object.already_downloaded[x]
+            del self.reddit_object.previous_downloads[x]
             self.endRemoveRows()
 
     def remove_saved_content(self, index_list, parent):
@@ -54,7 +54,7 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
         if role == Qt.DisplayRole:
             index = index.row()
             if self.display_list == 'previous_downloads':
-                return self.reddit_object.already_downloaded[index]
+                return self.reddit_object.previous_downloads[index]
             elif self.display_list == 'saved_submissions':
                 return self.reddit_object.saved_submissions[index]
             elif self.display_list == 'saved_content':

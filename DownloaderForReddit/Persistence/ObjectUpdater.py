@@ -50,22 +50,22 @@ class ObjectUpdater:
         new.do_not_edit = old.do_not_edit
         new.date_limit = old.date_limit
         new.custom_date_limit = old.custom_date_limit
-        cls.get_already_downloaded(old, new)
+        cls.get_previous_downloads(old, new)
         cls.get_saved_content(old, new)
         cls.get_saved_submissions(old, new)
         cls.get_number_of_downloads(old, new)
 
     @staticmethod
-    def get_already_downloaded(old, new):
+    def get_previous_downloads(old, new):
         """
-        Transfers the already_downloaded list from the old object to the new object.
+        Transfers the previous_downloads list from the old object to the new object.
         :param old: The old reddit object
         :param new: The new reddit object
         :type old: RedditObject
         type new: RedditObject
         """
         try:
-            new.already_downloaded = old.already_downloaded
+            new.previous_downloads = old.previous_downloads
         except:
             pass
 
@@ -110,7 +110,7 @@ class ObjectUpdater:
             new.number_of_downloads = old.number_of_downloads
         except AttributeError:
             try:
-                new.number_of_downloads = len(old.already_downloaded)
+                new.number_of_downloads = len(old.previous_downloads)
             except:
                 pass
 

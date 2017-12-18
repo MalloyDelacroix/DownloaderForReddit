@@ -455,7 +455,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def open_link(self):
         """Opens a link from the 'previous_downloads' list in the default web browser."""
         if self.current_item_display == 'previous_downloads':
-            link = self.current_object.already_downloaded[self.item_display_list_view.currentIndex().row()]
+            link = self.current_object.previous_downloads[self.item_display_list_view.currentIndex().row()]
             self.open_in_system(link)
 
     def open_in_system(self, item):
