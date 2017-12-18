@@ -632,10 +632,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens the dialog to enter the user name"""
         if self.user_lists_combo != '' and len(self.user_view_chooser_dict) > 0:
             add_user_dialog = AddUserDialog()
-            add_user_dialog.add_another_button.clicked.connect(lambda: self.add_user(add_user_dialog.name))
+            add_user_dialog.add_another_button.clicked.connect(lambda: self.add_user(add_user_dialog.name,
+                                                    self.user_view_chooser_dict[self.user_lists_combo.currentText()]))
             dialog = add_user_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                self.add_user(add_user_dialog.name)
+                self.add_user(add_user_dialog.name, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
         else:
             Message.no_user_list(self)
 
@@ -643,27 +644,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Adds a user found by the user finder to the supplied list which is selected from the user finder GUI"""
         insertion_list = self.user_view_chooser_dict[lst[1]]
         new_user = lst[0]
-        if any(new_user.lower() == name.lower() for name in insertion_list.display_list):
-            Message.name_in_list(self)
-        else:
-            x = self.make_user(new_user)
-            insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
-            insertion_list.setData(insertion_list.rowCount() - 1, x)
-        insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
-        self.refresh_user_count()
-        self.set_not_saved()
+        self.add_user(new_user, insertion_list)
 
-    def add_user(self, new_user):
+    def add_user(self, new_user, insertion_list):
         """Adds a user to the current list"""
-        insertion_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
         try:
             if new_user != '' and ' ' not in new_user:
-                if any(new_user.lower() == name.lower() for name in insertion_list.display_list):
+                if any(new_user.lower() == item.name.lower() for item in insertion_list.reddit_object_list):
                     Message.name_in_list(self, new_user)
                 else:
-                    x = self.make_user(new_user)
-                    insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
-                    insertion_list.setData(insertion_list.rowCount() - 1, x)
+                    user = self.make_user(new_user)
+                    insertion_list.insertRow(user)
                     insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
                     self.refresh_user_count()
                     self.set_not_saved()
@@ -702,7 +693,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if Message.user_not_valid(self, user.name):
             working_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
             working_list.reddit_object_list.remove(user)
-            working_list.display_list.remove(user.name)
             if os.path.isdir(user.save_path):
                 os.rename(user.save_path, '%s (deleted)' % user.save_path[:-1])
             self.refresh_user_count()
@@ -725,12 +715,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         insertion_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
         try:
             if new_sub != '' and ' ' not in new_sub:
-                if any(new_sub.lower() == name.lower() for name in insertion_list.display_list):
+                if any(new_sub.lower() == item.name.lower() for item in insertion_list.reddit_object_list):
                     Message.name_in_list(self, new_sub)
                 else:
-                    x = self.make_subreddit(new_sub)
-                    insertion_list.insertRows(insertion_list.rowCount() + 1, 1)
-                    insertion_list.setData(insertion_list.rowCount() - 1, x)
+                    sub = self.make_subreddit(new_sub)
+                    insertion_list.insertRows(sub)
                     insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
                     self.refresh_subreddit_count()
                     self.set_not_saved()
@@ -768,7 +757,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if Message.subreddit_not_valid(self, sub.name):
             working_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
             working_list.reddit_object_list.remove(sub)
-            working_list.display_list.remove(sub.name)
             self.refresh_subreddit_count()
             self.set_not_saved()
 

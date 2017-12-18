@@ -25,6 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 from operator import attrgetter
+import datetime
 
 
 class ListModel(QAbstractListModel):
@@ -44,7 +45,6 @@ class ListModel(QAbstractListModel):
         self.name = name
         self.list_type = list_type
         self.reddit_object_list = []
-        self.display_list = [x.name for x in self.reddit_object_list]
 
     def sort_lists(self, method):
         """
@@ -61,21 +61,17 @@ class ListModel(QAbstractListModel):
 
         self.reddit_object_list = sorted(self.reddit_object_list, key=att_method,
                                          reverse=method[1])
-        self.display_list = [x.name for x in self.reddit_object_list]
+        self.refresh()
 
-    def insertRows(self, position, rows, parent=QModelIndex(), *args, **kwargs):
-        self.beginInsertRows(parent, position, position + rows - 1)
-        for x in range(rows):
-            new_name = "New User %s" % self.rowCount()
-            self.display_list.append(new_name)
-            self.reddit_object_list.insert(position, new_name)
+    def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
+        self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
+        self.reddit_object_list.append(item)
         self.endInsertRows()
         return True
 
     def removeRows(self, position, rows, parent=QModelIndex(), *args):
         self.beginRemoveRows(parent, position, position + rows - 1)
         for x in range(rows):
-            self.display_list.remove(self.reddit_object_list[position].name)
             self.reddit_object_list.remove(self.reddit_object_list[position])
         self.endRemoveRows()
         return True
@@ -85,23 +81,35 @@ class ListModel(QAbstractListModel):
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            return self.display_list[index.row()]
+            return self.reddit_object_list[index.row()].name
         elif role == Qt.DecorationRole:
             return None
         elif role == Qt.ToolTipRole:
-            return None
+            return self.make_tool_tip(index.row())
         elif role == Qt.EditRole:
-            return self.display_list[index.row()]
+            return self.reddit_object_list[index.row()].name
+
+    def make_tool_tip(self, row):
+        item = self.reddit_object_list[row]
+        added_on = datetime.date.strftime(datetime.datetime.fromtimestamp(item.user_added),
+                                          '%m-%d-%Y at %I:%M %p')
+        if item.date_limit < 1136073600:
+            last_download_date = 'No Date Available'
+        else:
+            last_download_date = datetime.date.strftime(datetime.datetime.fromtimestamp(item.date_limit),
+                                                        '%m-%d-%Y at %I:%M %p')
+        text = 'Total Downloads: %s\nLast Content Date: %s\nAdded On: %s' % (item.number_of_downloads,
+                                                                             last_download_date, added_on)
+        return text
 
     def flags(self, QModelIndex):
         return Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
-    def setData(self, index, value, role=Qt.EditRole):
-        if role == Qt.EditRole:
-            obj = self.reddit_object_list[index]
-            if value in self.display_list:
-                return False
-            else:
-                self.reddit_object_list[index] = value
-                self.display_list.remove(obj)
-                self.display_list.append(value.name)
+    def refresh(self):
+        """
+        Refreshes the displayed items in the list. This has to be called when the sort order is changed or the new
+        sort order will not be displayed until the list is moved.
+        """
+        first = self.createIndex(0, 0)
+        second = self.createIndex(0, self.rowCount())
+        self.dataChanged.emit(first, second)
