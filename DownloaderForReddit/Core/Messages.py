@@ -97,12 +97,12 @@ class Message(object):
         return reply == message.Ok
 
     def not_valid_name(self, name):
-        text = 'Sorry, %s is not a valid name' % name
+        text = 'Sorry, "%s" is not a valid name' % name
         reply = message.information(self, 'Invalid Name', text, message.Ok)
         return reply == message.Ok
 
     def name_in_list(self, name):
-        text = '%s is already in the list' % name
+        text = '"%s" is already in the list' % name
         reply = message.information(self, 'Existing Name', text, message.Ok)
         return reply == message.Ok
 
