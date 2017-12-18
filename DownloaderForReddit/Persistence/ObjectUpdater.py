@@ -18,7 +18,7 @@ class ObjectUpdater:
         :param user: The User object which is to be updated.
         :type user: User
         """
-        new_user = User(__version__, user.name, user.save_path, user.post_limit, user.avoid_duplicates,
+        new_user = User(__version__, user.name, None, user.post_limit, user.avoid_duplicates,
                         user.download_videos, user.download_images, user.name_downloads_by, user.user_added)
         cls.update_extras(user, new_user)
         new_user.object_type = 'USER'
@@ -32,7 +32,7 @@ class ObjectUpdater:
         :param sub: The outdated subreddit object wich is to be updated.
         :type sub: Subreddit
         """
-        new_sub = Subreddit(__version__, sub.name, sub.save_path, sub.post_limit, sub.avoid_duplicates,
+        new_sub = Subreddit(__version__, sub.name, None, sub.post_limit, sub.avoid_duplicates,
                             sub.download_videos, sub.download_images, sub.subreddit_save_method, sub.name_downloads_by,
                             sub.user_added)
         cls.update_extras(sub, new_sub)
@@ -50,10 +50,18 @@ class ObjectUpdater:
         new.do_not_edit = old.do_not_edit
         new.date_limit = old.date_limit
         new.custom_date_limit = old.custom_date_limit
+        cls.update_save_path(old, new)
         cls.get_previous_downloads(old, new)
         cls.get_saved_content(old, new)
         cls.get_saved_submissions(old, new)
         cls.get_number_of_downloads(old, new)
+
+    @staticmethod
+    def update_save_path(old, new):
+        if not old.save_path.endswith(old.name) and not old.save_path.endswith('%s/' % old.name):
+            new.save_path = old.save_path
+        else:
+            new.save_path = old.save_path.split(old.name, 1)[0]
 
     @staticmethod
     def get_previous_downloads(old, new):

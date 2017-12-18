@@ -115,7 +115,6 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.page_one_geom = None
         self.page_two_geom = None
 
-        self.custom_save_path_line_edit.setToolTip(self.custom_save_path_line_edit.text())
         self.restrict_date_checkbox.setToolTip('Right click to reset to %s date to last downloaded link date' %
                                                self.object_type_str)
 
@@ -137,6 +136,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.date_limit_edit.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.date_limit_edit.customContextMenuRequested.connect(self.date_right_click)
 
+        self.save_by_method_combo.currentIndexChanged.connect(self.set_save_path_name_label)
+
     @property
     def object_type_str(self):
         """Returns a string of the object type with the first letter capitalized to be used in displays."""
@@ -150,6 +151,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.post_limit_spinbox.setValue(self.current_temp_object.post_limit)
         self.name_downloads_combo.setCurrentText(self.current_temp_object.name_downloads_by)
         self.custom_save_path_line_edit.setText(self.current_temp_object.save_path)
+        self.set_save_path_name_label()
         self.download_videos_checkbox.setChecked(self.current_temp_object.download_videos)
         self.download_images_checkbox.setChecked(self.current_temp_object.download_images)
         self.avoid_duplicates_checkbox.setChecked(self.current_temp_object.avoid_duplicates)
@@ -161,8 +163,31 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.save_by_method_combo.setCurrentText(self.current_temp_object.subreddit_save_method)
         self.item_display_list_model.reddit_object = self.current_temp_object
         self.setup_item_display_list(self.current_item_display)
-        self.custom_save_path_line_edit.setToolTip(self.custom_save_path_line_edit.text())
         self.set_date_display()
+
+    def set_save_path_name_label(self):
+        self.save_path_name_label.setText(self.get_name_label_text())
+        self.setup_save_path_tooltips()
+
+    def get_name_label_text(self):
+        slash = '/' if not self.custom_save_path_line_edit.text().endswith('/') else ''
+        if self.object_type == 'USER':
+            return '%s%s/' % (slash, self.current_object.name)
+        else:
+            sub_method = self.save_by_method_combo.currentText()
+            if sub_method == 'Subreddit Name':
+                return '%s%s/' % (slash, self.current_object.name)
+            elif sub_method == 'User Name':
+                return '%s<User>/' % slash
+            elif sub_method == 'Subreddit Name/User Name':
+                return '%s%s/<User>/' % (slash, self.current_object.name)
+            else:
+                return '%s<User>/%s' % (slash, self.current_object.name)
+
+    def setup_save_path_tooltips(self):
+        tooltip = '%s%s' % (self.custom_save_path_line_edit.text(), self.save_path_name_label.text())
+        self.custom_save_path_line_edit.setToolTip(tooltip)
+        self.save_path_name_label.setToolTip(tooltip)
 
     def set_temp_object(self):
         if self.current_object.name in self.temp_object_dict:

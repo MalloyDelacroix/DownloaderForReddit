@@ -73,6 +73,10 @@ class RedditObject:
     def number_of_downloads(self):
         return len(self.previous_downloads)
 
+    @property
+    def save_directory(self):
+        return self.save_path
+
     def extract_content(self):
         if len(self.saved_submissions) > 0:
             self.assign_extractor(self.saved_submissions)
@@ -83,30 +87,31 @@ class RedditObject:
         for post in post_list:
             if "imgur" in post.url:
                 extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_path)
+                                           self.subreddit_save_method, self.name_downloads_by, self.save_directory)
                 self.extract(extractor)
 
             elif "gfycat" in post.url:
-                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit,  post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_path)
+                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory)
                 self.extract(extractor)
 
             elif "vidble" in post.url:
                 extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_path)
+                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory)
                 self.extract(extractor)
 
             elif "reddituploads" in post.url:
                 pass
                 extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_path)
+                                                   self.subreddit_save_method, self.name_downloads_by,
+                                                   self.save_directory)
                 self.extract(extractor)
 
             # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
             # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
             elif post.url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')):
                 extractor = DirectExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_path)
+                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory)
                 self.extract(extractor)
 
             else:
@@ -181,19 +186,19 @@ class RedditObject:
 
 class User(RedditObject):
 
-    def __init__(self, version,  name, save_path, post_limit, avoid_duplicates, download_videos,
+    def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos,
                  download_images, name_downloads_by, user_added):
         """
         A subclass of the RedditObject class.  This class is used exclusively to hold users and their information
         """
         super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
                          name_downloads_by, user_added)
-        self.save_path = "%s%s/" % (self.save_path, self.name)
         self.subreddit_save_method = None
         self.object_type = 'USER'
 
-    def update_save_path(self, save_path):
-        self.save_path = "%s%s%s" % (save_path, self.name, '/' if not save_path.endswith('/') else '')
+    @property
+    def save_directory(self):
+        return '%s%s%s' % (self.save_path, '/' if not self.save_path.endswith('/') else '', self.name)
 
 
 class Subreddit(RedditObject):
@@ -208,9 +213,6 @@ class Subreddit(RedditObject):
                          name_downloads_by, user_added)
         self.subreddit_save_method = subreddit_save_method
         self.object_type = 'SUBREDDIT'
-
-    def update_save_path(self, save_path):
-        self.save_path = save_path
 
     def update_subreddit_save_by_method(self, new_method):
         self.subreddit_save_method = new_method

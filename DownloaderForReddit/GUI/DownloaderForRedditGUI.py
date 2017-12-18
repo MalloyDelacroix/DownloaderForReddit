@@ -348,35 +348,35 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def subreddit_settings(self, page, from_menu):
         """Operates the same as the user_settings function"""
         current_list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
-        try:
-            if not from_menu:
-                position = self.get_selected_view_index(self.subreddit_list_view).row()
-            else:
-                position = 0
-            subreddit_settings_dialog = RedditObjectSettingsDialog(current_list_model,
-                                                                   current_list_model.reddit_object_list[position])
-            subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
-            subreddit_settings_dialog.show()
-            if page == 1:
-                subreddit_settings_dialog.change_to_downloads_view()
-            if not subreddit_settings_dialog.closed:
-                dialog = subreddit_settings_dialog.exec_()
-                if dialog == QtWidgets.QDialog.Accepted:
-                    self.set_not_saved()
-                    if not subreddit_settings_dialog.restore_defaults:
-                        current_list_model.reddit_object_list = subreddit_settings_dialog.object_list
-                    else:
-                        for sub in current_list_model.reddit_object_list:
-                            sub.custom_date_limit = None
-                            sub.avoid_duplicates = self.avoid_duplicates
-                            sub.download_videos = self.download_videos
-                            sub.download_images = self.download_images
-                            sub.do_not_edit = False
-                            sub.save_path = self.save_path
-                            sub.name_downloads_by = self.name_downloads_by
-                            sub.post_limit = self.post_limit
-        except AttributeError:
-            print('Attribute Error')
+        # try:
+        if not from_menu:
+            position = self.get_selected_view_index(self.subreddit_list_view).row()
+        else:
+            position = 0
+        subreddit_settings_dialog = RedditObjectSettingsDialog(current_list_model,
+                                                               current_list_model.reddit_object_list[position])
+        subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
+        subreddit_settings_dialog.show()
+        if page == 1:
+            subreddit_settings_dialog.change_to_downloads_view()
+        if not subreddit_settings_dialog.closed:
+            dialog = subreddit_settings_dialog.exec_()
+            if dialog == QtWidgets.QDialog.Accepted:
+                self.set_not_saved()
+                if not subreddit_settings_dialog.restore_defaults:
+                    current_list_model.reddit_object_list = subreddit_settings_dialog.object_list
+                else:
+                    for sub in current_list_model.reddit_object_list:
+                        sub.custom_date_limit = None
+                        sub.avoid_duplicates = self.avoid_duplicates
+                        sub.download_videos = self.download_videos
+                        sub.download_images = self.download_images
+                        sub.do_not_edit = False
+                        sub.save_path = self.save_path
+                        sub.name_downloads_by = self.name_downloads_by
+                        sub.post_limit = self.post_limit
+        # except AttributeError:
+        #     print('Attribute Error')
 
     def open_subreddit_download_folder(self):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
@@ -860,9 +860,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         settings.show()
         dialog = settings.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
+            print('Dialog accepted')
             self.update_user_settings()
             self.update_subreddit_settings()
-            self.save_state()
+            # self.save_state()
+            print('Settings manager save dir: %s' % self.settings_manager.save_directory)
+        else:
+            print('Dialog NOT accepted')
 
     def update_user_settings(self):
         """Iterates through the user list and calls update settings for each user"""
@@ -875,7 +879,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def update_subreddit_settings(self):
         """Iterates through the subreddit list and calls update settings for each sub"""
         self.set_not_saved()
-        for key, value in self.subreddit_view_chooser_dict.items():
+        for value in self.subreddit_view_chooser_dict.values():
             for sub in value.reddit_object_list:
                 if not sub.do_not_edit:
                     self.update_object_settings(sub)

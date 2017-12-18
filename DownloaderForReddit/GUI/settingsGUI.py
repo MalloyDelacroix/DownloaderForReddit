@@ -81,8 +81,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.save_cancel_button_box.rejected.connect(self.close)
         self.restore_defaults_button.clicked.connect(self.restore_defaults)
         self.imgur_client_button.clicked.connect(self.set_imgur_client)
-        self.backup_select_folder_button.clicked.connect(self.backup_save_file)
-        self.backup_import_file_button.clicked.connect(self.import_backup_file)
 
         self.restrict_to_score_checkbox.stateChanged.connect(self.restrict_score_shift)
         self.sub_sort_top_radio.toggled.connect(self.sub_sort_top_change)
@@ -200,10 +198,18 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
     def select_save_path(self):
         """Opens a file dialog to select the save path"""
-        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder', "%s%s" %
-                                                                     (os.path.expanduser('~'), '/Downloads/')))
+
+        folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder',
+                                                                     self.get_default_folder()))
         if folder_name != '':
             self.save_directory_line_edit.setText(folder_name + '/')
+
+    def get_default_folder(self):
+        text = self.save_directory_line_edit.text()
+        if text != '' and text != ' ':
+            return text.rsplit('/', 1)[0]
+        else:
+            return '%s/%s/' % (os.path.expanduser('~'), 'Downloads')
 
     def date_restriction_checkbox_change(self):
         """
@@ -246,7 +252,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.restrict_by_date = self.date_restriction_checkbox.isChecked()
         self.settings_manager.restrict_by_custom_date = self.restrict_by_custom_date_checkbox.isChecked()
         self.settings_manager.custom_date = int(time.mktime(time.strptime(self.date_limit_edit.text(),
-                                                                          '%m/%d/%Y %H:%M:%S')))
+                                                                          '%m/%d/%Y %I:%M %p')))
 
         self.settings_manager.subreddit_sort_method = self.get_sort_by_method()
         self.settings_manager.subreddit_sort_top_method = \
