@@ -1,10 +1,44 @@
+"""
+Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
+users or on the subreddits.
+
+
+Copyright (C) 2017, Kyle Hickey
+
+
+This file is part of the Downloader for Reddit.
+
+Downloader for Reddit is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Downloader for Reddit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
 from operator import itemgetter
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 
 
 class RedditObjectItemDisplayModel(QAbstractListModel):
 
+    """
+    A class that handles displaying data from a reddit objects previous downloads or saved content/submissions lists.
+    """
+
     def __init__(self, selected_object, display_list):
+        """
+        Initializes the display model for displaying user content.
+        :param selected_object: The currently selected reddit object who's lists are to be displayed.
+        :param display_list: The current list that is to be displayed.
+        """
         super().__init__()
 
         self.reddit_object = selected_object
@@ -13,6 +47,7 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
         self.display_list = display_list
 
     def rowCount(self, parent=None, *args, **kwargs):
+        """Returns the len of the content list which is used to determine the number of rows displayed in the list."""
         if self.display_list == 'previous_downloads':
             return len(self.reddit_object.previous_downloads)
         elif self.display_list == 'saved_submissions':
@@ -21,6 +56,7 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
             return len(self.content_display)
 
     def removeRows(self, index_list, rows=None, parent=QModelIndex(), *args, **kwargs):
+        """Removes the supplied indexes from the currently displayed list."""
         index_list.sort(reverse=True)
         if self.display_list == 'previous_downloads':
             self.remove_previous_downloaded(index_list, parent)
@@ -70,24 +106,3 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
         first = self.createIndex(0, 0)
         second = self.createIndex(0, self.rowCount())
         self.dataChanged.emit(first, second)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
