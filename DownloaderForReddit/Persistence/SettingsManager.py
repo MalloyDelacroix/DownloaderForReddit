@@ -84,6 +84,29 @@ class SettingsManager:
         self.save_undownloaded_content = self.settings.value("save_undownloaded_content", True, type=bool)
         # endregion
 
+        # region Display Settings
+        self.tooltip_display_dict = {
+            'name': self.settings.value('tooltip_name', True, type=bool),
+            'do_not_edit': self.settings.value('tooltip_do_not_edit', False, type=bool),
+            'last_download_date': self.settings.value('tooltip_last_download_date', True, type=bool),
+            'custom_date_limit': self.settings.value('tooltip_custom_date_limit', False, type=bool),
+            'post_limit': self.settings.value('tooltip_post_limit', False, type=bool),
+            'name_downloads_by': self.settings.value('tooltip_name_downloads_by', False, type=bool),
+            'subreddit_save_method': self.settings.value('tooltip_subreddit_save_method', False, type=bool),
+            'save_path': self.settings.value('tooltip_save_path', False, type=bool),
+            'download_videos': self.settings.value('tooltip_download_videos', False, type=bool),
+            'download_images': self.settings.value('tooltip_download_images', False, type=bool),
+            'avoid_duplicates': self.settings.value('tooltip_avoid_duplicates', False, type=bool),
+            'nsfw_filter': self.settings.value('tooltip_nsfw_filter', False, type=bool),
+            'saved_content_count': self.settings.value('tooltip_saved_content_count', False, type=bool),
+            'saved_submission_count': self.settings.value('tooltip_saved_submission_count', False, type=bool),
+            'total_download_count': self.settings.value('tooltip_total_download_count', True, type=bool),
+            'added_on_date': self.settings.value('tooltip_added_on_date', False, type=bool)
+        }
+
+        self.progress_bar_display = self.settings.value('progress_bar_display', 'LINK_EXTRACTION', type=str)
+        # endregion
+
         # region Main Window GUI
         self.main_window_geom = self.settings.value('main_window_geometry', None)
         self.horz_splitter_state = self.settings.value('horz_splitter_state', None)
@@ -167,6 +190,25 @@ class SettingsManager:
         self.settings.setValue("save_directory", self.save_directory)
         self.settings.setValue("max_download_thread_count", self.max_download_thread_count)
         self.settings.setValue("save_undownloaded_content", self.save_undownloaded_content)
+
+    def save_display_settings(self):
+        self.settings.setValue('tooltip_name', self.tooltip_display_dict['name'])
+        self.settings.setValue('tooltip_do_not_edit', self.tooltip_display_dict['do_not_edit'])
+        self.settings.setValue('tooltip_last_download_date', self.tooltip_display_dict['last_download_date'])
+        self.settings.setValue('tooltip_custom_date_limit', self.tooltip_display_dict['custom_date_limit'])
+        self.settings.setValue('tooltip_post_limit', self.tooltip_display_dict['post_limit'])
+        self.settings.setValue('tooltip_name_downloads_by', self.tooltip_display_dict['name_downloads_by'])
+        self.settings.setValue('tooltip_subreddit_save_method', self.tooltip_display_dict['subreddit_save_method'])
+        self.settings.setValue('tooltip_save_path', self.tooltip_display_dict['save_path'])
+        self.settings.setValue('tooltip_download_videos', self.tooltip_display_dict['download_videos'])
+        self.settings.setValue('tooltip_download_images', self.tooltip_display_dict['download_images'])
+        self.settings.setValue('tooltip_avoid_duplicates', self.tooltip_display_dict['avoid_duplicates'])
+        self.settings.setValue('tooltip_nsfw_filter', self.tooltip_display_dict['nsfw_filter'])
+        self.settings.setValue('tooltip_saved_content_count', self.tooltip_display_dict['saved_content_count'])
+        self.settings.setValue('tooltip_saved_submission_count', self.tooltip_display_dict['saved_submission_count'])
+        self.settings.setValue('tooltip_total_download_count', self.tooltip_display_dict['total_download_count'])
+        self.settings.setValue('tooltip_added_on_date', self.tooltip_display_dict['added_on_date'])
+        self.settings.setValue('progress_bar_display', self.progress_bar_display)
 
     def save_main_window(self):
         self.settings.setValue("main_window_geometry", self.main_window_geom)

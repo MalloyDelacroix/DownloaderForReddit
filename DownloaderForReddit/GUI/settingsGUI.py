@@ -69,6 +69,12 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
             'Include Only NSFW': 'ONLY'
         }
 
+        self.progress_bar_display_dict = {
+            'LINK_EXTRACTION': self.progress_bar_link_extraction_radio,
+            'DOWNLOAD_PROGRESS': self.progress_bar_download_progress_radio,
+            'OVERALL_PROGRESS': self.progress_bar_overall_progress_radio
+        }
+
         self.settings_manager = Core.Injector.get_settings_manager()
 
         geom = self.settings_manager.settings_dialog_geom
@@ -81,6 +87,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.save_cancel_button_box.rejected.connect(self.close)
         self.restore_defaults_button.clicked.connect(self.restore_defaults)
         self.imgur_client_button.clicked.connect(self.set_imgur_client)
+        self.change_widget_button.clicked.connect(self.change_widget_page)
 
         self.restrict_to_score_checkbox.stateChanged.connect(self.restrict_score_shift)
         self.sub_sort_top_radio.toggled.connect(self.sub_sort_top_change)
@@ -157,6 +164,26 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.save_directory_line_edit.setToolTip(self.save_directory_line_edit.text())
 
+        tooltip_dict = self.settings_manager.tooltip_display_dict
+        self.tooltip_name_checkbox.setChecked(tooltip_dict['name'])
+        self.tooltip_do_not_edit_checkbox.setChecked(tooltip_dict['do_not_edit'])
+        self.tooltip_last_download_date_checkbox.setChecked(tooltip_dict['last_download_date'])
+        self.tooltip_custom_date_limit_checkbox.setChecked(tooltip_dict['custom_date_limit'])
+        self.tooltip_post_limit_checkbox.setChecked(tooltip_dict['post_limit'])
+        self.tooltip_name_downloads_by_checkbox.setChecked(tooltip_dict['name_downloads_by'])
+        self.tooltip_subreddit_save_by_method_checkbox.setChecked(tooltip_dict['subreddit_save_method'])
+        self.tooltip_save_path_checkbox.setChecked(tooltip_dict['save_path'])
+        self.tooltip_download_videos_checkbox.setChecked(tooltip_dict['download_videos'])
+        self.tooltip_download_images_checkbox.setChecked(tooltip_dict['download_images'])
+        self.tooltip_avoid_duplicates_checkbox.setChecked(tooltip_dict['avoid_duplicates'])
+        self.tooltip_nsfw_filter_checkbox.setChecked(tooltip_dict['nsfw_filter'])
+        self.tooltip_saved_content_count_checkbox.setChecked(tooltip_dict['saved_content_count'])
+        self.tooltip_saved_submissions_count_checkbox.setChecked(tooltip_dict['saved_submission_count'])
+        self.tooltip_total_download_count_checkbox.setChecked(tooltip_dict['total_download_count'])
+        self.tooltip_added_on_date_checkbox.setChecked(tooltip_dict['added_on_date'])
+
+        self.progress_bar_display_dict[self.settings_manager.progress_bar_display].setChecked(True)
+
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
         imgur_dialog = ImgurClientDialog()
@@ -226,6 +253,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         if self.restrict_by_custom_date_checkbox.isChecked():
             self.date_restriction_checkbox.setChecked(False)
 
+    def change_widget_page(self):
+        self.stacked_widget.setCurrentIndex(not self.stacked_widget.currentIndex())
+
     def accept(self):
         if self._restore_defaults:
             ret = Message.restore_defaults_warning(self)
@@ -272,6 +302,43 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.save_directory = self.save_directory_line_edit.text()
         self.settings_manager.max_download_thread_count = self.thread_limit_spinbox.value()
         self.settings_manager.save_undownloaded_content = self.save_undownloaded_content_checkbox.isChecked()
+
+    def save_display_settings(self):
+        self.save_tooltip_display_settings()
+        self.settings_manager.progress_bar_display = self.get_progress_bar_display()
+
+    def save_tooltip_display_settings(self):
+        tooltip_dic = self.settings_manager.tooltip_display_dict
+        tooltip_dic['name'] = self.tooltip_name_checkbox.isChecked()
+        tooltip_dic['do_not_edit'] = self.tooltip_do_not_edit_checkbox.isChecked()
+        tooltip_dic['last_download_date'] = self.tooltip_last_download_date_checkbox.isChecked()
+        tooltip_dic['custom_date_limit'] = self.tooltip_custom_date_limit_checkbox.isChecked()
+        tooltip_dic['post_limit'] = self.tooltip_post_limit_checkbox.isChecked()
+        tooltip_dic['name_downloads_by'] = self.tooltip_name_downloads_by_checkbox.isChecked()
+        tooltip_dic['subreddit_save_method'] = self.tooltip_subreddit_save_by_method_checkbox.isChecked()
+        tooltip_dic['save_path'] = self.tooltip_save_path_checkbox.isChecked()
+        tooltip_dic['download_videos'] = self.tooltip_download_videos_checkbox.isChecked()
+        tooltip_dic['download_images'] = self.tooltip_download_images_checkbox.isChecked()
+        tooltip_dic['avoid_duplicates'] = self.tooltip_avoid_duplicates_checkbox.isChecked()
+        tooltip_dic['nsfw_filter'] = self.tooltip_nsfw_filter_checkbox.isChecked()
+        tooltip_dic['saved_content_count'] = self.tooltip_saved_content_count_checkbox.isChecked()
+        tooltip_dic['saved_submission_count'] = self.tooltip_saved_submissions_count_checkbox.isChecked()
+        tooltip_dic['total_download_count'] = self.tooltip_total_download_count_checkbox.isChecked()
+        tooltip_dic['added_on_date'] = self.tooltip_added_on_date_checkbox.isChecked()
+        self.settings_manager.save_display_settings()
+
+    def get_progress_bar_display(self):
+        if self.progress_bar_link_extraction_radio.isChecked():
+            return 'LINK_EXTRACTION'
+        elif self.progress_bar_download_progress_radio.isChecked():
+            return 'DOWNLOAD_PROGRESS'
+        else:
+            return 'OVERALL_PROGRESS'
+
+    def test(self):
+        for key, value in self.progress_bar_display_dict.items():
+            if value.isChecked():
+                return key
 
     def get_sort_by_method(self):
         for key, value in self.sub_sort_radio_dict.items():
