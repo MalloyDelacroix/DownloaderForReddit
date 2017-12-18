@@ -62,11 +62,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.display_list = [x.name for x in self.object_list]
         self.current_object = init_item
         self.restore_defaults = False
-        self.saved = False
         self.closed = False
         self.object_type = init_item.object_type
 
-        self.original_object_dict = {}
+        self.current_temp_object = copy.deepcopy(self.current_object)
+        self.temp_object_dict = {}
 
         self.settings_manager = Injector.get_settings_manager()
         geom = self.settings_manager.reddit_object_settings_dialog_geom
@@ -86,7 +86,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.sub_sort_combo.addItems(
                 ('New', 'Hot', 'Rising', 'Controversial', 'Top - Hour', 'Top - Day', 'Top - Week',
                  'Top - Month', 'Top - Year', 'Top - All'))
-            self.sub_sort_combo.setCurrentIndex(self.settings_manager.subreddit_sort_top_method)
+            self.sub_sort_combo.setCurrentText(self.settings_manager.subreddit_sort_top_method)
 
         self.content_icons_full_width = self.settings_manager.reddit_object_content_icons_full_width
         self.content_icon_size = self.settings_manager.reddit_object_content_icon_size
@@ -144,29 +144,36 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def setup(self):
         """Sets up each part of the settings dialog for the current reddit object."""
-        self.do_not_edit_checkbox.setChecked(self.current_object.do_not_edit)
-        self.restrict_date_checkbox.setChecked(self.current_object.custom_date_limit != 1)
-        self.post_limit_spinbox.setValue(self.current_object.post_limit)
-        self.name_downloads_combo.setCurrentText(self.current_object.name_downloads_by)
-        self.custom_save_path_line_edit.setText(self.current_object.save_path)
-        self.download_videos_checkbox.setChecked(self.current_object.download_videos)
-        self.download_images_checkbox.setChecked(self.current_object.download_images)
-        self.avoid_duplicates_checkbox.setChecked(self.current_object.avoid_duplicates)
-        self.total_downloads_label.setText(str(self.current_object.number_of_downloads))
-        added_on = datetime.date.strftime(datetime.datetime.fromtimestamp(self.current_object.user_added),
+        self.set_temp_object()
+        self.do_not_edit_checkbox.setChecked(self.current_temp_object.do_not_edit)
+        self.restrict_date_checkbox.setChecked(self.current_temp_object.custom_date_limit != 1)
+        self.post_limit_spinbox.setValue(self.current_temp_object.post_limit)
+        self.name_downloads_combo.setCurrentText(self.current_temp_object.name_downloads_by)
+        self.custom_save_path_line_edit.setText(self.current_temp_object.save_path)
+        self.download_videos_checkbox.setChecked(self.current_temp_object.download_videos)
+        self.download_images_checkbox.setChecked(self.current_temp_object.download_images)
+        self.avoid_duplicates_checkbox.setChecked(self.current_temp_object.avoid_duplicates)
+        self.total_downloads_label.setText(str(self.current_temp_object.number_of_downloads))
+        added_on = datetime.date.strftime(datetime.datetime.fromtimestamp(self.current_temp_object.user_added),
                                           '%m-%d-%Y at %I:%M %p')
         self.item_added_label.setText('%s Added On: %s' % (self.object_type_str, added_on))
         if self.object_type == 'SUBREDDIT':
-            self.save_by_method_combo.setCurrentText(self.current_object.subreddit_save_method)
-        self.item_display_list_model.reddit_object = self.current_object
+            self.save_by_method_combo.setCurrentText(self.current_temp_object.subreddit_save_method)
+        self.item_display_list_model.reddit_object = self.current_temp_object
         self.setup_item_display_list(self.current_item_display)
         self.custom_save_path_line_edit.setToolTip(self.custom_save_path_line_edit.text())
         self.set_date_display()
 
+    def set_temp_object(self):
+        if self.current_object.name in self.temp_object_dict:
+            self.current_temp_object = self.temp_object_dict[self.current_object.name]
+        else:
+            self.current_temp_object = copy.deepcopy(self.current_object)
+
     def set_date_display(self):
         """Sets the date display box.  This is a separate method so it can be called from other class methods."""
-        date_limit = self.current_object.custom_date_limit if self.current_object.custom_date_limit is not None else \
-            self.current_object.date_limit
+        date_limit = self.current_temp_object.custom_date_limit if self.current_temp_object.custom_date_limit is not \
+                                                                   None else self.current_temp_object.date_limit
         if date_limit < 86400:
             date_limit = 86400
         self.date_limit_edit.setDateTime(datetime.datetime.fromtimestamp(date_limit))
@@ -202,37 +209,31 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         new reddit object to be displayed and changed while preserving the changes made to the current object but also
         making these changes permanent until the save button is clicked.
         """
-        self.save_original_object()
-        self.current_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
-        if self.current_object.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
-                                                                           '%m/%d/%Y %I:%M %p'))):
-            self.current_object.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(),
-                                                                                  '%m/%d/%Y %I:%M %p')))
+        self.current_temp_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
+        if self.current_temp_object.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                                '%m/%d/%Y %I:%M %p'))):
+            self.current_temp_object.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(),
+                                                                                       '%m/%d/%Y %I:%M %p')))
         if not self.restrict_date_checkbox.isChecked():
-            self.current_object.custom_date_limit = 1
-        self.current_object.post_limit = self.post_limit_spinbox.value()
-        self.current_object.name_downloads_by = self.name_downloads_combo.currentText()
-        self.current_object.save_path = self.custom_save_path_line_edit.text()
-        if not self.current_object.save_path.endswith('/'):
-            self.current_object.save_path += '/'
-        self.current_object.download_videos = self.download_videos_checkbox.isChecked()
-        self.current_object.download_images = self.download_images_checkbox.isChecked()
-        self.current_object.avoid_duplicates = self.avoid_duplicates_checkbox.isChecked()
+            self.current_temp_object.custom_date_limit = 1
+        self.current_temp_object.post_limit = self.post_limit_spinbox.value()
+        self.current_temp_object.name_downloads_by = self.name_downloads_combo.currentText()
+        self.current_temp_object.save_path = self.custom_save_path_line_edit.text()
+        if not self.current_temp_object.save_path.endswith('/'):
+            self.current_temp_object.save_path += '/'
+        self.current_temp_object.download_videos = self.download_videos_checkbox.isChecked()
+        self.current_temp_object.download_images = self.download_images_checkbox.isChecked()
+        self.current_temp_object.avoid_duplicates = self.avoid_duplicates_checkbox.isChecked()
         if self.object_type == 'SUBREDDIT':
-            self.current_object.subreddit_save_method = self.save_by_method_combo.currentText()
-
-    def save_original_object(self):
-        try:
-            x = self.original_object_dict[self.current_object.name]
-        except KeyError:
-            self.original_object_dict[self.current_object.name] = copy.deepcopy(self.current_object)
+            self.current_temp_object.subreddit_save_method = self.save_by_method_combo.currentText()
+        self.temp_object_dict[self.current_temp_object.name] = self.current_temp_object
 
     def download_single(self):
         """Downloads only the current reddit object."""
         self.download_object_button.setText('Downloading...')
         self.download_object_button.setDisabled(True)
         self.save_temp_object()
-        self.single_download.emit(self.current_object)
+        self.single_download.emit(self.current_temp_object)
 
     def select_save_path_dialog(self):
         """Opens a dialog to choose a directory path to be set as the objects save path."""
@@ -475,11 +476,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.content_list.iconSize(QtCore.QSize(size, size))
 
     def reset_date(self):
-        self.current_object.custom_date_limit = None
+        self.current_temp_object.custom_date_limit = None
         self.set_date_display()
 
     def set_date_to_now(self):
-        self.current_object.custom_date_limit = datetime.datetime.now().timestamp()
+        self.current_temp_object.custom_date_limit = datetime.datetime.now().timestamp()
         self.set_date_display()
 
     def resizeEvent(self, event):
@@ -487,13 +488,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.content_list.setIconSize(QtCore.QSize(self.content_list.width(), self.content_list.width()))
 
     def accept(self):
-        self.saved = True
         self.save_temp_object()
+        self.sub_temp_objects()
         super().accept()
 
     def closeEvent(self, event):
-        if not self.saved:
-            self.replace_original_items()
         self.closed = True
         self.settings_manager.reddit_object_settings_dialog_geom = self.saveGeometry()
         self.settings_manager.reddit_object_settings_dialog_splitter_state = self.splitter.saveState()
@@ -502,7 +501,15 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.settings_manager.current_reddit_object_settings_item_display_list = self.current_item_display
         self.settings_manager.save_reddit_object_settings_dialog()
 
-    def replace_original_items(self):
+    def sub_temp_objects(self):
+        """
+        Iterates through the object list and checks each name for existence in the temp_object_dict.  If a match is
+        found, the object is replaced with the temporary object which will hold the changes that have been made through
+        this dialog.
+        """
         for x in range(len(self.object_list)):
-            if self.object_list[x] in self.original_object_dict:
-                self.object_list[x] = self.original_object_dict[self.object_list[x]]
+            name = self.object_list[x].name
+            try:
+                self.object_list[x] = self.temp_object_dict[name]
+            except KeyError:
+                pass
