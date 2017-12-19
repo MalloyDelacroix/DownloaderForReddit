@@ -88,6 +88,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                  'Top - Month', 'Top - Year', 'Top - All'))
             self.sub_sort_combo.setCurrentText(self.settings_manager.subreddit_sort_top_method)
 
+        self.nsfw_filter_combo.addItems(self.settings_manager.nsfw_filter_dict.keys())
+
         self.content_icons_full_width = self.settings_manager.reddit_object_content_icons_full_width
         self.content_icon_size = self.settings_manager.reddit_object_content_icon_size
 
@@ -155,6 +157,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.download_videos_checkbox.setChecked(self.current_temp_object.download_videos)
         self.download_images_checkbox.setChecked(self.current_temp_object.download_images)
         self.avoid_duplicates_checkbox.setChecked(self.current_temp_object.avoid_duplicates)
+        self.set_nsfw_filter_combo()
         self.total_downloads_label.setText(str(self.current_temp_object.number_of_downloads))
         added_on = datetime.date.strftime(datetime.datetime.fromtimestamp(self.current_temp_object.user_added),
                                           '%m-%d-%Y at %I:%M %p')
@@ -188,6 +191,12 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         tooltip = '%s%s' % (self.custom_save_path_line_edit.text(), self.save_path_name_label.text())
         self.custom_save_path_line_edit.setToolTip(tooltip)
         self.save_path_name_label.setToolTip(tooltip)
+
+    def set_nsfw_filter_combo(self):
+        for key, value in self.settings_manager.nsfw_filter_dict.items():
+            if self.current_temp_object.nsfw_filter == value:
+                self.nsfw_filter_combo.setCurrentText(key)
+                break
 
     def set_temp_object(self):
         if self.current_object.name in self.temp_object_dict:
@@ -249,6 +258,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.current_temp_object.download_videos = self.download_videos_checkbox.isChecked()
         self.current_temp_object.download_images = self.download_images_checkbox.isChecked()
         self.current_temp_object.avoid_duplicates = self.avoid_duplicates_checkbox.isChecked()
+        self.current_temp_object.nsfw_filter = \
+            self.settings_manager.nsfw_filter_dict[self.nsfw_filter_combo.currentText()]
         if self.object_type == 'SUBREDDIT':
             self.current_temp_object.subreddit_save_method = self.save_by_method_combo.currentText()
         self.temp_object_dict[self.current_temp_object.name] = self.current_temp_object
