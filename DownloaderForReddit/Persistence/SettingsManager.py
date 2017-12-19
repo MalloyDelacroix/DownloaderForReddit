@@ -109,8 +109,6 @@ class SettingsManager:
             'total_download_count': self.settings.value('tooltip_total_download_count', True, type=bool),
             'added_on_date': self.settings.value('tooltip_added_on_date', False, type=bool)
         }
-
-        self.progress_bar_display = self.settings.value('progress_bar_display', 'LINK_EXTRACTION', type=str)
         # endregion
 
         # region Main Window GUI
@@ -214,7 +212,6 @@ class SettingsManager:
         self.settings.setValue('tooltip_saved_submission_count', self.tooltip_display_dict['saved_submission_count'])
         self.settings.setValue('tooltip_total_download_count', self.tooltip_display_dict['total_download_count'])
         self.settings.setValue('tooltip_added_on_date', self.tooltip_display_dict['added_on_date'])
-        self.settings.setValue('progress_bar_display', self.progress_bar_display)
 
     def save_main_window(self):
         self.settings.setValue("main_window_geometry", self.main_window_geom)

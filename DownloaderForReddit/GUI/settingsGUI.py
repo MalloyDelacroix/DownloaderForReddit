@@ -63,12 +63,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.score_operator_dict = {'Greater Than': 'GREATER', 'Less Than': 'LESS'}
 
-        self.progress_bar_display_dict = {
-            'LINK_EXTRACTION': self.progress_bar_link_extraction_radio,
-            'DOWNLOAD_PROGRESS': self.progress_bar_download_progress_radio,
-            'OVERALL_PROGRESS': self.progress_bar_overall_progress_radio
-        }
-
         self.settings_manager = Core.Injector.get_settings_manager()
 
         geom = self.settings_manager.settings_dialog_geom
@@ -177,8 +171,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.tooltip_saved_submissions_count_checkbox.setChecked(tooltip_dict['saved_submission_count'])
         self.tooltip_total_download_count_checkbox.setChecked(tooltip_dict['total_download_count'])
         self.tooltip_added_on_date_checkbox.setChecked(tooltip_dict['added_on_date'])
-
-        self.progress_bar_display_dict[self.settings_manager.progress_bar_display].setChecked(True)
 
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
@@ -294,7 +286,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
     def save_display_settings(self):
         self.save_tooltip_display_settings()
-        self.settings_manager.progress_bar_display = self.get_progress_bar_display()
 
     def save_tooltip_display_settings(self):
         tooltip_dic = self.settings_manager.tooltip_display_dict
@@ -315,19 +306,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         tooltip_dic['total_download_count'] = self.tooltip_total_download_count_checkbox.isChecked()
         tooltip_dic['added_on_date'] = self.tooltip_added_on_date_checkbox.isChecked()
         self.settings_manager.save_display_settings()
-
-    def get_progress_bar_display(self):
-        if self.progress_bar_link_extraction_radio.isChecked():
-            return 'LINK_EXTRACTION'
-        elif self.progress_bar_download_progress_radio.isChecked():
-            return 'DOWNLOAD_PROGRESS'
-        else:
-            return 'OVERALL_PROGRESS'
-
-    def test(self):
-        for key, value in self.progress_bar_display_dict.items():
-            if value.isChecked():
-                return key
 
     def get_sort_by_method(self):
         for key, value in self.sub_sort_radio_dict.items():

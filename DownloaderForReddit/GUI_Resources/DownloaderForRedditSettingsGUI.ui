@@ -487,75 +487,13 @@
         </layout>
        </item>
       </layout>
-      <zorder>layoutWidget</zorder>
-      <zorder>layoutWidget_2</zorder>
-      <zorder>layoutWidget_3</zorder>
       <zorder>subreddit_sort_group</zorder>
-      <zorder>layoutWidget_4</zorder>
       <zorder>line</zorder>
-      <zorder>layoutWidget_5</zorder>
       <zorder>groupBox_2</zorder>
-      <zorder>layoutWidget_6</zorder>
-      <zorder>save_undownloaded_content_checkbox</zorder>
-      <zorder>label_4</zorder>
-      <zorder>total_files_downloaded_label</zorder>
-      <zorder>thread_limit_spinbox</zorder>
       <zorder>line_2</zorder>
-      <zorder>total_files_downloaded_label</zorder>
      </widget>
      <widget class="QWidget" name="page_2">
       <layout class="QGridLayout" name="gridLayout_10">
-       <item row="0" column="1">
-        <widget class="QGroupBox" name="progress_bar_groupbox">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose which progress markers the main window progress bar represents when running.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="title">
-          <string>Progress Bar Options</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QRadioButton" name="progress_bar_link_extraction_radio">
-            <property name="text">
-             <string>Link Extraction</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="progress_bar_download_progress_radio">
-            <property name="text">
-             <string>Content Download</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="progress_bar_overall_progress_radio">
-            <property name="text">
-             <string>Overall Progress</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="0" column="0" rowspan="2">
         <widget class="QGroupBox" name="tooltip_group_box">
          <property name="font">
