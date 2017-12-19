@@ -221,17 +221,19 @@ class DownloadRunner(QObject):
         :return: A list generator of submissions from the supplied praw_object.
         """
         sort = self.settings_manager.subreddit_sort_method
-        if self.user_run is not None or sort == 'NEW':
+        if self.user_run:
             posts = praw_object.submissions.new(limit=post_limit)
+        elif sort == 'NEW':
+            posts = praw_object.new(limit=post_limit)
         elif sort == 'HOT':
-            posts = praw_object.submissions.hot(limit=post_limit)
+            posts = praw_object.hot(limit=post_limit)
         elif sort == 'RISING':
-            posts = praw_object.submissions.rising(limit=post_limit)
+            posts = praw_object.rising(limit=post_limit)
         elif sort == 'CONTROVERSIAL':
-            posts = praw_object.submissions.controversial(limit=post_limit)
+            posts = praw_object.controversial(limit=post_limit)
         else:
             top_sort = self.settings_manager.subreddit_sort_top_method
-            posts = praw_object.submissions.top(top_sort.lower(), limit=post_limit)
+            posts = praw_object.top(top_sort.lower(), limit=post_limit)
         return posts
 
     def get_user_submissions_from_subreddits(self, redditor, user):
