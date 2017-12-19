@@ -203,19 +203,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
             self.post_score_combo.setDisabled(True)
             self.post_score_limit_spin_box.setDisabled(True)
 
-    def subreddit_sort_change(self):
-        """Sets the sub_sort_method to the corrent int"""
-        if self.sub_sort_new_radio.isChecked():
-            self.subreddit_sort_method = 0
-        elif self.sub_sort_top_radio.isChecked():
-            self.subreddit_sort_method = 1
-        elif self.sub_sort_hot_radio.isChecked():
-            self.subreddit_sort_method = 2
-        elif self.sub_sort_rising_radio.isChecked():
-            self.subreddit_sort_method = 3
-        elif self.sub_sort_controversial_radio.isChecked():
-            self.subreddit_sort_method = 4
-
     def sub_sort_top_change(self):
         """If the sub sort method is not "top" this disables the top sort options"""
         if self.sub_sort_top_radio.isChecked():
@@ -232,6 +219,11 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
             self.save_directory_line_edit.setText(folder_name + '/')
 
     def get_default_folder(self):
+        """
+        Gets the default folder to be used in the folder select dialog based on the folder currently displayed in the
+        folder path line edit. If there is not a valid folder path in the line edit, the path to the users Downloads
+        folder is returned.
+        """
         text = self.save_directory_line_edit.text()
         if text != '' and text != ' ':
             return text.rsplit('/', 1)[0]
