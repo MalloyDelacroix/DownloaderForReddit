@@ -879,6 +879,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             for sub in value.reddit_object_list:
                 if not sub.do_not_edit:
                     self.update_object_settings(sub)
+                    sub.subreddit_save_method = self.settings_manager.save_subreddits_by
 
     def update_object_settings(self, reddit_object):
         """Updates object specific settings for the supplied object"""
