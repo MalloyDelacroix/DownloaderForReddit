@@ -69,7 +69,6 @@ class ObjectUpdater:
         cls.get_saved_content(old, new)
         cls.get_saved_submissions(old, new)
         cls.get_number_of_downloads(old, new)
-        cls.get_nsfw_filter(old, new)
 
     @staticmethod
     def update_save_path(old, new):
