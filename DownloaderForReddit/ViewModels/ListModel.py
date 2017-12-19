@@ -93,19 +93,6 @@ class ListModel(QAbstractListModel):
         elif role == Qt.EditRole:
             return self.reddit_object_list[index.row()].name
 
-    def make_tool_tip(self, row):
-        item = self.reddit_object_list[row]
-        added_on = datetime.date.strftime(datetime.datetime.fromtimestamp(item.user_added),
-                                          '%m-%d-%Y at %I:%M %p')
-        if item.date_limit < 1136073600:
-            last_download_date = 'No Date Available'
-        else:
-            last_download_date = datetime.date.strftime(datetime.datetime.fromtimestamp(item.date_limit),
-                                                        '%m-%d-%Y at %I:%M %p')
-        text = 'Total Downloads: %s\nLast Content Date: %s\nAdded On: %s' % (item.number_of_downloads,
-                                                                             last_download_date, added_on)
-        return text
-
     def set_tooltips(self, reddit_object):
         """
         Builds the tooltip text based on what options are selected in the settings manager and returns the text.
@@ -128,7 +115,7 @@ class ListModel(QAbstractListModel):
             'download_videos': 'Download Videos: %s' % reddit_object.download_videos,
             'download_images': 'Download Images: %s' % reddit_object.download_images,
             'avoid_duplicates': 'Avoid Duplicates: %s' % reddit_object.avoid_duplicates,
-            'nsfw_filter': 'NSFW Filter: %s' % reddit_object.name,  # TODO: revise this when attribute added
+            'nsfw_filter': 'NSFW Filter: %s' % self.nsfw_filter_display(reddit_object.nsfw_filter),
             'saved_content_count': 'Saved Content Count: %s' % len(reddit_object.saved_content),
             'saved_submission_count': 'Saved Submission Count: %s' % len(reddit_object.saved_submissions),
             'total_download_count': 'Total Downloads: %s' % reddit_object.number_of_downloads,
@@ -139,6 +126,11 @@ class ListModel(QAbstractListModel):
             if self.settings_manager.tooltip_display_dict[key]:
                 tooltip += '%s\n' % value
         return tooltip.strip()
+
+    def nsfw_filter_display(self, filter_method):
+        for key, value in self.settings_manager.nsfw_filter_dict.items():
+            if value == filter_method:
+                return key
 
     @staticmethod
     def format_date(epoch):
