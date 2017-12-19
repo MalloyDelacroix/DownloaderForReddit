@@ -55,9 +55,15 @@ class ObjectUpdater:
         cls.get_saved_content(old, new)
         cls.get_saved_submissions(old, new)
         cls.get_number_of_downloads(old, new)
+        cls.get_nsfw_filter(old, new)
 
     @staticmethod
     def update_save_path(old, new):
+        """
+        Updates the save path for the new reddit object if needed.
+        :param old: The old reddit object.
+        :param new: The new reddit object.
+        """
         if not old.save_path.endswith(old.name) and not old.save_path.endswith('%s/' % old.name):
             new.save_path = old.save_path
         else:
@@ -121,6 +127,19 @@ class ObjectUpdater:
                 new.number_of_downloads = len(old.previous_downloads)
             except:
                 pass
+
+    @staticmethod
+    def get_nsfw_filter(old, new):
+        """
+        Transfers the nsfw filter from the previous reddit object to the new reddit object if the old object has the
+        nsfw_filter attribute, and gives the new object the global nsfw_filter method if not.
+        :param old: The old reddit object.
+        :param new: The new reddit object.
+        """
+        try:
+            new.nsfw_filter = old.nsfw_filter
+        except AttributeError:
+            new.nsfw_filter = Injector.get_settings_manager().nsfw_filter
 
     @staticmethod
     def check_settings_manager(settings_manager):
