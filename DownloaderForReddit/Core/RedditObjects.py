@@ -61,7 +61,7 @@ class RedditObject:
         self.new_submissions = None  # Will be erased at end of download
         self.saved_submissions = []
         self.previous_downloads = []
-        self.date_limit = 1
+        self.date_limit = 86400
         self.custom_date_limit = None
         self.content = []  # Will be erased at end of download (QRunnable objects cannot be pickled)
         self.failed_extracts = []  # This will be erased at the end of download
