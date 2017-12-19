@@ -39,7 +39,8 @@ class PostFilter:
         :param reddit_object: The reddit object to which the post belongs.
         :return: True or False depending on if the post passed the filter criteria.
         """
-        return self.score_filter(post) and self.nsfw_filter(post) and self.date_filter(post, reddit_object)
+        return self.score_filter(post) and self.nsfw_filter(post, reddit_object) and \
+               self.date_filter(post, reddit_object)
 
     def score_filter(self, post):
         """
@@ -55,15 +56,16 @@ class PostFilter:
         else:
             return True
 
-    def nsfw_filter(self, post):
+    def nsfw_filter(self, post, reddit_object):
         """
-        Tests the post to see if it meets the nsfw criteria set by the global settings.
+        Tests the post to see if it meets the nsfw criteria set by the supplied reddit object.
         :param post: A praw submission item to be tested.
-        :return: True if the meets the global nsfw settings criteria, False if it does not.
+        :param reddit_object: The reddit object who's nsfw filter is to be tested against.
+        :return: True if the meets the reddit objects nsfw settings criteria, False if it does not.
         """
-        if self.settings_manager.nsfw_filter == 'EXCLUDE':
+        if reddit_object.nsfw_filter == 'EXCLUDE':
             return not post.over_18
-        elif self.settings_manager.nsfw_filter == 'ONLY':
+        elif reddit_object.nsfw_filter == 'ONLY':
             return post.over_18
         else:
             return True
