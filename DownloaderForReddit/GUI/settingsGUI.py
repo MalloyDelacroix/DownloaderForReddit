@@ -126,10 +126,11 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.link_filter_image_checkbox.setChecked(self.settings_manager.download_images)
         self.link_filter_avoid_duplicates_checkbox.setChecked(self.settings_manager.avoid_duplicates)
 
-        self.nsfw_filter_combo.addItems(self.nsfw_filter_dict.keys())
-        for key, value in self.nsfw_filter_dict.items():
+        self.nsfw_filter_combo.addItems(self.settings_manager.nsfw_filter_dict.keys())
+        for key, value in self.settings_manager.nsfw_filter_dict.items():
             if value == self.settings_manager.nsfw_filter:
                 self.nsfw_filter_combo.setCurrentText(key)
+                break
 
         self.save_directory_line_edit.setText(self.settings_manager.save_directory)
 
@@ -137,6 +138,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         for key, value in self.sub_sort_top_str_dict.items():
             if value == self.settings_manager.subreddit_sort_top_method:
                 self.sub_sort_top_combo.setCurrentText(key)
+                break
         if self.sub_sort_top_radio.isChecked():
             self.sub_sort_top_combo.setDisabled(False)
         else:
@@ -281,7 +283,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.download_images = self.link_filter_image_checkbox.isChecked()
         self.settings_manager.avoid_duplicates = self.link_filter_avoid_duplicates_checkbox.isChecked()
 
-        self.settings_manager.nsfw_filter = self.nsfw_filter_dict[self.nsfw_filter_combo.currentText()]
+        self.settings_manager.nsfw_filter = self.settings_manager.nsfw_filter_dict[self.nsfw_filter_combo.currentText()]
 
         self.settings_manager.save_subreddits_by = self.subreddit_save_by_combo.currentText()
         self.settings_manager.name_downloads_by = self.name_downloads_by_combo.currentText()
