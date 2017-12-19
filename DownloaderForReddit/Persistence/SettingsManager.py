@@ -40,6 +40,12 @@ class SettingsManager:
         if self.check_first_run():
             ObjectUpdater.check_settings_manager(self)
 
+        self.nsfw_filter_dict = {
+            'Include': 'INCLUDE',
+            'Do Not Include': 'EXCLUDE',
+            'Include Only NSFW': 'ONLY'
+        }
+
     def check_first_run(self):
         cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
         return cached_version != __version__

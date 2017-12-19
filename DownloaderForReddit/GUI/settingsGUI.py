@@ -63,12 +63,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.score_operator_dict = {'Greater Than': 'GREATER', 'Less Than': 'LESS'}
 
-        self.nsfw_filter_dict = {
-            'Include': 'INCLUDE',
-            'Do Not Include': 'EXCLUDE',
-            'Include Only NSFW': 'ONLY'
-        }
-
         self.progress_bar_display_dict = {
             'LINK_EXTRACTION': self.progress_bar_link_extraction_radio,
             'DOWNLOAD_PROGRESS': self.progress_bar_download_progress_radio,
