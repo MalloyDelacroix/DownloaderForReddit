@@ -672,8 +672,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         new_user = User(self.version, name, self.settings_manager.save_directory, self.settings_manager.post_limit,
                         self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
-                        self.settings_manager.download_images, self.settings_manager.name_downloads_by,
-                        datetime.now().timestamp())
+                        self.settings_manager.download_images, self.settings_manager.nsfw_filter,
+                        self.settings_manager.name_downloads_by, datetime.now().timestamp())
         return new_user
 
     def remove_user(self):
@@ -736,8 +736,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         new_sub = Subreddit(self.version, name, self.settings_manager.save_directory, self.settings_manager.post_limit,
                             self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
-                            self.settings_manager.download_images, self.settings_manager.save_subreddits_by,
-                            self.settings_manager.name_downloads_by, datetime.now().timestamp())
+                            self.settings_manager.download_images, self.settings_manager.nsfw_filter,
+                            self.settings_manager.save_subreddits_by, self.settings_manager.name_downloads_by,
+                            datetime.now().timestamp())
         return new_sub
 
     def remove_subreddit(self):
