@@ -19,7 +19,8 @@ class ObjectUpdater:
         :type user: User
         """
         new_user = User(__version__, user.name, None, user.post_limit, user.avoid_duplicates,
-                        user.download_videos, user.download_images, user.name_downloads_by, user.user_added)
+                        user.download_videos, user.download_images, cls.get_nsfw_filter(user), user.name_downloads_by,
+                        user.user_added)
         cls.update_extras(user, new_user)
         new_user.object_type = 'USER'
         return new_user
@@ -33,11 +34,24 @@ class ObjectUpdater:
         :type sub: Subreddit
         """
         new_sub = Subreddit(__version__, sub.name, None, sub.post_limit, sub.avoid_duplicates,
-                            sub.download_videos, sub.download_images, sub.subreddit_save_method, sub.name_downloads_by,
-                            sub.user_added)
+                            sub.download_videos, sub.download_images, cls.get_nsfw_filter(sub),
+                            sub.subreddit_save_method, sub.name_downloads_by, sub.user_added)
         cls.update_extras(sub, new_sub)
         new_sub.object_type = 'SUBREDDIT'
         return new_sub
+
+    @staticmethod
+    def get_nsfw_filter(reddit_object):
+        """
+        Returns the supplied reddit objects nsfw_filter method if the attribute exists and returns the global 
+        nsfw_filter if it does not.
+        :param reddit_object: The old reddit object.
+        :return: The nsfw_filter appropriate for the supplied reddit object
+        """
+        try:
+            return reddit_object.nsfw_filter
+        except AttributeError:
+            return Injector.get_settings_manager().nsfw_filter
 
     @classmethod
     def update_extras(cls, old, new):
@@ -127,19 +141,6 @@ class ObjectUpdater:
                 new.number_of_downloads = len(old.previous_downloads)
             except:
                 pass
-
-    @staticmethod
-    def get_nsfw_filter(old, new):
-        """
-        Transfers the nsfw filter from the previous reddit object to the new reddit object if the old object has the
-        nsfw_filter attribute, and gives the new object the global nsfw_filter method if not.
-        :param old: The old reddit object.
-        :param new: The new reddit object.
-        """
-        try:
-            new.nsfw_filter = old.nsfw_filter
-        except AttributeError:
-            new.nsfw_filter = Injector.get_settings_manager().nsfw_filter
 
     @staticmethod
     def check_settings_manager(settings_manager):
