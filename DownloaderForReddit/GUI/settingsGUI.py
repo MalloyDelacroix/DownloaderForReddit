@@ -256,6 +256,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         if ret:
             self.save_settings()
+            self.save_display_settings()
             super().accept()
 
     def closeEvent(self, QCloseEvent):
