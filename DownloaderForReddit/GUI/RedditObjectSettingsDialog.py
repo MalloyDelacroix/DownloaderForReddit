@@ -333,12 +333,12 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def get_download_folder(self):
         """Returns a list of file objects to be displayed in the content view."""
         if self.object_type == 'USER':
-            save_path = self.current_object.save_path
+            save_path = self.current_object.save_directory
             return sorted([os.path.join(save_path, x) for x in os.listdir(save_path) if
                            os.path.isfile(os.path.join(save_path, x)) and
                            x.lower().endswith(('.jpg', '.jpeg', '.png'))], key=ALPHANUM_KEY)
         else:
-            file_list = self.extract_files_from_sub_folder(os.path.join(self.current_object.save_path,
+            file_list = self.extract_files_from_sub_folder(os.path.join(self.current_object.save_directory,
                                                                         self.current_object.name.lower()))
             return sorted(file_list, key=ALPHANUM_KEY)
 
@@ -368,7 +368,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 self.content_list.addItem(item)
                 QtWidgets.QApplication.processEvents()
             except:
-                pass
+                print('Could not display content')
 
     def object_list_right_click(self):
         """Displays a context menu for the object list."""
@@ -470,7 +470,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def open_item_download_folder(self, position):
         """Opens the selected items download folder."""
         selected_object = self.object_list[position]
-        open_item = selected_object.save_path
+        open_item = selected_object.save_directory
         try:
             self.open_in_system(open_item)
         except AttributeError:
