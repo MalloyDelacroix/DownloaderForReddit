@@ -214,6 +214,3 @@ class Subreddit(RedditObject):
                          nsfw_filter, name_downloads_by, user_added)
         self.subreddit_save_method = subreddit_save_method
         self.object_type = 'SUBREDDIT'
-
-    def update_subreddit_save_by_method(self, new_method):
-        self.subreddit_save_method = new_method
