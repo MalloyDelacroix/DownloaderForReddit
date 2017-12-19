@@ -34,7 +34,7 @@ import Core.Injector
 class RedditObject:
 
     def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
-                 name_downlads_by, user_added):
+                 nsfw_filter, name_downlads_by, user_added):
         """
         Class that holds the name and list of submissions for Reddit objects.  Also contains an empty content list that
         will be filled with Content objects that contain links for download.
@@ -55,6 +55,7 @@ class RedditObject:
         self.avoid_duplicates = avoid_duplicates
         self.download_videos = download_videos
         self.download_images = download_images
+        self.nsfw_filter = nsfw_filter
         self.name_downloads_by = name_downlads_by
         self.user_added = user_added
         self.do_not_edit = False
@@ -187,12 +188,12 @@ class RedditObject:
 class User(RedditObject):
 
     def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos,
-                 download_images, name_downloads_by, user_added):
+                 download_images, nsfw_filter, name_downloads_by, user_added):
         """
         A subclass of the RedditObject class.  This class is used exclusively to hold users and their information
         """
         super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
-                         name_downloads_by, user_added)
+                         nsfw_filter, name_downloads_by, user_added)
         self.subreddit_save_method = None
         self.object_type = 'USER'
 
@@ -204,13 +205,13 @@ class User(RedditObject):
 class Subreddit(RedditObject):
 
     def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
-                 subreddit_save_method, name_downloads_by, user_added):
+                 nsfw_filter, subreddit_save_method, name_downloads_by, user_added):
         """
         A subclass of the RedditObject class. This class is used exclusively to hold subreddits and their information.
         Also contains an extra method not used for users to update the subreddit_save_by_method
         """
         super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
-                         name_downloads_by, user_added)
+                         nsfw_filter, name_downloads_by, user_added)
         self.subreddit_save_method = subreddit_save_method
         self.object_type = 'SUBREDDIT'
 
