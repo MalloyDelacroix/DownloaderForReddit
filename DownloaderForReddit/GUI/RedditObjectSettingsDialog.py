@@ -509,7 +509,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def set_icon_size(self, size):
         self.content_icons_full_width = False
         self.content_icon_size = size
-        self.content_list.iconSize(QtCore.QSize(size, size))
+        self.content_list.setIconSize(QtCore.QSize(size, size))
 
     def reset_date(self):
         self.current_temp_object.custom_date_limit = None
