@@ -245,9 +245,13 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         if ret:
             self.save_settings()
             self.save_display_settings()
+            self.save_dialog_geom()
             super().accept()
 
     def closeEvent(self, QCloseEvent):
+        self.save_dialog_geom()
+
+    def save_dialog_geom(self):
         self.settings_manager.settings_dialog_geom = self.saveGeometry()
         self.settings_manager.save_settings_dialog()
 
