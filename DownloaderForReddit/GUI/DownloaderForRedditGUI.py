@@ -90,7 +90,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.list_order_method = self.settings_manager.list_order_method
         self.download_users_checkbox.setChecked(self.settings_manager.download_users)
         self.download_subreddit_checkbox.setChecked(self.settings_manager.download_subreddits)
-        self.run_user_finder_auto = self.settings_manager.user_finder_run_with_main
         # endregion
 
         self.unfinished_downloads_available = False
@@ -141,7 +140,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if len(self.failed_list) < 1:
             self.file_failed_download_list.setEnabled(False)
 
-        self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
+        # self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
+        self.file_open_user_finder.setEnabled(False)
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
@@ -912,10 +912,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder_open = True
         self.file_open_user_finder.setEnabled(False)
         all_existing_users = []
-        for key, value in self.user_view_chooser_dict.items():
+        for value in self.user_view_chooser_dict.values():
             for user in value.reddit_object_list:
                 all_existing_users.append(user.name)
-        user_lists = [key for key, value in self.user_view_chooser_dict.items()]
+        user_lists = self.user_view_chooser_dict.keys()
         user_finder = UserFinderGUI(all_existing_users, user_lists, self.save_path, self.imgur_client, self.queue)
         # user_finder.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         user_finder.watchlist_when_run_checkbox_2.setChecked(self.run_user_finder_auto)
@@ -1116,7 +1116,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.set_last_view_model('USER', last_user_view)
             self.set_last_view_model('SUB', last_subreddit_view)
         except KeyError:
-            print('Load state key error')
+            print('Load state exception: key error')
+        except TypeError:
+            print('Load state exception: no save file detected')
 
     def set_last_view_model(self, view_dict, last_view):
         try:
