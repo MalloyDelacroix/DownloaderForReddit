@@ -162,6 +162,7 @@ class DownloadRunner(QObject):
         self.validated_objects.put(None)
 
     def downloads_finished(self):
+        """Cleans up objects that need to be changed after the download is complete."""
         try:
             for sub in self.subreddit_list:
                 sub.clear_download_session_data()
@@ -178,6 +179,10 @@ class DownloadRunner(QObject):
         self.finished.emit()
 
     def start_extractor(self):
+        """
+        Initializes an Extractor object, starts a separate thread, and then runs the extractor from the new thread so
+        that content can be simultaneously extracted, validated, and downloaded.
+        """
         self.extractor = Extractor(self.queue, self.validated_objects, self.queued_posts, self.user_run)
         self.stop.connect(self.extractor.stop)
         self.extractor_thread = QThread()
@@ -191,6 +196,11 @@ class DownloadRunner(QObject):
         self.extractor_thread.start()
 
     def start_downloader(self):
+        """
+        Initializes a Downloader object, starts a separate thread, and then runds the downloader from the new thread so
+        that content can be simultaneously downloaded, extracted and validated.
+        :return:
+        """
         self.downloader = Downloader(self.queued_posts, self.settings_manager.max_download_thread_count)
         self.stop.connect(self.downloader.stop)
         self.downloader_thread = QThread()
@@ -249,15 +259,24 @@ class DownloadRunner(QObject):
                 self.validated_subreddits and self.post_filter.filter_post(post, user)]
 
     def add_downloaded_user(self, user_tuple):
+        """
+        Adds downloaded users to the downloaded users dict so that they may be displayed in the 'last downlaoded users'
+        dialog after the download is complete.
+        :param user_tuple: A tuple containing the name of the user, and a list of the content that was downloaded during
+                           session
+        :type user_tuple: tuple
+        """
         if user_tuple[0] in self.downloaded_users:
             self.downloaded_users[user_tuple[0]].extend(user_tuple[1])
         else:
             self.downloaded_users[user_tuple[0]] = user_tuple[1]
 
     def send_downloaded_users(self):
+        """Emits a signal containing a dictionary of the last downloaded users."""
         self.downloaded_users_signal.emit(self.downloaded_users)
 
     def stop_download(self):
+        """Stops the download when the user selects to do so."""
         self.run = False
         self.stop.emit()
         self.queue.put('\nStopped\n')
@@ -274,6 +293,10 @@ class DownloadRunner(QObject):
         self.start_downloader()
 
     def skip_user_validation(self):
+        """
+        Adds the objects in the user list to the validated objects queue.  This method is used for rare circumstances
+        where a user has already been validated in order to skip the somewhat expensive process of validation
+        """
         for x in self.user_list:
             self.validated_objects.put(x)
 
