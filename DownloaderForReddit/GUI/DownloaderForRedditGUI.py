@@ -221,10 +221,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         open_user_folder.triggered.connect(self.open_user_download_folder)
 
         if not valid:
-            user_settings.setEnabled(False)
-            user_downloads.setEnabled(False)
-            open_user_folder.setEnabled(False)
-            remove_user.setEnabled(False)
+            user_settings.setVisible(False)
+            user_downloads.setVisible(False)
+            open_user_folder.setVisible(False)
+            remove_user.setVisible(False)
 
         if self.running:
             add_user.setEnabled(False)
@@ -253,10 +253,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         open_subreddit_folder.triggered.connect(self.open_subreddit_download_folder)
 
         if not valid:
-            subreddit_settings.setEnabled(False)
-            subreddit_downloads.setEnabled(False)
-            open_subreddit_folder.setEnabled(False)
-            remove_subreddit.setEnabled(False)
+            subreddit_settings.setVisible(False)
+            subreddit_downloads.setVisible(False)
+            open_subreddit_folder.setVisible(False)
+            remove_subreddit.setVisible(False)
 
         if self.running:
             add_subreddit.setEnabled(False)
