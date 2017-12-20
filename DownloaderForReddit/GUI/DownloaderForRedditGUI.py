@@ -407,7 +407,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             self.failed_list.clear()
             self.started_download_gui_shift()
-            if self.run_user_finder_auto:
+            if self.settings_manager.user_finder_run_with_main:
                 self.display_user_finder(True)
             if self.download_users_checkbox.isChecked() and not self.download_subreddit_checkbox.isChecked():
                 self.run_user()
