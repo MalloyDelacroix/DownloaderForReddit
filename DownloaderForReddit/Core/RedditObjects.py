@@ -26,8 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
 from .Content import Content
-from Extractors.Extractors import ImgurExtractor, GfycatExtractor, VidbleExtractor, RedditUploadsExtractor, \
-    DirectExtractor
+from Extractors.Extractors import *
 import Core.Injector
 
 
