@@ -190,7 +190,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.check_for_updates(False)
+        # self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
@@ -1146,9 +1146,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_thread)
         self.update_thread.started.connect(self.update_checker.run)
-        self.update_checker.update_available_signal.connect(self.display_update)
         if from_menu:
+            self.update_checker.update_available_signal.connect(self.update_dialog)
             self.update_checker.no_update_signal.connect(self.no_update_available_dialog)
+        else:
+            self.update_checker.update_available_signal.connect(self.display_update)
         self.update_checker.finished.connect(self.update_thread.quit)
         self.update_checker.finished.connect(self.update_checker.deleteLater)
         self.update_thread.finished.connect(self.update_thread.deleteLater)
