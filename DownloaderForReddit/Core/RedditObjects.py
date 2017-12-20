@@ -156,7 +156,7 @@ class RedditObject:
 
     def load_unfinished_downloads(self):
         for key, value in self.saved_content.items():
-            x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], self.save_path,
+            x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], self.save_directory,
                         self.subreddit_save_method)
             self.content.append(x)
         self.saved_content.clear()
@@ -169,10 +169,10 @@ class RedditObject:
         if not self.do_not_edit and None is not self.custom_date_limit < last_download_time:
             self.custom_date_limit = None
 
-    def check_save_path(self):
-        if not os.path.isdir(self.save_path):
+    def check_save_directory(self):
+        if not os.path.isdir(self.save_directory):
             try:
-                os.makedirs(self.save_path)
+                os.makedirs(self.save_directory)
             except FileExistsError:
                 pass
 

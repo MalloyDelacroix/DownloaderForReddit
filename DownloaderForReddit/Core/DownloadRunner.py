@@ -99,7 +99,7 @@ class DownloadRunner(QObject):
                     self.queue.put("%s is valid" % user.name)
                     user.new_submissions = self.get_submissions(redditor, user)
                     self.validated_objects.put(user)
-                    user.check_save_path()
+                    user.check_save_directory()
                     self.update_progress_bar()
                 else:
                     self.queue.put("%s does not exist" % user.name)
@@ -123,7 +123,7 @@ class DownloadRunner(QObject):
                     self.queue.put("%s is valid" % sub.name)
                     sub.new_submissions = self.get_submissions(subreddit, sub)
                     self.validated_objects.put(sub)
-                    sub.check_save_path()
+                    sub.check_save_directory()
                     self.update_progress_bar()
                 else:
                     self.queue.put("%s is not a valid subreddit" % sub.name)
@@ -157,7 +157,7 @@ class DownloadRunner(QObject):
                     self.queue.put('%s is valid' % user.name)
                     user.new_submissions = self.get_user_submissions_from_subreddits(redditor, user)
                     self.validated_objects.put(user)
-                    user.check_save_path()
+                    user.check_save_directory()
                     self.update_progress_bar()
         self.validated_objects.put(None)
 
