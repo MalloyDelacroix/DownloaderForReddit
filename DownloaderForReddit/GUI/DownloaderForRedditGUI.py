@@ -145,7 +145,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
-        self.file_exit.triggered.connect(self.close)
+        self.file_exit.triggered.connect(self.close_from_menu)
 
         self.download_button.clicked.connect(self.button_assignment)
         self.add_user_button.clicked.connect(self.add_user_dialog)
@@ -348,35 +348,35 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def subreddit_settings(self, page, from_menu):
         """Operates the same as the user_settings function"""
         current_list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
-        # try:
-        if not from_menu:
-            position = self.get_selected_view_index(self.subreddit_list_view).row()
-        else:
-            position = 0
-        subreddit_settings_dialog = RedditObjectSettingsDialog(current_list_model,
-                                                               current_list_model.reddit_object_list[position])
-        subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
-        subreddit_settings_dialog.show()
-        if page == 1:
-            subreddit_settings_dialog.change_to_downloads_view()
-        if not subreddit_settings_dialog.closed:
-            dialog = subreddit_settings_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                self.set_not_saved()
-                if not subreddit_settings_dialog.restore_defaults:
-                    current_list_model.reddit_object_list = subreddit_settings_dialog.object_list
-                else:
-                    for sub in current_list_model.reddit_object_list:
-                        sub.custom_date_limit = None
-                        sub.avoid_duplicates = self.avoid_duplicates
-                        sub.download_videos = self.download_videos
-                        sub.download_images = self.download_images
-                        sub.do_not_edit = False
-                        sub.save_path = self.save_path
-                        sub.name_downloads_by = self.name_downloads_by
-                        sub.post_limit = self.post_limit
-        # except AttributeError:
-        #     print('Attribute Error')
+        try:
+            if not from_menu:
+                position = self.get_selected_view_index(self.subreddit_list_view).row()
+            else:
+                position = 0
+            subreddit_settings_dialog = RedditObjectSettingsDialog(current_list_model,
+                                                                   current_list_model.reddit_object_list[position])
+            subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
+            subreddit_settings_dialog.show()
+            if page == 1:
+                subreddit_settings_dialog.change_to_downloads_view()
+            if not subreddit_settings_dialog.closed:
+                dialog = subreddit_settings_dialog.exec_()
+                if dialog == QtWidgets.QDialog.Accepted:
+                    self.set_not_saved()
+                    if not subreddit_settings_dialog.restore_defaults:
+                        current_list_model.reddit_object_list = subreddit_settings_dialog.object_list
+                    else:
+                        for sub in current_list_model.reddit_object_list:
+                            sub.custom_date_limit = None
+                            sub.avoid_duplicates = self.avoid_duplicates
+                            sub.download_videos = self.download_videos
+                            sub.download_images = self.download_images
+                            sub.do_not_edit = False
+                            sub.save_path = self.save_path
+                            sub.name_downloads_by = self.name_downloads_by
+                            sub.post_limit = self.post_limit
+        except AttributeError:
+            print('Attribute Error')
 
     def open_subreddit_download_folder(self):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
@@ -1056,6 +1056,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             QCloseEvent.ignore()
 
+    def close_from_menu(self):
+        if self.check_unfinished_downloads() and self.check_save_status():
+            self.close()
+
     def check_unfinished_downloads(self):
         if self.unfinished_downloads_available:
             unfinished_dialog = UnfinishedDownloadsWarning()
@@ -1083,6 +1087,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def close(self):
         self.receiver.stop_run()
         self.save_main_window_settings()
+        super().close()
 
     def save_main_window_settings(self):
         self.settings_manager.main_window_geom = self.saveGeometry()
