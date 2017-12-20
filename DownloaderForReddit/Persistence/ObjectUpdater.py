@@ -93,8 +93,11 @@ class ObjectUpdater:
         """
         try:
             new.previous_downloads = old.previous_downloads
-        except:
-            pass
+        except AttributeError:
+            try:
+                new.previous_downloads = old.already_downloaded
+            except:
+                print('Could not transfer previous downloads')
 
     @staticmethod
     def get_saved_content(old, new):
