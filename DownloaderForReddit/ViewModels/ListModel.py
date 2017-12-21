@@ -67,6 +67,18 @@ class ListModel(QAbstractListModel):
                                          reverse=method[1])
         self.refresh()
 
+    def check_name(self, name):
+        """
+        Checks the reddit object list to see if an object with the supplied name exists in the list.
+        :param name: The name that is to be checked for existence.
+        :return: True if the name exists, False if it does not.
+        :type name: str
+        :rtype: bool
+        """
+        if any(name.lower() == item.name.lower() for item in self.reddit_object_list):
+            return True
+        return False
+
     def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
         self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
         self.reddit_object_list.append(item)

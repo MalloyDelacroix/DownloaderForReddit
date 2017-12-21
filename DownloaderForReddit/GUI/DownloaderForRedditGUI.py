@@ -639,23 +639,38 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         new_user = lst[0]
         self.add_user(new_user, insertion_list)
 
-    def add_user(self, new_user, insertion_list):
-        """Adds a user to the current list"""
+    def add_user(self, new_user, list_model):
+        """
+        Creates a new User object from the supplied user name and adds the User to the supplied list model.
+        :param new_user: The name of the user which is to be added to the supplied list_model.
+        :param list_model: The list model that the supplied user is to be added to.
+        :type new_user: str
+        :type list_model: ListModel
+        """
         try:
-            if new_user != '' and ' ' not in new_user:
-                if any(new_user.lower() == item.name.lower() for item in insertion_list.reddit_object_list):
+            if new_user != '' and new_user != ' ':
+                if list_model.check_name(new_user):
                     Message.name_in_list(self, new_user)
                 else:
                     user = self.make_user(new_user)
-                    insertion_list.insertRow(user)
-                    insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
+                    self.add_reddit_object_to_list(user, list_model)
                     self.refresh_user_count()
-                    self.set_not_saved()
             else:
                 Message.not_valid_name(self, new_user)
-
         except KeyError:
             Message.no_user_list(self)
+
+    def add_reddit_object_to_list(self, reddit_object, list_model):
+        """
+        Adds the supplied reddit_object to the supplied list model.
+        :param reddit_object: The reddit object that is to be added to the list.
+        :param list_model: The list model that the reddit object is to be added to.
+        :type reddit_object: RedditObject
+        :type list_model: ListModel
+        """
+        list_model.insertRow(reddit_object)
+        list_model.sort_lists((self.list_sort_method, self.list_order_method))
+        self.set_not_saved()
 
     def make_user(self, name):
         """
@@ -704,18 +719,21 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             Message.no_user_list(self)
 
     def add_subreddit(self, new_sub):
-        """See add_user"""
-        insertion_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+        """
+        Creates a new Subreddit object from the supplied subreddit name and adds the Subreddit to the current list
+        model.
+        :param new_sub: The name of the new sub which is to be added to the list_model.
+        :type new_sub: str
+        """
+        list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
         try:
-            if new_sub != '' and ' ' not in new_sub:
-                if any(new_sub.lower() == item.name.lower() for item in insertion_list.reddit_object_list):
+            if new_sub != '' and new_sub != ' ':
+                if list_model.check_name(new_sub):
                     Message.name_in_list(self, new_sub)
                 else:
                     sub = self.make_subreddit(new_sub)
-                    insertion_list.insertRows(sub)
-                    insertion_list.sort_lists((self.list_sort_method, self.list_order_method))
+                    self.add_reddit_object_to_list(sub, list_model)
                     self.refresh_subreddit_count()
-                    self.set_not_saved()
             else:
                 Message.not_valid_name(self, new_sub)
         except KeyError:
