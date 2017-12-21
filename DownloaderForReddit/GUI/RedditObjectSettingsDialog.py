@@ -506,7 +506,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         try:
             SystemUtil.open_in_system(open_item)
         except AttributeError:
-            pass
+            print('Selected object has no attribute save_directory')
         except FileNotFoundError:
             Message.no_download_folder(self, self.object_type)
 
@@ -517,8 +517,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         file = self.content_list.currentItem().path
         try:
             SystemUtil.open_in_system(file)
-        except (AttributeError, FileNotFoundError):
-            pass
+        except AttributeError:
+            print('Selected file has no attribute path')
+        except FileNotFoundError:
+            print('Cannot find file')
 
     def open_link(self):
         """Opens a link from the 'previous_downloads' list in the default web browser."""
