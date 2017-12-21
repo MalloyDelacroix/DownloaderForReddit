@@ -38,6 +38,7 @@ from Core.AlphanumKey import ALPHANUM_KEY
 from ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
 from Core.RedditObjects import *
 from CustomWidgets.CustomListWidgetItem import CustomListItem
+from Core import SystemUtil
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
@@ -477,7 +478,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 icons_full_width.setChecked(False)
                 check_dict[self.content_icon_size].setChecked(True)
 
-            open_file.triggered.connect(lambda: self.open_file(position))
+            open_file.triggered.connect(self.open_file)
             icons_full_width.triggered.connect(self.set_icons_full_width)
             icon_size_extra_small.triggered.connect(lambda: self.set_icon_size(48))
             icon_size_small.triggered.connect(lambda: self.set_icon_size(72))
@@ -503,7 +504,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         selected_object = self.object_list[position]
         open_item = selected_object.save_directory
         try:
-            self.open_in_system(open_item)
+            SystemUtil.open_in_system(open_item)
         except AttributeError:
             pass
         except FileNotFoundError:
@@ -515,7 +516,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         """
         file = self.content_list.currentItem().path
         try:
-            self.open_in_system(file)
+            SystemUtil.open_in_system(file)
         except (AttributeError, FileNotFoundError):
             pass
 
@@ -523,15 +524,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         """Opens a link from the 'previous_downloads' list in the default web browser."""
         if self.current_item_display == 'previous_downloads':
             link = self.current_object.previous_downloads[self.item_display_list_view.currentIndex().row()]
-            self.open_in_system(link)
-
-    def open_in_system(self, item):
-        """Opens a supplied file or folder in the default system specified application."""
-        if sys.platform == 'win32':
-            os.startfile(item)
-        else:
-            opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-            subprocess.call([opener, item])
+            SystemUtil.open_in_system(link)
 
     def set_icons_full_width(self):
         self.content_icons_full_width = True

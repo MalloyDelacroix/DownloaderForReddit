@@ -47,6 +47,7 @@ import Core.Injector
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from ViewModels.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
+from Core import SystemUtil
 from version import __version__
 
 
@@ -329,23 +330,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except AttributeError:
             print('Attribute Error')
 
-    def open_user_download_folder(self):
-        """Opens the Folder where the users downloads are saved using the default file manager"""
-        current_list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
-        try:
-            position = self.get_selected_view_index(self.user_list_view).row()
-            selected_user = current_list_model.reddit_object_list[position]
-            download_folder = selected_user.save_path
-            if sys.platform == 'win32':
-                os.startfile(download_folder)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, download_folder])
-        except AttributeError:
-            Message.no_user_selected(self)
-        except FileNotFoundError:
-            Message.no_download_folder(self)
-
     def subreddit_settings(self, page, from_menu):
         """Operates the same as the user_settings function"""
         current_list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
@@ -380,18 +364,25 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except AttributeError:
             print('Attribute Error')
 
+    def open_user_download_folder(self):
+        """Opens the Folder where the users downloads are saved using the default file manager"""
+        current_list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+        try:
+            position = self.get_selected_view_index(self.user_list_view).row()
+            selected_user = current_list_model.reddit_object_list[position]
+            SystemUtil.open_in_system(selected_user.save_directory)
+        except AttributeError:
+            Message.no_user_selected(self)
+        except FileNotFoundError:
+            Message.no_download_folder(self)
+
     def open_subreddit_download_folder(self):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
         current_list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
             selected_sub = current_list_model.reddit_object_list[position]
-            download_folder = '%s%s/' % (selected_sub.save_path, selected_sub.name.lower())
-            if sys.platform == 'win32':
-                os.startfile(download_folder)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, download_folder])
+            SystemUtil.open_in_system(selected_sub.save_directory)
         except AttributeError:
             Message.no_subreddit_selected(self)
         except FileNotFoundError:
