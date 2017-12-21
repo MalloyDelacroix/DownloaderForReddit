@@ -306,7 +306,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 position = 0
             user_settings_dialog = RedditObjectSettingsDialog(current_list_model,
-                                                              current_list_model.reddit_object_list[position])
+                                                              current_list_model.reddit_object_list[position],
+                                                              self.running)
             user_settings_dialog.single_download.connect(self.run_single_user)
             user_settings_dialog.show()
             if page == 1:
@@ -354,7 +355,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 position = 0
             subreddit_settings_dialog = RedditObjectSettingsDialog(current_list_model,
-                                                                   current_list_model.reddit_object_list[position])
+                                                                   current_list_model.reddit_object_list[position],
+                                                                   self.running)
             subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
             subreddit_settings_dialog.show()
             if page == 1:
