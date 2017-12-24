@@ -33,8 +33,6 @@ no_subreddit_list_message = 'There are no subreddit lists available. To add a su
 no_user_selected_message = 'No user selected'
 no_subreddit_selected_message = 'No subreddit selected'
 failed_to_save_message = 'Sorry, the user and subreddit lists save attempt was not successful.  Please try again.'
-remove_user_message = 'Are you sure you want to remove this user and all of their information?'
-remove_subreddit_message = 'Are you sure you want to remove this subreddit and all of its information?'
 remove_user_list_message = 'Are you sure you want to remove this list? Information for every user in the list will' \
                            ' be lost'
 remove_subreddit_list_message = 'Are you sure you want to remove this list? Information for every subreddit in the ' \
@@ -58,25 +56,19 @@ class Message(object):
         reply = message.warning(self, 'No Subreddit List', no_subreddit_list_message, message.Ok)
         return reply == message.Ok
 
-    def no_user_selected(self):
-        reply = message.information(self, 'No User Selected', no_user_selected_message, message.Ok)
-        return reply == message.Ok
-
-    def no_subreddit_selected(self):
-        reply = message.information(self, 'No Subreddit Selected', no_subreddit_selected_message, message.Ok)
+    def no_reddit_object_selected(self, type):
+        text = 'No %s selected' % type
+        reply = message.information(self, 'No Selection', text, message.Ok)
         return reply == message.Ok
 
     def failed_to_save(self):
         reply = message.information(self, 'Save Failed', failed_to_save_message, message.Ok)
         return reply == message.Ok
 
-    def remove_user(self):
-        reply = message.information(self, 'Remove User?', remove_user_message, message.Ok, message.Cancel)
-        return reply == message.Ok
-
-    def remove_subreddit(self):
-        reply = message.information(self, 'Remove Subreddit?', remove_subreddit_message, message.Ok, message.Cancel)
-        return reply == message.Ok
+    def remove_reddit_object(self, name):
+        text = 'Are you sure you sure you want to remove %s from the list along with all associated information?' % name
+        reply = message.question(self, 'Remove %s' % name, text, message.Yes, message.No)
+        return reply == message.Yes
 
     def remove_user_list(self):
         reply = message.warning(self, 'Remove User List?', remove_user_list_message, message.Ok, message.Cancel)
@@ -85,6 +77,12 @@ class Message(object):
     def remove_subreddit_list(self):
         reply = message.warning(self, 'Remove Subreddit List?', remove_subreddit_list_message, message.Ok, message.Cancel)
         return reply == message.Ok
+
+    def reddit_object_not_valid(self, name, type_):
+        type_ = type_.lower()
+        text = '%s is not a valid %s. Would you like to remove this %s from the %s list?' % (name, type_, type_, type_)
+        reply = message.question(self, 'Invalid Object', text, message.Yes, message.No)
+        return reply == message.Yes
     
     def user_not_valid(self, user):
         text = '%s is not a valid user. Would you like to remove this user from the user list?' % user

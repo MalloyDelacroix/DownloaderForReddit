@@ -485,7 +485,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.thread.started.connect(self.download_runner.validate_users_and_subreddits)
         elif download_type == 'UNFINISHED':
             self.thread.started.connect(self.download_runner.finish_downloads)
-        self.download_runner.remove_invalid_user.connect(self.remove_invalid_user)
+        self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
         self.download_runner.downloaded_users_signal.connect(self.fill_downloaded_users_list)
         self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
         self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
@@ -685,25 +685,52 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         return new_user
 
     def remove_user(self):
+        """
+        Gets the currently selected index from the user list and the current user list model and calls a method to
+        remove the object at the current index
+        """
+        list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+        index = self.get_selected_view_index(self.user_list_view).row()
+        self.remove_reddit_object(index, list_model)
+
+    def remove_reddit_object(self, index, list_model):
+        """
+        Removes the reddit object at the supplied index from the supplied list_model.
+        :param index: The index of the reddit object to be removed.
+        :param list_model: The list model that the reddit object is to be removed from.
+        :type index: int
+        :type list_model: ListModel
+        """
         try:
-            if Message.remove_user(self):
-                working_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
-                working_list.removeRows(self.get_selected_view_index(self.user_list_view).row(), 1)
-                self.refresh_user_count()
+            reddit_object = list_model.reddit_object_list[index]
+            if Message.remove_reddit_object(self, reddit_object.name):
+                list_model.removeRows(index, 1)
                 self.set_not_saved()
             else:
                 pass
         except (KeyError, AttributeError):
-            Message.no_user_selected(self)
+            Message.no_reddit_object_selected(self, list_model.list_type)
 
-    def remove_invalid_user(self, user):
-        """If a user name is not valid, this removes the user from the list"""
-        if Message.user_not_valid(self, user.name):
-            working_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
-            working_list.reddit_object_list.remove(user)
-            if os.path.isdir(user.save_path):
-                os.rename(user.save_path, '%s (deleted)' % user.save_path[:-1])
-            self.refresh_user_count()
+    def remove_invalid_reddit_object(self, reddit_object):
+        """
+        Handles removing the supplied reddit object if the downloader finds that the reddit object is not valid.  This
+        method also renames the download folder.
+        :param reddit_object: The reddit object (User or Subreddit) that is invalid and is to be removed.
+        :type reddit_object: RedditObject
+        """
+        if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
+            working_list = self.get_working_list(reddit_object.object_type)
+            working_list.remove_reddit_object(reddit_object)
+            if os.path.isdir(reddit_object.save_directory):
+                os.rename(reddit_object.save_directory, '%s (deleted)' % reddit_object.save_directory[:-1])
+            self.refresh_object_count()
+            self.set_not_saved()
+
+    def get_working_list(self, object_type):
+        if object_type == 'USER':
+            return self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+        else:
+            return self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
 
     def add_subreddit_dialog(self):
         """See add_user_dialog"""
@@ -753,24 +780,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         return new_sub
 
     def remove_subreddit(self):
-        try:
-            if Message.remove_subreddit(self):
-                working_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
-                working_list.removeRows(self.get_selected_view_index(self.subreddit_list_view).row(), 1)
-                self.refresh_subreddit_count()
-                self.set_not_saved()
-            else:
-                pass
-        except (KeyError, AttributeError):
-            Message.no_subreddit_selected(self)
-
-    def remove_invalid_subreddit(self, sub):
-        """See remove_invalid_subreddit"""
-        if Message.subreddit_not_valid(self, sub.name):
-            working_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
-            working_list.reddit_object_list.remove(sub)
-            self.refresh_subreddit_count()
-            self.set_not_saved()
+        """
+        Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
+        method to remove the object at the current index
+        """
+        list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+        index = self.get_selected_view_index(self.subreddit_list_view).row()
+        self.remove_reddit_object(index, list_model)
 
     def import_user_list_from_folder(self):
         """Opens a file dialog and then imports the names of the subfolders as users to the current user list"""
@@ -1017,6 +1033,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 subprocess.call([opener, file])
         except FileNotFoundError:
             Message.user_manual_not_found(self)
+
+    def refresh_object_count(self):
+        self.refresh_user_count()
+        self.refresh_subreddit_count()
 
     def refresh_user_count(self):
         """Updates the shown user count seen in the list menu"""

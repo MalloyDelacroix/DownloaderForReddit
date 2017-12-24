@@ -79,6 +79,13 @@ class ListModel(QAbstractListModel):
             return True
         return False
 
+    def remove_reddit_object(self, object_):
+        try:
+            index = self.reddit_object_list.index(object_)
+            self.removeRow(index)
+        except ValueError:
+            print('Remove reddit object exception: Object does not exist in list')
+
     def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
         self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
         self.reddit_object_list.append(item)
@@ -89,6 +96,12 @@ class ListModel(QAbstractListModel):
         self.beginRemoveRows(parent, position, position + rows - 1)
         for x in range(rows):
             self.reddit_object_list.remove(self.reddit_object_list[position])
+        self.endRemoveRows()
+        return True
+
+    def removeRow(self, row, parent=QModelIndex()):
+        self.beginRemoveRows(parent, row, row)
+        del self.reddit_object_list[row]
         self.endRemoveRows()
         return True
 

@@ -35,8 +35,7 @@ from Core.PostFilter import PostFilter
 
 class DownloadRunner(QObject):
 
-    remove_invalid_user = pyqtSignal(object)
-    remove_invalid_subreddit = pyqtSignal(object)
+    remove_invalid_object = pyqtSignal(object)
     finished = pyqtSignal()
     downloaded_users_signal = pyqtSignal(dict)
     unfinished_downloads_signal = pyqtSignal(list)
@@ -93,7 +92,7 @@ class DownloadRunner(QObject):
                     test = redditor.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     redditor = None
-                    self.remove_invalid_user.emit(user)
+                    self.remove_invalid_object.emit(user)
 
                 if redditor is not None:
                     self.queue.put("%s is valid" % user.name)
@@ -117,7 +116,7 @@ class DownloadRunner(QObject):
                     test = subreddit.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     subreddit = None
-                    self.remove_invalid_subreddit.emit(sub)
+                    self.remove_invalid_object.emit(sub)
 
                 if subreddit is not None:
                     self.queue.put("%s is valid" % sub.name)
