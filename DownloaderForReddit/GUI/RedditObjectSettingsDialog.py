@@ -24,9 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import datetime
-import os
-import subprocess
-import sys
 import time
 import copy
 from PyQt5 import QtCore, QtWidgets, QtGui
