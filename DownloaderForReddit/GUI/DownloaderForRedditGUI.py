@@ -42,7 +42,7 @@ from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
 from GUI.UserFinderGUI import UserFinderGUI
-from GUI.settingsGUI import RedditDownloaderSettingsGUI
+from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 import Core.Injector
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from ViewModels.ListModel import ListModel
