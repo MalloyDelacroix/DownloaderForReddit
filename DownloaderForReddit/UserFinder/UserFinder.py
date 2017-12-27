@@ -65,7 +65,7 @@ class UserFinder(QObject):
         :param previously_found: A list of users that have been previously found and will not be included in the search
         """
         super().__init__()
-        self.reddit = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
+        self._r = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
                               client_id='frGEUVAuHGL2PQ', client_secret=None)
         self.sub_list = sub_list
         self.black_list = black_list
@@ -86,7 +86,7 @@ class UserFinder(QObject):
         self.update_output.emit('Validating\n')
         self.steps.emit(len(self.sub_list))
         for sub in self.sub_list:  # This will be a ListModelObject
-            subreddit = self.reddit.subreddit(sub)
+            subreddit = self._r.subreddit(sub)
             try:
                 test = subreddit.fullname
                 x = Sub(sub)
