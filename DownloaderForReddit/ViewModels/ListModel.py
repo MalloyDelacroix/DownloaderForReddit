@@ -80,6 +80,11 @@ class ListModel(QAbstractListModel):
         return False
 
     def remove_reddit_object(self, object_):
+        """
+        Removes the supplied reddit object from the reddit_object_list.
+        :param object_: The reddit object that is to be removed
+        :type object_: RedditObject
+        """
         try:
             index = self.reddit_object_list.index(object_)
             self.removeRow(index)
@@ -99,7 +104,7 @@ class ListModel(QAbstractListModel):
         self.endRemoveRows()
         return True
 
-    def removeRow(self, row, parent=QModelIndex()):
+    def removeRow(self, row, parent=QModelIndex(), *args):
         self.beginRemoveRows(parent, row, row)
         del self.reddit_object_list[row]
         self.endRemoveRows()
