@@ -109,6 +109,7 @@ class SettingsManager:
             'total_download_count': self.settings.value('tooltip_total_download_count', True, type=bool),
             'added_on_date': self.settings.value('tooltip_added_on_date', False, type=bool)
         }
+        self.gif_display_method = self.settings.value('gif_display_method', 'FRAME', str)
         # endregion
 
         # region Main Window GUI
@@ -212,6 +213,7 @@ class SettingsManager:
         self.settings.setValue('tooltip_saved_submission_count', self.tooltip_display_dict['saved_submission_count'])
         self.settings.setValue('tooltip_total_download_count', self.tooltip_display_dict['total_download_count'])
         self.settings.setValue('tooltip_added_on_date', self.tooltip_display_dict['added_on_date'])
+        self.settings.setValue('gif_display_method', self.gif_display_method)
 
     def save_main_window(self):
         self.settings.setValue("main_window_geometry", self.main_window_geom)

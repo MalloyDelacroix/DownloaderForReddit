@@ -27,6 +27,7 @@ import datetime
 import time
 import copy
 from PyQt5 import QtCore, QtWidgets, QtGui
+import cv2
 
 from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from Core import Injector
@@ -364,8 +365,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         if self.object_type == 'USER':
             save_path = self.current_object.save_directory
             return sorted([os.path.join(save_path, x) for x in os.listdir(save_path) if
-                           os.path.isfile(os.path.join(save_path, x)) and
-                           x.lower().endswith(('.jpg', '.jpeg', '.png'))], key=ALPHANUM_KEY)
+                           os.path.isfile(os.path.join(save_path, x))], key=ALPHANUM_KEY)
         else:
             file_list = self.extract_files_from_sub_folder(os.path.join(self.current_object.save_directory,
                                                                         self.current_object.name.lower()))
@@ -389,15 +389,53 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 text = file.rsplit('/', 1)[1]
                 item = CustomListItem()
                 item.path = file
-                icon = QtGui.QIcon()
-                pixmap = QtGui.QPixmap(file).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
-                icon.addPixmap(pixmap)
-                item.setIcon(icon)
+                icon = self.make_icon(file)
+                if icon:
+                    item.setIcon(icon)
                 item.setText(text)
                 self.content_list.addItem(item)
                 QtWidgets.QApplication.processEvents()
             except:
                 print('Could not display content')
+
+    def make_icon(self, file):
+        """
+        Makes an icon out of the supplied file. If the file is of gif, webm, or mp4 format, the icon is created based on
+        the gif display type settings in the settings manager.
+        :param file: The image or animation file that is to be made into an icon.
+        :type file: str
+        :return: The icon object to be displayed
+        :rtype: QtGui.QIcon
+        """
+        icon = QtGui.QIcon()
+        if not file.endswith(('webm', 'gif', 'mp4')):
+            pixmap = self.make_pixmap(file)
+        else:
+            if self.settings_manager.gif_display_method == 'FRAME':
+                pixmap = self.get_frame(file)
+            elif self.settings_manager.gif_display_method == 'PLACEHOLDER':
+                pixmap = self.make_pixmap('Images/gif_placeholder.jpg')
+            else:
+                return None
+        icon.addPixmap(pixmap)
+        return icon
+
+    def make_pixmap(self, file):
+        """Createsa pixmap out of the supplied file with a uniform size and options."""
+        return QtGui.QPixmap(file).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
+
+    def get_frame(self, file):
+        """
+        Gets the first frame from an animated file to be displayed as an icon.
+        :param file: The animated file from which the frame is to be taken.
+        :return: A pixmap of the frame.
+        """
+        vid = cv2.VideoCapture(file)
+        ret, frame = vid.read()
+        height, width, channel = frame.shape
+        bytes_per_line = 3 * width
+        img = QtGui.QImage(frame.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
+        return self.make_pixmap(img)
 
     def object_list_right_click(self):
         """Displays a context menu for the object list."""

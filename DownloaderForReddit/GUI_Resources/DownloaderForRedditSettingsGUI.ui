@@ -623,6 +623,54 @@
          </layout>
         </widget>
        </item>
+       <item row="0" column="1">
+        <widget class="QGroupBox" name="gif_display_group_box">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="title">
+          <string>Gif Display Options</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_11">
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="gif_do_not_display_radio">
+            <property name="text">
+             <string>Do Not Display Gifs</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="gif_display_placeholder_radio">
+            <property name="text">
+             <string>Display Placeholder</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QRadioButton" name="gif_display_frame_radio">
+            <property name="text">
+             <string>Display First Gif Frame</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
     </widget>

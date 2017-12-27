@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../Images/settings_three_gears.png</normaloff>../Images/settings_three_gears.png</iconset>
+    <normaloff>../../../../.designer/Images/settings_three_gears.png</normaloff>../../../../.designer/Images/settings_three_gears.png</iconset>
   </property>
   <property name="modal">
    <bool>false</bool>
@@ -146,6 +146,9 @@
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="editing_disabled_label">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="text">
              <string>Editing disabled while downloader is running</string>
             </property>

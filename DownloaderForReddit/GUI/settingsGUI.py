@@ -63,6 +63,12 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.score_operator_dict = {'Greater Than': 'GREATER', 'Less Than': 'LESS'}
 
+        self.gif_display_dict = {
+            'DO_NOT_DISPLAY': self.gif_do_not_display_radio,
+            'PLACEHOLDER': self.gif_display_placeholder_radio,
+            'FRAME': self.gif_display_frame_radio
+        }
+
         self.settings_manager = Core.Injector.get_settings_manager()
 
         geom = self.settings_manager.settings_dialog_geom
@@ -171,6 +177,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.tooltip_saved_submissions_count_checkbox.setChecked(tooltip_dict['saved_submission_count'])
         self.tooltip_total_download_count_checkbox.setChecked(tooltip_dict['total_download_count'])
         self.tooltip_added_on_date_checkbox.setChecked(tooltip_dict['added_on_date'])
+
+        self.gif_display_dict[self.settings_manager.gif_display_method].setChecked(True)
 
     def set_imgur_client(self):
         """Opens the imgur client dialog box"""
@@ -309,7 +317,13 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         tooltip_dic['saved_submission_count'] = self.tooltip_saved_submissions_count_checkbox.isChecked()
         tooltip_dic['total_download_count'] = self.tooltip_total_download_count_checkbox.isChecked()
         tooltip_dic['added_on_date'] = self.tooltip_added_on_date_checkbox.isChecked()
+        self.settings_manager.gif_display_method = self.get_gif_display_method()
         self.settings_manager.save_display_settings()
+
+    def get_gif_display_method(self):
+        for key, value in self.gif_display_dict.items():
+            if value.isChecked():
+                return key
 
     def get_sort_by_method(self):
         for key, value in self.sub_sort_radio_dict.items():
