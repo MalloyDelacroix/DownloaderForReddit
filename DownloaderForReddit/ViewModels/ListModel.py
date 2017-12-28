@@ -63,8 +63,7 @@ class ListModel(QAbstractListModel):
         else:
             att_method = attrgetter('number_of_downloads')
 
-        self.reddit_object_list = sorted(self.reddit_object_list, key=att_method,
-                                         reverse=method[1])
+        self.reddit_object_list.sort(key=att_method, reverse=method[1])
         self.refresh()
 
     def check_name(self, name):
