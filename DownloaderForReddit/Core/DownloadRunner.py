@@ -23,13 +23,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import praw
 import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool, QThread
 from queue import Queue
 
 import Core.Injector
-from version import __version__
 from Core.PostFilter import PostFilter
 
 
@@ -58,9 +56,8 @@ class DownloadRunner(QObject):
         The rest of teh parameters are all configuration options that are set in the settings dialog
         """
         super().__init__()
-        self._r = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
-                              client_id='frGEUVAuHGL2PQ', client_secret=None)
         self.settings_manager = Core.Injector.get_settings_manager()
+        self._r = self.settings_manager.r
         self.post_filter = PostFilter()
         self.user_list = user_list
         self.subreddit_list = subreddit_list

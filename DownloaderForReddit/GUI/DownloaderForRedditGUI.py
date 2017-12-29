@@ -141,8 +141,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if len(self.failed_list) < 1:
             self.file_failed_download_list.setEnabled(False)
 
-        # self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
-        self.file_open_user_finder.setEnabled(False)
+        self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
+        # self.file_open_user_finder.setEnabled(False)
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
@@ -934,34 +934,41 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if dialog == QtWidgets.QDialog.Accepted:
             self.settings_manager.auto_display_failed_list = not failed_dialog.auto_display_checkbox.isChecked()
 
+    # def display_user_finder(self, auto):
+    #     """Opens the UserFinder dialog"""
+    #     self.user_finder_open = True
+    #     self.file_open_user_finder.setEnabled(False)
+    #     all_existing_users = []
+    #     for value in self.user_view_chooser_dict.values():
+    #         for user in value.reddit_object_list:
+    #             all_existing_users.append(user.name)
+    #     user_lists = self.user_view_chooser_dict.keys()
+    #     user_finder = UserFinderGUI(all_existing_users, user_lists, self.save_path, self.imgur_client, self.queue)
+    #     # user_finder.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+    #     user_finder.watchlist_when_run_checkbox_2.setChecked(self.run_user_finder_auto)
+    #     user_finder.add_user_to_list.connect(self.add_found_user)
+    #     self.update_user_finder.connect(user_finder.update_progress_bar)
+    #     user_finder.closed.connect(self.user_finder_closed)
+    #     if auto:
+    #         user_finder.auto_opened = True
+    #         user_finder.run()
+    #     user_finder.show()
+    #     if user_finder.exec_() == QtWidgets.QDialog.Accepted:
+    #         self.run_user_finder_auto = user_finder.watchlist_when_run_checkbox_2.isChecked()
+    #
+    # def user_finder_closed(self):
+    #     self.user_finder_open = False
+    #     self.file_open_user_finder.setEnabled(True)
+    #
+    # def update_user_finder_progress_bar(self):
+    #     self.update_user_finder.emit()
+
     def display_user_finder(self, auto):
-        """Opens the UserFinder dialog"""
-        self.user_finder_open = True
-        self.file_open_user_finder.setEnabled(False)
-        all_existing_users = []
-        for value in self.user_view_chooser_dict.values():
-            for user in value.reddit_object_list:
-                all_existing_users.append(user.name)
-        user_lists = self.user_view_chooser_dict.keys()
-        user_finder = UserFinderGUI(all_existing_users, user_lists, self.save_path, self.imgur_client, self.queue)
-        # user_finder.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        user_finder.watchlist_when_run_checkbox_2.setChecked(self.run_user_finder_auto)
-        user_finder.add_user_to_list.connect(self.add_found_user)
-        self.update_user_finder.connect(user_finder.update_progress_bar)
-        user_finder.closed.connect(self.user_finder_closed)
-        if auto:
-            user_finder.auto_opened = True
-            user_finder.run()
+        # self.user_finder_open = True
+        # self.file_open_user_finder.setEnabled(False)
+        user_finder = UserFinderGUI(self.user_view_chooser_dict)
         user_finder.show()
-        if user_finder.exec_() == QtWidgets.QDialog.Accepted:
-            self.run_user_finder_auto = user_finder.watchlist_when_run_checkbox_2.isChecked()
-
-    def user_finder_closed(self):
-        self.user_finder_open = False
-        self.file_open_user_finder.setEnabled(True)
-
-    def update_user_finder_progress_bar(self):
-        self.update_user_finder.emit()
+        user_finder.exec_()
 
     def set_unfinished_downloads(self, unfinished_list):
         """

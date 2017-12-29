@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
+import praw
 from PyQt5.QtCore import QSettings
 
 from Persistence.ObjectStateHandler import ObjectStateHandler
@@ -35,6 +36,8 @@ class SettingsManager:
 
     def __init__(self):
         self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
+        self.r = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
+                             client_id='frGEUVAuHGL2PQ', client_secret=None)
         self.load_settings()
         self.count = 0
         if self.check_first_run():
@@ -133,20 +136,38 @@ class SettingsManager:
         # endregion
 
         # region UserFinder GUI
-        self.user_finder_GUI_geom = self.settings.value('user_finder_GUI_geometry')
-        self.user_finder_subreddit_watchlist = self.settings.value('sub_watchlist', ['filler'], type=str)
-        self.user_finder_user_blacklist = self.settings.value('user_blacklist', ['filler'], type=str)
+        self.user_finder_GUI_geom = self.settings.value('user_finder_GUI_geometry', None)
+        self.user_finder_splitter_one_state = self.settings.value('user_finder_splitter_one_state')
+        self.user_finder_splitter_two_state = self.settings.value('user_finder_splitter_two_state')
+        self.user_finder_splitter_three_state = self.settings.value('user_finder_splitter_three_state')
+        self.user_finder_top_sort_method = self.settings.value('user_finder_top_sort_method', 'MONTH', type=str)
+        self.user_finder_show_users_reddit_page = self.settings.value('user_finder_show_users_reddit_page', False,
+                                                                      type=bool)
+        self.user_finder_filter_by_score = self.settings.value('user_finder_filter_by_score', False, type=bool)
+        self.user_finder_score_limit = self.settings.value('user_finder_score_limit', 3000, type=int)
+        self.user_finder_post_limit = self.settings.value('user_finder_post_limit', 5, type=int)
 
-        self.user_finder_sort_method = self.settings.value("user_finder_sort_method", 0, type=int)
-        self.user_finder_watch_list_score_limit = self.settings.value("user_finder_watchlist_score_limit", 5000, type=int)
-        self.user_finder_download_sample_size = self.settings.value("user_finder_watchlist_sample_size", 1, type=int)
-        self.user_finder_run_with_main = self.settings.value("user_finder_run_with_main", False, type=bool)
-        self.user_finder_auto_add_users = self.settings.value("user_finder_auto_add_users", False, type=bool)
-        self.user_finder_add_to_index = self.settings.value("user_finder_add_to_index", 0, type=int)
+        self.user_finder_subreddit_list = self.settings.value('user_finder_subreddit_list', ['filler'], type=str)
+        self.user_finder_user_blacklist = self.settings.value('user_finder_blacklist', ['filler'], type=str)
+        # endregion
 
-        self.user_finder_content_list_icons_full_width = self.settings.value("user_finder_content_list_icons_full_size",
-                                                                             False, type=bool)
-        self.user_finder_content_list_icon_size = self.settings.value("user_finder_content_list_icon_size", 110, type=int)
+        # region UserFinderSettings
+        self.user_finder_sample_size = self.settings.value('user_finder_sample_size', 5, type=int)
+        self.user_finder_sample_type_method = self.settings.value('user_finder_sample_type_method', 'USER_TOP',
+                                                                  type=str)
+        self.user_finder_run_with_main = self.settings.value('user_finder_run_with_main', False, type=bool)
+        self.user_finder_auto_add_found = self.settings.value('user_finder_auto_add_found', False, type=bool)
+        self.user_finder_auto_add_user_list = self.settings.value('user_finder_auto_add_user_list', None, type=str)
+
+        self.user_finder_auto_run_silent = self.settings.value('user_finder_auto_run_silent', False, type=bool)
+        self.user_finder_double_click_operation = self.settings.value('user_finder_double_click_operation', 'DIALOG',
+                                                                      type=str)
+
+        self.user_finder_preview_size = self.settings.value('user_finder_preview_size', 300, type=int)
+        # endregion
+
+        # region UserFinderSettingsGUISettings
+        self.user_finder_settings_gui_geom = self.settings.value('user_finder_settings_gui_geom', None)
         # endregion
 
         # region Misc Dialogs
@@ -234,17 +255,28 @@ class SettingsManager:
                                self.current_reddit_object_settings_item_display_list)
 
     def save_user_finder(self):
-        self.settings.setValue("user_finder_GUI_geometry", self.user_finder_GUI_geom)
-        self.settings.setValue("sub_watchlist", self.user_finder_subreddit_watchlist)
-        self.settings.setValue("user_blacklist", self.user_finder_user_blacklist)
-        self.settings.setValue("user_finder_sort_method", self.user_finder_sort_method)
-        self.settings.setValue("user_finder_watchlist_score_limit", self.user_finder_watch_list_score_limit)
-        self.settings.setValue("user_finder_watchlist_sample_size", self.user_finder_download_sample_size)
-        self.settings.setValue("user_finder_run_with_main", self.user_finder_run_with_main)
-        self.settings.setValue("user_finder_auto_add_users", self.user_finder_auto_add_users)
-        self.settings.setValue("user_finder_add_to_index", self.user_finder_add_to_index)
-        self.settings.setValue("user_finder_content_list_icons_full_size", self.user_finder_content_list_icons_full_width)
-        self.settings.setValue("user_finder_content_list_icon_size", self.user_finder_content_list_icon_size)
+        self.settings.setValue('user_finder_top_sort_method', self.user_finder_top_sort_method)
+        self.settings.setValue('user_finder_show_users_reddit_page', self.user_finder_show_users_reddit_page)
+        self.settings.setValue('user_finder_filter_by_score', self.user_finder_filter_by_score)
+        self.settings.setValue('user_finder_score_limit', self.user_finder_score_limit)
+        self.settings.setValue('user_finder_post_limit', self.user_finder_post_limit)
+        self.settings.setValue('user_finder_sample_size', self.user_finder_sample_size)
+        self.settings.setValue('user_finder_sample_type_method', self.user_finder_sample_type_method)
+        self.settings.setValue('user_finder_run_with_main', self.user_finder_run_with_main)
+        self.settings.setValue('user_finder_auto_add_found', self.user_finder_auto_add_found)
+        self.settings.setValue('user_finder_auto_add_user_list', self.user_finder_auto_add_user_list)
+        self.settings.setValue('user_finder_preview_size', self.user_finder_preview_size)
+        self.settings.setValue('user_finder_subreddit_list', self.user_finder_subreddit_list)
+        self.settings.setValue('user_finder_blacklist', self.user_finder_user_blacklist)
+
+    def save_user_finder_dialog(self):
+        self.settings.setValue('user_finder_GUI_geometry', self.user_finder_GUI_geom)
+        self.settings.setValue('user_finder_splitter_one_state', self.user_finder_splitter_one_state)
+        self.settings.setValue('user_finder_splitter_two_state', self.user_finder_splitter_two_state)
+        self.settings.setValue('user_finder_splitter_three_state', self.user_finder_splitter_three_state)
+
+    def save_user_finder_settings_dialog(self):
+        self.settings.setValue('user_finder_settings_gui_geom', self.user_finder_settings_gui_geom)
 
     def save_settings_dialog(self):
         self.settings.setValue('settings_dialog_geom', self.settings_dialog_geom)
