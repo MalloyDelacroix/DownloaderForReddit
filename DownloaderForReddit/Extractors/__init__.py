@@ -1,5 +1,5 @@
 import sys
 
-from .Extractors import Post
+from Core.Post import Post
 
 sys.modules['Post'] = Post

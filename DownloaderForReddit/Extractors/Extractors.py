@@ -30,6 +30,7 @@ from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitErro
 
 from Core.Content import Content
 import Core.Injector
+from Core.Post import Post
 
 
 class Extractor(object):
@@ -465,12 +466,3 @@ class DirectExtractor(Extractor):
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension,
                     self.save_path, self.subreddit_save_method)
         self.extracted_content.append(x)
-
-
-class Post(object):
-    def __init__(self, url, author, title, subreddit, created):
-        self.url = url
-        self.author = author
-        self.title = title
-        self.subreddit = subreddit
-        self.created = created
