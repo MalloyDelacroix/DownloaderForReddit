@@ -16,3 +16,4 @@ class Post(object):
         self.title = title
         self.subreddit = subreddit
         self.created = created
+        self.score = None

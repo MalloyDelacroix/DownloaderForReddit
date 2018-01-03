@@ -31,7 +31,7 @@ from PyQt5.QtCore import QRunnable
 class Content(QRunnable):
 
     def __init__(self, url, user, post_title, subreddit, submission_id, number_in_seq, file_ext, save_path,
-                 subreddit_save_method):
+                 subreddit_save_method, display_only):
         """
         Class that holds information about a single file extracted from a reddit submission that is to be downloaded as
         content.  Also holes the method to download the file.
@@ -54,6 +54,7 @@ class Content(QRunnable):
         self.file_ext = file_ext
         self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
         self.subreddit_save_method = subreddit_save_method
+        self.display_only = display_only
         self.output = ''
         self.setAutoDelete(False)
         self.downloaded = False
@@ -61,36 +62,38 @@ class Content(QRunnable):
 
         self.queue = None
 
-        if self.subreddit_save_method is None:
-            self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
-                                          self.file_ext)
-            self.check_path = self.save_path
+        if not self.display_only:
+            if self.subreddit_save_method is None:
+                self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id),
+                                              self.number_in_seq, self.file_ext)
+                self.check_path = self.save_path
 
-        elif self.subreddit_save_method == 'User Name':
-            self.filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
-                                             self.number_in_seq, self.file_ext)
-            self.check_path = '%s%s/' % (self.save_path, self.user)
+            elif self.subreddit_save_method == 'User Name':
+                self.filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
+                                                 self.number_in_seq, self.file_ext)
+                self.check_path = '%s%s/' % (self.save_path, self.user)
 
-        elif self.subreddit_save_method == 'Subreddit Name':
-            self.filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit, self.clean_filename(self.submission_id),
-                                             self.number_in_seq, self.file_ext)
-            self.check_path = '%s%s' % (self.save_path, self.subreddit)
+            elif self.subreddit_save_method == 'Subreddit Name':
+                self.filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit,
+                                                 self.clean_filename(self.submission_id), self.number_in_seq,
+                                                 self.file_ext)
+                self.check_path = '%s%s' % (self.save_path, self.subreddit)
 
-        elif self.subreddit_save_method == 'Subreddit Name/User Name':
-            self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
-                                                self.clean_filename(self.submission_id), self.number_in_seq,
-                                                self.file_ext)
-            self.check_path = '%s%s/%s/' % (self.save_path, self.subreddit, self.user)
+            elif self.subreddit_save_method == 'Subreddit Name/User Name':
+                self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
+                                                    self.clean_filename(self.submission_id), self.number_in_seq,
+                                                    self.file_ext)
+                self.check_path = '%s%s/%s/' % (self.save_path, self.subreddit, self.user)
 
-        elif self.subreddit_save_method == 'User Name/Subreddit Name':
-            self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
-                                                self.clean_filename(self.submission_id), self.number_in_seq,
-                                                self.file_ext)
-            self.check_path = '%s%s/%s' % (self.save_path, self.user, self.subreddit)
-        else:
-            self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id), self.number_in_seq,
-                                          self.file_ext)
-            self.check_path = self.save_path
+            elif self.subreddit_save_method == 'User Name/Subreddit Name':
+                self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
+                                                    self.clean_filename(self.submission_id), self.number_in_seq,
+                                                    self.file_ext)
+                self.check_path = '%s%s/%s' % (self.save_path, self.user, self.subreddit)
+            else:
+                self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id),
+                                              self.number_in_seq, self.file_ext)
+                self.check_path = self.save_path
 
     def run(self):
         self.check_save_path_subreddit()

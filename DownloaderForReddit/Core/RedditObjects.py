@@ -68,6 +68,7 @@ class RedditObject:
         self.saved_content = {}
         self.save_undownloaded_content = True
         self.object_type = None
+        self.content_display_only = False
 
     @property
     def number_of_downloads(self):
@@ -87,31 +88,35 @@ class RedditObject:
         for post in post_list:
             if "imgur" in post.url:
                 extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_directory)
+                                           self.subreddit_save_method, self.name_downloads_by, self.save_directory,
+                                           self.content_display_only)
                 self.extract(extractor)
 
             elif "gfycat" in post.url:
                 extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory)
+                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
+                                            self.content_display_only)
                 self.extract(extractor)
 
             elif "vidble" in post.url:
                 extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory)
+                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
+                                            self.content_display_only)
                 self.extract(extractor)
 
             elif "reddituploads" in post.url:
                 pass
                 extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit, post.created,
                                                    self.subreddit_save_method, self.name_downloads_by,
-                                                   self.save_directory)
+                                                   self.save_directory, self.content_display_only)
                 self.extract(extractor)
 
             # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
             # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
             elif post.url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')):
                 extractor = DirectExtractor(post.url, post.author, post.title, post.subreddit, post.created,
-                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory)
+                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
+                                            self.content_display_only)
                 self.extract(extractor)
 
             else:
@@ -157,7 +162,7 @@ class RedditObject:
     def load_unfinished_downloads(self):
         for key, value in self.saved_content.items():
             x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], self.save_directory,
-                        self.subreddit_save_method)
+                        self.subreddit_save_method, self.content_display_only)
             self.content.append(x)
         self.saved_content.clear()
 
