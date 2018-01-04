@@ -151,6 +151,11 @@ class SettingsManager:
 
         self.user_finder_subreddit_list = self.settings.value('user_finder_subreddit_list', ['filler'], type=str)
         self.user_finder_user_blacklist = self.settings.value('user_finder_blacklist', ['filler'], type=str)
+
+        self.user_finder_user_list_sort_method = self.settings.value('user_finder_user_list_sort_method', 'NAME',
+                                                                     type=str)
+        self.user_finder_user_list_sort_order = self.settings.value('user_finder_user_list_sort_order', 'ASC', type=str)
+        self.user_finder_preview_size = self.settings.value('user_finder_preview_size', 110, type=int)
         # endregion
 
         # region UserFinderSettings
@@ -164,7 +169,6 @@ class SettingsManager:
         self.user_finder_auto_run_silent = self.settings.value('user_finder_auto_run_silent', False, type=bool)
         self.user_finder_double_click_operation = self.settings.value('user_finder_double_click_operation', 'DIALOG',
                                                                       type=str)
-        self.user_finder_preview_size = self.settings.value('user_finder_preview_size', 110, type=int)
         # endregion
 
         # region UserFinderSettingsGUISettings
@@ -277,6 +281,8 @@ class SettingsManager:
         self.settings.setValue('user_finder_subreddit_list', self.user_finder_subreddit_list)
         self.settings.setValue('user_finder_blacklist', self.user_finder_user_blacklist)
         self.settings.setValue('user_finder_preview_size', self.user_finder_preview_size)
+        self.settings.setValue('user_finder_user_list_sort_method', self.user_finder_user_list_sort_method)
+        self.settings.setValue('user_finder_user_list_sort_order', self.user_finder_user_list_sort_order)
 
     def save_user_finder_settings_dialog(self):
         self.settings.setValue('user_finder_settings_gui_geom', self.user_finder_settings_gui_geom)

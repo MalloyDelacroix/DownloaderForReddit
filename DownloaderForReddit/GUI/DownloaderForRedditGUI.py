@@ -73,8 +73,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_count = 0
         self.downloaded = 0
         self.running = False
-        self.user_finder_open = False
         self.saved = True
+        self.user_finder = None
 
         # region Settings
         self.settings_manager = Core.Injector.get_settings_manager()
@@ -964,11 +964,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     #     self.update_user_finder.emit()
 
     def display_user_finder(self, auto):
-        # self.user_finder_open = True
-        # self.file_open_user_finder.setEnabled(False)
-        user_finder = UserFinderGUI(self.user_view_chooser_dict)
-        user_finder.show()
-        user_finder.exec_()
+        self.user_finder = UserFinderGUI(self.user_view_chooser_dict)
+        self.user_finder.closed.connect(self.close_user_finder)
+        self.user_finder.show()
+
+    def close_user_finder(self):
+        self.user_finder = None
 
     def set_unfinished_downloads(self, unfinished_list):
         """

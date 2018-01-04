@@ -50,11 +50,18 @@ class UserFinderListModel(QAbstractListModel):
             att_method = attrgetter('total_karma')
         else:
             att_method = attrgetter('last_post_date')
-        self.user_list.sort(key=att_method, reverse=method[1])
+        self.user_list.sort(key=att_method, reverse=method[1] == 'DESC')
+
+    def add_user(self, user):
+        if self.check_name(user.name):
+            self.insertRow(user)
 
     def check_name(self, name):
         """Checks the user list to see if the supplied name exists in the list, returns True if it does False if not."""
-        pass
+        for user in self.user_list:
+            if user.name.lower() == name.lower():
+                return False
+        return True
 
     def insertRow(self, item, parent=QModelIndex(), *args):
         self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
@@ -77,7 +84,7 @@ class UserFinderListModel(QAbstractListModel):
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
-            return self.user_list[index].name
+            return self.user_list[index.row()].name
         elif role == Qt.DecorationRole:
             return None
 

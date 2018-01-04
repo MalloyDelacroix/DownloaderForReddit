@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>615</width>
-    <height>694</height>
+    <height>505</height>
    </rect>
   </property>
   <property name="font">
@@ -164,75 +164,6 @@ Followed By New</string>
         <property name="text">
          <string>Selected Posts
 Followed By Top</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QGroupBox" name="content_size_options_group_box">
-     <property name="title">
-      <string>Content Size:</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <widget class="QRadioButton" name="content_extra_small_radio">
-        <property name="toolTip">
-         <string>48 px</string>
-        </property>
-        <property name="text">
-         <string>Extra Small</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QRadioButton" name="content_small_radio">
-        <property name="toolTip">
-         <string>72 px</string>
-        </property>
-        <property name="text">
-         <string>Small</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QRadioButton" name="content_medium_radio">
-        <property name="toolTip">
-         <string>110 px</string>
-        </property>
-        <property name="text">
-         <string>Medium</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QRadioButton" name="content_large_radio">
-        <property name="toolTip">
-         <string>176 px</string>
-        </property>
-        <property name="text">
-         <string>Large</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QRadioButton" name="content_original_size_radio">
-        <property name="toolTip">
-         <string>Original Content Size</string>
-        </property>
-        <property name="text">
-         <string>Original Size</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QRadioButton" name="content_extra_large_radio">
-        <property name="toolTip">
-         <string>256 px</string>
-        </property>
-        <property name="text">
-         <string>Extra Large</string>
         </property>
        </widget>
       </item>

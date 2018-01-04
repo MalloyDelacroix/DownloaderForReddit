@@ -53,12 +53,12 @@ class UserFinder(QObject):
         """
         for sub in self.valid_subreddit_list:
             for key, value in sub.extracted_post_dict.items():
-                print('Raw User: %s' % key)
-                user = self.check_user_list(key)
-                if not user:
-                    self.make_and_add_user(key, value)
-                else:
-                    self.add_posts_to_user(user, value)
+                if self.filter_users(key):
+                    user = self.check_user_list(key)
+                    if not user:
+                        self.make_and_add_user(key, value)
+                    else:
+                        self.add_posts_to_user(user, value)
 
     def extract_user_content(self):
         """
@@ -68,6 +68,22 @@ class UserFinder(QObject):
         for user in self.valid_user_list:
             user.extract_content()
             self.send_user.emit(user)
+
+    def filter_users(self, name):
+        """
+        Checks the blacklist and each user object in the user_view_chooser_dict for a match to the supplied name.
+        :param name: The name that is searched for.
+        :type name: str
+        :return: False if a match is found, True otherwise
+        :rtype: bool
+        """
+        if name in self.blacklist:
+            return False
+        for value in self.user_view_chooser_dict.values():
+            for user in value.reddit_object_list:
+                if user.name.lower() == name.lower():
+                    return False
+        return True
 
     def check_user_list(self, name):
         """
@@ -114,10 +130,11 @@ class UserFinder(QObject):
         :type user: UserFinderUser
         :type selected_posts: list
         """
-        if user.new_submissions is None:
-            user.new_submissions = selected_posts
-        else:
-            self.add_posts_to_user(user, selected_posts)
+        if self.settings_manager.user_finder_sample_type_method.startswith('SELECTED'):
+            if user.new_submissions is None:
+                user.new_submissions = selected_posts
+            else:
+                self.add_posts_to_user(user, selected_posts)
 
     def add_posts_to_user(self, user, posts):
         """
@@ -128,7 +145,11 @@ class UserFinder(QObject):
         :type user: UserFinderUser
         :type posts: list
         """
-        user.new_submissions.extend([x for x in posts if self.filter_nsfw(x) and self.filter_existing(user, x)])
+        filtered_posts = [x for x in posts if self.filter_nsfw(x) and self.filter_existing(user, x)]
+        if user.new_submissions:
+            user.new_submissions.extend(filtered_posts)
+        else:
+            user.new_submissions = filtered_posts
 
     def extract_subreddit_posts(self, subreddit):
         """
@@ -173,9 +194,10 @@ class UserFinder(QObject):
             return True
 
     def filter_existing(self, user, post):
-        for item in user.new_submissions:
-            if item.title == post.title:
-                return False
+        if user.new_submissions:
+            for item in user.new_submissions:
+                if item.title == post.title:
+                    return False
         return True
 
 

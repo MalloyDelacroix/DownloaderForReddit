@@ -22,15 +22,6 @@ class UserFinderSettingsGUI(QDialog, Ui_UserFinderSettingsGUI):
             'BROWSER': self.open_link_in_browser_radio
         }
 
-        self.content_size_radio_dict = {
-            48: self.content_extra_small_radio,
-            72: self.content_small_radio,
-            110: self.content_medium_radio,
-            176: self.content_large_radio,
-            256: self.content_extra_large_radio,
-            0: self.content_original_size_radio
-        }
-
         self.sample_method_radio_dict = {
             'TOP': self.user_top_radio,
             'NEW': self.user_new_radio,
@@ -44,7 +35,6 @@ class UserFinderSettingsGUI(QDialog, Ui_UserFinderSettingsGUI):
         self.silent_run_checkbox.setChecked(self.settings_manager.user_finder_auto_run_silent)
         self.show_reddit_page_checkbox.setChecked(self.settings_manager.user_finder_show_users_reddit_page)
         self.sample_size_spinbox.setValue(self.settings_manager.user_finder_sample_size)
-        self.content_size_radio_dict[self.settings_manager.user_finder_preview_size].setChecked(True)
         self.sample_method_radio_dict[self.settings_manager.user_finder_sample_type_method].setChecked(True)
         self.double_click_operation_dict[self.settings_manager.user_finder_double_click_operation].setChecked(True)
 
@@ -64,7 +54,6 @@ class UserFinderSettingsGUI(QDialog, Ui_UserFinderSettingsGUI):
         self.settings_manager.user_finder_auto_add_user_list = self.auto_add_user_list_combo.currentText()
         self.settings_manager.user_finder_sample_size = self.sample_size_spinbox.value()
         self.settings_manager.user_finder_sample_type_method = self.get_sample_method()
-        self.settings_manager.user_finder_preview_size = self.get_content_preview_size()
         self.settings_manager.user_finder_double_click_operation = self.get_double_click_operation()
         self.settings_manager.save_user_finder()
 
