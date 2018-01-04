@@ -1,8 +1,35 @@
+"""
+Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
+users or on the subreddits.
+
+
+Copyright (C) 2017, Kyle Hickey
+
+
+This file is part of the Downloader for Reddit.
+
+Downloader for Reddit is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Downloader for Reddit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+
 from PyQt5.QtCore import QObject, pyqtSignal
+import prawcore
 
 from Core import Injector
 from UserFinder.UserFinderRedditObject import UserFinderUser, UserFinderSubreddit
 from Core.PostFilter import PostFilter
+from Core.Messages import Message
 
 
 class UserFinder(QObject):
@@ -13,6 +40,17 @@ class UserFinder(QObject):
     finished = pyqtSignal()
 
     def __init__(self, subreddit_list, user_blacklist, user_view_chooser_dict):
+        """
+        A class that takes a list of subreddits and extracts each subreddits top posts based on supplied settings then
+        makes a list of the users that made the posts.  The found users top or new posts are then extracted and the the
+        found user is sent to be displayed
+
+        :param subreddit_list: A list of subreddit names to be scanned.
+        :param user_blacklist: A list of reddit user names that if found by the search will not be included in the found
+                               list.
+        :param user_view_chooser_dict: The main window view chooser dict so that existing names can be matched and
+                                       excluded from the found users list.
+        """
         super().__init__()
         self.settings_manager = Injector.get_settings_manager()
         self._r = self.settings_manager.r
@@ -26,26 +64,29 @@ class UserFinder(QObject):
         self.valid_user_list = []
 
     def run(self):
+        """Calls the user finder methods in the necessary order."""
         self.validate_subreddits()
-        print('Sub Post Count: %s' % len(self.valid_subreddit_list[0].extracted_post_dict))
         self.extract_users()
         self.extract_user_content()
         self.finished.emit()
 
     def validate_subreddits(self):
+        """
+        Validates each subreddit in the subreddit list, creates a UserFinderSubreddit object if valid, extracts the
+        subreddits top posts based on the user finder settings, then adds the subreddit to the valid subreddit list.
+        """
         for item in self.subreddit_list:
-            # try:
-            subreddit = self._r.subreddit(item)
-            sub = UserFinderSubreddit(None, item, None, self.settings_manager.user_finder_post_limit, True,
-                                      self.settings_manager.download_videos, self.settings_manager.download_images,
-                                      self.settings_manager.nsfw_filter, None,
-                                      self.settings_manager.name_downloads_by, None)
-            sub.new_submissions = [x for x in self.extract_subreddit_posts(subreddit) if self.filter_post(x)]
-            sub.consolidate_posts()
-            self.valid_subreddit_list.append(sub)
-            # except:
-            #     print('%s invalid' % item)
-            #     # TODO: Make an alert for invalid subreddit
+            try:
+                subreddit = self._r.subreddit(item)
+                sub = UserFinderSubreddit(None, item, None, self.settings_manager.user_finder_post_limit, True,
+                                          self.settings_manager.download_videos, self.settings_manager.download_images,
+                                          self.settings_manager.nsfw_filter, None,
+                                          self.settings_manager.name_downloads_by, None)
+                sub.new_submissions = [x for x in self.extract_subreddit_posts(subreddit) if self.filter_post(x)]
+                sub.consolidate_posts()
+                self.valid_subreddit_list.append(sub)
+            except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                Message.subreddit_not_valid(self, item)
 
     def extract_users(self):
         """
@@ -109,17 +150,17 @@ class UserFinder(QObject):
         :type redditor: Praw.Redditor
         :type selected_posts: list
         """
-        # try:
-        redditor = self._r.redditor(name)
-        user = UserFinderUser(None, name, None, self.settings_manager.user_finder_post_limit, True,
-                              self.settings_manager.download_videos, self.settings_manager.download_images,
-                              self.settings_manager.nsfw_filter, self.settings_manager.name_downloads_by, None)
-        self.add_selected_posts(user, selected_posts)
-        posts = self.extract_user_pots(redditor)
-        self.add_posts_to_user(user, posts)
-        self.valid_user_list.append(user)
-        # except:
-        #     pass
+        try:
+            redditor = self._r.redditor(name)
+            user = UserFinderUser(None, name, None, self.settings_manager.user_finder_post_limit, True,
+                                  self.settings_manager.download_videos, self.settings_manager.download_images,
+                                  self.settings_manager.nsfw_filter, self.settings_manager.name_downloads_by, None)
+            self.add_selected_posts(user, selected_posts)
+            posts = self.extract_user_pots(redditor)
+            self.add_posts_to_user(user, posts)
+            self.valid_user_list.append(user)
+        except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+            pass
 
     def add_selected_posts(self, user, selected_posts):
         """
@@ -170,22 +211,31 @@ class UserFinder(QObject):
         """
         post_limit = self.settings_manager.user_finder_sample_size
         method = self.settings_manager.user_finder_sample_type_method
-        # print('Redditor Type: %s\nPost Limit: %s\nMethod: %s' % (type(redditor), post_limit, method))
         if method == 'TOP' or method == 'SELECTED_TOP':
             return redditor.submissions.top(limit=post_limit)
         elif method == 'NEW' or method == 'SELECTED_NEW':
             return redditor.submissions.new(limit=post_limit)
 
     def filter_post(self, post):
+        """
+        Filters the supplied post based on the UserFinder filter settings.
+        :param post: The post that is filtered.
+        :return: True if the post passes the filters, False if not.
+        """
         return self.filter_score(post) and self.filter_nsfw(post)
 
     def filter_score(self, post):
+        """Checks the supplied posts score and returns whether or not it is greater than the user finder score limit."""
         if self.settings_manager.user_finder_filter_by_score:
             return post.score >= self.settings_manager.user_finder_score_limit
         else:
             return True
 
     def filter_nsfw(self, post):
+        """
+        Checks the supplied post and returns whether or not the post meets the nsfw filter settings from the
+        settings manager.
+        """
         if self.settings_manager.nsfw_filter == 'EXCLUDE':
             return not post.over_18
         elif self.settings_manager.nsfw_filter == 'ONLY':
@@ -194,48 +244,17 @@ class UserFinder(QObject):
             return True
 
     def filter_existing(self, user, post):
+        """
+        Checks the supplied users new_submissions list to see if the supplied post already exists in the list.
+        :param user: The user object who's new_submissions list is to be checked.
+        :param post: The post that is checked for prior existence.
+        :type user: UserFinderUser
+        :type post: praw.submission
+        :return: False if the post exists in the users new_submissions list and True if it does not.
+        :rtype: bool
+        """
         if user.new_submissions:
             for item in user.new_submissions:
                 if item.title == post.title:
                     return False
         return True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
