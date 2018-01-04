@@ -262,7 +262,9 @@ class SettingsManager:
         self.settings.setValue('user_finder_run_with_main', self.user_finder_run_with_main)
         self.settings.setValue('user_finder_auto_add_found', self.user_finder_auto_add_found)
         self.settings.setValue('user_finder_auto_add_user_list', self.user_finder_auto_add_user_list)
+        self.settings.setValue('user_finder_auto_run_silent', self.user_finder_auto_run_silent)
         self.settings.setValue('user_finder_preview_size', self.user_finder_preview_size)
+        self.settings.setValue('user_finder_double_click_operation', self.user_finder_double_click_operation)
 
     def save_user_finder_dialog(self):
         self.settings.setValue('user_finder_GUI_geometry', self.user_finder_GUI_geom)
