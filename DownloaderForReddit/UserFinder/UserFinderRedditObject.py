@@ -7,10 +7,12 @@ class UserFinderUser(User):
     A subclass of the User class used to hold information about a user for use by the UserFinder
     """
 
-    def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
+    def __init__(self, karma, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
                  nsfw_filter, name_downloads_by, user_added):
         super().__init__(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
                          nsfw_filter, name_downloads_by, user_added)
+        self.total_karma = karma
+        self.last_post_date = None
 
     @property
     def save_directory(self):

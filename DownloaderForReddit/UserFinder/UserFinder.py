@@ -144,20 +144,21 @@ class UserFinder(QObject):
         Validates the supplied name, makes a UserFinderUser object from the supplied name, adds the selected posts to
         the users new submissions list, then extracts the users posts from reddit based on the user finder settings
         criteria.
-        :param redditor: A praw redditor object from which the UserFinderUser object is made and the posts extracted.
+        :param name: The name of a redditor that is to be extracted.
         :param selected_posts: A list of the posts that were in the top posts of the searched subreddits that belong to
                                the supplied user name.
-        :type redditor: Praw.Redditor
+        :type name: str
         :type selected_posts: list
         """
         try:
             redditor = self._r.redditor(name)
-            user = UserFinderUser(None, name, None, self.settings_manager.user_finder_post_limit, True,
-                                  self.settings_manager.download_videos, self.settings_manager.download_images,
+            user = UserFinderUser(redditor.link_karma, None, name, None, self.settings_manager.user_finder_post_limit,
+                                  True, self.settings_manager.download_videos, self.settings_manager.download_images,
                                   self.settings_manager.nsfw_filter, self.settings_manager.name_downloads_by, None)
             self.add_selected_posts(user, selected_posts)
             posts = self.extract_user_pots(redditor)
             self.add_posts_to_user(user, posts)
+            user.last_post_date = self.get_last_post_date(redditor, user.new_submissions)
             self.valid_user_list.append(user)
         except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
             pass
@@ -191,6 +192,21 @@ class UserFinder(QObject):
             user.new_submissions.extend(filtered_posts)
         else:
             user.new_submissions = filtered_posts
+
+    def get_last_post_date(self, redditor, post_list):
+        """
+        Gets and returns the date of the last post made by the supplied redditor.  An already extracted list of posts
+        are also supplied so if the posts that have been extracted were extracted under the 'new' method, the date is
+        extracted from this list so no further extraction is needed. If the extraction method is not 'new', one new post
+        is extracted from the redditor and its date returned.
+        :param redditor: A praw redditor object who's last post date is returned.
+        :param post_list: A list of already extracted posts that are checked for a last post date.
+        :return: The date of the users last post.
+        """
+        if 'NEW' in self.settings_manager.user_finder_sample_type_method:
+            return sorted([x.created for x in post_list], reverse=True)[0]
+        else:
+            return [x for x in redditor.submissions.new(limit=1)][0].created
 
     def extract_subreddit_posts(self, subreddit):
         """
