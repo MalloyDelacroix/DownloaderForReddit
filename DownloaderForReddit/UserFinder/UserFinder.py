@@ -37,6 +37,7 @@ class UserFinder(QObject):
     send_user = pyqtSignal(object)
     setup_progress_bar = pyqtSignal(int)
     update_progress_bar = pyqtSignal()
+    user_post_count_signal = pyqtSignal(tuple)
     finished = pyqtSignal()
 
     def __init__(self, subreddit_list, user_blacklist, user_view_chooser_dict):
@@ -152,8 +153,9 @@ class UserFinder(QObject):
         """
         try:
             redditor = self._r.redditor(name)
-            user = UserFinderUser(redditor.link_karma, None, name, None, self.settings_manager.user_finder_post_limit,
-                                  True, self.settings_manager.download_videos, self.settings_manager.download_images,
+            user = UserFinderUser(redditor.link_karma, redditor.created, None, name, None,
+                                  self.settings_manager.user_finder_post_limit, True,
+                                  self.settings_manager.download_videos, self.settings_manager.download_images,
                                   self.settings_manager.nsfw_filter, self.settings_manager.name_downloads_by, None)
             self.add_selected_posts(user, selected_posts)
             posts = self.extract_user_pots(redditor)
@@ -274,3 +276,8 @@ class UserFinder(QObject):
                 if item.title == post.title:
                     return False
         return True
+
+    def get_user_count(self, user):
+        redditor = self._r.redditor(user)
+        self.user_post_count_signal.emit((len(list(redditor.submissions.new(limit=None))), user))
+        self.finished.emit()

@@ -40,8 +40,11 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         splitter_one_state = self.settings_manager.user_finder_splitter_one_state
         splitter_two_state = self.settings_manager.user_finder_splitter_two_state
+        splitter_three_state = self.settings_manager.user_finder_splitter_three_state
         self.splitter_one.restoreState(splitter_one_state if splitter_one_state else self.splitter_one.saveState())
         self.splitter_two.restoreState(splitter_two_state if splitter_two_state else self.splitter_two.saveState())
+        self.splitter_three.restoreState(splitter_three_state if splitter_three_state else
+                                         self.splitter_three.saveState())
 
         if 'filler' in self.settings_manager.user_finder_subreddit_list:
             self.settings_manager.user_finder_subreddit_list.remove('filler')
@@ -85,6 +88,8 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         self.content_list_widget.customContextMenuRequested.connect(self.content_list_right_click)
 
         self.user_list_view.clicked.connect(self.change_display_user)
+
+        self.user_post_count_label.clicked.connect(self.get_user_post_count)
 
     # region PageOne
 
@@ -178,6 +183,7 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         self.settings_manager.user_finder_GUI_geom = self.saveGeometry()
         self.settings_manager.user_finder_splitter_one_state = self.splitter_one.saveState()
         self.settings_manager.user_finder_splitter_two_state = self.splitter_two.saveState()
+        self.settings_manager.user_finder_splitter_three_state = self.splitter_three.saveState()
         self.settings_manager.user_finder_top_sort_method = self.get_top_sort_method()
         self.settings_manager.user_finder_filter_by_score = self.filter_by_score_checkbox.isChecked()
         self.settings_manager.user_finder_score_limit = self.score_limit_spinbox.value()
@@ -348,6 +354,37 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         icon_dict[self.preview_size].setChecked(True)
 
         menu.exec(QtGui.QCursor.pos())
+
+    def get_user_post_count(self):
+        # TODO: Work this out
+        user = self.user_list_model[self.user_list_view.currentIndex()].name
+        thread = QtCore.QThread()
+        user_finder = UserFinder(None, None, None)
+        user_finder.user_post_count_signal.connect()
+        thread.started.connect(lambda: user_finder.get_user_count(user))
+        user_finder.finished.connect(self.thread.quit)
+        user_finder.finished.connect(self.user_finder.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+
+    def set_user_post_count(self, count_tuple):
+        for user in self.user_list_model.user_list:
+            if user.name == count_tuple[1]:
+                user.post_count = count_tuple[0]
+                self.set_user_post_count_label()
+                break
+
+    def set_user_post_count_label(self):
+        user = self.user_list_model[self.user_list_view.currentIndex()]
+        if user:
+
+            self.user_post_count_label.setText(user.post_count)
+            self.user_post_count_label.setStyleSheet('color: black')
+        else:
+            self.user_post_count_label.setText('Click For Post Count')
+            self.user_post_count_label.setToolTip('This count is not retreived automatically because it may take '
+                                                  'some time')
+            self.user_post_count_label.setStyleSheet('color: blue')
 
     def add_user_to_main_winodw_user_list(self, list):
         print(list)

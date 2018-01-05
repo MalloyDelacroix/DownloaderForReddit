@@ -285,12 +285,12 @@
      <widget class="QWidget" name="page_2">
       <layout class="QGridLayout" name="gridLayout_8">
        <item row="0" column="0" colspan="2">
-        <widget class="QSplitter" name="splitter_2">
+        <widget class="QSplitter" name="splitter_two">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
          <widget class="QListView" name="user_list_view"/>
-         <widget class="QSplitter" name="splitter">
+         <widget class="QSplitter" name="splitter_three">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
@@ -342,9 +342,9 @@
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="ClickableLabel" name="user_number_of_posts_label">
+             <widget class="ClickableLabel" name="user_post_count_label">
               <property name="text">
-               <string>number of posts</string>
+               <string>Click For Post Count</string>
               </property>
              </widget>
             </item>
@@ -354,6 +354,19 @@
                <string>last post date</string>
               </property>
              </widget>
+            </item>
+            <item row="1" column="2">
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>

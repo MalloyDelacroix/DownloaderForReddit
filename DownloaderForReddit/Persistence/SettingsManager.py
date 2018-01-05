@@ -49,6 +49,7 @@ class SettingsManager:
 
     @property
     def r(self):
+        print('reddit instance retrieved')
         return praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
                            client_id='frGEUVAuHGL2PQ', client_secret=None)
 
@@ -140,8 +141,9 @@ class SettingsManager:
 
         # region UserFinder GUI
         self.user_finder_GUI_geom = self.settings.value('user_finder_GUI_geometry', None)
-        self.user_finder_splitter_one_state = self.settings.value('user_finder_splitter_one_state')
-        self.user_finder_splitter_two_state = self.settings.value('user_finder_splitter_two_state')
+        self.user_finder_splitter_one_state = self.settings.value('user_finder_splitter_one_state', None)
+        self.user_finder_splitter_two_state = self.settings.value('user_finder_splitter_two_state', None)
+        self.user_finder_splitter_three_state = self.settings.value('user_finder_splitter_three_state', None)
         self.user_finder_top_sort_method = self.settings.value('user_finder_top_sort_method', 'MONTH', type=str)
         self.user_finder_show_users_reddit_page = self.settings.value('user_finder_show_users_reddit_page', False,
                                                                       type=bool)
@@ -274,6 +276,7 @@ class SettingsManager:
         self.settings.setValue('user_finder_GUI_geometry', self.user_finder_GUI_geom)
         self.settings.setValue('user_finder_splitter_one_state', self.user_finder_splitter_one_state)
         self.settings.setValue('user_finder_splitter_two_state', self.user_finder_splitter_two_state)
+        self.settings.setValue('user_finder_splitter_three_state', self.user_finder_splitter_three_state)
         self.settings.setValue('user_finder_top_sort_method', self.user_finder_top_sort_method)
         self.settings.setValue('user_finder_filter_by_score', self.user_finder_filter_by_score)
         self.settings.setValue('user_finder_score_limit', self.user_finder_score_limit)
