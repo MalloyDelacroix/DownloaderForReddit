@@ -236,6 +236,8 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
 
     def user_list_right_click(self):
         menu = QtWidgets.QMenu()
+        self.add_sort_menus(menu)
+        menu.addSeparator()
         add_to_user_list_menu = menu.addMenu('Add User To List')
         default_list = add_to_user_list_menu.addAction('Auto Add List')
         default_list.setToolTip('The auto add to list as defined in the user finder settings dialog.')
@@ -251,6 +253,53 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         add_user_to_blacklist.triggered.connect(self.add_user_to_blacklist_from_found_users)
         remove_user.triggered.connect(self.remove_user_from_found_list)
         menu.exec(QtGui.QCursor.pos())
+
+    def add_sort_menus(self, menu):
+        sort_menu = menu.addMenu('Sort Method')
+        sort_name = sort_menu.addAction('Name')
+        sort_karma = sort_menu.addAction('Karma')
+        sort_date = sort_menu.addAction('Last Post Date')
+
+        sort_name.setCheckable(True)
+        sort_karma.setCheckable(True)
+        sort_date.setCheckable(True)
+
+        sort_name.triggered.connect(lambda: self.set_user_list_sort_method('NAME'))
+        sort_karma.triggered.connect(lambda: self.set_user_list_sort_method('KARMA'))
+        sort_date.triggered.connect(lambda: self.set_user_list_sort_method('POST_DATE'))
+
+        sort_method_group = QtWidgets.QActionGroup(self)
+        sort_method_group.addAction(sort_name)
+        sort_method_group.addAction(sort_karma)
+        sort_method_group.addAction(sort_date)
+
+        sort_order_menu = menu.addMenu('Sort Order')
+        sort_asc = sort_order_menu.addAction('Asc')
+        sort_desc = sort_order_menu.addAction('Desc')
+
+        sort_asc.setCheckable(True)
+        sort_desc.setCheckable(True)
+
+        sort_asc.triggered.connect(lambda: self.set_user_list_sort_order('ASC'))
+        sort_desc.triggered.connect(lambda: self.set_user_list_sort_order('DESC'))
+
+        sort_order_group = QtWidgets.QActionGroup(self)
+        sort_order_group.addAction(sort_asc)
+        sort_order_group.addAction(sort_desc)
+
+        sort_method_dict = {
+            'NAME': sort_name,
+            'KARMA': sort_karma,
+            'POST_DATE': sort_date
+        }
+
+        sort_order_dict = {
+            'ASC': sort_asc,
+            'DESC': sort_desc
+        }
+
+        sort_method_dict[self.user_list_sort_method].setChecked(True)
+        sort_order_dict[self.user_list_sort_order].setChecked(True)
 
     def content_list_right_click(self):
         menu = QtWidgets.QMenu()
