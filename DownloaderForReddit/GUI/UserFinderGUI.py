@@ -357,15 +357,15 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
 
     def get_user_post_count(self):
         # TODO: Work this out
-        user = self.user_list_model[self.user_list_view.currentIndex()].name
-        thread = QtCore.QThread()
-        user_finder = UserFinder(None, None, None)
-        user_finder.user_post_count_signal.connect()
-        thread.started.connect(lambda: user_finder.get_user_count(user))
-        user_finder.finished.connect(self.thread.quit)
-        user_finder.finished.connect(self.user_finder.deleteLater)
-        thread.finished.connect(thread.deleteLater)
-        thread.start()
+        user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()].name
+        self.thread = QtCore.QThread()
+        self.user_finder = UserFinder(None, None, None)
+        self.user_finder.user_post_count_signal.connect(self.set_user_post_count)
+        self.thread.started.connect(lambda: self.user_finder.get_user_count(user))
+        self.user_finder.finished.connect(self.thread.quit)
+        self.user_finder.finished.connect(self.user_finder.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
 
     def set_user_post_count(self, count_tuple):
         for user in self.user_list_model.user_list:
@@ -375,14 +375,13 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
                 break
 
     def set_user_post_count_label(self):
-        user = self.user_list_model[self.user_list_view.currentIndex()]
+        user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()]
         if user:
-
-            self.user_post_count_label.setText(user.post_count)
+            self.user_post_count_label.setText(str(user.post_count))
             self.user_post_count_label.setStyleSheet('color: black')
         else:
             self.user_post_count_label.setText('Click For Post Count')
-            self.user_post_count_label.setToolTip('This count is not retreived automatically because it may take '
+            self.user_post_count_label.setToolTip('This count is not retrieved automatically because it may take '
                                                   'some time')
             self.user_post_count_label.setStyleSheet('color: blue')
 
