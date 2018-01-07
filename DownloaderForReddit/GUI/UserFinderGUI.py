@@ -187,6 +187,7 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         self.settings_manager.user_finder_top_sort_method = self.get_top_sort_method()
         self.settings_manager.user_finder_filter_by_score = self.filter_by_score_checkbox.isChecked()
         self.settings_manager.user_finder_score_limit = self.score_limit_spinbox.value()
+        self.settings_manager.user_finder_post_limit = self.post_limit_spinbox.value()
         self.settings_manager.user_finder_subreddit_list = self.get_subreddit_items()
         self.settings_manager.user_finder_user_blacklist = self.get_user_blacklist_items()
         self.settings_manager.user_finder_preview_size = self.preview_size
