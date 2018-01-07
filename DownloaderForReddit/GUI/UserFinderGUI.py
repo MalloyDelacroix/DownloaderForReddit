@@ -358,15 +358,18 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
 
     def get_user_post_count(self):
         # TODO: Work this out
-        user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()].name
-        self.thread = QtCore.QThread()
-        self.user_finder = UserFinder(None, None, None)
-        self.user_finder.user_post_count_signal.connect(self.set_user_post_count)
-        self.thread.started.connect(lambda: self.user_finder.get_user_count(user))
-        self.user_finder.finished.connect(self.thread.quit)
-        self.user_finder.finished.connect(self.user_finder.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.start()
+        try:
+            user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()].name
+            self.thread = QtCore.QThread()
+            self.user_finder = UserFinder(None, None, None)
+            self.user_finder.user_post_count_signal.connect(self.set_user_post_count)
+            self.thread.started.connect(lambda: self.user_finder.get_user_count(user))
+            self.user_finder.finished.connect(self.thread.quit)
+            self.user_finder.finished.connect(self.user_finder.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+            self.thread.start()
+        except IndexError:
+            pass
 
     def set_user_post_count(self, count_tuple):
         for user in self.user_list_model.user_list:
