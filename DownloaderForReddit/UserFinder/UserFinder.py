@@ -278,6 +278,15 @@ class UserFinder(QObject):
         return True
 
     def get_user_count(self, user):
-        redditor = self._r.redditor(user)
-        self.user_post_count_signal.emit((len(list(redditor.submissions.new(limit=None))), user))
-        self.finished.emit()
+        """
+        Connects to reddit and retrieves the number of posts the supplied user has made.
+        :param user: The name of the user who's post count is queried.
+        :type user: str
+        """
+        try:
+            redditor = self._r.redditor(user)
+            self.user_post_count_signal.emit((len(list(redditor.submissions.new(limit=None))), user))
+        except:
+            pass
+        finally:
+            self.finished.emit()

@@ -98,6 +98,7 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
             self.stacked_widget.setCurrentIndex(1)
             if not self.content_list_init_setup:
                 self.set_initial_content_list()
+            self.set_user_post_count_label()
         else:
             self.stacked_widget.setCurrentIndex(0)
 
@@ -219,6 +220,7 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         row = self.user_list_view.currentIndex().row()
         user = self.user_list_model.user_list[row]
         self.setup_content_list(user)
+        self.set_user_post_count_label()
 
     def set_initial_content_list(self):
         try:
@@ -357,7 +359,9 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
         menu.exec(QtGui.QCursor.pos())
 
     def get_user_post_count(self):
-        # TODO: Work this out
+        """
+        Starts a thread and a user finder instance to connect to reddit and get the currently selected users post count.
+        """
         try:
             user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()].name
             self.thread = QtCore.QThread()
@@ -372,6 +376,12 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
             pass
 
     def set_user_post_count(self, count_tuple):
+        """
+        Sets the currently selected users post count attribute according to the count_tuple sent via signal from the
+        user finder thread.
+        :param count_tuple: A tuple containing the post count for the current user and the users name
+        :return:
+        """
         for user in self.user_list_model.user_list:
             if user.name == count_tuple[1]:
                 user.post_count = count_tuple[0]
@@ -379,15 +389,22 @@ class UserFinderGUI(QtWidgets.QWidget, Ui_UserFinderGUI):
                 break
 
     def set_user_post_count_label(self):
-        user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()]
-        if user:
-            self.user_post_count_label.setText(str(user.post_count))
+        """
+        Sets the user post count label based on whether or not the currently selected user has a post count value.
+        """
+        try:
+            user = self.user_list_model.user_list[self.user_list_view.currentIndex().row()]
+            if user.post_count:
+                self.user_post_count_label.setText(str(user.post_count))
+                self.user_post_count_label.setStyleSheet('color: black')
+            else:
+                self.user_post_count_label.setText('Click For Post Count')
+                self.user_post_count_label.setToolTip('This count is not retrieved automatically because it may take '
+                                                      'some time')
+                self.user_post_count_label.setStyleSheet('color: blue')
+        except IndexError:
+            self.user_post_count_label.setText('Select User For Post Count')
             self.user_post_count_label.setStyleSheet('color: black')
-        else:
-            self.user_post_count_label.setText('Click For Post Count')
-            self.user_post_count_label.setToolTip('This count is not retrieved automatically because it may take '
-                                                  'some time')
-            self.user_post_count_label.setStyleSheet('color: blue')
 
     def add_user_to_main_winodw_user_list(self, list):
         print(list)
