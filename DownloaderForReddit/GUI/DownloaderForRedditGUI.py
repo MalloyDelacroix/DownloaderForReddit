@@ -192,7 +192,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setVisible(False)
 
         # TODO: Uncomment this before production
-        self.check_for_updates(False)
+        # self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
@@ -834,7 +834,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user_list = self.get_names_from_text()
         if user_list:
             for name in user_list:
-                self.add_user(name)
+                self.add_user(name, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
 
     def import_subreddit_list_from_text_file(self):
         """Reads subreddits from a selected text file and adds the names to the subreddit list."""
@@ -868,7 +868,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def remove_forbidden_chars(self, name):
         """Removes forbidden characters from the supplied name and returns the new name."""
-        return ''.join(x for x in name if x != ' ' and name != '' and name != '\n')
+        return ''.join(x for x in name if x != ' ' and x != '' and x != '\n')
 
     def select_text_file(self):
         """
