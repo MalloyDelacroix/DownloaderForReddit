@@ -369,65 +369,6 @@ class VidbleExtractor(Extractor):
         self.extracted_content.append(x)
 
 
-class EroshareExtractor(Extractor):
-
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only):
-        """
-        A sublcass of the Extractor class.  This class interacts with Eroshare exclusively through their api
-        """
-        super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                         save_path, content_display_only)
-        self.api_caller = "https://api.eroshare.com/api/v1/albums/"
-
-    def extract_content(self):
-        try:
-            if self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', 'webm')):
-                self.extract_direct()
-            elif '/i/' in self.url:
-                self.extract_single()
-            else:
-                self.extract_album()
-        except:
-            self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
-                                          (self.url, self.user, self.subreddit, self.post_title))
-
-    def extract_direct(self):
-        address, ending = self.url.rsplit('/', 1)
-        pic_id, extension = ending.rsplit('.', 1)
-        self.create_content_from_extract(self.url, pic_id, '')
-
-    def extract_single(self):
-        parts = [x for x in self.url.split('/') if x != '' and x != 'i']
-        new_url = '%s//i.%s/%s.jpg' % (parts[0], parts[1], parts[2])
-        self.create_content_from_extract(new_url, parts[2], '')
-
-    def extract_album(self):
-        domain, album_id = self.url.rsplit('/', 1)
-        extract = self.api_caller + album_id
-        json = self.get_json(extract)
-        album = json.get('items')
-        count = 1
-        for entry in album:
-            if entry.get('type') == "Video":
-                number = count if len(album) > 1 else ""
-                self.create_content_from_extract(entry.get('url_mp4'), album_id, number)
-                count += 1
-            elif entry.get('type') == "Image":
-                number = count if len(album) > 1 else ""
-                self.create_content_from_extract(entry.get('url_full_protocol'), album_id, number)
-                count += 1
-            else:
-                print("The type of this file is unknown, cannot extract url")
-
-    def create_content_from_extract(self, url, url_id, number):
-        address, extension = url.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else url_id
-        x = Content(url, self.user, self.post_title, self.subreddit, file_name, number, '.' + extension, self.save_path,
-                    self.subreddit_save_method, self.content_display_only)
-        self.extracted_content.append(x)
-
-
 class RedditUploadsExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
