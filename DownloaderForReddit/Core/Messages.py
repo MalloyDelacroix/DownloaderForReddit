@@ -187,6 +187,11 @@ class Message(object):
         else:
             return "CANCEL"
 
+    def invalid_file_path(self):
+        text = 'The selected file/folder is not valid or is of an incompatible format'
+        reply = message.information(self, 'Invalid Selection', text, message.Ok)
+        return reply == message.Ok
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 

@@ -255,14 +255,18 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def add_user_button_right_click(self):
         menu = QtWidgets.QMenu()
-        import_users = menu.addAction('Import Users From Folder')
-        import_users.triggered.connect(self.import_user_list_from_folder)
+        import_users_from_folder = menu.addAction('Import Users From Folder')
+        import_users_from_text_file = menu.addAction('Import Users From Text File')
+        import_users_from_folder.triggered.connect(self.import_user_list_from_folder)
+        import_users_from_text_file.triggered.connect(self.import_user_list_from_text_file)
         menu.exec(QtGui.QCursor.pos())
 
     def add_subreddit_button_right_click(self):
         menu = QtWidgets.QMenu()
-        import_subreddits = menu.addAction('Import Subreddits From Folder')
-        import_subreddits.triggered.connect(self.import_subreddit_list_from_folder)
+        import_subreddits_from_folder = menu.addAction('Import Subreddits From Folder')
+        import_subreddits_from_text_file = menu.addAction('Import Subreddits From Text File')
+        import_subreddits_from_folder.triggered.connect(self.import_subreddit_list_from_folder)
+        import_subreddits_from_text_file.triggered.connect(self.import_subreddit_list_from_text_file)
         menu.exec(QtGui.QCursor.pos())
 
     def user_settings(self, page, from_menu):
@@ -749,25 +753,95 @@ class RedditDownloaderGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def import_user_list_from_folder(self):
         """Opens a file dialog and then imports the names of the subfolders as users to the current user list"""
-        master_folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
-                                                                       self.save_path))
-        reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
-                                                  'Import names of all subfolders from %s?' % master_folder,
-                                                  QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
-        if reply == QtWidgets.QMessageBox.Ok:
-            for folder in os.listdir(master_folder):
-                self.add_user(folder)
+        master_folder = self.select_directory()
+        if master_folder:
+            reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
+                                                      'Import names of all subfolders from %s?' % master_folder,
+                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
+            if reply == QtWidgets.QMessageBox.Ok:
+                for folder in os.listdir(master_folder):
+                    self.add_user(folder)
 
     def import_subreddit_list_from_folder(self):
         """See import_user_list_from_folder"""
-        master_folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
-                                                                       self.save_path))
-        reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
-                                                  'Import names of all subfolders from %s?' % master_folder,
-                                                  QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
-        if reply == QtWidgets.QMessageBox.Ok:
-            for folder in os.listdir(master_folder):
-                self.add_subreddit(folder)
+        master_folder = self.select_directory()
+        if master_folder:
+            reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
+                                                      'Import names of all subfolders from %s?' % master_folder,
+                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
+            if reply == QtWidgets.QMessageBox.Ok:
+                for folder in os.listdir(master_folder):
+                    self.add_subreddit(folder)
+
+    def select_directory(self):
+        """
+        Opens a dialog for the user to select a directory then verifies and returns the selected directory.
+        :return: A path to the selected directory.
+        :rtype: str
+        """
+        folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
+                                                                       self.settings_manager.save_directory))
+        if os.path.isdir(folder):
+            return folder
+        else:
+            Message.invalid_file_path(self)
+            return None
+
+    def import_user_list_from_text_file(self):
+        """Reads users from a selected text file and adds the names to the user list."""
+        user_list = self.get_names_from_text()
+        if user_list:
+            for name in user_list:
+                self.add_user(name)
+
+    def import_subreddit_list_from_text_file(self):
+        """Reads subreddits from a selected text file and adds the names to the subreddit list."""
+        sub_list = self.get_names_from_text()
+        if sub_list:
+            for name in sub_list:
+                self.add_subreddit(name)
+
+    def get_names_from_text(self):
+        """
+        Reads a text file and splits the text into usable names.  Also filters each name for forbidden characters.
+        """
+        text_file = self.select_text_file()
+        if text_file:
+            return_list = []
+            with open(text_file, 'r') as file:
+                content = file.readlines()
+                names = [line for line in content]
+                for name in names:
+                    if ',' in name:
+                        return_list.extend(self.split_names(name))
+                    else:
+                        return_list.append(self.remove_forbidden_chars(name))
+            return return_list
+        else:
+            return None
+
+    def split_names(self, name):
+        """Splits the supplied text into multiple names if the text contains a comma."""
+        return [self.remove_forbidden_chars(x) for x in name.split(',') if x != '\n']
+
+    def remove_forbidden_chars(self, name):
+        """Removes forbidden characters from the supplied name and returns the new name."""
+        return ''.join(x for x in name if x != ' ' and name != '' and name != '\n')
+
+    def select_text_file(self):
+        """
+        Opens a dialog for the user to select a text file and returns the path to the selected file if it exists.
+        :return: The path to the user selected file.
+        :rtype: str
+        """
+        file_path = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select Text File to Import From',
+                                                              self.settings_manager.save_directory,
+                                                              'Text File (*.txt)')[0])
+        if os.path.isfile(file_path) and file_path.endswith('.txt'):
+            return file_path
+        else:
+            Message.invalid_file_path(self)
+            return None
 
     def get_selected_view_index(self, list_view):
         """Returns a single index if multiple are selected"""
