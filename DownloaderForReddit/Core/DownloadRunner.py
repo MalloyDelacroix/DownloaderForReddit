@@ -23,19 +23,17 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import praw
 import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool, QThread
 from queue import Queue
 
 import Core.Injector
-from version import __version__
+from Core.PostFilter import PostFilter
 
 
-class RedditExtractor(QObject):
+class DownloadRunner(QObject):
 
-    remove_invalid_user = pyqtSignal(object)
-    remove_invalid_subreddit = pyqtSignal(object)
+    remove_invalid_object = pyqtSignal(object)
     finished = pyqtSignal()
     downloaded_users_signal = pyqtSignal(dict)
     unfinished_downloads_signal = pyqtSignal(list)
@@ -58,9 +56,9 @@ class RedditExtractor(QObject):
         The rest of teh parameters are all configuration options that are set in the settings dialog
         """
         super().__init__()
-        self._r = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
-                              client_id='frGEUVAuHGL2PQ', client_secret=None)
         self.settings_manager = Core.Injector.get_settings_manager()
+        self._r = self.settings_manager.r
+        self.post_filter = PostFilter()
         self.user_list = user_list
         self.subreddit_list = subreddit_list
         self.queue = queue
@@ -71,14 +69,6 @@ class RedditExtractor(QObject):
         self.unfinished_downloads = []
         self.user_run = True if self.user_list is not None else False
 
-        self.post_limit = self.settings_manager.post_limit
-        self.save_path = self.settings_manager.save_directory
-        self.subreddit_sort_method = self.settings_manager.subreddit_sort_method
-        self.subreddit_sort_top_method = self.settings_manager.subreddit_sort_top_method
-        self.restrict_date = self.settings_manager.restrict_by_date
-        self.restrict_by_score = self.settings_manager.restrict_by_score
-        self.restrict_score_method = self.settings_manager.score_limit_operator
-        self.restrict_score_limit = self.settings_manager.post_score_limit
         self.unfinished_downloads_list = unfinished_downloads_list
         self.load_undownloaded_content = self.settings_manager.save_undownloaded_content
 
@@ -99,21 +89,13 @@ class RedditExtractor(QObject):
                     test = redditor.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     redditor = None
-                    self.remove_invalid_user.emit(user)
+                    self.remove_invalid_object.emit(user)
 
                 if redditor is not None:
                     self.queue.put("%s is valid" % user.name)
-                    # Sets date limit according to settings GUI
-                    if not self.restrict_date:
-                        date_limit = 1
-                    elif user.custom_date_limit is not None:
-                        date_limit = user.custom_date_limit
-                    else:
-                        date_limit = user.date_limit
-                    submissions = self.get_submissions_user(redditor, date_limit, user.post_limit)
-                    user.get_new_submissions(submissions)
+                    user.new_submissions = self.get_submissions(redditor, user)
                     self.validated_objects.put(user)
-                    user.check_save_path()
+                    user.check_save_directory()
                     self.update_progress_bar()
                 else:
                     self.queue.put("%s does not exist" % user.name)
@@ -131,15 +113,13 @@ class RedditExtractor(QObject):
                     test = subreddit.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     subreddit = None
-                    self.remove_invalid_subreddit.emit(sub)
+                    self.remove_invalid_object.emit(sub)
 
                 if subreddit is not None:
                     self.queue.put("%s is valid" % sub.name)
-                    date_limit = sub.date_limit if self.restrict_date else 1
-                    submissions = self.get_submissions_subreddit(subreddit, date_limit, sub.post_limit)
-                    sub.get_new_submissions(submissions)
+                    sub.new_submissions = self.get_submissions(subreddit, sub)
                     self.validated_objects.put(sub)
-                    sub.check_save_path()
+                    sub.check_save_directory()
                     self.update_progress_bar()
                 else:
                     self.queue.put("%s is not a valid subreddit" % sub.name)
@@ -171,15 +151,14 @@ class RedditExtractor(QObject):
 
                 if redditor is not None:
                     self.queue.put('%s is valid' % user.name)
-                    submissions = [x for x in redditor.get_submitted(limit=self.post_limit) if x.created >
-                                   user.date_limit and x.subreddit.display_name in self.validated_subreddits]
-                    user.get_new_submissions(submissions)
+                    user.new_submissions = self.get_user_submissions_from_subreddits(redditor, user)
                     self.validated_objects.put(user)
-                    user.check_save_path()
+                    user.check_save_directory()
                     self.update_progress_bar()
         self.validated_objects.put(None)
 
     def downloads_finished(self):
+        """Cleans up objects that need to be changed after the download is complete."""
         try:
             for sub in self.subreddit_list:
                 sub.clear_download_session_data()
@@ -196,6 +175,10 @@ class RedditExtractor(QObject):
         self.finished.emit()
 
     def start_extractor(self):
+        """
+        Initializes an Extractor object, starts a separate thread, and then runs the extractor from the new thread so
+        that content can be simultaneously extracted, validated, and downloaded.
+        """
         self.extractor = Extractor(self.queue, self.validated_objects, self.queued_posts, self.user_run)
         self.stop.connect(self.extractor.stop)
         self.extractor_thread = QThread()
@@ -209,6 +192,11 @@ class RedditExtractor(QObject):
         self.extractor_thread.start()
 
     def start_downloader(self):
+        """
+        Initializes a Downloader object, starts a separate thread, and then runds the downloader from the new thread so
+        that content can be simultaneously downloaded, extracted and validated.
+        :return:
+        """
         self.downloader = Downloader(self.queued_posts, self.settings_manager.max_download_thread_count)
         self.stop.connect(self.downloader.stop)
         self.downloader_thread = QThread()
@@ -220,69 +208,71 @@ class RedditExtractor(QObject):
         self.downloader_thread.finished.connect(self.downloads_finished)
         self.downloader_thread.start()
 
-    def get_submissions_user(self, user, date_limit, post_limit):  # 0 = greater than, 1 = less than
-        """Extracts user submissions from reddit if they meet the user provided criteria"""
-        if self.restrict_by_score and self.restrict_score_method == 0:
-            submissions = [x for x in user.submissions.new(limit=post_limit) if x.created > date_limit and not
-                           x.is_self and x.score > self.restrict_score_limit]
-        elif self.restrict_by_score and self.restrict_score_method == 1:
-            submissions = [x for x in user.submissions.new(limit=post_limit) if x.created > date_limit and not
-                           x.is_self and x.score < self.restrict_score_limit]
-        else:
-            submissions = [x for x in user.submissions.new(limit=post_limit) if x.created > date_limit and not
-                           x.is_self]
-        return submissions
+    def get_submissions(self, praw_object, reddit_object):
+        """
+        Extracts posts from a redditor object if the post makes it through the PostFilter
+        :param praw_object: A praw redditor object that contains the submission list.
+        :param reddit_object: The User object that holds certain filter settings needed for gathering the posts.
+        :return: A list of submissions that have been filtered based on the overall settings and the supplied users
+                 individual settings.
+        """
+        return [post for post in self.get_raw_submissions(praw_object, reddit_object.post_limit) if
+                self.post_filter.filter_post(post, reddit_object)]
 
-    def get_submissions_subreddit(self, subreddit, date_limit, post_limit):
-        """See get_submissions_user"""
-        if self.subreddit_sort_method != 0:
-            date_limit = 1
-        if self.restrict_by_score and self.restrict_score_method == 0:
-            submissions = [x for x in self.sub_sort(subreddit, post_limit) if not x.is_self and x.score >
-                           self.restrict_score_limit and x.created > date_limit]
-        elif self.restrict_by_score and self.restrict_score_method == 1:
-            submissions = [x for x in self.sub_sort(subreddit, post_limit) if not x.is_self and x.score <
-                           self.restrict_score_limit and x.created > date_limit]
+    def get_raw_submissions(self, praw_object, post_limit):
+        """
+        Gets the raw submission generator from the praw object based on the appropriate settings.
+        :param praw_object: Either a praw Redditor or Subreddit object.
+        :param post_limit: The post limit from the reddit object that the submissions are for.
+        :return: A list generator of submissions from the supplied praw_object.
+        """
+        sort = self.settings_manager.subreddit_sort_method
+        if self.user_run:
+            posts = praw_object.submissions.new(limit=post_limit)
+        elif sort == 'NEW':
+            posts = praw_object.new(limit=post_limit)
+        elif sort == 'HOT':
+            posts = praw_object.hot(limit=post_limit)
+        elif sort == 'RISING':
+            posts = praw_object.rising(limit=post_limit)
+        elif sort == 'CONTROVERSIAL':
+            posts = praw_object.controversial(limit=post_limit)
         else:
-            submissions = [x for x in self.sub_sort(subreddit, post_limit) if not x.is_self and x.created > date_limit]
-        return submissions
-
-    def sub_sort(self, sub, post_limit):  # new: 0, top: 1, hot: 2, rising: 3, controversial: 4
-        sort = self.subreddit_sort_method
-        if sort == 0:
-            posts = sub.new(limit=post_limit)
-        elif sort == 2:
-            posts = sub.hot(limit=post_limit)
-        elif sort == 3:
-            posts = sub.rising(limit=post_limit)
-        elif sort == 4:
-            posts = sub.controversial(limit=post_limit)
-        else:
-            top_sort = self.subreddit_sort_top_method
-            if top_sort == 0:
-                posts = sub.top('hour', limit=post_limit)
-            elif top_sort == 1:
-                posts = sub.top('day', limit=post_limit)
-            elif top_sort == 2:
-                posts = sub.top('week', limit=post_limit)
-            elif top_sort == 3:
-                posts = sub.top('month', limit=post_limit)
-            elif top_sort == 4:
-                posts = sub.top('year', limit=post_limit)
-            else:
-                posts = sub.top('all', limit=post_limit)
+            top_sort = self.settings_manager.subreddit_sort_top_method
+            posts = praw_object.top(top_sort.lower(), limit=post_limit)
         return posts
 
+    def get_user_submissions_from_subreddits(self, redditor, user):
+        """
+        Returns a list of redditor submissions that are only from subreddits that are in the validated subreddit list.
+        All other user filters still apply.
+        :param redditor: The praw redditor object from which the posts will be extracted.
+        :param user: The RedditObject that holds some filtering information needed.
+        :return: A list of submissions that are from the validated subreddits and that pass the users filtering
+                 requirements
+        """
+        return [post for post in redditor.submissions.new(limit=user.post_limit) if post.subreddit.display_name in
+                self.validated_subreddits and self.post_filter.filter_post(post, user)]
+
     def add_downloaded_user(self, user_tuple):
+        """
+        Adds downloaded users to the downloaded users dict so that they may be displayed in the 'last downlaoded users'
+        dialog after the download is complete.
+        :param user_tuple: A tuple containing the name of the user, and a list of the content that was downloaded during
+                           session
+        :type user_tuple: tuple
+        """
         if user_tuple[0] in self.downloaded_users:
             self.downloaded_users[user_tuple[0]].extend(user_tuple[1])
         else:
             self.downloaded_users[user_tuple[0]] = user_tuple[1]
 
     def send_downloaded_users(self):
+        """Emits a signal containing a dictionary of the last downloaded users."""
         self.downloaded_users_signal.emit(self.downloaded_users)
 
     def stop_download(self):
+        """Stops the download when the user selects to do so."""
         self.run = False
         self.stop.emit()
         self.queue.put('\nStopped\n')
@@ -299,6 +289,10 @@ class RedditExtractor(QObject):
         self.start_downloader()
 
     def skip_user_validation(self):
+        """
+        Adds the objects in the user list to the validated objects queue.  This method is used for rare circumstances
+        where a user has already been validated in order to skip the somewhat expensive process of validation
+        """
         for x in self.user_list:
             self.validated_objects.put(x)
 

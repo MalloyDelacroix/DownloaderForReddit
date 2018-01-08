@@ -30,12 +30,13 @@ from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitErro
 
 from Core.Content import Content
 import Core.Injector
+from Core.Post import Post
 
 
 class Extractor(object):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         """
         A class that handles extracting individual item urls from the hosting websites.  Iteracts with website APIs if
         available and directly with requests if not.
@@ -53,6 +54,7 @@ class Extractor(object):
         self.subreddit = subreddit
         self.creation_date = creation_date
         self.save_path = save_path
+        self.content_display_only = content_display_only
         self.subreddit_save_method = subreddit_save_method
         self.name_downloads_by = name_downloads_by
         self.extracted_content = []
@@ -81,7 +83,7 @@ class Extractor(object):
 class ImgurExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         """
         A subclass of the Extractor class.  This class interacts exclusively with the imgur website through the imgur
         api via ImgurPython
@@ -90,7 +92,7 @@ class ImgurExtractor(Extractor):
         tuple is supplied to imgurpython to establish an imgur client
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path)
+                 save_path, content_display_only)
         self.imgur_client_id = self.settings_manager.imgur_client_id
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
         if self.imgur_client_id is None or self.imgur_client_secret is None:
@@ -194,7 +196,7 @@ class ImgurExtractor(Extractor):
                     url = picture.mp4
                     extension = 'mp4'
             x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
-                        self.subreddit_save_method)
+                        self.subreddit_save_method, self.content_display_only)
             self.extracted_content.append(x)
         except NameError:
             self.failed_extract_messages.append("Failed: Unrecognized file extension: %s\nUser: %s  Subreddit: %s  "
@@ -211,7 +213,7 @@ class ImgurExtractor(Extractor):
                 extension = 'mp4'
                 url = pic.mp4
             x = Content(url, self.user, self.post_title, self.subreddit, file_name + " ", count, '.' + extension,
-                        self.save_path, self.subreddit_save_method)
+                        self.save_path, self.subreddit_save_method, self.content_display_only)
             count += 1
             self.extracted_content.append(x)
 
@@ -225,7 +227,7 @@ class ImgurExtractor(Extractor):
             extension = 'mp4'
             url = pic.mp4
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
-                     self.subreddit_save_method)
+                    self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
 
     def extract_direct_mislinked(self):
@@ -251,7 +253,7 @@ class ImgurExtractor(Extractor):
                     url = picture.mp4
                     extension = 'mp4'
             x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
-                        self.subreddit_save_method)
+                        self.subreddit_save_method, self.content_display_only)
             self.extracted_content.append(x)
         except NameError:
             self.failed_extract_messages.append("Failed: Unrecognized file extension: %s\nUser: %s  Subreddit: %s  "
@@ -261,12 +263,12 @@ class ImgurExtractor(Extractor):
 class GfycatExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         """
         A subclass of the Extractor class.  This class interacts exclusively with the gfycat website through their api
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path)
+                         save_path, content_display_only)
         self.api_caller = "https://gfycat.com/cajax/get/"
 
     def extract_content(self):
@@ -285,7 +287,7 @@ class GfycatExtractor(Extractor):
         gfy_id, ext = id_with_ext.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else gfy_id
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", "." + ext, self.save_path,
-                    self.subreddit_save_method)
+                    self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
 
     def extract_single(self):
@@ -294,19 +296,19 @@ class GfycatExtractor(Extractor):
         gfy_url = gfy_json.get('gfyItem').get('webmUrl')
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else gif_id
         x = Content(gfy_url, self.user, self.post_title, self.subreddit, file_name, "", '.webm', self.save_path,
-                    self.subreddit_save_method)
+                    self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
 
 
 class VidbleExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         """
         A sublcass of the Extractor class.  This class interacts exclusively with the Vidble website via BeautifulSoup4
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path)
+                         save_path, content_display_only)
         self.vidble_base = "https://vidble.com"
 
     def extract_content(self):
@@ -338,7 +340,7 @@ class VidbleExtractor(Extractor):
                     base, extension = link.rsplit('.', 1)
                     file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
                     x = Content(self.vidble_base + link, self.user, self.post_title, self.subreddit, file_name, "",
-                                '.' + extension, self.save_path, self.subreddit_save_method)
+                                '.' + extension, self.save_path, self.subreddit_save_method, self.content_display_only)
                     self.extracted_content.append(x)
 
     def extract_album(self):
@@ -354,7 +356,7 @@ class VidbleExtractor(Extractor):
                     base, extension = link.rsplit('.', 1)
                     file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
                     x = Content(self.vidble_base + link, self.user, self.post_title, self.subreddit, file_name, count,
-                                '.' + extension, self.save_path, self.subreddit_save_method)
+                                '.' + extension, self.save_path, self.subreddit_save_method, self.content_display_only)
                     self.extracted_content.append(x)
                     count += 1
 
@@ -363,19 +365,19 @@ class VidbleExtractor(Extractor):
         vidble_id, extension = id_with_ext.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension,
-                    self.save_path, self.subreddit_save_method)
+                    self.save_path, self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
 
 
 class EroshareExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         """
         A sublcass of the Extractor class.  This class interacts with Eroshare exclusively through their api
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path)
+                         save_path, content_display_only)
         self.api_caller = "https://api.eroshare.com/api/v1/albums/"
 
     def extract_content(self):
@@ -422,14 +424,14 @@ class EroshareExtractor(Extractor):
         address, extension = url.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else url_id
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, number, '.' + extension, self.save_path,
-                    self.subreddit_save_method)
+                    self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
 
 
 class RedditUploadsExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         """
         A subclass of the Extractor class.  This class interacts with reddit's own image hosting exclusively.
 
@@ -438,13 +440,13 @@ class RedditUploadsExtractor(Extractor):
         this class will be updated to interact with it.
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path)
+                         save_path, content_display_only)
 
     def extract_content(self):
         try:
             direct_link = "%s.jpg" % self.url
             x = Content(direct_link, self.user, self.post_title, self.subreddit, self.post_title, "", '.jpg',
-                        self.save_path, self.subreddit_save_method)
+                        self.save_path, self.subreddit_save_method, self.content_display_only)
             self.extracted_content.append(x)
         except:
             self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
@@ -454,23 +456,14 @@ class RedditUploadsExtractor(Extractor):
 class DirectExtractor(Extractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path):
+                 save_path, content_display_only):
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path)
+                         save_path, content_display_only)
 
     def extract_content(self):
         domain, id_with_ext = self.url.rsplit('/', 1)
         image_id, extension = id_with_ext.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension,
-                    self.save_path, self.subreddit_save_method)
+                    self.save_path, self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
-
-
-class Post(object):
-    def __init__(self, url, author, title, subreddit, created):
-        self.url = url
-        self.author = author
-        self.title = title
-        self.subreddit = subreddit
-        self.created = created

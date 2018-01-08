@@ -29,10 +29,14 @@ import sys
 from queue import Queue
 from PyQt5 import QtWidgets, QtCore
 
-from GUI.RedditDownloaderGUI import RedditDownloaderGUI
+from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
 from version import __version__
 
-QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+# if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+#   QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
+# if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+#     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 if sys.platform == 'win32':
     myappid = 'SomeGuySoftware.DownloaderForReddit.%s' % __version__
@@ -82,7 +86,7 @@ def main():
     thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
 
-    window = RedditDownloaderGUI(queue, receiver)
+    window = DownloaderForRedditGUI(queue, receiver)
 
     receiver.output_signal.connect(window.update_output)
     receiver.moveToThread(thread)

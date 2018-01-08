@@ -23,16 +23,14 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
-import re
-import subprocess
-import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from GUI.UserSettingsDialog import UserSettingsDialog
+from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
+from Core import SystemUtil
+from Core.AlphanumKey import ALPHANUM_KEY
 
 
-class DownloadedUsersDialog(UserSettingsDialog):
+class DownloadedUsersDialog(RedditObjectSettingsDialog):
 
     def __init__(self, list_model, clicked_user, last_downloaded_file_dict):
         """
@@ -45,7 +43,7 @@ class DownloadedUsersDialog(UserSettingsDialog):
         :param last_downloaded_file_dict: A dictionary with the key being the downloaded user and the value being a list
         of files downloaded during the session
         """
-        super().__init__(list_model, clicked_user)
+        super().__init__(list_model, clicked_user, False)
         self.file_dict = last_downloaded_file_dict
         self.view_downloads_button.clicked.connect(self.toggle_download_views)
         self.view_downloads_button.setText('Show Downloads')
@@ -61,7 +59,16 @@ class DownloadedUsersDialog(UserSettingsDialog):
     def setup(self):
         pass
 
-    def save_temporary_user(self):
+    def setup_display(self, reddit_object):
+        pass
+
+    def set_save_path_name_label(self):
+        pass
+
+    def get_name_label_text(self):
+        pass
+
+    def save_temp_object(self):
         pass
 
     def download_single(self):
@@ -73,7 +80,7 @@ class DownloadedUsersDialog(UserSettingsDialog):
     def change_page(self):
         pass
 
-    def change_to_user_settings(self):
+    def change_to_settings_view(self):
         pass
 
     def set_restore_defaults(self):
@@ -84,11 +91,11 @@ class DownloadedUsersDialog(UserSettingsDialog):
         if self.page_two_geom is not None:
             self.resize(self.page_two_geom[0], self.page_two_geom[1])
         self.stacked_widget.setCurrentIndex(1)
-        self.setup_user_content_list()
+        self.setup_content_list()
 
     def list_item_change(self):
-        self.current_user = self.user_list[self.user_list_widget.currentRow()]
-        self.setup_user_content_list()
+        self.current_object = self.object_list[self.object_list_widget.currentRow()]
+        self.setup_content_list()
 
     def toggle_download_views(self):
         """Toggles if images are shown"""
@@ -96,24 +103,24 @@ class DownloadedUsersDialog(UserSettingsDialog):
             self.show_downloads = False
         else:
             self.show_downloads = True
-        self.setup_user_content_list()
+        self.setup_content_list()
 
-    def setup_user_content_list(self):
+    def setup_content_list(self):
         """
         Overwrites the parent classes method so that only files that were downloaded during the last session and
         supplied via the last_downloaded_file_dict parameter are displayed
         """
-        self.user_content_list.clear()
-        if self.user_content_icons_full_width:
-            icon_size = self.user_content_list.width()
+        self.content_list.clear()
+        if self.content_icons_full_width:
+            icon_size = self.content_list.width()
         else:
-            icon_size = self.user_content_icon_size
-        self.user_content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
+            icon_size = self.content_icon_size
+        self.content_list.setIconSize(QtCore.QSize(icon_size, icon_size))
         if self.show_downloads:
             try:
                 if len(self.file_dict) > 0:
-                    self.file_dict[self.current_user.name].sort(key=alphanum_key)
-                    for file in self.file_dict[self.current_user.name]:
+                    self.file_dict[self.current_object.name].sort(key=ALPHANUM_KEY)
+                    for file in self.file_dict[self.current_object.name]:
                         file_name = file.rsplit('/', 1)[1]
                         item = QtWidgets.QListWidgetItem()
                         icon = QtGui.QIcon()
@@ -121,31 +128,12 @@ class DownloadedUsersDialog(UserSettingsDialog):
                         icon.addPixmap(pixmap)
                         item.setIcon(icon)
                         item.setText(file_name)
-                        self.user_content_list.addItem(item)
+                        self.content_list.addItem(item)
                         QtWidgets.QApplication.processEvents()
 
             except FileNotFoundError:
-                self.user_content_list.addItem('No content has been downloaded for this user yet')
+                self.content_list.addItem('No content has been downloaded for this user yet')
 
-    def open_file(self, position):
-        file = self.file_dict[self.current_user.name][position]
-        try:
-            if sys.platform == 'win32':
-                os.startfile(file)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, file])
-        except (AttributeError, FileNotFoundError):
-            pass
-
-
-# Functions that sort the displayed content in an expected manner
-def tryint(s):
-    try:
-        return int(s)
-    except:
-        return s
-
-
-def alphanum_key(s):
-    return [tryint(c) for c in re.split('([0-9]+)', s)]
+    def open_file(self):
+        file = self.file_dict[self.current_object.name][self.content_list.currentIndex().row()]
+        SystemUtil.open_in_system(file)
