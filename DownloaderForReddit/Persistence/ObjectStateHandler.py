@@ -45,7 +45,6 @@ class ObjectStateHandler:
         :return: A dict of view chooser dicts and a string representing which value should be displayed currently.
         :rtype: dict
         """
-        first_run = Injector.get_settings_manager().check_first_run()
         try:
             user_view_chooser_dict = {}
             subreddit_view_chooser_dict = {}
@@ -56,16 +55,14 @@ class ObjectStateHandler:
                 last_subreddit_view = shelf['current_subreddit_view']
 
                 for name, user_list in user_list_models.items():
-                    if first_run:
-                        user_list = cls.check_user_objects(user_list)
+                    user_list = cls.check_user_objects(user_list)
                     x = ListModel(name, 'user')
                     x.reddit_object_list = user_list
                     x.display_list = [i.name for i in user_list]
                     user_view_chooser_dict[x.name] = x
 
                 for name, sub_list in subreddit_list_models.items():
-                    if first_run:
-                        sub_list = cls.check_subreddit_objects(sub_list)
+                    sub_list = cls.check_subreddit_objects(sub_list)
                     x = ListModel(name, 'subreddit')
                     x.reddit_object_list = sub_list
                     x.display_list = [i.name for i in sub_list]
