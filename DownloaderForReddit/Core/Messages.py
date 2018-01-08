@@ -28,16 +28,6 @@ from PyQt5.QtWidgets import QMessageBox as message
 
 from GUI_Resources.UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
 
-no_user_list_message = 'There are no user lists available. To add a user, please add a user list'
-no_subreddit_list_message = 'There are no subreddit lists available. To add a subreddit please add a subreddit list'
-no_user_selected_message = 'No user selected'
-no_subreddit_selected_message = 'No subreddit selected'
-failed_to_save_message = 'Sorry, the user and subreddit lists save attempt was not successful.  Please try again.'
-remove_user_list_message = 'Are you sure you want to remove this list? Information for every user in the list will' \
-                           ' be lost'
-remove_subreddit_list_message = 'Are you sure you want to remove this list? Information for every subreddit in the ' \
-                                'list will be lost'
-
 
 class Message(object):
     """
@@ -49,11 +39,13 @@ class Message(object):
         pass
 
     def no_user_list(self):
-        reply = message.warning(self, 'Warning', no_user_list_message, message.Ok)
+        text = 'There are no user lists available. To add a user, please add a user list'
+        reply = message.warning(self, 'Warning', text, message.Ok)
         return reply == message.Ok
 
     def no_subreddit_list(self):
-        reply = message.warning(self, 'No Subreddit List', no_subreddit_list_message, message.Ok)
+        text = 'There are no subreddit lists available. To add a subreddit please add a subreddit list'
+        reply = message.warning(self, 'No Subreddit List', text, message.Ok)
         return reply == message.Ok
 
     def no_reddit_object_selected(self, type):
@@ -62,7 +54,8 @@ class Message(object):
         return reply == message.Ok
 
     def failed_to_save(self):
-        reply = message.information(self, 'Save Failed', failed_to_save_message, message.Ok)
+        text = 'Sorry, the user and subreddit lists save attempt was not successful.  Please try again.'
+        reply = message.information(self, 'Save Failed', text, message.Ok)
         return reply == message.Ok
 
     def remove_reddit_object(self, name):
@@ -71,11 +64,13 @@ class Message(object):
         return reply == message.Yes
 
     def remove_user_list(self):
-        reply = message.warning(self, 'Remove User List?', remove_user_list_message, message.Ok, message.Cancel)
+        text = 'Are you sure you want to remove this list? Information for every user in the list will be lost'
+        reply = message.warning(self, 'Remove User List?', text, message.Ok, message.Cancel)
         return reply == message.Ok
 
     def remove_subreddit_list(self):
-        reply = message.warning(self, 'Remove Subreddit List?', remove_subreddit_list_message, message.Ok, message.Cancel)
+        text = 'Are you sure you want to remove this list? Information for every subreddit in the list will be lost'
+        reply = message.warning(self, 'Remove Subreddit List?', text, message.Ok, message.Cancel)
         return reply == message.Ok
 
     def reddit_object_not_valid(self, name, type_):
