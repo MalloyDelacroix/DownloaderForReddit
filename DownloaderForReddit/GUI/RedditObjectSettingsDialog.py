@@ -91,7 +91,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.sub_sort_combo.addItems(
                 ('New', 'Hot', 'Rising', 'Controversial', 'Top - Hour', 'Top - Day', 'Top - Week',
                  'Top - Month', 'Top - Year', 'Top - All'))
-            self.sub_sort_combo.setCurrentText(self.settings_manager.subreddit_sort_top_method)
+            self.set_subreddit_sort_combo()
 
         self.nsfw_filter_combo.addItems(self.settings_manager.nsfw_filter_dict.keys())
 
@@ -149,6 +149,23 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def object_type_str(self):
         """Returns a string of the object type with the first letter capitalized to be used in displays."""
         return self.object_type[0] + self.object_type[1:].lower()
+
+    def set_subreddit_sort_combo(self):
+        """
+        Sets the current text in the sub_sort_combo depending on the subreddit sort method and subreddit sort top
+        methods in the settings manager
+        """
+        if self.settings_manager.subreddit_sort_method != 'TOP':
+            self.sub_sort_combo.setCurrentText(self.settings_manager.subreddit_sort_method.title())
+        else:
+            sort_dict = {
+                'DAY': 'Top - Day',
+                'WEEK': 'Top - Week',
+                'MONTH': 'Top - Month',
+                'YEAR': 'Top - Year',
+                'ALL': 'Top - All'
+            }
+            self.sub_sort_combo.setCurrentText(sort_dict[self.settings_manager.subreddit_sort_top_method])
 
     def set_edit_disabled(self):
         self.download_object_button.setEnabled(False)
