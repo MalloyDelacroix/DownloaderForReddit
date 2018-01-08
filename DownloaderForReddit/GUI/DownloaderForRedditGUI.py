@@ -376,9 +376,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             selected_user = current_list_model.reddit_object_list[position]
             SystemUtil.open_in_system(selected_user.save_directory)
         except AttributeError:
-            Message.no_user_selected(self)
+            Message.no_reddit_object_selected(self, 'user')
         except FileNotFoundError:
-            Message.no_download_folder(self)
+            Message.no_download_folder(self, 'user')
 
     def open_subreddit_download_folder(self):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
@@ -388,9 +388,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             selected_sub = current_list_model.reddit_object_list[position]
             SystemUtil.open_in_system(selected_sub.save_directory)
         except AttributeError:
-            Message.no_subreddit_selected(self)
+            Message.no_reddit_object_selected(self, 'subreddit')
         except FileNotFoundError:
-            Message.no_download_folder(self)
+            Message.no_download_folder(self, 'subreddit')
 
     def button_assignment(self):
         """Assigns what the download button does depending on if the downloader is currently running"""
