@@ -386,7 +386,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
             selected_sub = current_list_model.reddit_object_list[position]
-            SystemUtil.open_in_system(selected_sub.save_directory)
+            path = os.path.join(selected_sub.save_directory, selected_sub.name) if \
+                    selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
+            SystemUtil.open_in_system(path)
         except AttributeError:
             Message.no_reddit_object_selected(self, 'subreddit')
         except FileNotFoundError:

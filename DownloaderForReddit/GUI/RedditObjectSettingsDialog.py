@@ -554,13 +554,27 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def open_item_download_folder(self, position):
         """Opens the selected items download folder."""
         selected_object = self.object_list[position]
-        open_item = selected_object.save_directory
+        path = self.get_download_folder_path(selected_object)
         try:
-            SystemUtil.open_in_system(open_item)
+            SystemUtil.open_in_system(path)
         except AttributeError:
             print('Selected object has no attribute save_directory')
         except FileNotFoundError:
             Message.no_download_folder(self, self.object_type)
+
+    def get_download_folder_path(self, reddit_object):
+        """
+        Returns the download folder path for the supplied reddit object based on object type and if the object is a
+        subreddit, the subreddit save method.
+        :param reddit_object: A reddit object (user or subreddit) for which a download folder path is needed.
+        :type reddit_object: RedditObject
+        :return: The path to the supplied objects download folder.
+        :rtype: str
+        """
+        if reddit_object.object_type == 'SUBREDDIT':
+            if self.save_by_method_combo.currentText().startswith('Subreddit'):
+                return os.path.join(reddit_object.save_directory, reddit_object.name)
+        return reddit_object.save_directory
 
     def open_file(self):
         """
