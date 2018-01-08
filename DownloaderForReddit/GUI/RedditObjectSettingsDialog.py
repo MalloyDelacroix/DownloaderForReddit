@@ -95,6 +95,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
         self.nsfw_filter_combo.addItems(self.settings_manager.nsfw_filter_dict.keys())
 
+        self.total_downloads_title_label.setText('Total %s Downloads:' % self.object_type_str)
+
         self.content_icons_full_width = self.settings_manager.reddit_object_content_icons_full_width
         self.content_icon_size = self.settings_manager.reddit_object_content_icon_size
 
