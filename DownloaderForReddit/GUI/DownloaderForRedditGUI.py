@@ -141,8 +141,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if len(self.failed_list) < 1:
             self.file_failed_download_list.setEnabled(False)
 
-        self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
-        # self.file_open_user_finder.setEnabled(False)
+        # self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
+        self.file_open_user_finder.setEnabled(False)
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
@@ -192,7 +192,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setVisible(False)
 
         # TODO: Uncomment this before production
-        # self.check_for_updates(False)
+        self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
