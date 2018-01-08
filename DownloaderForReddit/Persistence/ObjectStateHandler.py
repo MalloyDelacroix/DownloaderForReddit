@@ -27,7 +27,6 @@ import shelve
 
 from ViewModels.ListModel import ListModel
 from Persistence.ObjectUpdater import ObjectUpdater
-from Core import Injector
 from version import __version__
 
 
