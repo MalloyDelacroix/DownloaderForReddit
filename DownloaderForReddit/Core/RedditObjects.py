@@ -86,27 +86,28 @@ class RedditObject:
 
     def assign_extractor(self, post_list):
         for post in post_list:
+            subreddit = post.subreddit if self.object_type != 'SUBREDDIT' else self.name
             if "imgur" in post.url:
-                extractor = ImgurExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                extractor = ImgurExtractor(post.url, post.author, post.title, subreddit, post.created,
                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                            self.content_display_only)
                 self.extract(extractor)
 
             elif "gfycat" in post.url:
-                extractor = GfycatExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                extractor = GfycatExtractor(post.url, post.author, post.title, subreddit, post.created,
                                             self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                             self.content_display_only)
                 self.extract(extractor)
 
             elif "vidble" in post.url:
-                extractor = VidbleExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                extractor = VidbleExtractor(post.url, post.author, post.title, subreddit, post.created,
                                             self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                             self.content_display_only)
                 self.extract(extractor)
 
             elif "reddituploads" in post.url:
                 pass
-                extractor = RedditUploadsExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                extractor = RedditUploadsExtractor(post.url, post.author, post.title, subreddit, post.created,
                                                    self.subreddit_save_method, self.name_downloads_by,
                                                    self.save_directory, self.content_display_only)
                 self.extract(extractor)
@@ -114,7 +115,7 @@ class RedditObject:
             # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
             # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
             elif post.url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')):
-                extractor = DirectExtractor(post.url, post.author, post.title, post.subreddit, post.created,
+                extractor = DirectExtractor(post.url, post.author, post.title, subreddit, post.created,
                                             self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                             self.content_display_only)
                 self.extract(extractor)
