@@ -27,7 +27,6 @@ import datetime
 import time
 import copy
 from PyQt5 import QtCore, QtWidgets, QtGui
-# import cv2
 
 from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from Core import Injector
