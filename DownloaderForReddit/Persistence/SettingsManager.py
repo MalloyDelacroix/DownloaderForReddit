@@ -49,7 +49,6 @@ class SettingsManager:
 
     @property
     def r(self):
-        print('reddit instance retrieved')
         return praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
                            client_id='frGEUVAuHGL2PQ', client_secret=None)
 
