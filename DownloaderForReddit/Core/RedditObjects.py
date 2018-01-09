@@ -86,31 +86,28 @@ class RedditObject:
 
     def assign_extractor(self, post_list):
         for post in post_list:
+            extractor = None
             subreddit = post.subreddit if self.object_type != 'SUBREDDIT' else self.name
             if "imgur" in post.url:
                 extractor = ImgurExtractor(post.url, post.author, post.title, subreddit, post.created,
                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                            self.content_display_only)
-                self.extract(extractor)
 
             elif "gfycat" in post.url:
                 extractor = GfycatExtractor(post.url, post.author, post.title, subreddit, post.created,
                                             self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                             self.content_display_only)
-                self.extract(extractor)
 
             elif "vidble" in post.url:
                 extractor = VidbleExtractor(post.url, post.author, post.title, subreddit, post.created,
                                             self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                             self.content_display_only)
-                self.extract(extractor)
 
             elif "reddituploads" in post.url:
                 pass
                 extractor = RedditUploadsExtractor(post.url, post.author, post.title, subreddit, post.created,
                                                    self.subreddit_save_method, self.name_downloads_by,
                                                    self.save_directory, self.content_display_only)
-                self.extract(extractor)
 
             # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
             # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
@@ -118,11 +115,13 @@ class RedditObject:
                 extractor = DirectExtractor(post.url, post.author, post.title, subreddit, post.created,
                                             self.subreddit_save_method, self.name_downloads_by, self.save_directory,
                                             self.content_display_only)
-                self.extract(extractor)
 
             else:
                 self.failed_extracts.append("Could not extract links from post: %s submitted by: %s\nUrl domain not "
                                             "supported.  Url: %s" % (post.title, post.author, post.url))
+
+            if extractor:
+                self.extract(extractor)
 
             try:
                 self.set_date_limit(post.created)
