@@ -16,7 +16,7 @@ class Ui_failed_downloads_dialog(object):
         font.setPointSize(10)
         failed_downloads_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/failed_download.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(".Images/failed_download.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         failed_downloads_dialog.setWindowIcon(icon)
         self.gridLayout = QtWidgets.QGridLayout(failed_downloads_dialog)
         self.gridLayout.setObjectName("gridLayout")

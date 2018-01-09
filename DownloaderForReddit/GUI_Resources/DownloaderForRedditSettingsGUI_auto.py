@@ -12,6 +12,9 @@ class Ui_SettingsGUI(object):
     def setupUi(self, SettingsGUI):
         SettingsGUI.setObjectName("SettingsGUI")
         SettingsGUI.resize(754, 880)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("./Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        SettingsGUI.setWindowIcon(icon)
         self.gridLayout_8 = QtWidgets.QGridLayout(SettingsGUI)
         self.gridLayout_8.setObjectName("gridLayout_8")
         self.stacked_widget = QtWidgets.QStackedWidget(SettingsGUI)

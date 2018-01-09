@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../Images/settings_single_gear.png</normaloff>../Images/settings_single_gear.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0" colspan="3">
     <widget class="QStackedWidget" name="stacked_widget">
