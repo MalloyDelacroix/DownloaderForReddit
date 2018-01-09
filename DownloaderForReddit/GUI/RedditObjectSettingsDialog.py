@@ -86,6 +86,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.save_by_method_label.setVisible(False)
             self.save_by_method_combo.setVisible(False)
         else:
+            self.download_object_button.setText('Download This Subreddit')
             self.save_by_method_combo.addItems(('Subreddit Name', 'User Name', 'Subreddit Name/User Name',
                                                 'User Name/Subreddit Name'))
             self.sub_sort_combo.addItems(
