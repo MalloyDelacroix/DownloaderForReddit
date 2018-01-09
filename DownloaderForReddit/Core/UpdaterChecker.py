@@ -51,9 +51,13 @@ class UpdateChecker(QObject):
         self.download_name = None
 
     def run(self):
-        self.retrieve_json_data()
-        self.check_releases()
-        self.finished.emit()
+        try:
+            self.retrieve_json_data()
+            self.check_releases()
+        except:
+            print('Update checker failed to establish a connection')
+        finally:
+            self.finished.emit()
 
     def retrieve_json_data(self):
         response = requests.get(self.release_api_caller)
