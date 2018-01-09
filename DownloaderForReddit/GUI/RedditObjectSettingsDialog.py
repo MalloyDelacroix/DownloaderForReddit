@@ -27,7 +27,7 @@ import datetime
 import time
 import copy
 from PyQt5 import QtCore, QtWidgets, QtGui
-import cv2
+# import cv2
 
 from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from Core import Injector
@@ -431,9 +431,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         if not file.endswith(('webm', 'gif', 'mp4')):
             pixmap = self.make_pixmap(file)
         else:
-            if self.settings_manager.gif_display_method == 'FRAME':
-                pixmap = self.get_frame(file)
-            elif self.settings_manager.gif_display_method == 'PLACEHOLDER':
+            if self.settings_manager.gif_display_method == 'PLACEHOLDER':
                 pixmap = self.make_pixmap('Images/gif_placeholder.jpg')
             else:
                 return None
@@ -443,19 +441,6 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def make_pixmap(self, file):
         """Createsa pixmap out of the supplied file with a uniform size and options."""
         return QtGui.QPixmap(file).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
-
-    def get_frame(self, file):
-        """
-        Gets the first frame from an animated file to be displayed as an icon.
-        :param file: The animated file from which the frame is to be taken.
-        :return: A pixmap of the frame.
-        """
-        vid = cv2.VideoCapture(file)
-        ret, frame = vid.read()
-        height, width, channel = frame.shape
-        bytes_per_line = 3 * width
-        img = QtGui.QImage(frame.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
-        return self.make_pixmap(img)
 
     def object_list_right_click(self):
         """Displays a context menu for the object list."""

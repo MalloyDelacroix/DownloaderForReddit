@@ -65,8 +65,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.gif_display_dict = {
             'DO_NOT_DISPLAY': self.gif_do_not_display_radio,
-            'PLACEHOLDER': self.gif_display_placeholder_radio,
-            'FRAME': self.gif_display_frame_radio
+            'PLACEHOLDER': self.gif_display_placeholder_radio
         }
 
         self.settings_manager = Core.Injector.get_settings_manager()

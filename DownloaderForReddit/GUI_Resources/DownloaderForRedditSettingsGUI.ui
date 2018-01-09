@@ -638,13 +638,6 @@
           <string>Gif Display Options</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_11">
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="gif_do_not_display_radio">
-            <property name="text">
-             <string>Do Not Display Gifs</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="gif_display_placeholder_radio">
             <property name="text">
@@ -652,10 +645,10 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QRadioButton" name="gif_display_frame_radio">
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="gif_do_not_display_radio">
             <property name="text">
-             <string>Display First Gif Frame</string>
+             <string>Do Not Display Gifs</string>
             </property>
            </widget>
           </item>
