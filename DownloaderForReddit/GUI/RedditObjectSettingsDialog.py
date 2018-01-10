@@ -405,7 +405,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         """Sets up a list item for each file in the content folder and adds it to the content display view."""
         for file in self.current_download_folder:
             try:
-                text = file.rsplit('/', 1)[1]
+                text = file.rsplit(os.sep, 1)[1]
                 item = CustomListItem()
                 item.path = file
                 icon = self.make_icon(file)
