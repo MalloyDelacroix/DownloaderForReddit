@@ -99,9 +99,13 @@ class Content(QRunnable):
         self.check_save_path_subreddit()
         response = requests.get(self.url, stream=True)
         if response.status_code == 200:
-            with open(self.filename, 'wb') as file:
-                for chunk in response.iter_content(1024):
-                    file.write(chunk)
+            try:
+                with open(self.filename, 'wb') as file:
+                    for chunk in response.iter_content(1024):
+                        file.write(chunk)
+            except PermissionError:
+                print('Permission denied to path: %s' % self.filename)
+                self.queue.put('Failed Download: Permission denied to path: %s' % self.filename)
             self.queue.put('Saved %s' % self.filename)
             self.downloaded = True
             return None
