@@ -319,11 +319,21 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def download_single(self):
         """Downloads only the current reddit object."""
+        self.replace_current_object_with_temp()
         download_method = self.get_single_download_subreddit_method()
         self.download_object_button.setText('Downloading...')
         self.download_object_button.setDisabled(True)
         self.save_temp_object()
-        self.single_download.emit((self.current_temp_object, download_method))
+        self.single_download.emit((self.current_object, download_method))
+
+    def replace_current_object_with_temp(self):
+        """
+        Replaces the current object with the current temporary object before a single download call is made to insure
+        that content downloaded during the single download session is logged to reddit object.
+        """
+        index = self.object_list.index(self.current_object)
+        self.object_list[index] = self.current_temp_object
+        self.current_object = self.object_list[index]
 
     def get_single_download_subreddit_method(self):
         """
