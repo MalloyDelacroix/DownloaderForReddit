@@ -348,6 +348,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             'Controversial': ('CONTROVERSIAL', None),
             'Top - Hour': ('TOP', 'HOUR'),
             'Top - Day': ('TOP', 'DAY'),
+            'Top - Week': ('TOP', 'WEEK'),
             'Top - Month': ('TOP', 'MONTH'),
             'Top - Year': ('TOP', 'YEAR'),
             'Top - All': ('TOP', 'ALL')
