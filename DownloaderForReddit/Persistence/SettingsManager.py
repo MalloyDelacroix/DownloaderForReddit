@@ -115,7 +115,7 @@ class SettingsManager:
             'total_download_count': self.settings.value('tooltip_total_download_count', True, type=bool),
             'added_on_date': self.settings.value('tooltip_added_on_date', False, type=bool)
         }
-        self.gif_display_method = self.settings.value('gif_display_method', 'FRAME', str)
+        self.gif_display_method = self.settings.value('gif_display_method', 'PLACEHOLDER', str)
         # endregion
 
         # region Main Window GUI
