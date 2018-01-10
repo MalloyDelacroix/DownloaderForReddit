@@ -40,7 +40,7 @@ from Core import SystemUtil
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
 
-    single_download = QtCore.pyqtSignal(object)
+    single_download = QtCore.pyqtSignal(tuple)
 
     def __init__(self, list_model, init_item, downloader_running):
         """
@@ -78,6 +78,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         self.splitter.restoreState(state if state is not None else self.splitter.saveState())
         self.show_downloads = True
+
+        self.subreddit_sort_dict = {
+
+        }
 
         if self.object_type == 'USER':
             self.sub_sort_label.setVisible(False)
@@ -315,10 +319,30 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def download_single(self):
         """Downloads only the current reddit object."""
+        download_method = self.get_single_download_subreddit_method()
         self.download_object_button.setText('Downloading...')
         self.download_object_button.setDisabled(True)
         self.save_temp_object()
-        self.single_download.emit(self.current_temp_object)
+        self.single_download.emit((self.current_temp_object, download_method))
+
+    def get_single_download_subreddit_method(self):
+        """
+        Returns a tuple of how the subreddit should be sorted for a single download based on which combo box option is
+        selected.
+        :return: A tuple specifying how a subreddit should be sorted.
+        """
+        method_dict = {
+            'New': ('NEW', None),
+            'Hot': ('HOT', None),
+            'Rising': ('RISING', None),
+            'Controversial': ('CONTROVERSIAL', None),
+            'Top - Hour': ('TOP', 'HOUR'),
+            'Top - Day': ('TOP', 'DAY'),
+            'Top - Month': ('TOP', 'MONTH'),
+            'Top - Year': ('TOP', 'YEAR'),
+            'Top - All': ('TOP', 'ALL')
+        }
+        return method_dict[self.sub_sort_combo.currentText()]
 
     def select_save_path_dialog(self):
         """Opens a dialog to choose a directory path to be set as the objects save path."""

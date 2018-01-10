@@ -451,14 +451,15 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
         self.start_reddit_extractor_thread('SUBREDDIT')
 
-    def run_single_subreddit(self, subreddit):
+    def run_single_subreddit(self, download_tuple):
         """
         Called from the subreddit settings dialog and supplied the name of the selected subreddit.  Downloads only the
         selected subreddit
         """
         self.started_download_gui_shift()
-        subreddit_list = [subreddit]
+        subreddit_list = [download_tuple[0]]
         self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
+        self.download_runner.single_subreddit_run_method = download_tuple[1]
         self.start_reddit_extractor_thread('SUBREDDIT')
 
     def run_user_and_subreddit(self):

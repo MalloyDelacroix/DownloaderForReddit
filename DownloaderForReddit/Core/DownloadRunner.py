@@ -68,6 +68,7 @@ class DownloadRunner(QObject):
         self.downloaded_users = {}
         self.unfinished_downloads = []
         self.user_run = True if self.user_list is not None else False
+        self.single_subreddit_run_method = None
 
         self.unfinished_downloads_list = unfinished_downloads_list
         self.load_undownloaded_content = self.settings_manager.save_undownloaded_content
@@ -226,21 +227,33 @@ class DownloadRunner(QObject):
         :param post_limit: The post limit from the reddit object that the submissions are for.
         :return: A list generator of submissions from the supplied praw_object.
         """
-        sort = self.settings_manager.subreddit_sort_method
         if self.user_run:
             posts = praw_object.submissions.new(limit=post_limit)
-        elif sort == 'NEW':
-            posts = praw_object.new(limit=post_limit)
-        elif sort == 'HOT':
-            posts = praw_object.hot(limit=post_limit)
-        elif sort == 'RISING':
-            posts = praw_object.rising(limit=post_limit)
-        elif sort == 'CONTROVERSIAL':
-            posts = praw_object.controversial(limit=post_limit)
         else:
-            top_sort = self.settings_manager.subreddit_sort_top_method
-            posts = praw_object.top(top_sort.lower(), limit=post_limit)
+            sort = self.get_subreddit_sort_method()
+            if sort[0] == 'NEW':
+                posts = praw_object.new(limit=post_limit)
+            elif sort[0] == 'HOT':
+                posts = praw_object.hot(limit=post_limit)
+            elif sort[0] == 'RISING':
+                posts = praw_object.rising(limit=post_limit)
+            elif sort[0] == 'CONTROVERSIAL':
+                posts = praw_object.controversial(limit=post_limit)
+            else:
+                posts = praw_object.top(sort[1].lower(), limit=post_limit)
         return posts
+
+    def get_subreddit_sort_method(self):
+        """
+        Method used to determine the subreddit sort method.  This is necessary because if a subreddit is downloaded as
+        a single, the user can set the sort method for that subreddit only.
+        :return: A tuple of the subreddit sort method and the subreddit sort top method
+        :rtype: tuple
+        """
+        if self.single_subreddit_run_method:
+            return self.single_subreddit_run_method
+        else:
+            return self.settings_manager.subreddit_sort_method, self.settings_manager.subreddit_sort_top_method
 
     def get_user_submissions_from_subreddits(self, redditor, user):
         """
