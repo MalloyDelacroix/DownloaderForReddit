@@ -79,6 +79,12 @@ class Extractor(object):
             self.extracted_content.append("Failed to retrieve data for link %s\nUser: %s  Subreddit: %s  Tile: %s" %
                                           (url, self.user, self.subreddit, self.post_title))
 
+    def make_content(self, url, file_name, count, extension):
+        count = ' %s' % count if count else ''
+        x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
+                    self.subreddit_save_method, self.content_display_only)
+        self.extracted_content.append(x)
+
 
 class ImgurExtractor(Extractor):
 
