@@ -23,9 +23,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
 import requests
 from PyQt5.QtCore import QRunnable
+
+from Core import SystemUtil
 
 
 class Content(QRunnable):
@@ -132,11 +133,7 @@ class Content(QRunnable):
         is creating the directory.  If the first thread then tries to create the directory, it will already exist.
         Multithreading is neat.
         """
-        if not os.path.isdir(self.check_path):
-            try:
-                os.makedirs(self.check_path)
-            except FileExistsError:
-                pass
+        SystemUtil.create_directory(self.check_path)
 
     def install_queue(self, queue):
         """
