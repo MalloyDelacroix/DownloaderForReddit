@@ -23,11 +23,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
-
 from .Content import Content
 from Extractors.Extractors import *
 import Core.Injector
+from Core import SystemUtil
 
 
 class RedditObject:
@@ -175,11 +174,7 @@ class RedditObject:
             self.custom_date_limit = None
 
     def check_save_directory(self):
-        if not os.path.isdir(self.save_directory):
-            try:
-                os.makedirs(self.save_directory)
-            except FileExistsError:
-                pass
+        SystemUtil.create_directory(self.save_directory)
 
     def clear_download_session_data(self):
         if Core.Injector.get_settings_manager().save_undownloaded_content:

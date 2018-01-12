@@ -16,3 +16,20 @@ def open_in_system(item):
         opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
         subprocess.call([opener, item])
 
+
+def create_directory(path):
+    """
+    Checks to see if the supplied directory path exists and creates the directory if it does not.  Also handles a
+    FileExistsException which happens sometimes when multiple content items are being simultaneously downloaded and
+    both threads try to create the same directory at the same time.
+    :param path: The path of the directory that is checked and created.
+    :type path: str
+    :return: None if the path already exists
+    """
+    if not os.path.isdir(path):
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            return None
+    return None
+
