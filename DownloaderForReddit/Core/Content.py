@@ -127,11 +127,7 @@ class Content(QRunnable):
 
     def check_save_path_subreddit(self):
         """
-        Checks that the supplied directory path is an existing directory and if not, creates the directory.  The try
-        except operation is because with multiple numbers of these classes existing at the same time on different
-        threads, it is possible that one thread is checking to see that a directory does not exist while another thread
-        is creating the directory.  If the first thread then tries to create the directory, it will already exist.
-        Multithreading is neat.
+        Checks the supplied subreddit's check path and if it does not exist, creates the directory.
         """
         SystemUtil.create_directory(self.check_path)
 
