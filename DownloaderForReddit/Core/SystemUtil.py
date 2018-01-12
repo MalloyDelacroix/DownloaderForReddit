@@ -33,3 +33,14 @@ def create_directory(path):
             return None
     return None
 
+
+def rename_directory_deleted(path):
+    """
+    Renames a folder with the '(deleted)' after the folder name.
+    :param path:
+    :return:
+    """
+    if os.path.isdir(path):
+        path = path[:-1] if path.endswith(os.sep) or path.endswith('/') else path
+        os.rename(path, '%s (deleted)' % path)
+

@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import subprocess
 import sys
 from datetime import datetime, date
 import imgurpython
@@ -730,8 +729,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
             working_list = self.get_working_list(reddit_object.object_type)
             working_list.remove_reddit_object(reddit_object)
-            if os.path.isdir(reddit_object.save_directory):
-                os.rename(reddit_object.save_directory, '%s (deleted)' % reddit_object.save_directory[:-1])
+            SystemUtil.rename_directory_deleted(reddit_object.save_directory)
             self.refresh_object_count()
             self.set_not_saved()
 
@@ -1113,11 +1111,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             containing_folder, current = os.getcwd().rsplit(separator, 1)
             file = os.path.join(containing_folder, manual)
         try:
-            if sys.platform == 'win32':
-                os.startfile(file)
-            else:
-                opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
-                subprocess.call([opener, file])
+            SystemUtil.open_in_system(file)
         except FileNotFoundError:
             Message.user_manual_not_found(self)
 
