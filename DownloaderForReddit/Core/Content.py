@@ -103,8 +103,9 @@ class Content(QRunnable):
                 with open(self.filename, 'wb') as file:
                     for chunk in response.iter_content(1024):
                         file.write(chunk)
-            except PermissionError:
+            except PermissionError as e:
                 print('Permission denied to path: %s' % self.filename)
+                print(e)
                 self.queue.put('Failed Download: Permission denied to path: %s' % self.filename)
             self.queue.put('Saved %s' % self.filename)
             self.downloaded = True

@@ -24,6 +24,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import shelve
+import sys
+import os
 
 from ViewModels.ListModel import ListModel
 from Persistence.ObjectUpdater import ObjectUpdater
@@ -47,7 +49,8 @@ class ObjectStateHandler:
         try:
             user_view_chooser_dict = {}
             subreddit_view_chooser_dict = {}
-            with shelve.open('save_file', 'c') as shelf:
+            save_path = cls.get_save_path()
+            with shelve.open(save_path, 'c') as shelf:
                 user_list_models = shelf['user_list_models']
                 subreddit_list_models = shelf['subreddit_list_models']
                 last_user_view = shelf['current_user_view']
@@ -70,6 +73,28 @@ class ObjectStateHandler:
                     'last_user_view': last_user_view, 'last_sub_view': last_subreddit_view}
         except KeyError:
             print('ObjectStateHandler load_pickled_state_exception: Key Error')
+        except FileNotFoundError:
+            print('ObjectStateHandler load_pickled_state exception: FileNotFoundError')
+        except Exception as e:
+            print(e)
+
+    @classmethod
+    def get_save_path(cls):
+        """
+        Checks to see if the OS is Windows, and if so returns a save path that is in the users APPDATA folder.  This is
+        necessary because of an issue that keeps the application from having the ability to create a save file anywhere
+        but in the APPDATA folder on Windows.  For all other OS's, the default location is the directory in which the
+        application is located.
+        :return: The save_file path location.
+        :rtype: str
+        """
+        if sys.platform != 'win32':
+            return 'save_file'
+        else:
+            path = os.path.join(os.getenv('APPDATA'), 'SomeGuySoftware', 'DownloaderForReddit')
+            if not os.path.isdir(path):
+                os.makedirs(path)
+            return os.path.join(path, 'save_file')
 
     @classmethod
     def save_pickled_state(cls, object_dict):
@@ -84,13 +109,15 @@ class ObjectStateHandler:
         user_list_models = cls.get_list_models(object_dict['user_view_chooser_dict'])
         sub_list_models = cls.get_list_models(object_dict['sub_view_chooser_dict'])
         try:
-            with shelve.open('save_file', 'c') as shelf:
+            save_path = cls.get_save_path()
+            with shelve.open(save_path, 'c') as shelf:
                 shelf['user_list_models'] = user_list_models
                 shelf['subreddit_list_models'] = sub_list_models
                 shelf['current_user_view'] = object_dict['current_user_view']
                 shelf['current_subreddit_view'] = object_dict['current_sub_view']
             return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     @staticmethod
