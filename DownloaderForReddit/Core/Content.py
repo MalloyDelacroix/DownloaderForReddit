@@ -23,9 +23,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
 import requests
 from PyQt5.QtCore import QRunnable
+
+from Core import SystemUtil
 
 
 class Content(QRunnable):
@@ -127,17 +128,9 @@ class Content(QRunnable):
 
     def check_save_path_subreddit(self):
         """
-        Checks that the supplied directory path is an existing directory and if not, creates the directory.  The try
-        except operation is because with multiple numbers of these classes existing at the same time on different
-        threads, it is possible that one thread is checking to see that a directory does not exist while another thread
-        is creating the directory.  If the first thread then tries to create the directory, it will already exist.
-        Multithreading is neat.
+        Checks the supplied subreddit's check path and if it does not exist, creates the directory.
         """
-        if not os.path.isdir(self.check_path):
-            try:
-                os.makedirs(self.check_path)
-            except FileExistsError:
-                pass
+        SystemUtil.create_directory(self.check_path)
 
     def install_queue(self, queue):
         """
