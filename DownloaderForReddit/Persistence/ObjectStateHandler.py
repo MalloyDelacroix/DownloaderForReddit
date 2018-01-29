@@ -75,8 +75,10 @@ class ObjectStateHandler:
             print('ObjectStateHandler load_pickled_state_exception: Key Error')
         except FileNotFoundError:
             print('ObjectStateHandler load_pickled_state exception: FileNotFoundError')
+            return False
         except Exception as e:
             print(e)
+            return False
 
     @classmethod
     def get_save_path(cls):

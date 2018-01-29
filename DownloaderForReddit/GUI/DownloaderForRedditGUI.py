@@ -1219,24 +1219,27 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def load_state(self):
         reddit_object_list = ObjectStateHandler.load_pickled_state()
-        try:
-            last_user_view = reddit_object_list['last_user_view']
-            last_subreddit_view = reddit_object_list['last_sub_view']
-            self.user_view_chooser_dict = reddit_object_list['user_dict']
-            self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
+        if reddit_object_list is False:
+            Message.save_file_permission_denied(self, ObjectStateHandler.get_save_path())
+        else:
+            try:
+                last_user_view = reddit_object_list['last_user_view']
+                last_subreddit_view = reddit_object_list['last_sub_view']
+                self.user_view_chooser_dict = reddit_object_list['user_dict']
+                self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
 
-            for name in self.user_view_chooser_dict.keys():
-                self.user_lists_combo.addItem(name)
-            for name in self.subreddit_view_chooser_dict.keys():
-                self.subreddit_list_combo.addItem(name)
-            self.user_lists_combo.setCurrentText(last_user_view)
-            self.subreddit_list_combo.setCurrentText(last_subreddit_view)
-            self.set_last_view_model('USER', last_user_view)
-            self.set_last_view_model('SUB', last_subreddit_view)
-        except KeyError:
-            print('Load state exception: key error')
-        except TypeError:
-            print('Load state exception: no save file detected')
+                for name in self.user_view_chooser_dict.keys():
+                    self.user_lists_combo.addItem(name)
+                for name in self.subreddit_view_chooser_dict.keys():
+                    self.subreddit_list_combo.addItem(name)
+                self.user_lists_combo.setCurrentText(last_user_view)
+                self.subreddit_list_combo.setCurrentText(last_subreddit_view)
+                self.set_last_view_model('USER', last_user_view)
+                self.set_last_view_model('SUB', last_subreddit_view)
+            except KeyError:
+                print('Load state exception: key error')
+            except TypeError:
+                print('Load state exception: no save file detected')
 
     def set_last_view_model(self, view_dict, last_view):
         try:

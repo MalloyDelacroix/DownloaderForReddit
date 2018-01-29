@@ -180,6 +180,13 @@ class Message(object):
         reply = message.information(self, 'Invalid Selection', text, message.Ok)
         return reply == message.Ok
 
+    def save_file_permission_denied(self, save_path):
+        text = 'A save file could not be created at this location: %s\nThis likely means this application does not ' \
+               'have permission to save files to this location and will be unable to save any user or subreddit ' \
+               'settings.\nIf this problem persists, please open an issue on this applications github page.' % save_path
+        reply = message.information(self, 'Save Permission Denied', text, message.Ok)
+        return reply == message.Ok
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
