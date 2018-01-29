@@ -90,7 +90,7 @@ class SettingsManager:
         self.save_subreddits_by = self.settings.value('save_subreddits_by', 'Subreddit Name', type=str)
         self.name_downloads_by = self.settings.value('name_downloads_by', 'Image/Album Id', type=str)
 
-        default_folder = os.path.expanduser("~") + "/Downloads/"
+        default_folder = os.path.join(os.path.expanduser("~"), "Downloads")
         self.save_directory = self.settings.value("save_directory", default_folder, type=str)
         self.max_download_thread_count = self.settings.value('max_download_thread_count', 4, type=int)
         self.save_undownloaded_content = self.settings.value("save_undownloaded_content", True, type=bool)
