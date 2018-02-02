@@ -187,6 +187,11 @@ class Message(object):
         reply = message.information(self, 'Save Permission Denied', text, message.Ok)
         return reply == message.Ok
 
+    def failed_to_rename_error(self, object_name):
+        text = '%s was removed from the download list, but the folder was not able to be renamed' % object_name
+        reply = message.information(self, 'Rename Failure', text, message.Ok)
+        return reply == message.Ok
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 

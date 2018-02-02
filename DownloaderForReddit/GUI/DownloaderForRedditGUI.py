@@ -729,7 +729,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
             working_list = self.get_working_list(reddit_object.object_type)
             working_list.remove_reddit_object(reddit_object)
-            SystemUtil.rename_directory_deleted(reddit_object.save_directory)
+            if not SystemUtil.rename_directory_deleted(reddit_object.save_directory):
+                Message.failed_to_rename_error(self, reddit_object.name)
             self.refresh_object_count()
             self.set_not_saved()
 
