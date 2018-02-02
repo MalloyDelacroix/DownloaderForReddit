@@ -28,6 +28,7 @@ import sys
 from datetime import datetime, date
 import imgurpython
 from PyQt5 import QtWidgets, QtCore, QtGui
+import logging
 
 from GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from GUI.AboutDialog import AboutDialog
@@ -66,6 +67,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.logger.warning('Main dialog established')
         self.version = __version__
         self.failed_list = []
         self.last_downloaded_users = {}

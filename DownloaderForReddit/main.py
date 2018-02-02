@@ -30,6 +30,7 @@ from queue import Queue
 from PyQt5 import QtWidgets, QtCore
 
 from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
+from Core import Logger
 from version import __version__
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
@@ -80,6 +81,7 @@ class MessageReceiver(QtCore.QObject):
 
 
 def main():
+    Logger.make_logger()
     app = QtWidgets.QApplication(sys.argv)
 
     queue = Queue()
