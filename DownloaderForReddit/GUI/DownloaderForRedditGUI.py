@@ -613,7 +613,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[
                                                           self.subreddit_list_combo.currentText()])
                     self.subreddit_view_chooser_dict[
-                        self.subreddit_lists_combo.currentText()].sort_lists((self.list_sort_method,
+                        self.subreddit_list_combo.currentText()].sort_lists((self.list_sort_method,
                                                                               self.list_order_method))
                 else:
                     self.subreddit_list_view.setModel(None)
