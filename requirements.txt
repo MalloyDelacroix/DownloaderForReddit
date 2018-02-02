@@ -8,4 +8,3 @@ PyQt5==5.7
 requests==2.12.3
 sip==4.18
 six==1.10.0
-opencv-python==3.3.1.11
