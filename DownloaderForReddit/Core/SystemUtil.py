@@ -38,7 +38,9 @@ def rename_directory_deleted(path):
     """
     Renames a folder with the '(deleted)' after the folder name.
     :param path: The path of the folder that is to be renamed with the "(deleted)" marker
+    :type path: str
     :return: True if the rename was successful and False if not.
+    :rtype: bool
     """
     try:
         print("Delete Path: %s" % path)
@@ -49,3 +51,18 @@ def rename_directory_deleted(path):
     except PermissionError:
         return False
 
+
+def get_data_directory():
+    """
+    Builds and returns a path the DownloaderForReddit data files location based on the users OS.  This will either be
+    in the AppData directory if using Windows, or a sub-directory directory named 'Data' in the applications directory
+    if using Linux.
+    :return: The path to the DownloaderForReddit data directory for the users system.
+    :rtype: str
+    """
+    if sys.platform == 'win32':
+        path = os.path.join(os.getenv('APPDATA'), 'SomeGuySoftware', 'DownloaderForReddit')
+    else:
+        path = 'Data'
+    create_directory(path)
+    return path

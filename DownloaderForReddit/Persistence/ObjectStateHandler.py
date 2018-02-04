@@ -29,6 +29,7 @@ import os
 
 from ViewModels.ListModel import ListModel
 from Persistence.ObjectUpdater import ObjectUpdater
+from Core import SystemUtil
 from version import __version__
 
 
@@ -83,20 +84,11 @@ class ObjectStateHandler:
     @classmethod
     def get_save_path(cls):
         """
-        Checks to see if the OS is Windows, and if so returns a save path that is in the users APPDATA folder.  This is
-        necessary because of an issue that keeps the application from having the ability to create a save file anywhere
-        but in the APPDATA folder on Windows.  For all other OS's, the default location is the directory in which the
-        application is located.
+        Builds and returns a path to the save_file based on the users OS.
         :return: The save_file path location.
         :rtype: str
         """
-        if sys.platform != 'win32':
-            return 'save_file'
-        else:
-            path = os.path.join(os.getenv('APPDATA'), 'SomeGuySoftware', 'DownloaderForReddit')
-            if not os.path.isdir(path):
-                os.makedirs(path)
-            return os.path.join(path, 'save_file')
+        return os.path.join(SystemUtil.get_data_directory(), 'save_file')
 
     @classmethod
     def save_pickled_state(cls, object_dict):
