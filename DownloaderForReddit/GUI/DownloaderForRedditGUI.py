@@ -375,31 +375,38 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def open_user_download_folder(self):
         """Opens the Folder where the users downloads are saved using the default file manager"""
         current_list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+        selected_user = None
         try:
             position = self.get_selected_view_index(self.user_list_view).row()
             selected_user = current_list_model.reddit_object_list[position]
             SystemUtil.open_in_system(selected_user.save_directory)
+            self.logger.info('User download folder opened', extra={'user': selected_user.name})
         except AttributeError:
             self.logger.error('Download folder tried to open with no user selected', exc_info=True)
             Message.no_reddit_object_selected(self, 'user')
         except FileNotFoundError:
-            self.logger.error('Download folder tried to open with no download folder found', exc_info=True)
+            path = selected_user.save_directory if selected_user is not None else 'No Selected User'
+            self.logger.error('Download folder tried to open with no download folder found',
+                              extra={'selected_user_save_directory': path}, exc_info=True)
             Message.no_download_folder(self, 'user')
 
     def open_subreddit_download_folder(self):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
         current_list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+        selected_sub = None
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
             selected_sub = current_list_model.reddit_object_list[position]
             path = os.path.join(selected_sub.save_directory, selected_sub.name) if \
-                    selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
+                selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
             SystemUtil.open_in_system(path)
         except AttributeError:
             self.logger.error('Download folder tried to open with no subreddit selected', exc_info=True)
             Message.no_reddit_object_selected(self, 'subreddit')
         except FileNotFoundError:
-            self.logger.error('Download folder tired to open with no download folder found', exc_info=True)
+            path = selected_sub.save_direcory if selected_sub is not None else 'No Sub Selected'
+            self.logger.error('Download folder tired to open with no download folder found',
+                              extra={'selected_sub_save_directory': path}, exc_info=True)
             Message.no_download_folder(self, 'subreddit')
 
     def button_assignment(self):
@@ -412,7 +419,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def run(self):
         """Runs the extractor with the intended settings"""
         try:
-            self.logger.info('')
             self.failed_list.clear()
             self.started_download_gui_shift()
             if self.settings_manager.user_finder_run_with_main:
@@ -443,8 +449,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_user(self):
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
-        self.logger.info('User download initiated:\n    List size: %s\n    Settings:\n%s' %
-                         (len(user_list), self.settings_manager.get_settings_log()))
+        self.logger.info('User download initiated', extra={'list_size': len(user_list),
+                                                           'settings': self.settings_manager.json})
         self.download_runner = DownloadRunner(user_list, None, self.queue, None)
         self.start_reddit_extractor_thread('USER')
 
@@ -453,8 +459,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Called from the user settings dialog and supplied the name of the selected user.  Downloads only the
         selected user
         """
-        self.logger.info('Single user download initiated:\n    Settings:\n%s' %
-                         self.settings_manager.get_settings_log())
+        self.logger.info('Single user download initiated', extra={'user': user.name,
+                                                                  'settings': self.settings_manager.json})
         self.started_download_gui_shift()
         user_list = [user]
         self.download_runner = DownloadRunner(user_list, None, self.queue, None)
@@ -462,8 +468,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_subreddit(self):
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.logger.info('Subreddit download initiated:\n    List size: %s\n    Settings:\n%s' %
-                         (len(subreddit_list), self.settings_manager.get_settings_log()))
+        self.logger.info('Subreddit download initiated', extra={'list_size': len(subreddit_list),
+                                                                'settings': self.settings_manager.json})
         self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
         self.start_reddit_extractor_thread('SUBREDDIT')
 
@@ -472,8 +478,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Called from the subreddit settings dialog and supplied the name of the selected subreddit.  Downloads only the
         selected subreddit
         """
-        self.logger.info('Single subreddit download initiated:\n    Settings:\n%s' %
-                         self.settings_manager.get_settings_log())
+        self.logger.info('Single subreddit download initiated', extra={'subreddit': download_tuple[0].name,
+                                                                       'settings': self.settings_manager.json})
         self.started_download_gui_shift()
         subreddit_list = [download_tuple[0]]
         self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
@@ -487,16 +493,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         user_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
         subreddit_list = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
-        self.logger.info('User and subreddit download initiated:\n    User list size: %s\n'
-                         '    Subreddit list size: %s\n    Settings:%s\n' %
-                         (len(user_list), len(subreddit_list), self.settings_manager.get_settings_log()))
+        self.logger.info('User and subreddit download initiated', extra={'user_list_size': len(user_list),
+                                                                         'subreddit_list_size': len(subreddit_list),
+                                                                         'settings': self.settings_manager.json})
         self.download_runner = DownloadRunner(user_list, subreddit_list, self.queue, None)
         self.start_reddit_extractor_thread('USERS_AND_SUBREDDITS')
 
     def run_unfinished_downloads(self):
         """Downloads the content that was left during the last run if the user clicked the stop download button"""
-        self.logger.info('Unfinished downloads download initiated:\n    List size: %s\n    Settings:%s' %
-                         (len(self.unfinished_downloads), self.settings_manager.get_settings_log()))
+        self.logger.info('Unfinished downloads download initiated', extra={'list_size': len(self.unfinished_downloads),
+                                                                           'settings': self.settings_manager.json})
         self.download_count = 0
         self.started_download_gui_shift()
         self.download_runner = DownloadRunner(None, None, self.queue, self.unfinished_downloads)
@@ -579,12 +585,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.user_list_view.setModel(x)
                 self.refresh_user_count()
                 self.set_not_saved()
-                self.logger.info('User list added: %s' % new_user_list)
             else:
+                self.logger.warning('Unable to add user list', extra={'invalid_name': new_user_list})
                 Message.not_valid_name(self)
-                self.logger.warning('Unable to add user list: Invalid name: %s' % new_user_list)
-        else:
-            self.logger.info('Add new user list dialog opened and close without adding list')
 
     def remove_user_list(self):
         try:
@@ -601,9 +604,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.user_list_view.setModel(None)
                 self.refresh_user_count()
                 self.set_not_saved()
-                self.logger.info('User list removed:\n    Name: %s\n    Size: %s' % (current_user_list, list_size))
+                self.logger.info('User list removed', extra={'name': current_user_list, 'list_size': list_size})
         except KeyError:
-            self.logger.warning('Unable to remove user list: No user list available to remove')
+            self.logger.warning('Unable to remove user list: No user list available to remove', exc_info=True)
             Message.no_user_list(self)
 
     def change_user_list(self):
@@ -627,12 +630,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.subreddit_list_view.setModel(x)
                 self.refresh_subreddit_count()
                 self.set_not_saved()
-                self.logger.info('Subreddit list added: %s' % new_subreddit_list)
             else:
-                self.logger.warning('Unable to add subreddit list: Invalid name: %s' % new_subreddit_list)
+                self.logger.warning('Unable to add subreddit list', extra={'invalid_name': new_subreddit_list},
+                                    exc_info=True)
                 Message.not_valid_name(self)
-        else:
-            self.logger.info('Add new subreddit list dialog opened and closed without adding list')
 
     def remove_subreddit_list(self):
         try:
@@ -651,9 +652,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.subreddit_list_view.setModel(None)
                 self.refresh_subreddit_count()
                 self.set_not_saved()
-                self.logger.info('Subreddit list removed:\n    Name: %s\n    Size: %s' % (current_sub_list, list_size))
+                self.logger.info('Subreddit list removed', extra={'name': current_sub_list, 'list_size': list_size})
         except KeyError:
-            self.logger.warning('Unable to remove subreddit list: No list to remove')
+            self.logger.warning('Unable to remove subreddit list: No list to remove', exc_info=True)
             Message.no_subreddit_list(self)
 
     def change_subreddit_list(self):
@@ -692,18 +693,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             if new_user != '' and new_user != ' ':
                 if list_model.check_name(new_user):
-                    self.logger.info('Unable to add user: name (%s) already in list' % new_user)
+                    self.logger.info('Unable to add user: name already in list', extra={'name': new_user})
                     Message.name_in_list(self, new_user)
                 else:
                     user = self.make_user(new_user)
                     self.add_reddit_object_to_list(user, list_model)
                     self.refresh_user_count()
-                    self.logger.info('User added: %s' % new_user)
             else:
-                self.logger.warning('Unable to add user: Invalid name: %s' % new_user)
+                self.logger.warning('Unable to add user: Invalid name', extra={'name': new_user})
                 Message.not_valid_name(self, new_user)
         except KeyError:
-            self.logger.warning('Unable to add user: No user list available')
+            self.logger.warning('Unable to add user: No user list available', exc_info=True)
             Message.no_user_list(self)
 
     def add_reddit_object_to_list(self, reddit_object, list_model):
@@ -749,17 +749,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         try:
             reddit_object = list_model.reddit_object_list[index]
-            name = reddit_object.name
             if Message.remove_reddit_object(self, reddit_object.name):
                 list_model.removeRows(index, 1)
                 self.set_not_saved()
-                log_text = 'Reddit object removed: %s (%s) removed from %s' % \
-                           (name, list_model.list_type, list_model.name)
-            else:
-                log_text = 'Reddit object not removed: Dialog rejected'
-            self.logger.info(log_text)
         except (KeyError, AttributeError):
-            self.logger.warning('Remove reddit object failed: No object selected')
+            self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             Message.no_reddit_object_selected(self, list_model.list_type)
 
     def remove_invalid_reddit_object(self, reddit_object):
@@ -773,13 +767,14 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             working_list = self.get_working_list(reddit_object.object_type)
             working_list.remove_reddit_object(reddit_object)
             if not SystemUtil.rename_directory_deleted(reddit_object.save_directory):
-                rename_log = 'Failed to rename folder'
+                rename_log = 'Failed'
                 Message.failed_to_rename_error(self, reddit_object.name)
             else:
-                rename_log = 'Folder successfully renamed'
+                rename_log = 'Success'
             self.refresh_object_count()
             self.set_not_saved()
-            self.logger.info('Invalid reddit object removed: %s: Name: %s' % (rename_log, reddit_object.name))
+            self.logger.info('Invalid reddit object removed', extra={'name': reddit_object.name,
+                                                                     'folder_rename': rename_log})
 
     def get_working_list(self, object_type):
         if object_type == 'USER':
@@ -811,18 +806,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             if new_sub != '' and new_sub != ' ':
                 if list_model.check_name(new_sub):
-                    self.logger.info('Unable to add subreddit: name (%s) already in list' % new_sub)
+                    self.logger.info('Unable to add subreddit: Name already in list', extra={'name': new_sub})
                     Message.name_in_list(self, new_sub)
                 else:
                     sub = self.make_subreddit(new_sub)
                     self.add_reddit_object_to_list(sub, list_model)
                     self.refresh_subreddit_count()
-                    self.logger.info('Subreddit added: %s' % new_sub)
             else:
-                self.logger.warning('Unable to add subreddit: Invalid name: %s' % new_sub)
+                self.logger.warning('Unable to add subreddit: Invalid name', extra={'name': new_sub})
                 Message.not_valid_name(self, new_sub)
         except KeyError:
-            self.logger.warning('Unable to add subreddit: No subreddit list available')
+            self.logger.warning('Unable to add subreddit: No subreddit list available', exc_info=True)
             Message.no_subreddit_list(self)
 
     def make_subreddit(self, name):
@@ -830,6 +824,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Makes a new subreddit object
         :param name: The name of the subreddit
         :return: A new subreddit object with the supplied name
+        :rtype: Subreddit
         """
         new_sub = Subreddit(self.version, name, self.settings_manager.save_directory, self.settings_manager.post_limit,
                             self.settings_manager.avoid_duplicates, self.settings_manager.download_videos,
@@ -857,8 +852,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if reply == QtWidgets.QMessageBox.Ok:
                 for folder in os.listdir(master_folder):
                     self.add_user(folder, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
-                self.logger.info('User list imported from folder: Folder list size: %s' %
-                                 len(os.listdir(master_folder)))
+                self.logger.info('User list imported from folder',
+                                 extra={'folder_count': len(os.listdir(master_folder))})
 
     def import_subreddit_list_from_folder(self):
         """See import_user_list_from_folder"""
@@ -870,8 +865,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if reply == QtWidgets.QMessageBox.Ok:
                 for folder in os.listdir(master_folder):
                     self.add_subreddit(folder)
-                self.logger.info('Subreddit list import from folder: Folder list size: %s' %
-                                 len(os.listdir(master_folder)))
+                self.logger.info('Subreddit list import from folder',
+                                 extra={'folder_count': len(os.listdir(master_folder))})
 
     def select_directory(self):
         """
@@ -895,7 +890,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             for name in user_list:
                 self.add_user(name, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
                 count += 1
-            self.logger.info('User list imported from text file: File name count: %s' % count)
+            self.logger.info('User list imported from text file', extra={'file_count': count})
 
     def import_subreddit_list_from_text_file(self):
         """Reads subreddits from a selected text file and adds the names to the subreddit list."""
@@ -905,7 +900,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             for name in sub_list:
                 self.add_subreddit(name)
                 count += 1
-            self.logger.info('Subreddit list imported from text file: File name count: %s' % count)
+            self.logger.info('Subreddit list imported from text file', extra={'file_count': count})
 
     def get_names_from_text(self):
         """
@@ -976,8 +971,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                             self.last_downloaded_users)
             downloaded_users_dialog.change_to_downloads_view()
             downloaded_users_dialog.show()
-            self.logger.info('Last downloaded users dialog opened: Downloaded user list size: %s' %
-                             len(self.last_downloaded_users))
         else:
             Message.no_users_downloaded(self)
 
@@ -1044,7 +1037,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if not user.do_not_edit:
                     updated += 1
                     self.update_object_settings(user)
-        self.logger.info('Settings updated for %s out of %s users' % (updated, total))
+        self.logger.info('User settings updated', extra={'updated_users': updated, 'total_users': total})
 
     def update_subreddit_settings(self):
         """Iterates through the subreddit list and calls update settings for each sub"""
@@ -1058,7 +1051,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     updated += 1
                     self.update_object_settings(sub)
                     sub.subreddit_save_method = self.settings_manager.save_subreddits_by
-        self.logger.info('Settings updated for %s out of %s subreddits' % (updated, total))
+        self.logger.info('Subreddit settings updated', extra={'updated_subreddits': updated, 'total_subreddits': total})
 
     def update_object_settings(self, reddit_object):
         """Updates object specific settings for the supplied object"""
@@ -1131,7 +1124,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.unfinished_downloads = unfinished_list
         self.unfinished_downloads_available = True
         self.file_unfinished_downloads.setEnabled(True)
-        self.logger.info('Unfinished downloads found: Count: %s' % len(unfinished_list))
 
     def display_unfinished_downloads_dialog(self):
         try:
@@ -1147,14 +1139,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def clear_unfinished_list(self):
         self.unfinished_downloads.clear()
         self.unfinished_downloads_available = False
-        self.logger.info('Unfinished downloads list cleared')
 
     def reset_unfinished_downloads(self):
         self.unfinished_downloads_available = False
 
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
-        self.logger.info('Imgur client information called')
         if self.settings_manager.imgur_client_id is not None and self.settings_manager.imgur_client_secret is not None:
             try:
                 imgur_client = imgurpython.ImgurClient(self.settings_manager.imgur_client_id,
@@ -1177,10 +1167,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                           (credits_dict['ClientLimit'], credits_dict['ClientRemaining'], credits_dict['UserLimit'],
                            credits_dict['UserRemaining'],
                            date.strftime(datetime.fromtimestamp(credits_dict['UserReset']), '%m-%d-%Y at %I:%M %p'))
-            self.logger.info('Imgur client info:\n'
-                             '    credits remaining: %s\n'
-                             '    user credits remaining: %s' %
-                             (credits_dict['ClientRemaining'], credits_dict['UserRemaining']))
+            self.logger.info('Imgur client info calculated',
+                             extra={'remaining_app_credits': credits_dict['ClientRemaining'],
+                                    'remaining_user_credits': credits_dict['UserRemaining']})
             reply = QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
 
     def display_about_dialog(self):
@@ -1198,7 +1187,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             file = os.path.join(containing_folder, manual)
         try:
             SystemUtil.open_in_system(file)
-            self.logger.info('User manual opened')
         except FileNotFoundError:
             self.logger.error('Unable to open user manual: Manual file not found', exc_info=True)
             Message.user_manual_not_found(self)
@@ -1304,24 +1292,24 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if reddit_object_list is False:
             Message.save_file_permission_denied(self, ObjectStateHandler.get_save_path())
         else:
-            # try:
-            last_user_view = reddit_object_list['last_user_view']
-            last_subreddit_view = reddit_object_list['last_sub_view']
-            self.user_view_chooser_dict = reddit_object_list['user_dict']
-            self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
+            try:
+                last_user_view = reddit_object_list['last_user_view']
+                last_subreddit_view = reddit_object_list['last_sub_view']
+                self.user_view_chooser_dict = reddit_object_list['user_dict']
+                self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
 
-            for name in self.user_view_chooser_dict.keys():
-                self.user_lists_combo.addItem(name)
-            for name in self.subreddit_view_chooser_dict.keys():
-                self.subreddit_list_combo.addItem(name)
-            self.user_lists_combo.setCurrentText(last_user_view)
-            self.subreddit_list_combo.setCurrentText(last_subreddit_view)
-            self.set_last_view_model('USER', last_user_view)
-            self.set_last_view_model('SUB', last_subreddit_view)
-            # except KeyError:
-            #     print('Load state exception: key error')
-            # except TypeError:
-            #     print('Load state exception: no save file detected')
+                for name in self.user_view_chooser_dict.keys():
+                    self.user_lists_combo.addItem(name)
+                for name in self.subreddit_view_chooser_dict.keys():
+                    self.subreddit_list_combo.addItem(name)
+                self.user_lists_combo.setCurrentText(last_user_view)
+                self.subreddit_list_combo.setCurrentText(last_subreddit_view)
+                self.set_last_view_model('USER', last_user_view)
+                self.set_last_view_model('SUB', last_subreddit_view)
+            except KeyError:
+                self.logger.error('Load state key error', exc_info=True)
+            except TypeError:
+                self.logger.error('Load state error: No save file found', exc_info=True)
 
     def set_last_view_model(self, view_dict, last_view):
         try:
