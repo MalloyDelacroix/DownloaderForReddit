@@ -69,6 +69,37 @@ class RedditObject:
         self.object_type = None
         self.content_display_only = False
 
+    def __str__(self):
+        return '%s: %s' % (self.object_type, self.name)
+
+    @property
+    def json(self):
+        """
+        Returns json encodable dict of the reddit objects attributes and and count of the items in the various lists.
+        This is used for logging purposes.
+        :return: A dict of json encodable attributes.
+        :rtype: dict
+        """
+        return {'name': self.name,
+                'object_type': self.object_type,
+                'version': self.version,
+                'save_path': self.save_path,
+                'post_limit': self.post_limit,
+                'avoid_duplicates': self.avoid_duplicates,
+                'download_videos': self.download_videos,
+                'download_images': self.download_images,
+                'nsfw_fileter': self.nsfw_filter,
+                'added_on': self.user_added,
+                'do_not_edit': self.do_not_edit,
+                'new_submission_count': len(self.new_submissions) if self.new_submissions is not None else None,
+                'saved_submission_count': len(self.saved_submissions),
+                'previous_download_count': len(self.previous_downloads),
+                'date_limit': self.date_limit,
+                'custom_date_limit': self.custom_date_limit,
+                'content_count': len(self.content),
+                'failed_extract_count': len(self.failed_extracts),
+                'saved_content_count': len(self.saved_content)}
+
     @property
     def number_of_downloads(self):
         return len(self.previous_downloads)
