@@ -304,3 +304,35 @@ class SettingsManager:
     def save_update_dialog(self):
         self.settings.setValue("do_not_notify_update", self.do_not_notify_update)
         self.settings.setValue("update_dialog_geom", self.update_dialog_geom)
+
+    @property
+    def json(self):
+        """
+        Makes and returns a json dict of all of the download relevant settings to be logged.
+        :return: A dict of download relevant settings.
+        :rtype: dict
+        """
+        return {
+            'imgur_client_valid': self.check_imgur_client(),
+            'restrict_by_score': self.restrict_by_score,
+            'score_limit_operator': self.score_limit_operator,
+            'score_limit': self.post_score_limit,
+            'subreddit_sort_method': self.subreddit_sort_method,
+            'subreddit_sort_top_method': self.subreddit_sort_top_method,
+            'post_limit': self.post_limit,
+            'restrict_by_date': self.restrict_by_date,
+            'restrict_by_custom_date': self.restrict_by_custom_date,
+            'custom_date': self.custom_date,
+            'download_videos': self.download_videos,
+            'download_images': self.download_images,
+            'avoid_duplicates': self.avoid_duplicates,
+            'nsfw_filter': self.nsfw_filter,
+            'save_subreddits_by': self.save_subreddits_by,
+            'name_downloads_by': self.name_downloads_by,
+            'save_directory': self.save_directory,
+            'max_download_thread_count': self.max_download_thread_count,
+            'save_undownloaded_content': self.save_undownloaded_content
+        }
+
+    def check_imgur_client(self):
+        return self.imgur_client_id is not None and self.imgur_client_secret is not None
