@@ -30,7 +30,7 @@ from queue import Queue
 from PyQt5 import QtWidgets, QtCore
 
 from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
-from Core import Logger
+from Logging import Logger
 from version import __version__
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
