@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from PyQt5 import QtWidgets, QtCore, QtGui
+import logging
 
 from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from Core import SystemUtil
@@ -44,6 +45,9 @@ class DownloadedUsersDialog(RedditObjectSettingsDialog):
         of files downloaded during the session
         """
         super().__init__(list_model, clicked_user, False)
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.logger.info('Downloaded users dialog opened',
+                         extra={'downloaded_user_count': len(last_downloaded_file_dict)})
         self.file_dict = last_downloaded_file_dict
         self.view_downloads_button.clicked.connect(self.toggle_download_views)
         self.view_downloads_button.setText('Show Downloads')
@@ -132,8 +136,22 @@ class DownloadedUsersDialog(RedditObjectSettingsDialog):
                         QtWidgets.QApplication.processEvents()
 
             except FileNotFoundError:
+                self.logger.error('Downloaded users list cannot find files to build content list',
+                                  extra={'current_object': self.current_object.name}, exc_info=True)
                 self.content_list.addItem('No content has been downloaded for this user yet')
 
     def open_file(self):
-        file = self.file_dict[self.current_object.name][self.content_list.currentIndex().row()]
-        SystemUtil.open_in_system(file)
+        try:
+            file = self.file_dict[self.current_object.name][self.content_list.currentIndex().row()]
+        except (KeyError, IndexError):
+            self.logger.error('Unable to get file name',
+                              extra={'current_object_name': self.current_object.name,
+                                     'content_list_row_count': self.content_list.count(),
+                                     'selected_row': self.content_list.currentIndex().row()},
+                              exc_info=True)
+            file = None
+        if file is not None:
+            try:
+                SystemUtil.open_in_system(file)
+            except:
+                self.logger.error('Unable to open file', extra={'file_path': file}, exc_info=True)
