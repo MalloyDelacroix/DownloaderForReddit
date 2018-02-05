@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import requests
 import sys
 from PyQt5.QtCore import QObject, pyqtSignal
+import logging
 
 
 class UpdateChecker(QObject):
@@ -41,6 +42,7 @@ class UpdateChecker(QObject):
         :param installed_version: The version of the application that is currently installed
         """
         super().__init__()
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.installed_version = installed_version
         self.release_api_caller = 'https://api.github.com/repos/MalloyDelacroix/DownloaderForReddit/releases/latest'
         self._json = None
@@ -55,7 +57,7 @@ class UpdateChecker(QObject):
             self.retrieve_json_data()
             self.check_releases()
         except:
-            print('Update checker failed to establish a connection')
+            self.logger.error('Update checker failed to establish a connection', exc_info=True)
         finally:
             self.finished.emit()
 
@@ -64,7 +66,8 @@ class UpdateChecker(QObject):
         if response.status_code == 200:
             self._json = response.json()
         else:
-            print('Failed connection: %s' % response.status_code)
+            self.logger.error('Failed to establish a connection: Bad response',
+                              extra={'response_status': response.status_code})
 
     def check_releases(self):
         """
