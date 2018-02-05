@@ -28,6 +28,7 @@ import ctypes
 import sys
 from queue import Queue
 from PyQt5 import QtWidgets, QtCore
+import logging
 
 from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
 from Logging import Logger
@@ -80,8 +81,17 @@ class MessageReceiver(QtCore.QObject):
         self.queue.put('')
 
 
+def log_unhandled_exception(exc_type, value, traceback):
+    logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+    logger.critical('Unhandled exception', exc_info=(exc_type, value, traceback))
+    print('')
+    print('Type: %s\nValue: %s\nTraceback: %s' % ( exc_type, value, traceback))
+
+
 def main():
     Logger.make_logger()
+    sys.excepthook = log_unhandled_exception
+
     app = QtWidgets.QApplication(sys.argv)
 
     queue = Queue()
