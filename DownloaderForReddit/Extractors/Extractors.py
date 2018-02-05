@@ -27,6 +27,7 @@ import requests
 from bs4 import BeautifulSoup
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
+import logging
 
 from Core.Content import Content
 import Core.Injector
@@ -47,6 +48,7 @@ class Extractor(object):
         :param subreddit: The subreddit the post was submitted to
         :param creation_date: The date when the post was submitted to reddit
         """
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Core.Injector.get_settings_manager()
         self.url = url
         self.user = user
@@ -67,6 +69,8 @@ class Extractor(object):
         if response.status_code == 200 and 'json' in response.headers['Content-Type']:
             return response.json()
         else:
+            self.logger.error('Failed connection: Bad response', extra={'response_code': response.status_code,
+                                                                        'extractor_data': self.get_log_data()})
             self.extracted_content.append("Failed to retrieve json data for link %s\nUser: %s  Subreddit: %s  Tile: %s"
                                           % (url, self.user, self.subreddit, self.post_title))
 
@@ -76,6 +80,8 @@ class Extractor(object):
         if response.status_code == 200 and 'text' in response.headers['Content-Type']:
             return response.text
         else:
+            self.logger.error('Failed connection: Bad response', extra={'response_code': response.status_code,
+                                                                        'extractor_data': self.get_log_data()})
             self.extracted_content.append("Failed to retrieve data for link %s\nUser: %s  Subreddit: %s  Tile: %s" %
                                           (url, self.user, self.subreddit, self.post_title))
 
@@ -84,6 +90,20 @@ class Extractor(object):
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
                     self.subreddit_save_method, self.content_display_only)
         self.extracted_content.append(x)
+
+    def get_log_data(self):
+        return {'url': self.url,
+                'user': self.user,
+                'subreddit': self.subreddit,
+                'post_title': self.post_title,
+                'creation_date': self.creation_date,
+                'save_path': self.save_path,
+                'content_display_only': self.content_display_only,
+                'subreddit_save_method': self.subreddit_save_method,
+                'name_downloads_by': self.name_downloads_by,
+                'extracted_content_count': len(self.extracted_content),
+                'failed_extract_message_count': len(self.failed_extract_messages),
+                'failed_extracts_to_save_count': len(self.failed_extracts_to_save)}
 
 
 class ImgurExtractor(Extractor):
@@ -102,6 +122,9 @@ class ImgurExtractor(Extractor):
         self.imgur_client_id = self.settings_manager.imgur_client_id
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
         if self.imgur_client_id is None or self.imgur_client_secret is None:
+            self.logger.warning('Imgur extract failed: No imgur client setup',
+                                extra={'url': self.url, 'user': self.user, 'subreddit': self.subreddit,
+                                       'post_title': self.post_title, 'creation_date': self.creation_date})
             self.failed_extract_messages.append('\nFailed: No valid Imgur client is detected. In order to download '
                                                 'content from imgur.com you must have a valid Imugr client. Please see'
                                                 'the settings menu.\nTitle: %s,  User: %s,  Subreddit: %s,  URL: %s\n' %
@@ -131,6 +154,7 @@ class ImgurExtractor(Extractor):
             else:
                 self.extract_single()
         except ImgurClientError as e:
+
             if e.status_code == 403:
                 if self.client.credits['ClientRemaining'] is None:
                     self.failed_to_locate_error()
@@ -152,20 +176,22 @@ class ImgurExtractor(Extractor):
     def rate_limit_exceeded_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date)
         self.failed_extracts_to_save.append(x)
-        self.failed_extract_messages.append('\nFailed: Imgur rate limit exceeded.  This post has been saved and will be downloaded '
-                                      'the next time the application is run.  Please make sure you have adequate user '
-                                      'credits upon the next run.  User credits can be checked in the help menu\n'
-                                      'Title: %s,  User: %s,  Subreddit: %s' % (self.post_title, self.user,
-                                                                                self.subreddit))
+        self.failed_extract_messages.append('\nFailed: Imgur rate limit exceeded.  This post has been saved and will '
+                                            'be downloaded the next time the application is run.  Please make sure you '
+                                            'have adequate user credits upon the next run.  User credits can be '
+                                            'checked in the help menu\nTitle: %s,  User: %s,  Subreddit: %s' %
+                                            (self.post_title, self.user, self.subreddit))
+        self.logger.error('Failed extract: Rate limit exceeded', extra={'extractor_data': self.get_log_data()})
 
     def no_credit_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date)
         self.failed_extracts_to_save.append(x)
         self.failed_extract_messages.append('\nFailed: You do not have enough imgur credits left to extract this '
-                                      'content.  This post will be saved and extraction attempted '
-                                      'the next time the program is run.  Please make sure that you '
-                                      'have adequate credits upon next run.\nTitle: %s,  User: %s,  '
-                                      'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
+                                            'content.  This post will be saved and extraction attempted '
+                                            'the next time the program is run.  Please make sure that you '
+                                            'have adequate credits upon next run.\nTitle: %s,  User: %s,  '
+                                            'Subreddit: %s' % (self.post_title, self.user, self.subreddit))
+        self.logger.error('Failed extract: Out of credits', extra={'extractor_data': self.get_log_data()})
 
     def over_capacity_error(self):
         x = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date)
@@ -174,6 +200,7 @@ class ImgurExtractor(Extractor):
                                             'extraction will be attempted the next time the program is run.\nTitle: '
                                             '%s, User: %s,  Subreddit: %s' % (self.post_title, self.user,
                                                                               self.subreddit))
+        self.logger.error('Failed extract: Imgur over capacity', extra={'extractor_data': self.get_log_data()})
 
     def does_not_exist_error(self):
         self.failed_extract_messages.append('\nFailed: The content does not exist.  This most likely means that the '
@@ -181,10 +208,12 @@ class ImgurExtractor(Extractor):
                                             'Url: %s,  User: %s,  Subreddit: %s,  Title: %s' % (self.url, self.user,
                                                                                                 self.subreddit,
                                                                                                 self.post_title))
+        self.logger.warning('Failed extract: Content no longer exists', extra={'extractor_data': self.get_log_data()})
 
     def failed_to_locate_error(self):
         self.failed_extract_messages.append('\nFailed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s'
                                             '\n' % (self.url, self.user, self.subreddit, self.post_title))
+        self.logger.error('Failed extract: Failed to locate content', extra={'extractor_data': self.get_log_data()})
 
     def extract_direct_link(self):
         for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
@@ -205,6 +234,8 @@ class ImgurExtractor(Extractor):
                         self.subreddit_save_method, self.content_display_only)
             self.extracted_content.append(x)
         except NameError:
+            self.logger.error('Failed direct extract: Unrecognized extension',
+                              extra={'extractor_data': self.get_log_data()})
             self.failed_extract_messages.append("Failed: Unrecognized file extension: %s\nUser: %s  Subreddit: %s  "
                                                 "Title: %s" % (self.url, self.user, self.subreddit, self.post_title))
 
@@ -262,6 +293,8 @@ class ImgurExtractor(Extractor):
                         self.subreddit_save_method, self.content_display_only)
             self.extracted_content.append(x)
         except NameError:
+            self.logger.error('Failed direct mislinked extract: Unrecognized extension',
+                              extra={'extractor_data': self.get_log_data()})
             self.failed_extract_messages.append("Failed: Unrecognized file extension: %s\nUser: %s  Subreddit: %s  "
                                                 "Title: %s" % (self.url, self.user, self.subreddit, self.post_title))
 
@@ -287,6 +320,7 @@ class GfycatExtractor(Extractor):
         except:
             self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
                                           (self.url, self.user, self.subreddit, self.post_title))
+            self.logger.error('Failed extract: Failed to locate content', extra={'extractor_data': self.get_log_data()})
 
     def extract_direct_link(self):
         domain, id_with_ext = self.url.rsplit('/', 1)
@@ -331,6 +365,7 @@ class VidbleExtractor(Extractor):
         except:
             self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
                                           (self.url, self.user, self.subreddit, self.post_title))
+            self.logger.error('Failed extract: Failed to locate content', extra={'extractor_data': self.get_log_data()})
 
     def extract_single(self):
         domain, vidble_id = self.url.rsplit('/', 1)
@@ -398,6 +433,7 @@ class RedditUploadsExtractor(Extractor):
         except:
             self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
                                           (self.url, self.user, self.subreddit, self.post_title))
+            self.logger.error('Failed extract: Failed to locate content', extra={'extractor_data': self.get_log_data()})
 
 
 class DirectExtractor(Extractor):
