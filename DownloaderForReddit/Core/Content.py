@@ -25,6 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
 from PyQt5.QtCore import QRunnable
+import logging
 
 from Core import SystemUtil
 
@@ -46,6 +47,7 @@ class Content(QRunnable):
         :param file_ext:  The extension of the file, used to save the file with the correct extension
         """
         super().__init__()
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.url = url
         self.user = user
         self.post_title = post_title
@@ -105,12 +107,15 @@ class Content(QRunnable):
                     for chunk in response.iter_content(1024):
                         file.write(chunk)
             except PermissionError as e:
-                print('Permission denied to path: %s' % self.filename)
-                print(e)
+                self.logger.error('Failed to save content: Permission denied to save location',
+                                  extra={'save_path': self.filename})
                 self.queue.put('Failed Download: Permission denied to path: %s' % self.filename)
             self.queue.put('Saved %s' % self.filename)
             self.downloaded = True
             return None
+        self.logger.warning('Failed Download: Unsuccessful response from server',
+                            extra={'response': response.status_code, 'url': self.url, 'user': self.user,
+                                   'submission_id': self.submission_id, 'number_in_seq': self.number_in_seq})
         self.queue.put('Failed Download:  File %s%s posted by %s failed to download...try link to download '
                        'manually: %s\n' % (self.submission_id, self.number_in_seq, self.user, self.url))
 
