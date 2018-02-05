@@ -24,8 +24,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import shelve
-import sys
 import os
+import logging
 
 from ViewModels.ListModel import ListModel
 from Persistence.ObjectUpdater import ObjectUpdater
@@ -39,6 +39,8 @@ class ObjectStateHandler:
     A class that is responsible for saving and loading the reddit object lists.
     """
 
+    logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+
     @classmethod
     def load_pickled_state(cls):
         """
@@ -47,6 +49,7 @@ class ObjectStateHandler:
         :return: A dict of view chooser dicts and a string representing which value should be displayed currently.
         :rtype: dict
         """
+        save_path = None
         try:
             user_view_chooser_dict = {}
             subreddit_view_chooser_dict = {}
@@ -73,12 +76,13 @@ class ObjectStateHandler:
             return {'user_dict': user_view_chooser_dict, 'sub_dict': subreddit_view_chooser_dict,
                     'last_user_view': last_user_view, 'last_sub_view': last_subreddit_view}
         except KeyError:
-            print('ObjectStateHandler load_pickled_state_exception: Key Error')
+            cls.logger.error('Failed to load from save file', extra={'save_file_location': save_path}, exc_info=True)
         except FileNotFoundError:
-            print('ObjectStateHandler load_pickled_state exception: FileNotFoundError')
+            cls.logger.error('Failed to load from save file: No save file found',
+                             extra={'save_file_location': save_path}, exc_info=True)
             return False
-        except Exception as e:
-            print(e)
+        except Exception:
+            cls.logger.error('Failed to load from save file', extra={'save_file_location': save_path}, exc_info=True)
             return False
 
     @classmethod
@@ -102,6 +106,7 @@ class ObjectStateHandler:
         """
         user_list_models = cls.get_list_models(object_dict['user_view_chooser_dict'])
         sub_list_models = cls.get_list_models(object_dict['sub_view_chooser_dict'])
+        save_path = None
         try:
             save_path = cls.get_save_path()
             with shelve.open(save_path, 'c') as shelf:
@@ -110,8 +115,8 @@ class ObjectStateHandler:
                 shelf['current_user_view'] = object_dict['current_user_view']
                 shelf['current_subreddit_view'] = object_dict['current_sub_view']
             return True
-        except Exception as e:
-            print(e)
+        except Exception:
+            cls.logger.error('Unable to save to save_file', extra={'save_file_location': save_path}, exc_info=True)
             return False
 
     @staticmethod

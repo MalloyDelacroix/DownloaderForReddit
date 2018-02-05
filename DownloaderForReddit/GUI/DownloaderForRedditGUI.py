@@ -61,9 +61,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         The main GUI window that all interaction is done through.
 
         :param queue: An instance of the queue initialized in the "main" function and passed to the main GUI window in
-         order to update the main GUI output box
+         order to update the main GUI output box.
         :param receiver: The receiver that is initialized in the "main" function and moved to another thread.  This
-        keeps the queue updated with fresh output from all throughout the program
+        keeps the queue updated with fresh output from all throughout the program.
         """
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
@@ -1306,6 +1306,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.subreddit_list_combo.setCurrentText(last_subreddit_view)
                 self.set_last_view_model('USER', last_user_view)
                 self.set_last_view_model('SUB', last_subreddit_view)
+                self.logger.info('Save_file successfully loaded')
             except KeyError:
                 self.logger.error('Load state key error', exc_info=True)
             except TypeError:
