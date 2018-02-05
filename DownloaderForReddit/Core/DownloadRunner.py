@@ -26,6 +26,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal, QThreadPool, QThread
 from queue import Queue
+from time import time
+import logging
 
 import Core.Injector
 from Core.PostFilter import PostFilter
@@ -56,6 +58,8 @@ class DownloadRunner(QObject):
         The rest of teh parameters are all configuration options that are set in the settings dialog
         """
         super().__init__()
+        self.start_time = time()
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Core.Injector.get_settings_manager()
         self._r = self.settings_manager.r
         self.post_filter = PostFilter()
@@ -89,6 +93,8 @@ class DownloadRunner(QObject):
                 try:
                     test = redditor.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                    self.logger.info('Invalid user detected',
+                                        extra={'user': user.name, 'new_user': len(user.previous_downloads == 0)})
                     redditor = None
                     self.remove_invalid_object.emit(user)
 
@@ -113,6 +119,8 @@ class DownloadRunner(QObject):
                 try:
                     test = subreddit.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                    self.logger.info('Invalid subreddit detected',
+                                     extra={'subreddit': sub.name, 'new_sub': len(sub.previous_downloads == 0)})
                     subreddit = None
                     self.remove_invalid_object.emit(sub)
 
@@ -160,6 +168,7 @@ class DownloadRunner(QObject):
 
     def downloads_finished(self):
         """Cleans up objects that need to be changed after the download is complete."""
+        time_string = self.calculate_run_time()
         try:
             for sub in self.subreddit_list:
                 sub.clear_download_session_data()
@@ -170,10 +179,38 @@ class DownloadRunner(QObject):
                 user.clear_download_session_data()
         except TypeError:
             pass
-        self.queue.put('\nFinished')
+        self.logger.info('Download finished', extra={'download_type': 'User' if self.user_run else 'Subreddit',
+                                                     'download_count': self.download_number,
+                                                     'download_time': time_string})
+        self.queue.put('\nFinished\nTime: %s' % time_string)
         if len(self.downloaded_users) > 0:
             self.send_downloaded_users()
         self.finished.emit()
+
+    def calculate_run_time(self):
+        """
+        Calculates and returns the run time of the download runner in a human readable hour, min, sec format.
+        :return: The run time in string format
+        :rtype: str
+        """
+        milli_sec = time() - self.start_time
+        sec = int((milli_sec / 1000) % 60)
+        min = int((milli_sec / (1000 * 60)) % 60)
+        hour = int((milli_sec / (1000 * 60 * 60)) % 24)
+
+        time_string = ''
+        if hour > 0:
+            if hour > 1:
+                time_string += '%d hours, ' % hour
+            else:
+                time_string += '%d hour, ' % hour
+        if min > 0:
+            if min > 1:
+                time_string += '%d mins, ' % min
+            else:
+                time_string += '%d min, ' % min
+        time_string += '%d secs' % sec
+        return time_string
 
     def start_extractor(self):
         """
@@ -289,6 +326,7 @@ class DownloadRunner(QObject):
         self.run = False
         self.stop.emit()
         self.queue.put('\nStopped\n')
+        self.logger.info('Downloader stopped', extra={'run_time': self.calculate_run_time()})
 
     def send_unfinished_downloads(self):
         if not self.queued_posts.empty():
@@ -328,10 +366,12 @@ class Extractor(QObject):
         :param post_queue: The queue where downloadable links are passed to be downloaded by the downloader thread
         """
         super().__init__()
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.queue = queue
         self.validated_objects = valid_objects
         self.post_queue = post_queue
         self.user_extract = user_extract
+        self.extract_count = 0
         self.run = True
 
     def extract(self):
@@ -349,12 +389,14 @@ class Extractor(QObject):
                     if self.user_extract:
                         self.send_user.emit((working_object.name, [x.filename for x in working_object.content]))
                 for post in working_object.content:
+                    self.extract_count += 1
                     post.install_queue(self.queue)
                     self.post_queue.put(post)
                 self.update_progress_bar.emit()
             else:
                 self.run = False
         self.post_queue.put(None)
+        self.logger.info('Extractor finished', extra={'extracted_content_count': self.extract_count})
         self.finished.emit()
 
     def stop(self):
@@ -373,7 +415,9 @@ class Downloader(QObject):
         :param queue: The download queue in which extracted content is placed
         """
         super().__init__()
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.queue = queue
+        self.download_count = 0
         self.run = True
 
         self.download_pool = QThreadPool()
@@ -385,9 +429,11 @@ class Downloader(QObject):
             post = self.queue.get()
             if post is not None:
                 self.download_pool.start(post)
+                self.download_count += 1
             else:
                 self.run = False
         self.download_pool.waitForDone()
+        self.logger.info('Downloader finished', extra={'download_count': self.download_count})
         self.finished.emit()
 
     def stop(self):
