@@ -27,5 +27,3 @@ def make_logger():
 
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
-
-    # logger.info('Logger created')

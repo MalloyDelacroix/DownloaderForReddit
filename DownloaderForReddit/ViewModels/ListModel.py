@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 from operator import attrgetter
 import datetime
+import logging
 
 from Core import Injector
 from Core.RedditObjects import RedditObject
@@ -45,6 +46,7 @@ class ListModel(QAbstractListModel):
         are actually displayed in the list view
         """
         super().__init__()
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Injector.get_settings_manager()
         self.name = name
         self.list_type = list_type
@@ -88,7 +90,8 @@ class ListModel(QAbstractListModel):
             index = self.reddit_object_list.index(object_)
             self.removeRow(index)
         except ValueError:
-            print('Remove reddit object exception: Object does not exist in list')
+            self.logger.error('Failed to remove reddit object from list: Object does not appear to exist',
+                              extra={'list_name': self.name, 'list_type': self.list_type, 'object_name': object_.name})
 
     def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
         self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
