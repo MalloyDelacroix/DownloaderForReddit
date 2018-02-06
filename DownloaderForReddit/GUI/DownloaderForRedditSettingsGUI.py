@@ -27,6 +27,7 @@ import datetime
 import os
 import time
 from PyQt5 import QtWidgets, QtCore
+import logging
 
 from GUI_Resources.DownloaderForRedditSettingsGUI_auto import Ui_SettingsGUI
 import Core.Injector
@@ -42,6 +43,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.logger.info('Settings dialog opened')
         self._restore_defaults = False
 
         self.sub_sort_radio_dict = {
@@ -188,6 +191,9 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         if dialog == QtWidgets.QDialog.Accepted:
             self.imgur_client_id = imgur_dialog.client_id_line_edit.text()
             self.imgur_client_secret = imgur_dialog.client_secret_line_edit.text()
+            self.logger.info('Imgur client_id and client_secret set',
+                             extra={'valid_client_id': self.imgur_client_id is not None,
+                                    'valid_client_secret': self.imgur_client_secret is not None})
 
     def restrict_score_shift(self):
         """Disables certain features if the current options disallow their use"""
@@ -207,7 +213,6 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
     def select_save_path(self):
         """Opens a file dialog to select the save path"""
-
         folder_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Save Folder',
                                                                      self.get_default_folder()))
         if folder_name != '':
@@ -294,6 +299,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.save_directory = self.save_directory_line_edit.text()
         self.settings_manager.max_download_thread_count = self.thread_limit_spinbox.value()
         self.settings_manager.save_undownloaded_content = self.save_undownloaded_content_checkbox.isChecked()
+        self.logger.info('Settings saved', extra={'settings': self.settings_manager.json})
 
     def save_display_settings(self):
         self.save_tooltip_display_settings()
@@ -351,3 +357,4 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.post_score_limit_spin_box.setValue(0)
         self.post_score_combo.setCurrentIndex(0)
         self._restore_defaults = True
+        self.logger.info('Defaults restored from settings dialog')

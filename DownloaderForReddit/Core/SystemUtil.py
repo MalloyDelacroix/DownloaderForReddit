@@ -43,7 +43,6 @@ def rename_directory_deleted(path):
     :rtype: bool
     """
     try:
-        print("Delete Path: %s" % path)
         if os.path.isdir(path):
             path = path[:-1] if path.endswith(os.sep) or path.endswith('/') else path
             os.rename(path, '%s (deleted)' % path)
