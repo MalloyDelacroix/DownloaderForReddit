@@ -28,6 +28,7 @@ import time
 import copy
 import os
 from PyQt5 import QtCore, QtWidgets, QtGui
+import logging
 
 from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from Core import Injector
@@ -54,6 +55,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.logger.info('Reddit object settings dialog opened')
         self.running = downloader_running
         try:
             self.object_list = list_model.reddit_object_list
@@ -80,9 +83,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.splitter.restoreState(state if state is not None else self.splitter.saveState())
         self.show_downloads = True
 
-        self.subreddit_sort_dict = {
-
-        }
+        self.subreddit_sort_dict = {}
 
         if self.object_type == 'USER':
             self.sub_sort_label.setVisible(False)
@@ -320,6 +321,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def download_single(self):
         """Downloads only the current reddit object."""
+        self.logger.info('Preparing to download single', extra={'reddit_object': self.current_object.json})
         self.replace_current_object_with_temp()
         download_method = self.get_single_download_subreddit_method()
         self.download_object_button.setText('Downloading...')
@@ -411,9 +413,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 if len(self.current_download_folder) > 0:
                     self.display_content()
             except FileNotFoundError:
+                self.logger.warning('No content found for reddit object',
+                                    extra={'reddit_object': self.current_object.json})
                 self.content_list.addItem('No content has been downloaded for this %s yet' % self.object_type.lower())
             except:
-                print('Exception in setup content list')
+                self.logger.error('Error setting up content list',
+                                  extra={'reddit_object': self.current_object.json,
+                                         'show_downloads': self.show_downloads},
+                                  exc_info=True)
 
     def get_download_folder(self):
         """Returns a list of file objects to be displayed in the content view."""
@@ -451,7 +458,9 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                 self.content_list.addItem(item)
                 QtWidgets.QApplication.processEvents()
             except:
-                print('Could not display content')
+                self.logger.error('Error displaying content',
+                                  extra={'reddit_object': self.current_object.json,
+                                         'file_path': file}, exc_info=True)
 
     def make_icon(self, file):
         """
@@ -485,7 +494,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             open_download_folder = menu.addAction('Open Download Folder')
             open_download_folder.triggered.connect(lambda: self.open_item_download_folder(position))
         except AttributeError:
-            pass
+            self.logger.error('Failed to display object list context menu', exc_info=True)
         menu.exec_(QtGui.QCursor.pos())
 
     def item_display_list_right_click(self):
@@ -562,7 +571,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             icon_size_extra_large.triggered.connect(lambda: self.set_icon_size(256))
 
         except AttributeError:
-            print('UserSettingsDialog AttributeError: user_content_right_click')
+            self.logger.error('Failed to display content list context menu', exc_info=True)
         menu.exec(QtGui.QCursor.pos())
 
     def date_right_click(self):
@@ -581,8 +590,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         try:
             SystemUtil.open_in_system(path)
         except AttributeError:
-            print('Selected object has no attribute save_directory')
+            self.logger.error('Failed to open reddit object download folder: Attribute Error',
+                              extra={'folder_path': path, 'reddit_object': self.current_object.json}, exc_info=True)
         except FileNotFoundError:
+            self.logger.error('Failed to open reddit object download folder: Folder cannot be found',
+                              extra={'folder_path': path, 'reddit_object': self.current_object.json}, exc_info=True)
             Message.no_download_folder(self, self.object_type)
 
     def get_download_folder_path(self, reddit_object):
@@ -607,9 +619,9 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         try:
             SystemUtil.open_in_system(file)
         except AttributeError:
-            print('Selected file has no attribute path')
+            self.logger.error('Failed to open file', exc_info=True)
         except FileNotFoundError:
-            print('Cannot find file')
+            self.logger.error('Failed to open file: File could not be found', extra={'file_path': file}, exc_info=True)
 
     def open_link(self):
         """Opens a link from the 'previous_downloads' list in the default web browser."""
@@ -641,6 +653,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def accept(self):
         self.save_temp_object()
         self.sub_temp_objects()
+        self.logger.info('Reddit object settings dialog saved', extra={'saved_object_count': len(self.temp_object_dict),
+                                                                       'total_object_count': len(self.object_list)})
         super().accept()
 
     def closeEvent(self, event):
