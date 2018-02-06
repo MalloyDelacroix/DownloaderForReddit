@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import praw
 from PyQt5.QtCore import QSettings
+import logging
 
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from Persistence.ObjectUpdater import ObjectUpdater
@@ -35,6 +36,7 @@ from version import __version__
 class SettingsManager:
 
     def __init__(self):
+        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
         self.load_settings()
         self.count = 0
@@ -54,7 +56,12 @@ class SettingsManager:
 
     def check_first_run(self):
         cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
-        return cached_version != __version__
+        if cached_version != __version__:
+            self.logger.info('First fun of new version',
+                             extra={'new_version': __version__, 'old_version': cached_version})
+            return True
+        else:
+            return False
 
     def load_settings(self):
         # region Core Settings
