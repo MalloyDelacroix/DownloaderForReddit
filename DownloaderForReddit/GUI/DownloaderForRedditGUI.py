@@ -68,7 +68,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         QtWidgets.QMainWindow.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.logger.info('Main dialog established')
         self.version = __version__
         self.failed_list = []
         self.last_downloaded_users = {}
@@ -1311,7 +1310,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.subreddit_list_combo.setCurrentText(last_subreddit_view)
                 self.set_last_view_model('USER', last_user_view)
                 self.set_last_view_model('SUB', last_subreddit_view)
-                self.logger.info('Save_file successfully loaded')
+                self.logger.info('Save_file successfully loaded into gui')
             except KeyError:
                 self.logger.error('Load state key error', exc_info=True)
             except TypeError:

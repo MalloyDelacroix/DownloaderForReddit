@@ -40,6 +40,10 @@ class ObjectStateHandler:
     """
 
     logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+    total_user_count = 0
+    total_sub_count = 0
+    user_update_count = 0
+    sub_update_count = 0
 
     @classmethod
     def load_pickled_state(cls):
@@ -64,15 +68,19 @@ class ObjectStateHandler:
                     user_list = cls.check_user_objects(user_list)
                     x = ListModel(name, 'user')
                     x.reddit_object_list = user_list
-                    x.display_list = [i.name for i in user_list]
                     user_view_chooser_dict[x.name] = x
+                    cls.total_user_count += len(user_list)
 
                 for name, sub_list in subreddit_list_models.items():
                     sub_list = cls.check_subreddit_objects(sub_list)
                     x = ListModel(name, 'subreddit')
                     x.reddit_object_list = sub_list
-                    x.display_list = [i.name for i in sub_list]
                     subreddit_view_chooser_dict[name] = x
+                    cls.total_sub_count += len(sub_list)
+            cls.logger.info('Object lists loaded from save file', extra={'total_users': cls.total_user_count,
+                                                                         'total_subreddits': cls.total_sub_count,
+                                                                         'updated_users': cls.user_update_count,
+                                                                         'updated_subreddits': cls.sub_update_count})
             return {'user_dict': user_view_chooser_dict, 'sub_dict': subreddit_view_chooser_dict,
                     'last_user_view': last_user_view, 'last_sub_view': last_subreddit_view}
         except KeyError:
@@ -114,13 +122,15 @@ class ObjectStateHandler:
                 shelf['subreddit_list_models'] = sub_list_models
                 shelf['current_user_view'] = object_dict['current_user_view']
                 shelf['current_subreddit_view'] = object_dict['current_sub_view']
+            cls.logger.info('Objects successfully saved', extra={'total_users_saved': cls.total_user_count,
+                                                                 'total_subreddits_saved': cls.total_sub_count})
             return True
         except Exception:
             cls.logger.error('Unable to save to save_file', extra={'save_file_location': save_path}, exc_info=True)
             return False
 
-    @staticmethod
-    def get_list_models(view_chooser_dict):
+    @classmethod
+    def get_list_models(cls, view_chooser_dict):
         """
         Iterates through the supplied view_chooser_dict and extracts the user list from each list model, packages it in
         a dict with the models name, then returns the dict to be pickled.
@@ -132,6 +142,10 @@ class ObjectStateHandler:
         list_models = {}
         for key, value in view_chooser_dict.items():
             list_models[key] = value.reddit_object_list
+            if value.list_type == 'user':
+                cls.total_user_count += len(value.reddit_object_list)
+            else:
+                cls.total_sub_count += len(value.reddit_object_list)
         return list_models
 
     @classmethod
@@ -140,6 +154,7 @@ class ObjectStateHandler:
             if not cls.check_version(user_list[index]):
                 x = ObjectUpdater.update_user(user_list[index])
                 user_list[index] = x
+                cls.user_update_count += 1
         return user_list
 
     @classmethod
@@ -148,6 +163,7 @@ class ObjectStateHandler:
             if not cls.check_version(sub_list[index]):
                 x = ObjectUpdater.update_subreddit(sub_list[index])
                 sub_list[index] = x
+                cls.sub_update_count += 1
         return sub_list
 
     @staticmethod
