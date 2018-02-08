@@ -51,6 +51,23 @@ def rename_directory_deleted(path):
         return False
 
 
+def set_file_modify_time(file, epoch):
+    """
+    Sets a files date modified metadata to the time in the supplied epoch time.
+    :param file: The file who's date modified time is to be changed.
+    :param epoch: The datetime in seconds of the new modified date.
+    :type file: str
+    :type epoch: int
+    :return: True if the modification was successful, False if it was not.
+    :rtype: bool
+    """
+    try:
+        os.utime(file, times=(epoch, epoch))
+        return True
+    except:
+        return False
+
+
 def get_data_directory():
     """
     Builds and returns a path the DownloaderForReddit data files location based on the users OS.  This will either be
