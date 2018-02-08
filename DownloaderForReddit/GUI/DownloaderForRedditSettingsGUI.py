@@ -156,7 +156,11 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
 
         self.save_undownloaded_content_checkbox.setChecked(self.settings_manager.save_undownloaded_content)
+
         self.set_date_modified_checkbox.setChecked(self.settings_manager.set_file_modified_date)
+        set_date_modified_tooltip = 'If checked, the date modified property of downloaded files will be set to the ' \
+                                    'date that the post was made on reddit'
+        self.set_date_modified_checkbox.setToolTip(set_date_modified_tooltip)
 
         self.total_files_downloaded_label.setText("Total Files Downloaded: " +
                                                   str(self.settings_manager.total_files_downloaded))
