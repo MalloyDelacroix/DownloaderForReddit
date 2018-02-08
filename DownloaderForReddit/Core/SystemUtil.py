@@ -61,11 +61,7 @@ def set_file_modify_time(file, epoch):
     :return: True if the modification was successful, False if it was not.
     :rtype: bool
     """
-    try:
-        os.utime(file, times=(epoch, epoch))
-        return True
-    except:
-        return False
+    os.utime(file, times=(epoch, epoch))
 
 
 def get_data_directory():

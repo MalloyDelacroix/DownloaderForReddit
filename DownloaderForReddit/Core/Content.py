@@ -28,12 +28,13 @@ from PyQt5.QtCore import QRunnable
 import logging
 
 from Core import SystemUtil
+from Core import Injector
 
 
 class Content(QRunnable):
 
     def __init__(self, url, user, post_title, subreddit, submission_id, number_in_seq, file_ext, save_path,
-                 subreddit_save_method, display_only):
+                 subreddit_save_method, date_created, display_only):
         """
         Class that holds information about a single file extracted from a reddit submission that is to be downloaded as
         content.  Also holes the method to download the file.
@@ -48,6 +49,7 @@ class Content(QRunnable):
         """
         super().__init__()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.settings_manager = Injector.get_settings_manager()
         self.url = url
         self.user = user
         self.post_title = post_title
@@ -57,6 +59,7 @@ class Content(QRunnable):
         self.file_ext = file_ext
         self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
         self.subreddit_save_method = subreddit_save_method
+        self.date_created = date_created
         self.display_only = display_only
         self.output = ''
         self.setAutoDelete(False)
@@ -106,6 +109,7 @@ class Content(QRunnable):
                 with open(self.filename, 'wb') as file:
                     for chunk in response.iter_content(1024):
                         file.write(chunk)
+                self.set_file_modified_date()
             except PermissionError as e:
                 self.logger.error('Failed to save content: Permission denied to save location',
                                   extra={'save_path': self.filename})
@@ -136,6 +140,22 @@ class Content(QRunnable):
         Checks the supplied subreddit's check path and if it does not exist, creates the directory.
         """
         SystemUtil.create_directory(self.check_path)
+
+    def set_file_modified_date(self):
+        """
+        Sets the date modified of the created file to be the date the post was made on reddit.  First checks the
+        settings manager to see if the user has this feature enabled.
+        """
+        if self.settings_manager.set_file_modified_date:
+            try:
+                SystemUtil.set_file_modify_time(self.filename, self.date_created)
+            except:
+                if self.settings_manager.modify_date_count < 3:
+                    self.settings_manager.modify_date_count += 1
+                    self.queue.put('Failed to set date modified for file: %s' % self.filename)
+                    self.logger.error('Failed to set date modified for file',
+                                      extra={'filename': self.filename, 'date_created': self.date_created},
+                                      exc_info=True)
 
     def install_queue(self, queue):
         """
