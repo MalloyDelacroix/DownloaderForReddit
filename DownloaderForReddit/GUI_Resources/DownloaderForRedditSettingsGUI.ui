@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>754</width>
-    <height>880</height>
+    <height>855</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,11 @@
   <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0" colspan="3">
     <widget class="QStackedWidget" name="stacked_widget">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -306,17 +311,15 @@
           <string>Content Filters</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="0" column="0" colspan="2">
-           <widget class="QCheckBox" name="link_filter_video_checkbox">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_3">
             <property name="text">
-             <string>Download Videos</string>
+             <string>NSFW filter:</string>
             </property>
            </widget>
+          </item>
+          <item row="2" column="1" colspan="2">
+           <widget class="QComboBox" name="nsfw_filter_combo"/>
           </item>
           <item row="0" column="2">
            <widget class="QCheckBox" name="link_filter_image_checkbox">
@@ -330,7 +333,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="3">
+          <item row="0" column="0">
            <widget class="QCheckBox" name="link_filter_avoid_duplicates_checkbox">
             <property name="font">
              <font>
@@ -342,15 +345,17 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_3">
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="link_filter_video_checkbox">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
             <property name="text">
-             <string>NSFW filter:</string>
+             <string>Download Videos</string>
             </property>
            </widget>
-          </item>
-          <item row="1" column="1" colspan="2">
-           <widget class="QComboBox" name="nsfw_filter_combo"/>
           </item>
          </layout>
         </widget>
@@ -431,18 +436,6 @@
        </item>
        <item row="8" column="0" colspan="3">
         <layout class="QGridLayout" name="gridLayout_7">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="font">
-            <font>
-             <pointsize>10</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Number of simultaneous download threads:</string>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="1">
           <widget class="QSpinBox" name="thread_limit_spinbox">
            <property name="font">
@@ -461,6 +454,18 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="total_files_downloaded_label">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Total Files Downloaded: 0</string>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="0">
           <widget class="QCheckBox" name="save_undownloaded_content_checkbox">
            <property name="font">
@@ -476,15 +481,27 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="total_files_downloaded_label">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_4">
            <property name="font">
             <font>
              <pointsize>10</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>Total Files Downloaded: 0</string>
+            <string>Number of simultaneous download threads:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="QCheckBox" name="set_date_modified_checkbox">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Set files date modified property to the date the post was made</string>
            </property>
           </widget>
          </item>
