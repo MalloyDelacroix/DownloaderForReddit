@@ -193,10 +193,9 @@ class DownloadRunner(QObject):
         :return: The run time in string format
         :rtype: str
         """
-        milli_sec = time() - self.start_time
-        sec = int((milli_sec / 1000) % 60)
-        min = int((milli_sec / (1000 * 60)) % 60)
-        hour = int((milli_sec / (1000 * 60 * 60)) % 24)
+        seconds = time() - self.start_time
+        min_, sec = divmod(seconds, 60)
+        hour, min_ = divmod(min_, 60)
 
         time_string = ''
         if hour > 0:
@@ -204,11 +203,11 @@ class DownloadRunner(QObject):
                 time_string += '%d hours, ' % hour
             else:
                 time_string += '%d hour, ' % hour
-        if min > 0:
-            if min > 1:
-                time_string += '%d mins, ' % min
+        if min_ > 0:
+            if min_ > 1:
+                time_string += '%d mins, ' % min_
             else:
-                time_string += '%d min, ' % min
+                time_string += '%d min, ' % min_
         time_string += '%d secs' % sec
         return time_string
 
