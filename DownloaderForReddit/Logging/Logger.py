@@ -1,5 +1,6 @@
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import jsonlogger
 
 from Core import SystemUtil
@@ -21,7 +22,7 @@ def make_logger():
     stream_handler.setFormatter(stream_formatter)
 
     log_path = os.path.join(SystemUtil.get_data_directory(), 'DownloaderForReddit.log')
-    file_handler = logging.FileHandler(log_path)
+    file_handler = RotatingFileHandler(log_path, maxBytes=5*1024*1024, backupCount=1)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(json_formatter)
 

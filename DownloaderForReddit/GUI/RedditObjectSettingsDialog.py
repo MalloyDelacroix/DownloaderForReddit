@@ -56,7 +56,6 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.logger.info('Reddit object settings dialog opened')
         self.running = downloader_running
         try:
             self.object_list = list_model.reddit_object_list
