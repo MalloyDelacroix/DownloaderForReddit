@@ -88,7 +88,7 @@ class Extractor(object):
     def make_content(self, url, file_name, count, extension, date_created):
         count = ' %s' % count if count else ''
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
-                    date_created, self.subreddit_save_method, self.content_display_only)
+                    self.subreddit_save_method, date_created, self.content_display_only)
         self.extracted_content.append(x)
 
     def get_log_data(self):
@@ -231,7 +231,7 @@ class ImgurExtractor(Extractor):
                     url = picture.mp4
                     extension = 'mp4'
             x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
-                        self.creation_date, self.subreddit_save_method, self.content_display_only)
+                        self.subreddit_save_method, self.creation_date,  self.content_display_only)
             self.extracted_content.append(x)
         except NameError:
             self.logger.error('Failed direct extract: Unrecognized extension',
@@ -250,7 +250,7 @@ class ImgurExtractor(Extractor):
                 extension = 'mp4'
                 url = pic.mp4
             x = Content(url, self.user, self.post_title, self.subreddit, file_name + " ", count, '.' + extension,
-                        self.save_path, self.creation_date, self.subreddit_save_method, self.content_display_only)
+                        self.save_path,self.subreddit_save_method, self.creation_date, self.content_display_only)
             count += 1
             self.extracted_content.append(x)
 
@@ -264,7 +264,7 @@ class ImgurExtractor(Extractor):
             extension = 'mp4'
             url = pic.mp4
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
-                    self.creation_date, self.subreddit_save_method, self.content_display_only)
+                    self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
 
     def extract_direct_mislinked(self):
@@ -290,7 +290,7 @@ class ImgurExtractor(Extractor):
                     url = picture.mp4
                     extension = 'mp4'
             x = Content(url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension, self.save_path,
-                        self.creation_date, self.subreddit_save_method, self.content_display_only)
+                        self.subreddit_save_method, self.creation_date, self.content_display_only)
             self.extracted_content.append(x)
         except NameError:
             self.logger.error('Failed direct mislinked extract: Unrecognized extension',
@@ -327,7 +327,7 @@ class GfycatExtractor(Extractor):
         gfy_id, ext = id_with_ext.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else gfy_id
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", "." + ext, self.save_path,
-                    self.creation_date, self.subreddit_save_method, self.content_display_only)
+                    self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
 
     def extract_single(self):
@@ -336,7 +336,7 @@ class GfycatExtractor(Extractor):
         gfy_url = gfy_json.get('gfyItem').get('webmUrl')
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else gif_id
         x = Content(gfy_url, self.user, self.post_title, self.subreddit, file_name, "", '.webm', self.save_path,
-                    self.creation_date, self.subreddit_save_method, self.content_display_only)
+                    self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
 
 
@@ -381,7 +381,7 @@ class VidbleExtractor(Extractor):
                     base, extension = link.rsplit('.', 1)
                     file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
                     x = Content(self.vidble_base + link, self.user, self.post_title, self.subreddit, file_name, "",
-                                '.' + extension, self.save_path, self.creation_date, self.subreddit_save_method,
+                                '.' + extension, self.save_path, self.subreddit_save_method, self.creation_date,
                                 self.content_display_only)
                     self.extracted_content.append(x)
 
@@ -398,7 +398,7 @@ class VidbleExtractor(Extractor):
                     base, extension = link.rsplit('.', 1)
                     file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
                     x = Content(self.vidble_base + link, self.user, self.post_title, self.subreddit, file_name, count,
-                                '.' + extension, self.save_path, self.creation_date, self.subreddit_save_method,
+                                '.' + extension, self.save_path, self.subreddit_save_method, self.creation_date,
                                 self.content_display_only)
                     self.extracted_content.append(x)
                     count += 1
@@ -408,7 +408,7 @@ class VidbleExtractor(Extractor):
         vidble_id, extension = id_with_ext.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension,
-                    self.save_path, self.creation_date, self.subreddit_save_method, self.content_display_only)
+                    self.save_path, self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
 
 
@@ -430,7 +430,7 @@ class RedditUploadsExtractor(Extractor):
         try:
             direct_link = "%s.jpg" % self.url
             x = Content(direct_link, self.user, self.post_title, self.subreddit, self.post_title, "", '.jpg',
-                        self.save_path, self.creation_date, self.subreddit_save_method, self.content_display_only)
+                        self.save_path, self.subreddit_save_method, self.creation_date, self.content_display_only)
             self.extracted_content.append(x)
         except:
             self.extracted_content.append("Failed to locate the content at %s\nUser: %s  Subreddit: %s  Title: %s" %
@@ -450,5 +450,5 @@ class DirectExtractor(Extractor):
         image_id, extension = id_with_ext.rsplit('.', 1)
         file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
         x = Content(self.url, self.user, self.post_title, self.subreddit, file_name, "", '.' + extension,
-                    self.save_path, self.creation_date, self.subreddit_save_method, self.content_display_only)
+                    self.save_path, self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)

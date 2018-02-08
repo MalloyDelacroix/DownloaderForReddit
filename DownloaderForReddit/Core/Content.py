@@ -149,13 +149,11 @@ class Content(QRunnable):
         if self.settings_manager.set_file_modified_date:
             try:
                 SystemUtil.set_file_modify_time(self.filename, self.date_created)
-            except:
+            except Exception:
                 if self.settings_manager.modify_date_count < 3:
                     self.settings_manager.modify_date_count += 1
-                    self.queue.put('Failed to set date modified for file: %s' % self.filename)
-                    self.logger.error('Failed to set date modified for file',
-                                      extra={'filename': self.filename, 'date_created': self.date_created},
-                                      exc_info=True)
+                    self.queue.put('Could not set date modified for file: %s' % self.filename)
+                    self.logger.error('Failed to set date modified for file', exc_info=True)
 
     def install_queue(self, queue):
         """
