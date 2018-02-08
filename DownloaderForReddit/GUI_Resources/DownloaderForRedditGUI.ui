@@ -46,7 +46,7 @@
         </property>
        </widget>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="6">
          <widget class="QComboBox" name="subreddit_list_combo">
@@ -246,6 +246,8 @@
     <addaction name="file_open_settings"/>
     <addaction name="separator"/>
     <addaction name="file_save"/>
+    <addaction name="file_import_save_file"/>
+    <addaction name="file_open_save_file_location"/>
     <addaction name="separator"/>
     <addaction name="file_exit"/>
    </widget>
@@ -439,6 +441,16 @@
    </property>
    <property name="text">
     <string>Descending</string>
+   </property>
+  </action>
+  <action name="file_open_save_file_location">
+   <property name="text">
+    <string>Open Save Location</string>
+   </property>
+  </action>
+  <action name="file_import_save_file">
+   <property name="text">
+    <string>Import Save File</string>
    </property>
   </action>
  </widget>

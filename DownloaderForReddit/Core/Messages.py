@@ -192,6 +192,12 @@ class Message(object):
         reply = message.information(self, 'Rename Failure', text, message.Ok)
         return reply == message.Ok
 
+    def overwrite_save_file_question(self):
+        text = 'A save file is already present in the data directory.\nDo you want to overwrite the save file(s)?\n' \
+               'This action cannot be undone'
+        reply = message.question(self, 'Overwrite File?', text, message.Yes, message.No)
+        return reply == message.Yes
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 

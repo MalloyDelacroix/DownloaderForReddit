@@ -149,6 +149,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
+        self.file_import_save_file.triggered.connect(self.import_save_file)
+        self.file_open_save_file_location.triggered.connect(self.open_save_file_location)
         self.file_exit.triggered.connect(self.close_from_menu)
 
         self.download_button.clicked.connect(self.button_assignment)
@@ -874,8 +876,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def select_directory(self):
         """
-        Opens a dialog for the user to select a directory then verifies and returns the selected directory.
-        :return: A path to the selected directory.
+        Opens a dialog for the user to select a directory then verifies and returns the selected directory if it exists,
+        and returns None if it does not.
+        :return: A path to a user selected directory.
         :rtype: str
         """
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
@@ -1339,6 +1342,84 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.set_not_saved()
         else:
             self.set_saved()
+
+    def import_save_file(self):
+        """
+        Has the user select a save file, then moves the file to the applications data folder.  If a save file already
+        exists, the user is asked if they want to overwrite.  If the file is successfully moved, load_state is called
+        to load up the new save file.
+        """
+        imported = False
+        save_file = self.select_save_file()
+        if save_file is not None:
+            file_name = self.get_file_name(save_file)
+            if file_name == 'save_file':
+                folder = os.path.dirname(save_file)
+                if self.move_save_files(folder, True):
+                    imported = True
+                else:
+                    if Message.overwrite_save_file_question(self):
+                        imported = self.move_save_files(folder, False)
+            if imported:
+                self.load_state()
+
+    def move_save_files(self, source_folder, first_attempt):
+        """
+        Attemps to move any file in the supplied source with the name 'save_file' to the applications data folder.
+        :param source_folder: The folder in which the save_file the user selected resides.
+        :param first_attempt: Indicates if this is the first or second attempt to move files. Determines if existing
+                              save files will be overwritten.
+        :type source_folder: str
+        :type first_attempt: bool
+        :return: True if the move was successful and False if it was not.
+        :rtype: bool
+        """
+        # TODO: Look into what happens here when a save file has already been loaded: may need to clear dicts
+        try:
+            for file in os.listdir(source_folder):
+                if self.get_file_name(file) == 'save_file':
+                    new_path = os.path.join(SystemUtil.get_data_directory(), file)
+                    if os.path.isfile(new_path) and not first_attempt:
+                        os.remove(new_path)
+                    else:
+                        return False
+                    os.rename(os.path.join(source_folder, file), os.path.join(SystemUtil.get_data_directory(), file))
+            return True
+        except FileExistsError:
+            self.logger.error('Failed to move save file: File already exists',
+                              extra={'source_folder': source_folder}, exc_info=True)
+            self.update_output('Error: Failed to import save file: Existing save file could not be overwritten')
+            return False
+
+    def select_save_file(self):
+        """
+        Opens a dialog for the user to select a file then verifies and returns the selected file if it exists, and
+        returns None if it does not.
+        :return: A path to a user selected file.
+        :rtype: str
+        """
+        file = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select File', os.path.expanduser('~'))[0])
+        print('File: %s' % file)
+        if os.path.isfile(file):
+            return file
+        else:
+            Message.invalid_file_path(self)
+            return None
+
+    def get_file_name(self, path):
+        """Extracts only the file name without extension from the supplied file path."""
+        print('Path: %s' % path)
+        name = os.path.basename(path)
+        return os.path.splitext(name)[0]
+
+    def open_save_file_location(self):
+        """
+        Opens the applications data directory in the default system file manager.
+        """
+        try:
+            SystemUtil.open_in_system(SystemUtil.get_data_directory())
+        except Exception:
+            self.logger.error('Failed to open data directory', exc_info=True)
 
     def check_for_updates(self, from_menu):
         """
