@@ -156,6 +156,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
 
         self.save_undownloaded_content_checkbox.setChecked(self.settings_manager.save_undownloaded_content)
+        self.set_date_modified_checkbox.setChecked(self.settings_manager.set_file_modified_date)
 
         self.total_files_downloaded_label.setText("Total Files Downloaded: " +
                                                   str(self.settings_manager.total_files_downloaded))
@@ -299,6 +300,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.save_directory = self.save_directory_line_edit.text()
         self.settings_manager.max_download_thread_count = self.thread_limit_spinbox.value()
         self.settings_manager.save_undownloaded_content = self.save_undownloaded_content_checkbox.isChecked()
+        self.settings_manager.set_file_modified_date = self.set_date_modified_checkbox.isChecked()
         self.logger.info('Settings saved', extra={'settings': self.settings_manager.json})
 
     def save_display_settings(self):
