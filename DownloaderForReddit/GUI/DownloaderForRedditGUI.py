@@ -1352,11 +1352,19 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 folder = os.path.dirname(save_file)
                 if self.move_save_files(folder, True):
                     imported = True
+                    self.logger.info('Save file imported')
                 else:
                     if Message.overwrite_save_file_question(self):
                         imported = self.move_save_files(folder, False)
+                        self.logger.info('Save file imported: Old save file overwritten')
             if imported:
-                self.load_state()
+                self.load_new_save_file()
+
+    def load_new_save_file(self):
+        """Clears the list names from the list chooser combos and loads the newly moved save file into the GUI"""
+        self.user_lists_combo.clear()
+        self.subreddit_list_combo.clear()
+        self.load_state()
 
     def move_save_files(self, source_folder, first_attempt):
         """
@@ -1394,7 +1402,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :rtype: str
         """
         file = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select File', os.path.expanduser('~'))[0])
-        print('File: %s' % file)
         if os.path.isfile(file):
             return file
         else:
@@ -1403,7 +1410,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def get_file_name(self, path):
         """Extracts only the file name without extension from the supplied file path."""
-        print('Path: %s' % path)
         name = os.path.basename(path)
         return os.path.splitext(name)[0]
 
