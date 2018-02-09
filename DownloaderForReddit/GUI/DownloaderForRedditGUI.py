@@ -279,11 +279,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         menu.exec(QtGui.QCursor.pos())
 
     def subreddit_list_combo_right_click(self):
-        # try:
-        test_list = [1, 2, 3]
-        print(test_list[9])
-        # except IndexError:
-        #     self.logger.error('Fucked it up', exc_info=True)
         menu = QtWidgets.QMenu()
         add_list = menu.addAction('Add Subreddit List')
         remove_list = menu.addAction('Remove Subreddit List')
