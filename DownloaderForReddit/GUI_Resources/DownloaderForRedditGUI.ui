@@ -263,7 +263,7 @@
     <addaction name="separator"/>
     <addaction name="file_failed_download_list"/>
     <addaction name="file_unfinished_downloads"/>
-    <addaction name="file_last_downloaded_users"/>
+    <addaction name="file_last_downloaded_list"/>
     <addaction name="separator"/>
     <addaction name="file_user_list_count"/>
     <addaction name="file_subreddit_list_count"/>
@@ -363,9 +363,9 @@
     <string>Open User Finder</string>
    </property>
   </action>
-  <action name="file_last_downloaded_users">
+  <action name="file_last_downloaded_list">
    <property name="text">
-    <string>Last Downloaded Users</string>
+    <string>Last Downloaded List</string>
    </property>
   </action>
   <action name="file_unfinished_downloads">

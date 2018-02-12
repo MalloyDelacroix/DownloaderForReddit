@@ -37,7 +37,7 @@ class DownloadRunner(QObject):
 
     remove_invalid_object = pyqtSignal(object)
     finished = pyqtSignal()
-    downloaded_users_signal = pyqtSignal(dict)
+    downloaded_objects_signal = pyqtSignal(dict)
     unfinished_downloads_signal = pyqtSignal(list)
     status_bar_update = pyqtSignal(str)
     setup_progress_bar = pyqtSignal(int)
@@ -69,7 +69,7 @@ class DownloadRunner(QObject):
         self.validated_objects = Queue()
         self.validated_subreddits = []
         self.failed_downloads = []
-        self.downloaded_users = {}
+        self.downloaded_objects = {}
         self.unfinished_downloads = []
         self.user_run = True if self.user_list is not None else False
         self.single_subreddit_run_method = None
@@ -183,8 +183,8 @@ class DownloadRunner(QObject):
                                                      'download_count': self.download_number,
                                                      'download_time': time_string})
         self.queue.put('\nFinished\nTime: %s' % time_string)
-        if len(self.downloaded_users) > 0:
-            self.send_downloaded_users()
+        if len(self.downloaded_objects) > 0:
+            self.send_downloaded_objects()
         self.finished.emit()
 
     def calculate_run_time(self):
@@ -222,7 +222,7 @@ class DownloadRunner(QObject):
         self.extractor.moveToThread(self.extractor_thread)
         self.extractor_thread.started.connect(self.extractor.extract)
         self.extractor.update_progress_bar.connect(self.update_progress_bar)
-        self.extractor.send_user.connect(self.add_downloaded_user)
+        self.extractor.send_object.connect(self.add_downloaded_object)
         self.extractor.finished.connect(self.extractor_thread.quit)
         self.extractor.finished.connect(self.extractor.deleteLater)
         self.extractor_thread.finished.connect(self.extractor_thread.deleteLater)
@@ -303,22 +303,22 @@ class DownloadRunner(QObject):
         return [post for post in redditor.submissions.new(limit=user.post_limit) if post.subreddit.display_name in
                 self.validated_subreddits and self.post_filter.filter_post(post, user)]
 
-    def add_downloaded_user(self, user_tuple):
+    def add_downloaded_object(self, obj_tuple):
         """
         Adds downloaded users to the downloaded users dict so that they may be displayed in the 'last downlaoded users'
         dialog after the download is complete.
-        :param user_tuple: A tuple containing the name of the user, and a list of the content that was downloaded during
+        :param obj_tuple: A tuple containing the name of the user, and a list of the content that was downloaded during
                            session
-        :type user_tuple: tuple
+        :type obj_tuple: tuple
         """
-        if user_tuple[0] in self.downloaded_users:
-            self.downloaded_users[user_tuple[0]].extend(user_tuple[1])
+        if obj_tuple[0] in self.downloaded_objects:
+            self.downloaded_objects[obj_tuple[0]].extend(obj_tuple[1])
         else:
-            self.downloaded_users[user_tuple[0]] = user_tuple[1]
+            self.downloaded_objects[obj_tuple[0]] = obj_tuple[1]
 
-    def send_downloaded_users(self):
-        """Emits a signal containing a dictionary of the last downloaded users."""
-        self.downloaded_users_signal.emit(self.downloaded_users)
+    def send_downloaded_objects(self):
+        """Emits a signal containing a dictionary of the last downloaded objects."""
+        self.downloaded_objects_signal.emit(self.downloaded_objects)
 
     def stop_download(self):
         """Stops the download when the user selects to do so."""
@@ -354,7 +354,7 @@ class Extractor(QObject):
 
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
-    send_user = pyqtSignal(tuple)
+    send_object = pyqtSignal(tuple)
 
     def __init__(self, queue, valid_objects, post_queue, user_extract):
         """
@@ -385,8 +385,7 @@ class Extractor(QObject):
                         self.queue.put(entry)
                 if len(working_object.content) > 0:
                     self.queue.put('Count %s' % len(working_object.content))
-                    if self.user_extract:
-                        self.send_user.emit((working_object.name, [x.filename for x in working_object.content]))
+                    self.send_object.emit((working_object.name, [x.filename for x in working_object.content]))
                 for post in working_object.content:
                     self.extract_count += 1
                     post.install_queue(self.queue)

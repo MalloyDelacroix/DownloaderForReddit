@@ -32,7 +32,7 @@ import logging
 
 from GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from GUI.AboutDialog import AboutDialog
-from GUI.DownloadedUsersDialog import DownloadedUsersDialog
+from GUI.DownloadedObjectsDialog import DownloadedObjectsDialog
 from GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from Core.Messages import Message, UnfinishedDownloadsWarning
 from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
@@ -70,7 +70,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.version = __version__
         self.failed_list = []
-        self.last_downloaded_users = {}
+        self.last_downloaded_objects = {}
         self.download_count = 0
         self.downloaded = 0
         self.running = False
@@ -108,7 +108,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_add_subreddit_list.triggered.connect(self.add_subreddit_list)
         self.file_remove_subreddit_list.triggered.connect(self.remove_subreddit_list)
         self.file_failed_download_list.triggered.connect(self.display_failed_downloads)
-        self.file_last_downloaded_users.triggered.connect(self.open_last_downloaded_users)
+        self.file_last_downloaded_list.triggered.connect(self.open_last_downloaded_list)
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
         self.file_user_manual.triggered.connect(self.open_user_manual)
@@ -137,8 +137,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if not self.unfinished_downloads_available:
             self.file_unfinished_downloads.setEnabled(False)
-        if len(self.last_downloaded_users) < 1:
-            self.file_last_downloaded_users.setEnabled(False)
+        if len(self.last_downloaded_objects) < 1:
+            self.file_last_downloaded_list.setEnabled(False)
         if len(self.failed_list) < 1:
             self.file_failed_download_list.setEnabled(False)
 
@@ -523,7 +523,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         elif download_type == 'UNFINISHED':
             self.thread.started.connect(self.download_runner.finish_downloads)
         self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
-        self.download_runner.downloaded_users_signal.connect(self.fill_downloaded_users_list)
+        self.download_runner.downloaded_objects_signal.connect(self.fill_downloaded_objects_list)
         self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
         self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
         self.download_runner.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
@@ -955,24 +955,27 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             index = indicies[0]
         return index
 
-    def fill_downloaded_users_list(self, downloaded_user_dict):
+    def fill_downloaded_objects_list(self, downloaded_object_dict):
         """Adds a users name to a list if they had content downloaded while the program is open"""
-        self.last_downloaded_users = downloaded_user_dict
-        self.file_last_downloaded_users.setEnabled(True)
+        self.last_downloaded_objects = downloaded_object_dict
+        self.file_last_downloaded_list.setEnabled(True)
 
-    def open_last_downloaded_users(self):
+    def open_last_downloaded_list(self):
         """
         Opens a dialog that shows the downloads of any user that has been added to the last downloaded users list.
         """
-        if len(self.last_downloaded_users) > 0:
-            user_display_list = [user for user in
-                                 self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
-                                 if user.name in self.last_downloaded_users]
+        if len(self.last_downloaded_objects) > 0:
+            obj_display_list = [user for user in
+                                self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
+                                if user.name in self.last_downloaded_objects]
+            obj_display_list.extend(sub for sub in
+                                    self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+                                    .reddit_object_list if sub.name in self.last_downloaded_objects)
 
-            downloaded_users_dialog = DownloadedUsersDialog(user_display_list, user_display_list[0],
-                                                            self.last_downloaded_users)
-            downloaded_users_dialog.change_to_downloads_view()
-            downloaded_users_dialog.show()
+            downloaded_objects_dialog = DownloadedObjectsDialog(obj_display_list, obj_display_list[0],
+                                                                self.last_downloaded_objects)
+            downloaded_objects_dialog.change_to_downloads_view()
+            downloaded_objects_dialog.show()
         else:
             Message.no_users_downloaded(self)
 

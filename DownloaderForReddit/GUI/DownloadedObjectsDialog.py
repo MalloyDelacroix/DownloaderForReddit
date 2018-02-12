@@ -23,6 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 import logging
 
@@ -31,23 +32,23 @@ from Core import SystemUtil
 from Core.AlphanumKey import ALPHANUM_KEY
 
 
-class DownloadedUsersDialog(RedditObjectSettingsDialog):
+class DownloadedObjectsDialog(RedditObjectSettingsDialog):
 
-    def __init__(self, list_model, clicked_user, last_downloaded_file_dict):
+    def __init__(self, list_model, clicked_obj, last_downloaded_file_dict):
         """
-        Class that displays downloaded user content that was downloaded during the current running session.  This
-        dialog is the UserSettingsDialog with many features stripped out, and some methods overwritten to provide only
-        thumbnails of the last downloaded images.
+        Class that displays downloaded object content that was downloaded during the current running session.  This
+        dialog is the RedditObjectSettingsDialog with many features stripped out, and some methods overwritten to
+        provide only thumbnails of the last downloaded images.
 
-        :param list_model: A list of user objects that had content downloaded during the session
-        :param clicked_user: The first user in the list
-        :param last_downloaded_file_dict: A dictionary with the key being the downloaded user and the value being a list
-        of files downloaded during the session
+        :param list_model: A list of reddit objects that had content downloaded during the session
+        :param clicked_obj: The first reddit object in the list
+        :param last_downloaded_file_dict: A dictionary with the key being the downloaded objects and the value being a
+        list of files downloaded during the session.
         """
-        super().__init__(list_model, clicked_user, False)
+        super().__init__(list_model, clicked_obj, False)
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.logger.info('Downloaded users dialog opened',
-                         extra={'downloaded_user_count': len(last_downloaded_file_dict)})
+        self.logger.info('Downloaded objects dialog opened',
+                         extra={'downloaded_object_count': len(last_downloaded_file_dict)})
         self.file_dict = last_downloaded_file_dict
         self.view_downloads_button.clicked.connect(self.toggle_download_views)
         self.view_downloads_button.setText('Show Downloads')
@@ -57,7 +58,7 @@ class DownloadedUsersDialog(RedditObjectSettingsDialog):
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Close')
 
     """
-    The following methods are overwritten from the UserSettingsDialog to prevent any changes to user objects
+    The following methods are overwritten from the UserSettingsDialog to prevent any changes to reddit objects
     as well as to limit non wanted functionality when using this dialog
     """
     def setup(self):
@@ -125,7 +126,7 @@ class DownloadedUsersDialog(RedditObjectSettingsDialog):
                 if len(self.file_dict) > 0:
                     self.file_dict[self.current_object.name].sort(key=ALPHANUM_KEY)
                     for file in self.file_dict[self.current_object.name]:
-                        file_name = file.rsplit('/', 1)[1]
+                        file_name = os.path.basename(file)
                         item = QtWidgets.QListWidgetItem()
                         icon = QtGui.QIcon()
                         pixmap = QtGui.QPixmap(file).scaled(QtCore.QSize(500, 500), QtCore.Qt.KeepAspectRatio)
@@ -136,9 +137,10 @@ class DownloadedUsersDialog(RedditObjectSettingsDialog):
                         QtWidgets.QApplication.processEvents()
 
             except FileNotFoundError:
-                self.logger.error('Downloaded users list cannot find files to build content list',
+                self.logger.error('Downloaded objects list cannot find files to build content list',
                                   extra={'current_object': self.current_object.name}, exc_info=True)
-                self.content_list.addItem('No content has been downloaded for this user yet')
+                self.content_list.addItem('No content has been downloaded for this %s yet' %
+                                          self.current_object.object_type.lower())
 
     def open_file(self):
         try:
