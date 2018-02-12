@@ -84,6 +84,7 @@ class MessageReceiver(QtCore.QObject):
 def log_unhandled_exception(exc_type, value, traceback):
     logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
     logger.critical('Unhandled exception', exc_info=(exc_type, value, traceback))
+    sys.exit(-1)
 
 
 def main():
