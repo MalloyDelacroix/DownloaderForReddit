@@ -28,7 +28,7 @@ def create_directory(path):
     """
     if not os.path.isdir(path):
         try:
-            os.mkdir(path)
+            os.makedirs(path)
         except FileExistsError:
             return None
     return None
