@@ -983,6 +983,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
         self.set_not_saved()
         self.running = True
+        self.downloaded = 0
         self.download_count = 0
         self.output_box.clear()
         self.download_button.setText('Downloading...Click to Stop Download')
