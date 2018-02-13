@@ -93,8 +93,12 @@ class DownloadRunner(QObject):
                 try:
                     test = redditor.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                    try:
+                        download_count = len(user.previous_downloads)
+                    except:
+                        download_count = 0
                     self.logger.info('Invalid user detected',
-                                        extra={'user': user.name, 'download_count': user.previous_downloads})
+                                        extra={'user': user.name, 'download_count': download_count})
                     redditor = None
                     self.remove_invalid_object.emit(user)
 

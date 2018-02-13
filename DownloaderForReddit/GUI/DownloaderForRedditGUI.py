@@ -196,7 +196,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.check_for_updates(False)
+        # self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
@@ -764,6 +764,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param reddit_object: The reddit object (User or Subreddit) that is invalid and is to be removed.
         :type reddit_object: RedditObject
         """
+        name = reddit_object.name
         if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
             working_list = self.get_working_list(reddit_object.object_type)
             working_list.remove_reddit_object(reddit_object)
@@ -774,7 +775,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 rename_log = 'Success'
             self.refresh_object_count()
             self.set_not_saved()
-            self.logger.info('Invalid reddit object removed', extra={'name': reddit_object.name,
+            self.logger.info('Invalid reddit object removed', extra={'object_name': name,
                                                                      'folder_rename': rename_log})
 
     def get_working_list(self, object_type):
