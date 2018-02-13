@@ -94,7 +94,7 @@ class DownloadRunner(QObject):
                     test = redditor.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     self.logger.info('Invalid user detected',
-                                        extra={'user': user.name, 'new_user': len(user.previous_downloads == 0)})
+                                        extra={'user': user.name, 'download_count': user.previous_downloads})
                     redditor = None
                     self.remove_invalid_object.emit(user)
 
@@ -120,7 +120,7 @@ class DownloadRunner(QObject):
                     test = subreddit.fullname
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
                     self.logger.info('Invalid subreddit detected',
-                                     extra={'subreddit': sub.name, 'new_sub': len(sub.previous_downloads == 0)})
+                                     extra={'subreddit': sub.name, 'download_count': sub.previous_downloads})
                     subreddit = None
                     self.remove_invalid_object.emit(sub)
 
