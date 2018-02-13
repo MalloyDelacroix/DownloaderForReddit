@@ -74,7 +74,7 @@ def get_data_directory():
     """
     data_dir = os.path.join('SomeGuySoftware', 'DownloaderForReddit')
     if sys.platform == 'win32':
-        path = os.path.join(os.getenv('APPDATA'), data_dir)
+        path = os.path.join(os.getenv('APPDATA'), '.%s' % data_dir)
     elif sys.platform.startswith('linux'):
         path = os.path.join(os.path.expanduser('~'), data_dir)
     elif sys.platform == 'darwin':
