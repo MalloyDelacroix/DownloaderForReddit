@@ -340,22 +340,26 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
     def get_single_download_subreddit_method(self):
         """
         Returns a tuple of how the subreddit should be sorted for a single download based on which combo box option is
-        selected.
+        selected.  Returns None for a user download.
         :return: A tuple specifying how a subreddit should be sorted.
+        :rtype: tuple
         """
-        method_dict = {
-            'New': ('NEW', None),
-            'Hot': ('HOT', None),
-            'Rising': ('RISING', None),
-            'Controversial': ('CONTROVERSIAL', None),
-            'Top - Hour': ('TOP', 'HOUR'),
-            'Top - Day': ('TOP', 'DAY'),
-            'Top - Week': ('TOP', 'WEEK'),
-            'Top - Month': ('TOP', 'MONTH'),
-            'Top - Year': ('TOP', 'YEAR'),
-            'Top - All': ('TOP', 'ALL')
-        }
-        return method_dict[self.sub_sort_combo.currentText()]
+        if self.object_type == 'SUBREDDIT':
+            method_dict = {
+                'New': ('NEW', None),
+                'Hot': ('HOT', None),
+                'Rising': ('RISING', None),
+                'Controversial': ('CONTROVERSIAL', None),
+                'Top - Hour': ('TOP', 'HOUR'),
+                'Top - Day': ('TOP', 'DAY'),
+                'Top - Week': ('TOP', 'WEEK'),
+                'Top - Month': ('TOP', 'MONTH'),
+                'Top - Year': ('TOP', 'YEAR'),
+                'Top - All': ('TOP', 'ALL')
+            }
+            return method_dict[self.sub_sort_combo.currentText()]
+        else:
+            return None
 
     def select_save_path_dialog(self):
         """Opens a dialog to choose a directory path to be set as the objects save path."""

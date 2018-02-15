@@ -455,11 +455,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_runner = DownloadRunner(user_list, None, self.queue, None)
         self.start_reddit_extractor_thread('USER')
 
-    def run_single_user(self, user):
+    def run_single_user(self, download_tuple):
         """
         Called from the user settings dialog and supplied the name of the selected user.  Downloads only the
         selected user
         """
+        user = download_tuple[0]
         self.logger.info('Single user download initiated', extra={'user': user.name,
                                                                   'settings': self.settings_manager.json})
         self.started_download_gui_shift()
