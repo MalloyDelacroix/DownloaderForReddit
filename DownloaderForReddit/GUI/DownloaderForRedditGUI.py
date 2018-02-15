@@ -1157,7 +1157,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             try:
                 imgur_client = imgurpython.ImgurClient(self.settings_manager.imgur_client_id,
                                                        self.settings_manager.imgur_client_secret)
-            except imgurpython.helpers.error.ImgurClientError:
+            except:
                 self.logger.error('Failed to display imgur client information', exc_info=True)
                 imgur_client = None
                 Message.invalid_imgur_client(self)
