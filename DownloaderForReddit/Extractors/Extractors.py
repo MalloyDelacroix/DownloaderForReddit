@@ -63,6 +63,39 @@ class Extractor(object):
         self.failed_extract_messages = []
         self.failed_extracts_to_save = []
 
+    def extract_content(self):
+        """
+        Method that dictates which extraction method will be used.  Responsible for deciding how an extractor is
+        chosen based on the particular website.
+        """
+        pass
+
+    def extract_single(self):
+        """
+        Extracts a single piece of content from a website container.  This is not used to extract direct urls (urls that
+        that are the actual url that is downloaded) but to extract the direct url from a container page that is common
+        among content hosting websites.
+        """
+        pass
+
+    def extract_album(self):
+        """
+        Extracts multiple pieces of content from a single page.  The album format is very common and different hosting
+        websites have different methods of accessing the sequential items in an album page.  This method should
+        extract each item in an album, assign it a sequential number and add it to the content list.
+        """
+        pass
+
+    def extract_direct_link(self):
+        """
+        Extracts information from a link to a downloadable url.  This is a url that ends in the extension of the file
+        to be saved.  This method is tried when no other extractors are found for the website domain of a given url.
+        """
+        domain, id_with_ext = self.url.rsplit('/', 1)
+        image_id, extension = id_with_ext.rsplit('.', 1)
+        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+        self.make_content(self.url, file_name, None, extension)
+
     def get_json(self, url):
         """Makes sure that a request is valid and handles without errors if the connection is not successful"""
         response = requests.get(url)
@@ -85,11 +118,33 @@ class Extractor(object):
             self.extracted_content.append("Failed to retrieve data for link %s\nUser: %s  Subreddit: %s  Tile: %s" %
                                           (url, self.user, self.subreddit, self.post_title))
 
-    def make_content(self, url, file_name, count, extension, date_created):
+    def make_content(self, url, file_name, count, extension):
         count = ' %s' % count if count else ''
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
-                    self.subreddit_save_method, date_created, self.content_display_only)
+                    self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
+
+    def make_failed_extract(self, message=None, save=False, **kwargs,):
+        """
+        Handles the messages, logging, and saving of content that failed to extract.
+        """
+        message_text = ': %s' % message if message else ''
+        self.failed_extract_messages.append('Failed to extract content: Users: %s Subreddit: %s Title: %s Url: %s%s' %
+                                            (self.user, self.subreddit, self.post_title, self.url, message_text))
+        extra = {'extractor_data': self.get_log_data()}
+        for key, value in kwargs.items():
+            extra[key] = value
+        self.logger.error('Failed to extract content', extra=extra)
+        if save:
+            self.save_failed_extract()
+
+    def save_failed_extract(self):
+        """
+        Saves a failed extract as a Post object to be retried upon future runs.  This should only be done for certain
+        errors, such as an over capacity error, that are very likely to not be encountered again on future runs.
+        """
+        self.failed_extracts_to_save.append(Post(self.url, self.user, self.post_title, self.subreddit,
+                                                 self.creation_date))
 
     def get_log_data(self):
         return {'url': self.url,
