@@ -1398,7 +1398,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                         os.remove(new_path)
                     else:
                         return False
-                    # os.rename(os.path.join(source_folder, file), os.path.join(SystemUtil.get_data_directory(), file))
                     SystemUtil.import_data_file(source_folder, file)
             return True
         except FileExistsError:
