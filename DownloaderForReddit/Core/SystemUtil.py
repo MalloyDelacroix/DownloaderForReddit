@@ -30,8 +30,7 @@ def create_directory(path):
         try:
             os.makedirs(path)
         except FileExistsError:
-            return None
-    return None
+            pass
 
 
 def rename_directory_deleted(path):
