@@ -1,7 +1,7 @@
 from Core import *
-from Extractors import Extractors
+from Extractors import Extractor
 from Core import RedditObjects
 import sys
 
 sys.modules['RedditObjects'] = RedditObjects
-sys.modules['Extractor'] = Extractors
+sys.modules['Extractor'] = Extractor

@@ -24,7 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from .Content import Content
-from Extractors.Extractors import *
+from Extractors.Extractor import *
 import Core.Injector
 from Core import SystemUtil
 
