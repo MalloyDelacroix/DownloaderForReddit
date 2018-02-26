@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import shutil
 
 
 def open_in_system(item):
@@ -82,3 +83,21 @@ def get_data_directory():
         path = 'Data'
     create_directory(path)
     return path
+
+
+def import_data_file(directory, file):
+    """
+    Attempts to move the supplied file from the supplied directory into the applications data directory.  If this fails
+    because of an OSError, this likely means the file is located on an external drive, in which case the file is copied
+    from the source folder to the data folder.
+    :param directory: The directory that the file is currently located in.
+    :param file: The file that is to be imported.
+    :type directory: str
+    :type file: str
+    """
+    source = os.path.join(directory, file)
+    dest = os.path.join(get_data_directory(), file)
+    try:
+        os.rename(source, dest)
+    except OSError:
+        shutil.copy(source, dest)
