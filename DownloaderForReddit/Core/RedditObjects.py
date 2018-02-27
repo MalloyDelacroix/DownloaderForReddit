@@ -57,7 +57,7 @@ class RedditObject:
         self.name_downloads_by = name_downlads_by
         self.user_added = user_added
         self.do_not_edit = False
-        self.new_submissions = None  # Will be erased at end of download
+        self.new_submissions = []  # Will be erased at end of download
         self.saved_submissions = []
         self.previous_downloads = []
         self.date_limit = 86400
