@@ -25,15 +25,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from bs4 import BeautifulSoup
 
-from Extractors.Extractor import Extractor
+from Extractors.BaseExtractor import BaseExtractor
 
 
-class VidbleExtractor(Extractor):
+class VidbleExtractor(BaseExtractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                  save_path, content_display_only):
         """
-        A sublcass of the Extractor class.  This class interacts exclusively with the Vidble website via BeautifulSoup4
+        A sublcass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via BeautifulSoup4
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                          save_path, content_display_only)

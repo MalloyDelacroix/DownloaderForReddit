@@ -23,15 +23,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Extractors.Extractor import Extractor
+from Extractors.BaseExtractor import BaseExtractor
 
 
-class RedditUploadsExtractor(Extractor):
+class RedditUploadsExtractor(BaseExtractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                  save_path, content_display_only):
         """
-        A subclass of the Extractor class.  This class interacts with reddit's own image hosting exclusively.
+        A subclass of the BaseExtractor class.  This class interacts with reddit's own image hosting exclusively.
 
         At the time of this applications creation this extractor works decently, but is a very fragile extraction method
         and will likely often result in failed extractions. When an inevitable api is made public for this platform,

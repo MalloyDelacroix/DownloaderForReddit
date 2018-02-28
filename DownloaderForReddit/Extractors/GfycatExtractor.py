@@ -23,15 +23,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Extractors.Extractor import Extractor
+from Extractors.BaseExtractor import BaseExtractor
 
 
-class GfycatExtractor(Extractor):
+class GfycatExtractor(BaseExtractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                  save_path, content_display_only):
         """
-        A subclass of the Extractor class.  This class interacts exclusively with the gfycat website through their api
+        A subclass of the BaseExtractor class.  This class interacts exclusively with the gfycat website through their api
         """
         super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                          save_path, content_display_only)

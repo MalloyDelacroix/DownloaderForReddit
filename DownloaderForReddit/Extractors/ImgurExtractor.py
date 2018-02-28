@@ -26,16 +26,16 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
 
-from Extractors.Extractor import Extractor
+from Extractors.BaseExtractor import BaseExtractor
 from Logging import LogUtils
 
 
-class ImgurExtractor(Extractor):
+class ImgurExtractor(BaseExtractor):
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                  save_path, content_display_only):
         """
-        A subclass of the Extractor class.  This class interacts exclusively with the imgur website through the imgur
+        A subclass of the BaseExtractor class.  This class interacts exclusively with the imgur website through the imgur
         api via ImgurPython
 
         :param imgur_client: A tuple of the client id and client secret provided by imgur to access their api.  This

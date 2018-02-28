@@ -1,169 +1,128 @@
-"""
-Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
-users or on the subreddits.
-
-
-Copyright (C) 2017, Kyle Hickey
-
-
-This file is part of the Downloader for Reddit.
-
-Downloader for Reddit is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Downloader for Reddit is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-
-import requests
 import logging
 
-from Core.Content import Content
-import Core.Injector
-from Core.Post import Post
+from Extractors.ImgurExtractor import ImgurExtractor
+from Extractors.GfycatExtractor import GfycatExtractor
+from Extractors.VidbleExtractor import VidbleExtractor
+from Extractors.RedditUploadsExtractor import RedditUploadsExtractor
+from Extractors.DirectExtractor import DirectExtractor
+from Core import Injector
+from Core import Const
 
 
-class Extractor(object):
+class Extractor:
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only=False):
+    extractor_dict = {
+        'imgur': ImgurExtractor,
+        'gfycat': GfycatExtractor,
+        'vidble': VidbleExtractor,
+        'redd.it': RedditUploadsExtractor,
+    }
+
+    def __init__(self, reddit_object):
         """
-        A class that handles extracting individual item urls from the hosting websites.  Interacts with website APIs if
-        available and directly with requests if not.
-
-        :param url: The url of the link posted to reddit
-        :param user: The name of the user that posted the link to reddit
-        :param post_title: The title of the post that was submitted to reddit
-        :param subreddit: The subreddit the post was submitted to
-        :param creation_date: The date when the post was submitted to reddit
+        Makes an instance of the Extractor which is used to assign an extractor based on the hosting website of
+        a post url and then take the necessary actions to extract the content from the website.
+        :param reddit_object: The reddit object for which contains lists of posts to be extracted.
+        :type reddit_object: RedditObject
         """
+        self.settings_manager = Injector.get_settings_manager()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.settings_manager = Core.Injector.get_settings_manager()
-        self.url = url
-        self.user = user
-        self.post_title = post_title
-        self.subreddit = subreddit
-        self.creation_date = creation_date
-        self.save_path = save_path
-        self.content_display_only = content_display_only
-        self.subreddit_save_method = subreddit_save_method
-        self.name_downloads_by = name_downloads_by
-        self.extracted_content = []
-        self.failed_extract_messages = []
-        self.failed_extracts_to_save = []
+        self.reddit_object = reddit_object
 
-    def extract_content(self):
-        """
-        Method that dictates which extraction method will be used.  Responsible for deciding how an extractor is
-        chosen based on the particular website.
-        """
-        pass
+    def run(self):
+        for post in self.reddit_object.saved_submissions:
+            pass
+        for post in self.reddit_object.new_submissions:
+            pass
 
-    def extract_single(self):
-        """
-        Extracts a single piece of content from a website container.  This is not used to extract direct urls (urls that
-        that are the actual url that is downloaded) but to extract the direct url from a container page that is common
-        among content hosting websites.
-        """
-        pass
+    def extract(self, post):
+        subreddit = self.get_subreddit(post)
+        try:
+            extractor = self.assign_extractor(post)(post.url, post.author, post.title, subreddit, post.created,
+                                                    self.reddit_object.subreddit_save_method,
+                                                    self.reddit_object.name_downloads_by,
+                                                    self.reddit_object.save_directory,
+                                                    self.reddit_object.content_display_only)
+            extractor.extracted_content()
+            self.handle_content(extractor)
+        except TypeError:
+            self.reddit_object.failed_extracts.append('Could not extract from post: Url domain not supported\n'
+                                                      'Url: %s, User: %s, Subreddit: %s, Title: %s' %
+                                                      (post.url, post.user, post.subreddit, post.title))
+            self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
+                                                                            'reddit_object': self.reddit_object.json})
 
-    def extract_album(self):
+    def get_subreddit(self, post):
         """
-        Extracts multiple pieces of content from a single page.  The album format is very common and different hosting
-        websites have different methods of accessing the sequential items in an album page.  This method should
-        extract each item in an album, assign it a sequential number and add it to the content list.
+        Method returns the subreddit the post was submitted in if the reddit object type is not subreddit, otherwise
+        the reddit objects name is used.  This is done so that folder names for subreddit downloads match the user
+        entered subreddit names capitalization wise.  If this is not used subreddit download folders capitalization may
+        not match the subreddit object in the list and therefore the downloaded content view may not work correctly.
+        :param post: The post taken from reddit.
+        :type post: praw.Post
+        :return: The name of the subreddit as it is to be used in the download process.
+        :rtype: str
         """
-        pass
+        return post.subreddit if self.reddit_object.object_type != 'SUBREDDIT' else self.reddit_object.name
 
-    def extract_direct_link(self):
+    def assign_extractor(self, post):
         """
-        Extracts information from a link to a downloadable url.  This is a url that ends in the extension of the file
-        to be saved.  This method is tried when no other extractors are found for the website domain of a given url.
+        Selects and returns the extractor to be used based on the url of the supplied post.
+        :param post: The post that is to be extracted.
+        :type post: praw.Post
+        :return: The extractor that is to be used to extract content from the supplied post.
+        :rtype: BaseExtractor
         """
-        domain, id_with_ext = self.url.rsplit('/', 1)
-        image_id, extension = id_with_ext.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
-        self.make_content(self.url, file_name, None, extension)
+        for key, value in self.extractor_dict.items():
+            if key in post.url:
+                return value
+        if post.url.lower().endswith(DirectExtractor.extensions):
+            return DirectExtractor
+        return None
 
-    def get_json(self, url):
-        """Makes sure that a request is valid and handles without errors if the connection is not successful"""
-        response = requests.get(url)
-        if response.status_code == 200 and 'json' in response.headers['Content-Type']:
-            return response.json()
-        else:
-            self.handle_failed_extract(message='Failed to retrieve json data from link',
-                                       response_code=response.status_code)
-
-    def get_text(self, url):
-        """See get_json"""
-        response = requests.get(url)
-        if response.status_code == 200 and 'text' in response.headers['Content-Type']:
-            return response.text
-        else:
-            self.handle_failed_extract(message='Failed to retrieve data from link', response_code=response.status_code)
-
-    def make_content(self, url, file_name, extension, count=None):
+    def handle_content(self, extractor):
         """
-        Takes content elements that are extracted and creates a Content object with the extracted parts and the global
-        extractor items, then sends the new Content object to the extracted content list.
-        :param url: The url of the content item.
-        :param file_name: The file name of the content item, either the post name or the album id depending on user
-                          settings.
-        :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
-        :param extension: The extension of the supplied url and the url used for the downloaded file.
-        :type url: str
-        :type file_name: str
-        :type extension: str
-        :type count: int
+        Takes the appropriate action for content that was extracted or failed to extract.
+        :param extractor: The extractor that contains the extracted content.
+        :type extractor: BaseExtractor
         """
-        count = ' %s' % count if count else ''
-        x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
-                    self.subreddit_save_method, self.creation_date, self.content_display_only)
-        self.extracted_content.append(x)
+        self.save_submissions(extractor)
+        for x in extractor.failed_extract_messages:
+            self.reddit_object.failed_extracts.append(x)
+        for content in extractor.extracted_content:
+            if type(content) == str and content.startswith('Failed'):
+                self.reddit_object.failed_extracts.append(content)
+            else:
+                if self.filter_content(content):
+                    self.reddit_object.content.append(content)
+                    self.reddit_object.previous_downloads.append(content.url)
 
-    def handle_failed_extract(self, message=None, save=False, **kwargs, ):
+    def save_submissions(self, extractor):
         """
-        Handles the messages, logging, and saving of content that failed to extract.
+        Saves any content that need to be saved.  A check is performed to make sure the content is not already in the
+        saved list.
+        :param extractor: The extractor that contains the content to be saved.
+        :type extractor: BaseExtractor
         """
-        message_text = ': %s' % message if message else ''
-        extra = {'extractor_data': self.get_log_data()}
-        if save and self.settings_manager.save_failed_extracts:
-            self.save_failed_extract()
-            message_text += ': This post has been saved and will be downloaded during the next run'
-            extra['post_saved'] = True
+        for x in extractor.failed_extracts_to_save:
+            if not any(x.url == y.url for y in self.reddit_object.saved_submissions):
+                self.reddit_object.saved_submissions.append(x)
 
-        self.failed_extract_messages.append('Failed to extract content: User: %s Subreddit: %s Title: %s Url: %s%s' %
-                                            (self.user, self.subreddit, self.post_title, self.url, message_text))
-        for key, value in kwargs.items():
-            extra[key] = value
-        self.logger.error('Failed to extract content', extra=extra)
-
-    def save_failed_extract(self):
+    def filter_content(self, content):
         """
-        Saves a failed extract as a Post object to be retried upon future runs.  This should only be done for certain
-        errors, such as an over capacity error, that are very likely to not be encountered again on future runs.
+        Checks the various content filters to see if the supplied content meets the filter standards.
+        :param content: The content that is to be filtered.
+        :type content: Content
+        :return: True or false depending on if the content passes or fails the filter.
+        :rtype: bool
         """
-        self.failed_extracts_to_save.append(Post(self.url, self.user, self.post_title, self.subreddit,
-                                                 self.creation_date))
+        return self.check_image(content) and self.check_video(content) and self.check_duplicate(content)
 
-    def get_log_data(self):
-        return {'url': self.url,
-                'user': self.user,
-                'subreddit': self.subreddit,
-                'post_title': self.post_title,
-                'creation_date': self.creation_date,
-                'save_path': self.save_path,
-                'content_display_only': self.content_display_only,
-                'subreddit_save_method': self.subreddit_save_method,
-                'name_downloads_by': self.name_downloads_by,
-                'extracted_content_count': len(self.extracted_content),
-                'failed_extract_message_count': len(self.failed_extract_messages),
-                'failed_extracts_to_save_count': len(self.failed_extracts_to_save)}
+    def check_image(self, content):
+        return self.reddit_object.download_images or not content.endswith(Const.IMAGE_EXT)
+
+    def check_video(self, content):
+        return self.reddit_object.download_videos or not content.endswith(Const.VID_EXT)
+
+    def check_duplicate(self, content):
+        return not self.reddit_object.avoid_duplicates or content.url not in self.reddit_object.previous_downloads

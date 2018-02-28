@@ -1,7 +1,7 @@
-from Extractors.Extractor import Extractor
+from Extractors.BaseExtractor import BaseExtractor
 
 
-class DirectExtractor(Extractor):
+class DirectExtractor(BaseExtractor):
 
     extensions = ('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')
 
