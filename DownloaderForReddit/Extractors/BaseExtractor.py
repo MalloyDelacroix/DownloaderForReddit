@@ -60,6 +60,9 @@ class BaseExtractor(object):
         self.failed_extract_messages = []
         self.failed_extracts_to_save = []
 
+    def __str__(self):
+        return __name__
+
     def extract_content(self):
         """
         Method that dictates which extraction method will be used.  Responsible for deciding how an extractor is

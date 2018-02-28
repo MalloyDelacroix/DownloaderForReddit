@@ -31,6 +31,7 @@ import logging
 
 import Core.Injector
 from Core.PostFilter import PostFilter
+from Extractors.Extractor import Extractor
 
 
 class DownloadRunner(QObject):
@@ -217,20 +218,20 @@ class DownloadRunner(QObject):
 
     def start_extractor(self):
         """
-        Initializes an Extractor object, starts a separate thread, and then runs the extractor from the new thread so
+        Initializes an BaseExtractor object, starts a separate thread, and then runs the extractor from the new thread so
         that content can be simultaneously extracted, validated, and downloaded.
         """
-        self.extractor = Extractor(self.queue, self.validated_objects, self.queued_posts, self.user_run)
-        self.stop.connect(self.extractor.stop)
-        self.extractor_thread = QThread()
-        self.extractor.moveToThread(self.extractor_thread)
-        self.extractor_thread.started.connect(self.extractor.extract)
-        self.extractor.update_progress_bar.connect(self.update_progress_bar)
-        self.extractor.send_object.connect(self.add_downloaded_object)
-        self.extractor.finished.connect(self.extractor_thread.quit)
-        self.extractor.finished.connect(self.extractor.deleteLater)
-        self.extractor_thread.finished.connect(self.extractor_thread.deleteLater)
-        self.extractor_thread.start()
+        self.extraction_runner = ExtractionRunner(self.queue, self.validated_objects, self.queued_posts, self.user_run)
+        self.stop.connect(self.extraction_runner.stop)
+        self.extraction_thread = QThread()
+        self.extraction_runner.moveToThread(self.extraction_thread)
+        self.extraction_thread.started.connect(self.extraction_runner.run_extraction)
+        self.extraction_runner.update_progress_bar.connect(self.update_progress_bar)
+        self.extraction_runner.send_object.connect(self.add_downloaded_object)
+        self.extraction_runner.finished.connect(self.extraction_thread.quit)
+        self.extraction_runner.finished.connect(self.extraction_runner.deleteLater)
+        self.extraction_thread.finished.connect(self.extraction_thread.deleteLater)
+        self.extraction_thread.start()
 
     def start_downloader(self):
         """
@@ -354,7 +355,7 @@ class DownloadRunner(QObject):
         self.update_progress_bar_signal.emit()
 
 
-class Extractor(QObject):
+class ExtractionRunner(QObject):
 
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
@@ -377,13 +378,17 @@ class Extractor(QObject):
         self.extract_count = 0
         self.run = True
 
-    def extract(self):
-        """Calls the extract processes for each user or subreddit"""
+    def run_extraction(self):
+        """
+        Runs the extractor for each user or subreddit object taken from the queue.  This method also handles sending
+        update info to the main window and sending content to the downloader.
+        """
         while self.run:
             working_object = self.validated_objects.get()
             if working_object is not None:
                 working_object.load_unfinished_downloads()
-                working_object.extract_content()
+                self.extract(working_object)
+
                 if len(working_object.failed_extracts) > 0:
                     for entry in working_object.failed_extracts:
                         self.queue.put(entry)
@@ -392,13 +397,28 @@ class Extractor(QObject):
                     self.send_object.emit((working_object.name, [x.filename for x in working_object.content]))
                 for post in working_object.content:
                     self.extract_count += 1
-                    post.install_queue(self.queue)
+                    post.queue = self.queue
                     self.post_queue.put(post)
                 self.update_progress_bar.emit()
             else:
                 self.run = False
+        self.finish()
+
+    def extract(self, reddit_object):
+        """
+        Creates an extractor object, supplies it with the current reddit object, and runs the extraction process.
+        :param reddit_object: The reddit object for which content is to be extracted.
+        :type reddit_object: RedditObject
+        """
+        extractor = Extractor(reddit_object)
+        extractor.run()
+
+    def finish(self):
+        """
+        Cleans up items for the end of the extraction run.
+        """
         self.post_queue.put(None)
-        self.logger.info('Extractor finished', extra={'extracted_content_count': self.extract_count})
+        self.logger.info('BaseExtractor finished', extra={'extracted_content_count': self.extract_count})
         self.finished.emit()
 
     def stop(self):

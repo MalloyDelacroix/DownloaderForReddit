@@ -31,9 +31,9 @@ class Extractor:
 
     def run(self):
         for post in self.reddit_object.saved_submissions:
-            pass
+            self.extract(post)
         for post in self.reddit_object.new_submissions:
-            pass
+            self.extract(post)
 
     def extract(self, post):
         subreddit = self.get_subreddit(post)
@@ -43,12 +43,13 @@ class Extractor:
                                                     self.reddit_object.name_downloads_by,
                                                     self.reddit_object.save_directory,
                                                     self.reddit_object.content_display_only)
-            extractor.extracted_content()
+            extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
+            print('Failed Url: %s' % post.url)
             self.reddit_object.failed_extracts.append('Could not extract from post: Url domain not supported\n'
                                                       'Url: %s, User: %s, Subreddit: %s, Title: %s' %
-                                                      (post.url, post.user, post.subreddit, post.title))
+                                                      (post.url, post.author, post.subreddit, post.title))
             self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
                                                                             'reddit_object': self.reddit_object.json})
 
@@ -74,10 +75,11 @@ class Extractor:
         :rtype: BaseExtractor
         """
         for key, value in self.extractor_dict.items():
-            if key in post.url:
+            if key in post.url.lower():
                 return value
         if post.url.lower().endswith(DirectExtractor.extensions):
             return DirectExtractor
+        print('\nReturning None\n')
         return None
 
     def handle_content(self, extractor):
