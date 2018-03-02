@@ -66,18 +66,19 @@ class BaseExtractor:
         self.failed_extract_messages = []
         self.failed_extracts_to_save = []
 
+    def __str__(self):
+        return __name__
+
     @classmethod
     def get_url_key(cls):
         """
-        A key term that if found in a url will identify this extractor as the extractor to be used to get content from
-        that url.  This method must be overridden it each subclass.
+        Returns the url_key that each subclass must contain.  The url_key is used to indicate keywords that are domain
+        specific.  The url_key must be so that if the extractor finds the key in a supplied url, the extractor object
+        to which the key belongs can be selected to perform the link extraction.
         :return: A key that that if found in a url means this extractor is selected to be used for link extraction.
         :rtype: str
         """
         return cls.url_key
-
-    def __str__(self):
-        return __name__
 
     def extract_content(self):
         """
@@ -107,10 +108,7 @@ class BaseExtractor:
         Extracts information from a link to a downloadable url.  This is a url that ends in the extension of the file
         to be saved.  This method is tried when no other extractors are found for the website domain of a given url.
         """
-        domain, id_with_ext = self.url.rsplit('/', 1)
-        image_id, extension = id_with_ext.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
-        self.make_content(self.url, file_name, None, extension)
+        pass
 
     def get_json(self, url):
         """Makes sure that a request is valid and handles without errors if the connection is not successful"""
@@ -148,7 +146,7 @@ class BaseExtractor:
                     self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
 
-    def handle_failed_extract(self, message=None, save=False, **kwargs, ):
+    def handle_failed_extract(self, message=None, save=False, **kwargs):
         """
         Handles the messages, logging, and saving of content that failed to extract.
         """
@@ -174,6 +172,9 @@ class BaseExtractor:
                                                  self.creation_date))
 
     def get_log_data(self):
+        """
+        Returns a loggable dictionary of the extractors current variables to be put into the log.
+        """
         return {'url': self.url,
                 'user': self.user,
                 'subreddit': self.subreddit,
