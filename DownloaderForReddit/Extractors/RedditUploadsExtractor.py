@@ -30,8 +30,7 @@ class RedditUploadsExtractor(BaseExtractor):
 
     url_key = 'redd.it'
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only):
+    def __init__(self, post, reddit_object, content_display_only=False):
         """
         A subclass of the BaseExtractor class.  This class interacts with reddit's own image hosting exclusively.
 
@@ -39,8 +38,7 @@ class RedditUploadsExtractor(BaseExtractor):
         and will likely often result in failed extractions. When an inevitable api is made public for this platform,
         this class will be updated to interact with it.
         """
-        super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                         save_path, content_display_only)
+        super().__init__(post, reddit_object, content_display_only)
 
     def extract_content(self):
         try:

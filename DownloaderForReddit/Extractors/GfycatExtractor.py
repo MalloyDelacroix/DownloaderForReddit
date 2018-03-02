@@ -30,13 +30,12 @@ class GfycatExtractor(BaseExtractor):
 
     url_key = 'gfycat'
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only):
+    def __init__(self, post, reddit_object, content_display_only=False):
         """
-        A subclass of the BaseExtractor class.  This class interacts exclusively with the gfycat website through their api
+        A subclass of the BaseExtractor class.  This class interacts exclusively with the gfycat website through their
+        api
         """
-        super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                         save_path, content_display_only)
+        super().__init__(post, reddit_object, content_display_only)
         self.api_caller = "https://gfycat.com/cajax/get/"
 
     def extract_content(self):

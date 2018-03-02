@@ -34,8 +34,7 @@ class ImgurExtractor(BaseExtractor):
 
     url_key = 'imgur'
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only):
+    def __init__(self, post, reddit_object, content_display_only=False):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the imgur website through the imgur
         api via ImgurPython
@@ -43,8 +42,7 @@ class ImgurExtractor(BaseExtractor):
         :param imgur_client: A tuple of the client id and client secret provided by imgur to access their api.  This
         tuple is supplied to imgurpython to establish an imgur client
         """
-        super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                         save_path, content_display_only)
+        super().__init__(post, reddit_object, content_display_only)
         self.imgur_client_id = self.settings_manager.imgur_client_id
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
         if self.imgur_client_id is None or self.imgur_client_secret is None:

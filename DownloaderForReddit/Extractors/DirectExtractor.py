@@ -6,10 +6,8 @@ class DirectExtractor(BaseExtractor):
     url_key = None
     extensions = ('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only):
-        super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                         save_path, content_display_only)
+    def __init__(self, post, reddit_object, content_display_only=False):
+        super().__init__(post, reddit_object, content_display_only)
 
     def extract_content(self):
         domain, id_with_ext = self.url.rsplit('/', 1)

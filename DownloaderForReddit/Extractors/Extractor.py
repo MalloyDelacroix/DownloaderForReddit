@@ -1,23 +1,12 @@
 import logging
 
-from Extractors.ImgurExtractor import ImgurExtractor
-from Extractors.GfycatExtractor import GfycatExtractor
-from Extractors.VidbleExtractor import VidbleExtractor
-from Extractors.RedditUploadsExtractor import RedditUploadsExtractor
-from Extractors.DirectExtractor import DirectExtractor
 from Extractors.BaseExtractor import BaseExtractor
+from Extractors.DirectExtractor import DirectExtractor
 from Core import Injector
 from Core import Const
 
 
 class Extractor:
-
-    extractor_dict = {
-        'imgur': ImgurExtractor,
-        'gfycat': GfycatExtractor,
-        'vidble': VidbleExtractor,
-        'redd.it': RedditUploadsExtractor,
-    }
 
     def __init__(self, reddit_object):
         """
@@ -38,13 +27,8 @@ class Extractor:
 
     def extract(self, post):
         self.reddit_object.set_date_limit(post.created)
-        subreddit = self.get_subreddit(post)
         try:
-            extractor = self.assign_extractor(post)(post.url, post.author, post.title, subreddit, post.created,
-                                                    self.reddit_object.subreddit_save_method,
-                                                    self.reddit_object.name_downloads_by,
-                                                    self.reddit_object.save_directory,
-                                                    self.reddit_object.content_display_only)
+            extractor = self.assign_extractor(post)(post, self.reddit_object)
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:

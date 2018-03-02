@@ -35,29 +35,33 @@ class BaseExtractor:
 
     url_key = None
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only=False):
+    def __init__(self, post, reddit_object, content_display_only=False):
         """
-        A class that handles extracting individual item urls from the hosting websites.  Interacts with website APIs if
-        available and directly with requests if not.
+        A base class for extracting downloadable urls from container websites.  This class should be overridden and any
+        necessary methods overridden by subclasses to perform link extraction from the target website.  Each subclass
+        must also include the url_key parameter which is used for matching the website url to the extractor to be used.
 
-        :param url: The url of the link posted to reddit
-        :param user: The name of the user that posted the link to reddit
-        :param post_title: The title of the post that was submitted to reddit
-        :param subreddit: The subreddit the post was submitted to
-        :param creation_date: The date when the post was submitted to reddit
+        :param post: The praw post object which is a post taken from reddit.  This is used to supply specific post
+                     related information to the content items that are created.
+        :param reddit_object: The reddit object for which content is being extracted.  This is used to supply reddit
+                              object specific information to the content items that are created
+        :param content_display_only: Bool value that tells whether the content created will be for display purposes
+                                     only.  This is used by the UserFinder module and defaults to False.
+        :type post: Praw.Post
+        :type reddit_object: RedditObject
+        :type content_display_only: bool
         """
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Core.Injector.get_settings_manager()
-        self.url = url
-        self.user = user
-        self.post_title = post_title
-        self.subreddit = subreddit
-        self.creation_date = creation_date
-        self.save_path = save_path
+        self.url = post.url
+        self.user = post.author
+        self.post_title = post.title
+        self.subreddit = post.subreddit if not reddit_object.object_type == 'SUBREDDIT' else reddit_object.name
+        self.creation_date = post.created
+        self.save_path = reddit_object.save_directory
         self.content_display_only = content_display_only
-        self.subreddit_save_method = subreddit_save_method
-        self.name_downloads_by = name_downloads_by
+        self.subreddit_save_method = reddit_object.subreddit_save_method
+        self.name_downloads_by = reddit_object.name_downloads_by
         self.extracted_content = []
         self.failed_extract_messages = []
         self.failed_extracts_to_save = []

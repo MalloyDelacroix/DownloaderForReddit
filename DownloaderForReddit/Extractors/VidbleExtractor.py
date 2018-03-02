@@ -32,13 +32,11 @@ class VidbleExtractor(BaseExtractor):
 
     url_key = 'vidble'
 
-    def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                 save_path, content_display_only):
+    def __init__(self, post, reddit_object, content_display_only=False):
         """
         A sublcass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via BeautifulSoup4
         """
-        super().__init__(url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
-                         save_path, content_display_only)
+        super().__init__(post, reddit_object, content_display_only)
         self.vidble_base = "https://vidble.com"
 
     def extract_content(self):
