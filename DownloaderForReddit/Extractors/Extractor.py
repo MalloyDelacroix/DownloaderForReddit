@@ -64,7 +64,7 @@ class Extractor:
         for extractor in BaseExtractor.__subclasses__():
             if extractor.get_url_key() in post.url.lower():
                 return extractor
-        if post.url.lowr().endswith(DirectExtractor.extensions):
+        if post.url.lowr().endswith(Const.ALL_EXT):
             return DirectExtractor
         return None
 
