@@ -5,6 +5,7 @@ from Extractors.GfycatExtractor import GfycatExtractor
 from Extractors.VidbleExtractor import VidbleExtractor
 from Extractors.RedditUploadsExtractor import RedditUploadsExtractor
 from Extractors.DirectExtractor import DirectExtractor
+from Extractors.BaseExtractor import BaseExtractor
 from Core import Injector
 from Core import Const
 
@@ -36,6 +37,7 @@ class Extractor:
             self.extract(post)
 
     def extract(self, post):
+        self.reddit_object.set_date_limit(post.created)
         subreddit = self.get_subreddit(post)
         try:
             extractor = self.assign_extractor(post)(post.url, post.author, post.title, subreddit, post.created,
@@ -66,6 +68,7 @@ class Extractor:
         """
         return post.subreddit if self.reddit_object.object_type != 'SUBREDDIT' else self.reddit_object.name
 
+    # TODO: Need to thoroughly test this new method of extractor assignment
     def assign_extractor(self, post):
         """
         Selects and returns the extractor to be used based on the url of the supplied post.
@@ -74,12 +77,11 @@ class Extractor:
         :return: The extractor that is to be used to extract content from the supplied post.
         :rtype: BaseExtractor
         """
-        for key, value in self.extractor_dict.items():
-            if key in post.url.lower():
-                return value
-        if post.url.lower().endswith(DirectExtractor.extensions):
+        for extractor in BaseExtractor.__subclasses__():
+            if extractor.get_url_key() in post.url.lower():
+                return extractor
+        if post.url.lowr().endswith(DirectExtractor.extensions):
             return DirectExtractor
-        print('\nReturning None\n')
         return None
 
     def handle_content(self, extractor):

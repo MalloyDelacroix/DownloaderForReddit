@@ -30,6 +30,8 @@ from Extractors.BaseExtractor import BaseExtractor
 
 class VidbleExtractor(BaseExtractor):
 
+    url_key = 'vidble'
+
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                  save_path, content_display_only):
         """

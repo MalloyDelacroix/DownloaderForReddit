@@ -31,7 +31,9 @@ import Core.Injector
 from Core.Post import Post
 
 
-class BaseExtractor(object):
+class BaseExtractor:
+
+    url_key = None
 
     def __init__(self, url, user, post_title, subreddit, creation_date, subreddit_save_method, name_downloads_by,
                  save_path, content_display_only=False):
@@ -59,6 +61,16 @@ class BaseExtractor(object):
         self.extracted_content = []
         self.failed_extract_messages = []
         self.failed_extracts_to_save = []
+
+    @classmethod
+    def get_url_key(cls):
+        """
+        A key term that if found in a url will identify this extractor as the extractor to be used to get content from
+        that url.  This method must be overridden it each subclass.
+        :return: A key that that if found in a url means this extractor is selected to be used for link extraction.
+        :rtype: str
+        """
+        return cls.url_key
 
     def __str__(self):
         return __name__
