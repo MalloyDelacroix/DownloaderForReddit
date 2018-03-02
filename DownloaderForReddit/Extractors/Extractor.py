@@ -35,8 +35,9 @@ class Extractor:
 
     def __init__(self, reddit_object):
         """
-        Makes an instance of the Extractor which is used to assign an extractor based on the hosting website of
-        a post url and then take the necessary actions to extract the content from the website.
+        Extracts content from hosting websites obtained from links that are posted to reddit.  Responsible for assigning
+        the extractor object to be used, calling the necessary methods to extract the content, handling failed extract
+        messages and logging, and storing extracted content in the supplied reddit objects content list.
         :param reddit_object: The reddit object for which contains lists of posts to be extracted.
         :type reddit_object: RedditObject
         """
@@ -51,13 +52,17 @@ class Extractor:
             self.extract(post)
 
     def extract(self, post):
+        """
+        Creates the proper extractor object and calls its extract method, then handles the extractions.
+        :param post: The post that is to be extracted.
+        :type post: Praw.Post
+        """
         self.reddit_object.set_date_limit(post.created)
         try:
             extractor = self.assign_extractor(post)(post, self.reddit_object)
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
-            print('Failed Url: %s' % post.url)
             self.reddit_object.failed_extracts.append('Could not extract from post: Url domain not supported\n'
                                                       'Url: %s, User: %s, Subreddit: %s, Title: %s' %
                                                       (post.url, post.author, post.subreddit, post.title))
@@ -77,7 +82,6 @@ class Extractor:
         """
         return post.subreddit if self.reddit_object.object_type != 'SUBREDDIT' else self.reddit_object.name
 
-    # TODO: Need to thoroughly test this new method of extractor assignment
     def assign_extractor(self, post):
         """
         Selects and returns the extractor to be used based on the url of the supplied post.
