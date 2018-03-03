@@ -110,15 +110,24 @@ class Content(QRunnable):
                     for chunk in response.iter_content(1024):
                         file.write(chunk)
                 self.set_file_modified_date()
-            except PermissionError as e:
-                self.logger.error('Failed to save content: Permission denied to save location',
-                                  extra={'save_path': self.filename})
-                self.queue.put('Failed Download: Permission denied to path: %s' % self.filename)
+            except:
+                self.handle_exception()
             self.queue.put('Saved %s' % self.filename)
             self.downloaded = True
             return None
+        else:
+            self.handle_unsuccessful_response(response.status_code)
+
+    def handle_exception(self):
+        """Handles logging and output in case of a failed save due to a general exception."""
+        self.logger.error('Failed to save content: Exception while saving file',
+                          extra={'save_path': self.filename}, exc_info=True)
+        self.queue.put('Failed to save content: %s' % self.filename)
+
+    def handle_unsuccessful_response(self, status_code):
+        """Handles logging and output in case of a failed response from the server."""
         self.logger.warning('Failed Download: Unsuccessful response from server',
-                            extra={'response': response.status_code, 'url': self.url, 'user': self.user,
+                            extra={'response_code': status_code, 'url': self.url, 'user': self.user,
                                    'submission_id': self.submission_id, 'number_in_seq': self.number_in_seq})
         self.queue.put('Failed Download:  File %s%s posted by %s failed to download...try link to download '
                        'manually: %s\n' % (self.submission_id, self.number_in_seq, self.user, self.url))
@@ -139,7 +148,11 @@ class Content(QRunnable):
         """
         Checks the supplied subreddit's check path and if it does not exist, creates the directory.
         """
-        SystemUtil.create_directory(self.check_path)
+        try:
+            SystemUtil.create_directory(self.check_path)
+        except PermissionError:
+            self.logger.error('Could not create directory path for subreddit object',
+                              extra={'path': self.check_path, 'subreddit': self.subreddit})
 
     def set_file_modified_date(self):
         """

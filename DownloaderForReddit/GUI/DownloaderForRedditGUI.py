@@ -738,8 +738,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         remove the object at the current index
         """
         list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
-        index = self.get_selected_view_index(self.user_list_view).row()
-        self.remove_reddit_object(index, list_model)
+        try:
+            index = self.get_selected_view_index(self.user_list_view).row()
+            self.remove_reddit_object(index, list_model)
+        except AttributeError:
+            pass
 
     def remove_reddit_object(self, index, list_model):
         """
@@ -842,8 +845,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         method to remove the object at the current index
         """
         list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
-        index = self.get_selected_view_index(self.subreddit_list_view).row()
-        self.remove_reddit_object(index, list_model)
+        try:
+            index = self.get_selected_view_index(self.subreddit_list_view).row()
+            self.remove_reddit_object(index, list_model)
+        except AttributeError:
+            pass
 
     def import_user_list_from_folder(self):
         """Opens a file dialog and then imports the names of the subfolders as users to the current user list"""
@@ -1392,7 +1398,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                         os.remove(new_path)
                     else:
                         return False
-                    os.rename(os.path.join(source_folder, file), os.path.join(SystemUtil.get_data_directory(), file))
+                    SystemUtil.import_data_file(source_folder, file)
             return True
         except FileExistsError:
             self.logger.error('Failed to move save file: File already exists',
