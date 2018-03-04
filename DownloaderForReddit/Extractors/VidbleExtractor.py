@@ -83,9 +83,3 @@ class VidbleExtractor(BaseExtractor):
                     file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
                     self.make_content(self.vidble_base + link, file_name, extension, count)
                     count += 1
-
-    def extract_direct_link(self):
-        domain, id_with_ext = self.url.rsplit('/', 1)
-        vidble_id, extension = id_with_ext.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
-        self.make_content(self.url, file_name, extension)

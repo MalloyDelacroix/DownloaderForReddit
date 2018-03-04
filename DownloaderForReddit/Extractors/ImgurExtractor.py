@@ -27,6 +27,7 @@ from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
 
 from Extractors.BaseExtractor import BaseExtractor
+from Core import Const
 from Logging import LogUtils
 
 
@@ -72,7 +73,7 @@ class ImgurExtractor(BaseExtractor):
                     self.extract_album()
                 except:
                     pass
-            elif self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm')):
+            elif self.url.lower().endswith(Const.ALL_EXT):
                 self.extract_direct_mislinked()
             else:
                 self.extract_single()
@@ -142,7 +143,7 @@ class ImgurExtractor(BaseExtractor):
         self.make_content(url, file_name, extension)
 
     def extract_direct_link(self):
-        for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
+        for ext in Const.ALL_EXT:
             if ext in self.url:
                 index = self.url.find(ext)
                 url = '%s%s' % (self.url[:index], ext)
@@ -167,7 +168,7 @@ class ImgurExtractor(BaseExtractor):
         they are posted.  This method is to add the correct address beginning to mislinked imgur urls and get a proper
         extraction
         """
-        for ext in ['.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm']:
+        for ext in Const.ALL_EXT:
             if ext in self.url:
                 index = self.url.find(ext)
                 url = '%s%s' % (self.url[:index], ext)

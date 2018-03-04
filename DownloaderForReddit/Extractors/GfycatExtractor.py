@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from Extractors.BaseExtractor import BaseExtractor
+from Core import Const
 
 
 class GfycatExtractor(BaseExtractor):
@@ -41,19 +42,13 @@ class GfycatExtractor(BaseExtractor):
     def extract_content(self):
         """Dictates which extraction method should be used"""
         try:
-            if self.url.lower().endswith(('webm', 'gif', 'gifv')):
+            if self.url.lower().endswith(Const.GIF_EXT):
                 self.extract_direct_link()
             else:
                 self.extract_single()
         except:
             message = 'Failed to locate content'
             self.handle_failed_extract(message=message, extractor_error_message=message)
-
-    def extract_direct_link(self):
-        domain, id_with_ext = self.url.rsplit('/', 1)
-        gfy_id, ext = id_with_ext.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else gfy_id
-        self.make_content(self.url, file_name, ext)
 
     def extract_single(self):
         domain, gif_id = self.url.rsplit('/', 1)

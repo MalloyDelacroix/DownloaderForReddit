@@ -107,8 +107,14 @@ class BaseExtractor:
         """
         Extracts information from a link to a downloadable url.  This is a url that ends in the extension of the file
         to be saved.  This method is tried when no other extractors are found for the website domain of a given url.
+        In most cases it is not necessary to override this method in a sub class.  All direct link extraction should be
+        the same and subclasses can call this method directly.  There are some cases where this is not the case and
+        this method must be overwritten.
         """
-        pass
+        domain, id_with_ext = self.url.rsplit('/', 1)
+        image_id, extension = id_with_ext.rsplit('.', 1)
+        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+        self.make_content(self.url, file_name, extension)
 
     def get_json(self, url):
         """Makes sure that a request is valid and handles without errors if the connection is not successful"""
