@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from bs4 import BeautifulSoup
 
 from Extractors.BaseExtractor import BaseExtractor
+from Core import Const
 
 
 class VidbleExtractor(BaseExtractor):
@@ -34,19 +35,19 @@ class VidbleExtractor(BaseExtractor):
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
-        A sublcass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via BeautifulSoup4
+        A sublcass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via
+        BeautifulSoup4.
         """
         super().__init__(post, reddit_object, content_display_only)
         self.vidble_base = "https://vidble.com"
 
     def extract_content(self):
-        """Dictates which extraction method should be used"""
         try:
             if '/show/' in self.url or '/explore/' in self.url:
                 self.extract_single()
             elif '/album/' in self.url:
                 self.extract_album()
-            elif self.url.lower().endswith(('.jpg', 'jpeg', '.png', '.gif', '.gifv', '.mp4', 'webm')):
+            elif self.url.lower().endswith(Const.ALL_EXT):
                 self.extract_direct_link()
             else:
                 self.extract_album()  # If it hasn't found a match by here, try for album and hope it works
@@ -66,7 +67,7 @@ class VidbleExtractor(BaseExtractor):
                 link = img.get('src')
                 if link is not None:
                     base, extension = link.rsplit('.', 1)
-                    file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
+                    file_name = self.get_filename(vidble_id)
                     self.make_content(self.vidble_base + link, file_name, extension)
 
     def extract_album(self):
@@ -80,6 +81,6 @@ class VidbleExtractor(BaseExtractor):
                 link = img.get('src')
                 if link is not None:
                     base, extension = link.rsplit('.', 1)
-                    file_name = self.post_title if self.name_downloads_by == 'Post Title' else vidble_id
+                    file_name = self.get_filename(vidble_id)
                     self.make_content(self.vidble_base + link, file_name, extension, count)
                     count += 1

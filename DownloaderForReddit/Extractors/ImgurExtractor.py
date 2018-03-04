@@ -110,8 +110,8 @@ class ImgurExtractor(BaseExtractor):
         self.handle_failed_extract(message=message, save=True, imgur_error_message='over capacity')
 
     def does_not_exist_error(self):
-        message = 'Content does not exist.  This most likely means that the content has been deleted on Imgur but the ' \
-                  'post still remains on reddit'
+        message = 'Content does not exist.  This most likely means that the content has been deleted on Imgur but ' \
+                  'the post still remains on reddit'
         self.handle_failed_extract(message=message, imgur_error_message='Content does not exist')
 
     def failed_to_locate_error(self):
@@ -124,7 +124,7 @@ class ImgurExtractor(BaseExtractor):
         for pic in self.client.get_album_images(album_id):
             url = pic.link
             address, extension = url.rsplit('.', 1)
-            file_name = self.post_title if self.name_downloads_by == 'Post Title' else album_id
+            file_name = self.get_filename(album_id)
             if pic.type == 'image/gif' and pic.animated:
                 extension = 'mp4'
                 url = pic.mp4
@@ -136,7 +136,7 @@ class ImgurExtractor(BaseExtractor):
         pic = self.client.get_image(image_id)
         url = pic.link
         address, extension = url.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+        file_name = self.get_filename(image_id)
         if pic.type == 'image/gif' and pic.animated:
             extension = 'mp4'
             url = pic.mp4
@@ -151,7 +151,7 @@ class ImgurExtractor(BaseExtractor):
         try:
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
-            file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+            file_name = self.get_filename(image_id)
             if url.endswith('gifv') or url.endswith('gif'):
                 picture = self.client.get_image(image_id)
                 if picture.type == 'image/gif' and picture.animated:
@@ -178,7 +178,7 @@ class ImgurExtractor(BaseExtractor):
             domain = 'https://i.imgur.com/'
             url = '%s%s' % (domain, id_with_ext)
             image_id, extension = id_with_ext.rsplit('.', 1)
-            file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+            file_name = self.get_filename(image_id)
             if url.endswith('gifv') or url.endswith('gif'):
                 picture = self.client.get_image(image_id)
                 if picture.type == 'image/gif' and picture.animated:

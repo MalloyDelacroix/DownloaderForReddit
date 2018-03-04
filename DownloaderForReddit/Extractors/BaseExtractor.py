@@ -112,8 +112,8 @@ class BaseExtractor:
         this method must be overwritten.
         """
         domain, id_with_ext = self.url.rsplit('/', 1)
-        image_id, extension = id_with_ext.rsplit('.', 1)
-        file_name = self.post_title if self.name_downloads_by == 'Post Title' else image_id
+        media_id, extension = id_with_ext.rsplit('.', 1)
+        file_name = self.get_filename(media_id)
         self.make_content(self.url, file_name, extension)
 
     def get_json(self, url):
@@ -132,6 +132,17 @@ class BaseExtractor:
             return response.text
         else:
             self.handle_failed_extract(message='Failed to retrieve data from link', response_code=response.status_code)
+
+    def get_filename(self, media_id):
+        """
+        Checks the settings manager to determine if the post title or the content id (as stored on the container site)
+        should be used to name the content that is being extracted.
+        :param media_id: The image/album/video id as stored on a container site.
+        :type media_id: str
+        :return: The file name that should be used when creating the Content object from the extracted url.
+        :rtype: str
+        """
+        return self.post_title if self.name_downloads_by == 'Post Title' else media_id
 
     def make_content(self, url, file_name, extension, count=None):
         """
