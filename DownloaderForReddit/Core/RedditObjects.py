@@ -88,7 +88,7 @@ class RedditObject:
                 'avoid_duplicates': self.avoid_duplicates,
                 'download_videos': self.download_videos,
                 'download_images': self.download_images,
-                'nsfw_fileter': self.nsfw_filter,
+                'nsfw_filter': self.nsfw_filter,
                 'added_on': self.user_added,
                 'do_not_edit': self.do_not_edit,
                 'new_submission_count': len(self.new_submissions) if self.new_submissions is not None else None,
