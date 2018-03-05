@@ -37,17 +37,15 @@ class ImgurExtractor(BaseExtractor):
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
-        A subclass of the BaseExtractor class.  This class interacts exclusively with the imgur website through the imgur
-        api via ImgurPython
-
-        :param imgur_client: A tuple of the client id and client secret provided by imgur to access their api.  This
-        tuple is supplied to imgurpython to establish an imgur client
+        A subclass of the BaseExtractor class.  This class interacts exclusively with the imgur website through the
+        imgur api via ImgurPython
         """
         super().__init__(post, reddit_object, content_display_only)
         self.imgur_client_id = self.settings_manager.imgur_client_id
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
         if self.imgur_client_id is None or self.imgur_client_secret is None:
             if LogUtils.imgur_client_error_log_count < 1:
+                LogUtils.imgur_client_error_log_count += 1
                 message = 'No valid Imgur client detected.  In order to download content from imgur.com, you must ' \
                           'have a valid imgur client id and client secret.  Please see the imgur client information' \
                           'dialog in the settings menu.'
