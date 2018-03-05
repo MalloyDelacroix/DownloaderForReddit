@@ -1389,7 +1389,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :return: True if the move was successful and False if it was not.
         :rtype: bool
         """
-        # TODO: Look into what happens here when a save file has already been loaded: may need to clear dicts
         try:
             for file in os.listdir(source_folder):
                 if self.get_file_name(file) == 'save_file':
