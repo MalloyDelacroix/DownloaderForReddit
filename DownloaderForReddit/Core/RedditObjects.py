@@ -118,11 +118,14 @@ class RedditObject:
                                                    content.date_created]
 
     def load_unfinished_downloads(self):
-        for key, value in self.saved_content.items():
-            x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], self.save_directory,
-                        self.subreddit_save_method, value[6], self.content_display_only)
-            self.content.append(x)
-        self.saved_content.clear()
+        try:
+            for key, value in self.saved_content.items():
+                x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], self.save_directory,
+                            self.subreddit_save_method, value[6], self.content_display_only)
+                self.content.append(x)
+            self.saved_content.clear()
+        except:
+            self.logger.error('Failed to load unfinished content', extra={'reddit_object': self.json}, exc_info=True)
 
     def set_date_limit(self, last_download_time):
         if self.date_limit is not None and last_download_time > self.date_limit:
