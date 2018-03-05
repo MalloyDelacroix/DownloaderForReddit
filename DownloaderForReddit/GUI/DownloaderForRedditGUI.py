@@ -196,7 +196,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        # self.check_for_updates(False) # TODO: Turn this back on for production
+        self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
