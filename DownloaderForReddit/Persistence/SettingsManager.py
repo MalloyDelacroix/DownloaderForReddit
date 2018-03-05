@@ -58,7 +58,7 @@ class SettingsManager:
     def check_first_run(self):
         cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
         if cached_version != __version__:
-            self.logger.info('First fun of new version',
+            self.logger.info('First run of new version',
                              extra={'new_version': __version__, 'old_version': cached_version})
             return True
         else:
