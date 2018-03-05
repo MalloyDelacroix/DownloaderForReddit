@@ -23,10 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Core import *
-from Extractors import BaseExtractor
-from Core import RedditObjects
-import sys
-
-sys.modules['RedditObjects'] = RedditObjects
-sys.modules['BaseExtractor'] = BaseExtractor
+IMAGE_EXT = ('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.webm')  # TODO: remove gif extensions after gif settings added
+GIF_EXT = ('.gif', '.gifv', '.webm')
+VID_EXT = ('.mp4', '.wmv', '.avi', '.mpg', '.divx')
+ALL_EXT = IMAGE_EXT + GIF_EXT + VID_EXT

@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 
 from .Content import Content
-from Extractors.Extractors import *
+from Extractors.BaseExtractor import *
 import Core.Injector
 from Core import SystemUtil
 
@@ -59,7 +59,7 @@ class RedditObject:
         self.name_downloads_by = name_downlads_by
         self.user_added = user_added
         self.do_not_edit = False
-        self.new_submissions = None  # Will be erased at end of download
+        self.new_submissions = []  # Will be erased at end of download
         self.saved_submissions = []
         self.previous_downloads = []
         self.date_limit = 86400
@@ -90,7 +90,7 @@ class RedditObject:
                 'avoid_duplicates': self.avoid_duplicates,
                 'download_videos': self.download_videos,
                 'download_images': self.download_images,
-                'nsfw_fileter': self.nsfw_filter,
+                'nsfw_filter': self.nsfw_filter,
                 'added_on': self.user_added,
                 'do_not_edit': self.do_not_edit,
                 'new_submission_count': len(self.new_submissions) if self.new_submissions is not None else None,
@@ -109,81 +109,6 @@ class RedditObject:
     @property
     def save_directory(self):
         return self.save_path
-
-    def extract_content(self):
-        if len(self.saved_submissions) > 0:
-            self.assign_extractor(self.saved_submissions)
-        if len(self.new_submissions) > 0:
-            self.assign_extractor(self.new_submissions)
-
-    def assign_extractor(self, post_list):
-        for post in post_list:
-            extractor = None
-            subreddit = post.subreddit if self.object_type != 'SUBREDDIT' else self.name
-            if "imgur" in post.url:
-                extractor = ImgurExtractor(post.url, post.author, post.title, subreddit, post.created,
-                                           self.subreddit_save_method, self.name_downloads_by, self.save_directory,
-                                           self.content_display_only)
-
-            elif "gfycat" in post.url:
-                extractor = GfycatExtractor(post.url, post.author, post.title, subreddit, post.created,
-                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
-                                            self.content_display_only)
-
-            elif "vidble" in post.url:
-                extractor = VidbleExtractor(post.url, post.author, post.title, subreddit, post.created,
-                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
-                                            self.content_display_only)
-
-            elif "reddituploads" in post.url:
-                pass
-                extractor = RedditUploadsExtractor(post.url, post.author, post.title, subreddit, post.created,
-                                                   self.subreddit_save_method, self.name_downloads_by,
-                                                   self.save_directory, self.content_display_only)
-
-            # If none of the extractors have caught the link by here, we check to see if it is a direct link and if so
-            # attempt to extract the link directly.  Otherwise the extraction fails due to unsupported domain
-            elif post.url.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.mp4', '.webm', '.wmv')):
-                extractor = DirectExtractor(post.url, post.author, post.title, subreddit, post.created,
-                                            self.subreddit_save_method, self.name_downloads_by, self.save_directory,
-                                            self.content_display_only)
-
-            else:
-                self.failed_extracts.append("Could not extract links from post: %s submitted by: %s\nUrl domain not "
-                                            "supported.  Url: %s" % (post.title, post.author, post.url))
-
-            if extractor:
-                self.extract(extractor)
-
-            try:
-                self.set_date_limit(post.created)
-            except AttributeError:
-                pass
-
-    def extract(self, extractor):
-        extractor.extract_content()
-        for x in extractor.failed_extracts_to_save:
-            if not any(x.url == y.url for y in self.saved_submissions):
-                self.saved_submissions.append(x)
-        for x in extractor.failed_extract_messages:
-            print(x)                                                                                # Print statement
-            self.failed_extracts.append(x)
-        for x in extractor.extracted_content:
-            if type(x) == str and x.startswith('Failed'):
-                self.failed_extracts.append(x)
-            else:
-                if self.check_image(x) and self.check_video(x) and self.check_downloaded_content(x):
-                    self.content.append(x)
-                    self.previous_downloads.append(x.url)
-
-    def check_image(self, item):
-        return self.download_images or item.endswith(('.jpg', '.jpeg', '.gif', '.gifv', '.webm', '.png'))
-
-    def check_video(self, item):
-        return self.download_videos or item.endswith(('.mp4', '.wmv', '.avi', '.mpg', '.divx'))
-
-    def check_downloaded_content(self, item):
-        return not self.avoid_duplicates or item.url not in self.previous_downloads
 
     def save_unfinished_downloads(self):
         for content in self.content:

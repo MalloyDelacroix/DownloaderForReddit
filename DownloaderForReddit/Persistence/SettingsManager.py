@@ -102,6 +102,7 @@ class SettingsManager:
         self.save_directory = self.settings.value("save_directory", default_folder, type=str)
         self.max_download_thread_count = self.settings.value('max_download_thread_count', 4, type=int)
         self.save_undownloaded_content = self.settings.value("save_undownloaded_content", True, type=bool)
+        self.save_failed_extracts = self.settings.value('save_failed_extracts', True, type=bool)
         self.set_file_modified_date = self.settings.value('set_file_modified_date', False, type=bool)
         # endregion
 
@@ -231,6 +232,7 @@ class SettingsManager:
         self.settings.setValue("save_directory", self.save_directory)
         self.settings.setValue("max_download_thread_count", self.max_download_thread_count)
         self.settings.setValue("save_undownloaded_content", self.save_undownloaded_content)
+        self.settings.setValue('save_failed_extracts', self.save_failed_extracts)
         self.settings.setValue('set_file_modified_date', self.set_file_modified_date)
 
     def save_display_settings(self):

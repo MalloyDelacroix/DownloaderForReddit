@@ -23,10 +23,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Core import *
-from Extractors import BaseExtractor
-from Core import RedditObjects
-import sys
+from Extractors.BaseExtractor import BaseExtractor
 
-sys.modules['RedditObjects'] = RedditObjects
-sys.modules['BaseExtractor'] = BaseExtractor
+
+class DirectExtractor(BaseExtractor):
+
+    url_key = None
+
+    def __init__(self, post, reddit_object, content_display_only=False):
+        super().__init__(post, reddit_object, content_display_only)
+
+    def extract_content(self):
+        self.extract_direct_link()
