@@ -114,12 +114,13 @@ class RedditObject:
         for content in self.content:
             if not content.downloaded:
                 self.saved_content[content.url] = [content.user, content.post_title, content.subreddit,
-                                                   content.submission_id, content.number_in_seq, content.file_ext]
+                                                   content.submission_id, content.number_in_seq, content.file_ext,
+                                                   content.date_created]
 
     def load_unfinished_downloads(self):
         for key, value in self.saved_content.items():
             x = Content(key, value[0], value[1], value[2], value[3], value[4], value[5], self.save_directory,
-                        self.subreddit_save_method, self.content_display_only)
+                        self.subreddit_save_method, value[6], self.content_display_only)
             self.content.append(x)
         self.saved_content.clear()
 

@@ -106,7 +106,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.content_icon_size = self.settings_manager.reddit_object_content_icon_size
 
         self.current_item_display = self.settings_manager.current_reddit_object_settings_item_display_list
-        self.item_display_list_model = RedditObjectItemDisplayModel(self.current_object, self.current_item_display)
+        self.item_display_list_model = RedditObjectItemDisplayModel(self.current_temp_object, self.current_item_display)
         self.item_display_list_view.setModel(self.item_display_list_model)
 
         self.download_object_button.clicked.connect(self.download_single)
@@ -272,6 +272,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         """
         display_dict = {'previous_downloads': 'Previous Downloads:', 'saved_submissions': 'Saved Submissions:',
                         'saved_content': 'Saved Content:'}
+        self.item_display_list_model.set_reddit_object(self.current_temp_object)
         self.current_item_display = display_type
         self.item_display_list_model.display_list = display_type
         self.item_display_list_model.refresh()

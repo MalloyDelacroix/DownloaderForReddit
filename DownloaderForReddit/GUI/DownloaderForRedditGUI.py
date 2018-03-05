@@ -1414,11 +1414,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :rtype: str
         """
         file = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select File', os.path.expanduser('~'))[0])
-        if os.path.isfile(file):
-            return file
-        else:
-            Message.invalid_file_path(self)
-            return None
+        if file != '':
+            if os.path.isfile(file):
+                return file
+            else:
+                Message.invalid_file_path(self)
+        return None
 
     def get_file_name(self, path):
         """Extracts only the file name without extension from the supplied file path."""
