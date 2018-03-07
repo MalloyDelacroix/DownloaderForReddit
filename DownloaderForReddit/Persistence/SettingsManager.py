@@ -39,8 +39,6 @@ class SettingsManager:
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
         self.load_settings()
-        self.count = 0
-        self.modify_date_count = 0  # Makes sure the logger does not log too many failed set date modified attempts
         if self.check_first_run():
             ObjectUpdater.check_settings_manager(self)
 

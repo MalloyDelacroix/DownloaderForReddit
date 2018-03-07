@@ -29,6 +29,7 @@ import logging
 
 from Core import SystemUtil
 from Core import Injector
+from Logging import LogUtils
 
 
 class Content(QRunnable):
@@ -163,7 +164,7 @@ class Content(QRunnable):
             try:
                 SystemUtil.set_file_modify_time(self.filename, self.date_created)
             except Exception:
-                if self.settings_manager.modify_date_count < 3:
+                if LogUtils.modified_date_log_count < 3:
                     self.settings_manager.modify_date_count += 1
                     self.queue.put('Could not set date modified for file: %s' % self.filename)
                     self.logger.error('Failed to set date modified for file', exc_info=True)
