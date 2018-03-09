@@ -22,12 +22,12 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import logging
 
 from .Content import Content
 from Extractors.BaseExtractor import *
 import Core.Injector
 from Core import SystemUtil
+from Logging import LogUtils
 
 
 class RedditObject:
@@ -46,7 +46,6 @@ class RedditObject:
         the user/sub had content.  If this variable is anything but 'None' it will be considered. If a user/sub setting
         is set to not restrict download date, it becomes 1.
         """
-        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.version = version
         self.name = name
         self.subreddit_save_method = None
@@ -125,7 +124,8 @@ class RedditObject:
                 self.content.append(x)
             self.saved_content.clear()
         except:
-            self.logger.error('Failed to load unfinished content', extra={'reddit_object': self.json}, exc_info=True)
+            LogUtils.log_proxy(__name__, 'ERROR', 'Failed to load unfinished content', exc_info=True,
+                               reddit_object=self.json)
 
     def set_date_limit(self, last_download_time):
         if self.date_limit is not None and last_download_time > self.date_limit:
@@ -139,7 +139,7 @@ class RedditObject:
         try:
             SystemUtil.create_directory(self.save_directory)
         except:
-            self.logger.error('Failed to create directory', extra={'reddit_object': self.json}, exc_info=True)
+            LogUtils.log_proxy(__name__, 'ERROR', 'Failed to create directory', exc_info=True, reddit_object=self.json)
 
     def clear_download_session_data(self):
         if Core.Injector.get_settings_manager().save_undownloaded_content:
