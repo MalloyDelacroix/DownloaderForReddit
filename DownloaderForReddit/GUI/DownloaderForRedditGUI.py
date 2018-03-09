@@ -541,7 +541,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         bar, failed download dialog box, and if the user finder is open, will emit a signal to update the user finder
         progress bar
         """
-        if text.lower().startswith('failed'):
+        if text.lower().startswith('fail'):
             self.failed_list.append(text)
             self.output_box.append(text)
         elif text.startswith('Saved'):
@@ -1018,8 +1018,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_add_subreddit_list.setDisabled(False)
         self.file_remove_user_list.setDisabled(False)
         self.file_remove_subreddit_list.setDisabled(False)
-        if self.settings_manager.auto_display_failed_list and len(self.failed_list) > 0:
-            self.display_failed_downloads()
+        if len(self.failed_list) > 0:
+            self.file_failed_download_list.setEnabled(True)
+            if self.settings_manager.auto_display_failed_list:
+                self.display_failed_downloads()
         self.download_count = 0
 
     def finish_progress_bar(self):
