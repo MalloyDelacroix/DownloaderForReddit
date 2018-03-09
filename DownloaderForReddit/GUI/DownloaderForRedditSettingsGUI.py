@@ -25,12 +25,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
 import os
-import time
 from PyQt5 import QtWidgets, QtCore
 import logging
 
 from GUI_Resources.DownloaderForRedditSettingsGUI_auto import Ui_SettingsGUI
 import Core.Injector
+from Core import SystemUtil
 from Core.Messages import Message
 from GUI.ImgurClientDialog import ImgurClientDialog
 
@@ -283,8 +283,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.settings_manager.restrict_by_date = self.date_restriction_checkbox.isChecked()
         self.settings_manager.restrict_by_custom_date = self.restrict_by_custom_date_checkbox.isChecked()
-        self.settings_manager.custom_date = int(time.mktime(time.strptime(self.date_limit_edit.text(),
-                                                                          '%m/%d/%Y %I:%M %p')))
+        self.settings_manager.custom_date = SystemUtil.get_epoch(self.date_limit_edit.text())
 
         self.settings_manager.subreddit_sort_method = self.get_sort_by_method()
         self.settings_manager.subreddit_sort_top_method = \

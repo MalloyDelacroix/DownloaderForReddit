@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 import shutil
+import time
 
 
 def open_in_system(item):
@@ -101,3 +102,26 @@ def import_data_file(directory, file):
         os.rename(source, dest)
     except OSError:
         shutil.copy(source, dest)
+
+
+def get_epoch(time_string):
+    """
+    Returns the epoch time for a date/time string and handles appropriately in the rare case that time is formatted
+    incorrectly.
+    :param time_string: The time string for which an epoch is requested.
+    :type time_string: str
+    :return: A time in seconds since the epoch.
+    :rtype: int
+    """
+    try:
+        return get_time_int(time_string)
+    except ValueError:
+        if time_string.endswith('p. m.'):
+            time_string = time_string.replace('p. m.', 'pm')
+        elif time_string.endswith('a. m.'):
+            time_string = time_string.replace('a. m.', 'am')
+        return get_time_int(time_string)
+
+
+def get_time_int(time_string):
+    return int(time.mktime(time.strptime(time_string, '%m/%d/%Y %I:%M %p')))

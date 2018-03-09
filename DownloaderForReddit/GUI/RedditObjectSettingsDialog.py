@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import datetime
-import time
 import copy
 import os
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -299,10 +298,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         making these changes permanent until the save button is clicked.
         """
         self.current_temp_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
-        if self.current_temp_object.date_limit != int(time.mktime(time.strptime(self.date_limit_edit.text(),
-                                                                                '%m/%d/%Y %I:%M %p'))):
-            self.current_temp_object.custom_date_limit = int(time.mktime(time.strptime(self.date_limit_edit.text(),
-                                                                                       '%m/%d/%Y %I:%M %p')))
+        if self.current_temp_object.date_limit != SystemUtil.get_epoch(self.date_limit_edit.text()):
+            self.current_temp_object.custom_date_limit = SystemUtil.get_epoch(self.date_limit_edit.text())
         if not self.restrict_date_checkbox.isChecked():
             self.current_temp_object.custom_date_limit = 1
         self.current_temp_object.post_limit = self.post_limit_spinbox.value()
