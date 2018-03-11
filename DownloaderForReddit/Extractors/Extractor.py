@@ -64,7 +64,7 @@ class Extractor:
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
-            self.reddit_object.failed_extracts.append('Could not extract from post: Url domain not supported\n'
+            self.reddit_object.failed_extracts.append('Failed to extract post: Url domain not supported\n'
                                                       'Url: %s, User: %s, Subreddit: %s, Title: %s' %
                                                       (post.url, post.author, post.subreddit, post.title))
             self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
