@@ -27,12 +27,11 @@ import sys
 
 from Core.Post import Post
 
+# Import each extractor class in the Extractors package so that BaseExtractor.__subclasses__() will pick up the
+# extractor class to be used in the Extractor.assign_extractor method.
+from Extractors.ImgurExtractor import ImgurExtractor
+from Extractors.GfycatExtractor import GfycatExtractor
+from Extractors.VidbleExtractor import VidbleExtractor
+
 
 sys.modules['Post'] = Post
-
-__all__ = [
-    'DirectExtractor',
-    'GfycatExtractor',
-    'ImgurExtractor',
-    'VidbleExtractor'
-]
