@@ -93,27 +93,17 @@ class DownloadRunner(QObject):
                 redditor = self._r.redditor(user.name)
                 try:
                     test = redditor.fullname
-                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
-                    try:
-                        download_count = len(user.previous_downloads)
-                    except:
-                        download_count = 0
-                    self.logger.info('Invalid user detected',
-                                        extra={'user': user.name, 'download_count': download_count})
-                    redditor = None
-                    self.remove_invalid_object.emit(user)
-
-                if redditor is not None:
                     self.queue.put("%s is valid" % user.name)
                     user.new_submissions = self.get_submissions(redditor, user)
                     self.validated_objects.put(user)
                     user.check_save_directory()
                     self.update_progress_bar()
-                else:
-                    self.queue.put("%s does not exist" % user.name)
-                    self.update_progress_bar()
-                    self.update_progress_bar()
-        self.validated_objects.put(None)
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                    self.handle_invalid_reddit_object(user)
+                except prawcore.RequestException:
+                    self.handle_failed_connection()
+
+        self.validated_objects.put(None)  # Shuts down the extractor
 
     def validate_subreddits(self):
         """See validate_users"""
@@ -123,22 +113,15 @@ class DownloadRunner(QObject):
                 subreddit = self._r.subreddit(sub.name)
                 try:
                     test = subreddit.fullname
-                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
-                    self.logger.info('Invalid subreddit detected',
-                                     extra={'subreddit': sub.name, 'download_count': sub.previous_downloads})
-                    subreddit = None
-                    self.remove_invalid_object.emit(sub)
-
-                if subreddit is not None:
                     self.queue.put("%s is valid" % sub.name)
                     sub.new_submissions = self.get_submissions(subreddit, sub)
                     self.validated_objects.put(sub)
                     sub.check_save_directory()
                     self.update_progress_bar()
-                else:
-                    self.queue.put("%s is not a valid subreddit" % sub.name)
-                    self.update_progress_bar()
-                    self.update_progress_bar()
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                    self.handle_invalid_reddit_object(sub)
+                except prawcore.RequestException:
+                    self.handle_failed_connection()
         self.validated_objects.put(None)
 
     def validate_users_and_subreddits(self):
@@ -150,26 +133,57 @@ class DownloadRunner(QObject):
                     self.validated_subreddits.append(subreddit.display_name)
                     self.queue.put('%s is valid' % subreddit.display_name)
                 except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
-                    self.queue.put('%s is not valid' % sub.name)
+                    self.handle_invalid_reddit_object(sub)
+                except prawcore.RequestException:
+                    self.handle_failed_connection()
 
         if self.run:
             for user in self.user_list:
                 redditor = self._r.redditor(user.name)
                 try:
                     test = redditor.fullname
-                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
-                    redditor = None
-                    self.queue.put('%s is not valid' % user.name)
-                    self.update_progress_bar()
-                    self.update_progress_bar()
-
-                if redditor is not None:
                     self.queue.put('%s is valid' % user.name)
                     user.new_submissions = self.get_user_submissions_from_subreddits(redditor, user)
                     self.validated_objects.put(user)
                     user.check_save_directory()
                     self.update_progress_bar()
+                except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
+                    self.handle_invalid_reddit_object(user)
+                except prawcore.RequestException:
+                    self.handle_failed_connection()
+
         self.validated_objects.put(None)
+
+    def handle_invalid_reddit_object(self, reddit_object):
+        """
+        Handles logging, output, and cleanup actions that need to happen when a reddit object fails validation.
+        :param reddit_object: The reddit object that is not valid.
+        :type reddit_object: RedditObject
+        """
+        self.remove_invalid_object.emit(reddit_object)
+        self.queue.put('%s does not exist' % reddit_object.name)
+        self.logger.info('Invalid %s detected' % reddit_object.object_type.lower(),
+                         extra={'reddit_object': reddit_object.name,
+                                'download_count': self.get_download_count(reddit_object)})
+        self.update_progress_bar()
+        self.update_progress_bar()  # Once for validation, once for would be extraction
+
+    def get_download_count(self, reddit_object):
+        try:
+            download_count = len(reddit_object.previous_downloads)
+        except:
+            download_count = 0
+        return download_count
+
+    def handle_failed_connection(self):
+        """
+        Stops the downloader if a connection to reddit cannot be established.  Also handles logging and output.
+        """
+        self.run = False
+        self.logger.error('Failed to establish a connection to reddit', exc_info=True)
+        self.queue.put('Could not establish a connection to reddit\n'
+                       'This may mean that reddit is currently unavailable\n'
+                       'Please try again later')
 
     def downloads_finished(self):
         """Cleans up objects that need to be changed after the download is complete."""

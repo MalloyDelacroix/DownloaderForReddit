@@ -81,7 +81,6 @@ class Extractor:
             self.logger.error('Failed to extract content: Unknown error',
                               extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
 
-
     def get_subreddit(self, post):
         """
         Method returns the subreddit the post was submitted in if the reddit object type is not subreddit, otherwise
