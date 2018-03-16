@@ -104,26 +104,22 @@ class Content(QRunnable):
 
     def run(self):
         self.check_save_path_subreddit()
-        response = requests.get(self.url, stream=True)
-        if response.status_code == 200:
-            try:
+        try:
+            response = requests.get(self.url, stream=True)
+            if response.status_code == 200:
                 with open(self.filename, 'wb') as file:
                     for chunk in response.iter_content(1024):
                         file.write(chunk)
                 self.set_file_modified_date()
-            except:
-                self.handle_exception()
-            self.queue.put('Saved %s' % self.filename)
-            self.downloaded = True
-            return None
-        else:
-            self.handle_unsuccessful_response(response.status_code)
-
-    def handle_exception(self):
-        """Handles logging and output in case of a failed save due to a general exception."""
-        self.logger.error('Failed to save content: Exception while saving file',
-                          extra={'save_path': self.filename}, exc_info=True)
-        self.queue.put('Failed to save content: %s' % self.filename)
+                self.queue.put('Saved: %s' % self.filename)
+                self.downloaded = True
+                return None
+            else:
+                self.handle_unsuccessful_response(response.status_code)
+        except ConnectionError:
+            self.handle_connection_error()
+        except:
+            self.handle_exception()
 
     def handle_unsuccessful_response(self, status_code):
         """Handles logging and output in case of a failed response from the server."""
@@ -132,6 +128,21 @@ class Content(QRunnable):
                                    'submission_id': self.submission_id, 'number_in_seq': self.number_in_seq})
         self.queue.put('Failed Download:  File %s%s posted by %s failed to download...try link to download '
                        'manually: %s\n' % (self.submission_id, self.number_in_seq, self.user, self.url))
+
+    def handle_connection_error(self):
+        """Handles logging and output in case of a failed connection attempt to the server"""
+        self.logger.error('Failed to establish a connection',
+                          extra={'url': self.url, 'user': self.user, 'submission_id': self.submission_id,
+                                 'number_in_seq': self.number_in_seq, 'extension': self.file_ext,
+                                 'created': self.date_created}, exc_info=True)
+        self.queue.put('Failed Download: Failed to establish a connection to url: %s\n'
+                       'User: %s, Subreddit: %s, Title: %s' % (self.url, self.user, self.subreddit, self.post_title))
+
+    def handle_exception(self):
+        """Handles logging and output in case of a failed save due to a general exception."""
+        self.logger.error('Failed to save content: Exception while saving file',
+                          extra={'save_path': self.filename}, exc_info=True)
+        self.queue.put('Failed to save content: %s' % self.filename)
 
     @staticmethod
     def clean_filename(name):

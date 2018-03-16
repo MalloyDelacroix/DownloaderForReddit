@@ -68,6 +68,19 @@ class Extractor:
                                                       (post.url, post.author, post.subreddit, post.title))
             self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
                                                                             'reddit_object': self.reddit_object.json})
+        except ConnectionError:
+            self.reddit_object.failed_extracts.append('Failed to establish a connection to domain: %s\nThis post has'
+                                                      'been saved and download will be attempted again next time' %
+                                                      post.url)
+            self.logger.error('Failed to establish connection to domain',
+                              extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
+        except:
+            self.reddit_object.failed_extracts.append('Failed to extract content from post\n'
+                                                      'Url: %s, User: %s Subreddit: %s, Title: %s' %
+                                                      (post.url, post.author, post.subreddit, post.title))
+            self.logger.error('Failed to extract content: Unknown error',
+                              extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
+
 
     def get_subreddit(self, post):
         """
