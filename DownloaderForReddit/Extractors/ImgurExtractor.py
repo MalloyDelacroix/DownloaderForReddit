@@ -57,6 +57,9 @@ class ImgurExtractor(BaseExtractor):
             except ImgurClientError as e:
                 if e.status_code == 500:
                     self.over_capacity_error()
+            except:
+                message = 'Failed to connect to imgur.com'
+                self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
