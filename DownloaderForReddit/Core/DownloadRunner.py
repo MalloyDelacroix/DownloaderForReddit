@@ -397,6 +397,7 @@ class ExtractionRunner(QObject):
         Runs the extractor for each user or subreddit object taken from the queue.  This method also handles sending
         update info to the main window and sending content to the downloader.
         """
+        self.logger.info('Extraction Runner started')
         while self.run:
             working_object = self.validated_objects.get()
             if working_object is not None:
@@ -461,6 +462,7 @@ class Downloader(QObject):
 
     def download(self):
         """Spawns the download pool threads"""
+        self.logger.info('Downloader started')
         while self.run:
             post = self.queue.get()
             if post is not None:
