@@ -337,7 +337,7 @@
   </action>
   <action name="file_remove_subreddit_list">
    <property name="text">
-    <string>Rmove Subreddit List</string>
+    <string>Remove Subreddit List</string>
    </property>
   </action>
   <action name="file_open_settings">

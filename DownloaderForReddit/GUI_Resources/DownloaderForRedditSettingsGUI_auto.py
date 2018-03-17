@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditSettingsGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -25,7 +25,6 @@ class Ui_SettingsGUI(object):
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
         self.gridLayout_9 = QtWidgets.QGridLayout(self.page)
-        self.gridLayout_9.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_9.setObjectName("gridLayout_9")
         self.formLayout = QtWidgets.QFormLayout()
         self.formLayout.setObjectName("formLayout")
@@ -286,7 +285,6 @@ class Ui_SettingsGUI(object):
         self.page_2 = QtWidgets.QWidget()
         self.page_2.setObjectName("page_2")
         self.gridLayout_10 = QtWidgets.QGridLayout(self.page_2)
-        self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_10.setObjectName("gridLayout_10")
         self.tooltip_group_box = QtWidgets.QGroupBox(self.page_2)
         font = QtGui.QFont()
@@ -404,7 +402,7 @@ class Ui_SettingsGUI(object):
         self.restrict_to_score_checkbox.setToolTip(_translate("SettingsGUI", "<html><head/><body><p><span style=\" font-size:10pt;\">If checked, posts will only be downloaded if they are above or below a certain score</span></p></body></html>"))
         self.restrict_to_score_checkbox.setText(_translate("SettingsGUI", "Restrict Download By Score"))
         self.date_restriction_checkbox.setToolTip(_translate("SettingsGUI", "<html><head/><body><p><span style=\" font-size:10pt;\">If checked, only links that have been posted after the date of the last post downloaded by each user will be downloaded.</span></p></body></html>"))
-        self.date_restriction_checkbox.setText(_translate("SettingsGUI", "Inforce User Date Limits"))
+        self.date_restriction_checkbox.setText(_translate("SettingsGUI", "Enforce User Date Limits"))
         self.restrict_by_custom_date_checkbox.setText(_translate("SettingsGUI", "Restrict downloads by cusom date:"))
         self.date_limit_edit.setDisplayFormat(_translate("SettingsGUI", "M/d/yyyy hh:mm ap"))
         self.groupBox_2.setTitle(_translate("SettingsGUI", "Content Filters"))

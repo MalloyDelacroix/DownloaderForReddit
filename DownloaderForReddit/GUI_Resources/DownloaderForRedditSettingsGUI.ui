@@ -267,7 +267,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;If checked, only links that have been posted after the date of the last post downloaded by each user will be downloaded.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string>Inforce User Date Limits</string>
+            <string>Enforce User Date Limits</string>
            </property>
           </widget>
          </item>

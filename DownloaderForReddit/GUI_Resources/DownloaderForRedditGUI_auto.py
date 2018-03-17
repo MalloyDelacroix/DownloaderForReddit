@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -262,7 +262,7 @@ class Ui_MainWindow(object):
         self.file_add_subreddit_list.setText(_translate("MainWindow", "Add Subreddit List"))
         self.file_save.setText(_translate("MainWindow", "Save"))
         self.file_remove_user_list.setText(_translate("MainWindow", "Remove User List"))
-        self.file_remove_subreddit_list.setText(_translate("MainWindow", "Rmove Subreddit List"))
+        self.file_remove_subreddit_list.setText(_translate("MainWindow", "Remove Subreddit List"))
         self.file_open_settings.setText(_translate("MainWindow", "Settings"))
         self.file_exit.setText(_translate("MainWindow", "Exit"))
         self.file_failed_download_list.setText(_translate("MainWindow", "Failed Download List"))
