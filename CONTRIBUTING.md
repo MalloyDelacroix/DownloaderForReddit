@@ -46,7 +46,7 @@ Before opening a pull request, please consider the following items:
 Consistent code style is considered very important in this project.  When looking through the source files for this 
 project, a clear coding style should be apparent.  If a contribution varies from this style guide in a very noticeable way, 
 it will not be merged until corrected.
-* Follow pep8.
+* Follow pep8 (except where this guide specifies otherwise).
 * Spell check to a reasonable extent.
 * All class names, file names, and package names should be `CapitalizedWords` with no spaces or underscores (a.k.a. `UpperCamelCase`)
 * All method and variable names should be in `lower_case_with_underscores`
