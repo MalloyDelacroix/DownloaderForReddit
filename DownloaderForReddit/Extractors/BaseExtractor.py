@@ -165,7 +165,17 @@ class BaseExtractor:
 
     def handle_failed_extract(self, message=None, save=False, **kwargs):
         """
-        Handles the messages, logging, and saving of content that failed to extract.
+        Handles the logging and output of error messages encountered while extracting content and saves posts if
+        instructed to do so.
+        :param message: Supplied text to describe the error that occurred if necessary.  Will only be added to the end of
+                        the main window output.
+        :param save: Indicates whether the post should be saved or not.  Posts should only be saved for error such as
+                     connection errors that are not likely to be repeated on subsequent runs.
+        :type message: str
+        :type save: bool
+        :param kwargs: These are keyword arguments that are put into the 'extra' dictionary in the log.  These should be
+                       any other parameters that will be helpful in diagnosing problems from the log if an error is
+                       encountered.
         """
         message_text = ': %s' % message if message else ''
         extra = {'extractor_data': self.get_log_data()}
