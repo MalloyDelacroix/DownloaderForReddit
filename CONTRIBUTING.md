@@ -69,7 +69,7 @@ and before the methods code.
 * Return type should be indicated by `:rtype: bool`
 
 Below is an example method with documentation:
-```
+```python
 def get_filename(self, media_id):
     """
     Checks the settings manager to determine if the post title or the content id (as stored on the container site)
@@ -91,10 +91,11 @@ def get_filename(self, media_id):
   * DownloaderForReddit modules
 
 Example:
-```
+```python
 import os
 import sys
 from PyQt5 import QtCore, QtWidgets, QtGui
+
 from Core import Injector
 from Extractors.BaseExtractor import BaseExtractor
 ```
