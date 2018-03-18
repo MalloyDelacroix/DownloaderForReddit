@@ -69,17 +69,18 @@ and before the methods code.
 * Return type should be indicated by `:rtype: bool`
 
 Below is an example method with documentation:
-
-        def get_filename(self, media_id):
-            """
-            Checks the settings manager to determine if the post title or the content id (as stored on the container site)
-            should be used to name the content that is being extracted.
-            :param media_id: The image/album/video id as stored on a container site.
-            :type media_id: str
-            :return: The file name that should be used when creating the Content object from the extracted url.
-            :rtype: str
-            """
-            return self.post_title if self.name_downloads_by == 'Post Title' else media_id
+```python
+def get_filename(self, media_id):
+    """
+    Checks the settings manager to determine if the post title or the content id (as stored on the container site)
+    should be used to name the content that is being extracted.
+    :param media_id: The image/album/video id as stored on a container site.
+    :type media_id: str
+    :return: The file name that should be used when creating the Content object from the extracted url.
+    :rtype: str
+    """
+    return self.post_title if self.name_downloads_by == 'Post Title' else media_id
+```
 
 #### Imports
 * Unless being imported from the same package or library, each import should appear on its own line.
@@ -90,13 +91,14 @@ Below is an example method with documentation:
   * DownloaderForReddit modules
 
 Example:
+```python
+import os
+import sys
+from PyQt5 import QtCore, QtWidgets, QtGui
 
-    import os
-    import sys
-    from PyQt5 import QtCore, QtWidgets, QtGui
-     
-    from Core import Injector
-    from Extractors.BaseExtractor import BaseExtractor
+from Core import Injector
+from Extractors.BaseExtractor import BaseExtractor
+```
 
 If you create a new file, please include the license comment at the top of the file.  This comment can be copied and pasted from any other source file.
  
