@@ -23,12 +23,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
 
 from Extractors.BaseExtractor import BaseExtractor
+from Extractors import ImgurExtractorUtils
 from Core import Const
-from Logging import LogUtils
 
 
 class ImgurExtractor(BaseExtractor):
@@ -42,28 +41,17 @@ class ImgurExtractor(BaseExtractor):
         """
         super().__init__(post, reddit_object, content_display_only)
         self.connected = False
-        self.imgur_client_id = self.settings_manager.imgur_client_id
-        self.imgur_client_secret = self.settings_manager.imgur_client_secret
-        if self.imgur_client_id is None or self.imgur_client_secret is None:
-            if LogUtils.imgur_client_error_log_count < 1:
-                LogUtils.imgur_client_error_log_count += 1
-                message = 'No valid Imgur client detected.  In order to download content from imgur.com, you must ' \
-                          'have a valid imgur client id and client secret.  Please see the imgur client information' \
-                          'dialog in the settings menu.'
-                self.handle_failed_extract(message=message, imgur_client_id_valid=self.imgur_client_id is not None,
-                                           imgur_client_secret_valid=self.imgur_client_secret is not None)
-        else:
-            try:
-                self.client = ImgurClient(self.imgur_client_id, self.imgur_client_secret)
-                self.connected = True
-            except ImgurClientError as e:
-                if e.status_code == 500:
-                    self.over_capacity_error()
-                else:
-                    self.unknown_connection_error(e.status_code)
-            except:
-                message = 'Failed to connect to imgur.com'
-                self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
+        try:
+            self.client = ImgurExtractorUtils.get_client()
+            self.connected = True
+        except ImgurClientError as e:
+            if e.status_code == 500:
+                self.over_capacity_error()
+            else:
+                self.unknown_connection_error(e.status_code)
+        except:
+            message = 'Failed to connect to imgur.com'
+            self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
