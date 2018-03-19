@@ -23,7 +23,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Core import *
 from Extractors import BaseExtractor
 from Core import RedditObjects
 import sys
