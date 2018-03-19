@@ -21,11 +21,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
+from queue import Queue
 
 from Persistence.SettingsManager import SettingsManager
 
 
 settings_manager = None
+queue = None
 
 
 def get_settings_manager():
@@ -33,3 +35,10 @@ def get_settings_manager():
     if settings_manager is None:
         settings_manager = SettingsManager()
     return settings_manager
+
+
+def get_queue():
+    global queue
+    if queue is None:
+        queue = Queue()
+    return queue

@@ -26,11 +26,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import ctypes
 import sys
-from queue import Queue
 from PyQt5 import QtWidgets, QtCore
 import logging
 
 from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
+from Core import Injector
 from Logging import Logger
 from version import __version__
 
@@ -93,7 +93,7 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    queue = Queue()
+    queue = Injector.get_queue()
     thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
 
