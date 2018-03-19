@@ -43,11 +43,10 @@ from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
 from GUI.UserFinderGUI import UserFinderGUI
 from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
-import Utils.Injector
+from Utils import Injector, SystemUtil, ImgurUtils
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from ViewModels.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
-from Utils import SystemUtil
 from version import __version__
 
 
@@ -78,7 +77,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder = None
 
         # region Settings
-        self.settings_manager = Utils.Injector.get_settings_manager()
+        self.settings_manager = Injector.get_settings_manager()
 
         geom = self.settings_manager.main_window_geom
         horz_splitter_state = self.settings_manager.horz_splitter_state
@@ -1161,19 +1160,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
-        if self.settings_manager.imgur_client_id is not None and self.settings_manager.imgur_client_secret is not None:
-            try:
-                imgur_client = imgurpython.ImgurClient(self.settings_manager.imgur_client_id,
-                                                       self.settings_manager.imgur_client_secret)
-            except:
-                self.logger.error('Failed to display imgur client information', exc_info=True)
-                imgur_client = None
-                Message.invalid_imgur_client(self)
-        else:
-            self.logger.warning('Unable to display imgur client data:\n    client_id valid: %s\n'
-                                '    client_secret valid:%s' % (self.settings_manager.imgur_client_id is not None,
-                                                                self.settings_manager.imgur_client_secret is not None))
-            Message.no_imgur_client(self)
+        try:
+            imgur_client = ImgurUtils.get_client()
+        except:
+            self.logger.error('Failed to display imgur client information', exc_info=True)
             imgur_client = None
 
         if imgur_client is not None:
@@ -1187,6 +1177,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                              extra={'remaining_app_credits': credits_dict['ClientRemaining'],
                                     'remaining_user_credits': credits_dict['UserRemaining']})
             reply = QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
+
+    def get_imgur_client(self):
+        try:
+            return ImgurUtils.get_client()
+        except:
+            self.logger.error('Failed to display imgur client information', exc_info=True)
 
     def display_about_dialog(self):
         about_dialog = AboutDialog()
