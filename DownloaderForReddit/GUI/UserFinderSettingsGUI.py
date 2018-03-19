@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5.QtWidgets import QDialog
 
 from GUI_Resources.UserFinderSettingsGUI_auto import Ui_UserFinderSettingsGUI
-from Core import Injector
+from Utils import Injector
 
 
 class UserFinderSettingsGUI(QDialog, Ui_UserFinderSettingsGUI):

@@ -28,7 +28,7 @@ from operator import attrgetter
 import datetime
 import logging
 
-from Core import Injector
+from Utils import Injector
 from Core.RedditObjects import RedditObject
 
 

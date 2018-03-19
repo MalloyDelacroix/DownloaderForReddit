@@ -27,7 +27,7 @@ import requests
 import logging
 
 from Core.Content import Content
-import Core.Injector
+import Utils.Injector
 from Core.Post import Post
 
 
@@ -52,7 +52,7 @@ class BaseExtractor:
         :type content_display_only: bool
         """
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.settings_manager = Core.Injector.get_settings_manager()
+        self.settings_manager = Utils.Injector.get_settings_manager()
         self.url = post.url
         self.user = post.author
         self.post_title = post.title

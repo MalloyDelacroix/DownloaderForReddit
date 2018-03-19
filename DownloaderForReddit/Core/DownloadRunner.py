@@ -29,7 +29,7 @@ from queue import Queue
 from time import time
 import logging
 
-import Core.Injector
+import Utils.Injector
 from Core.PostFilter import PostFilter
 from Extractors.Extractor import Extractor
 
@@ -61,7 +61,7 @@ class DownloadRunner(QObject):
         super().__init__()
         self.start_time = time()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.settings_manager = Core.Injector.get_settings_manager()
+        self.settings_manager = Utils.Injector.get_settings_manager()
         self._r = self.settings_manager.r
         self.post_filter = PostFilter()
         self.user_list = user_list

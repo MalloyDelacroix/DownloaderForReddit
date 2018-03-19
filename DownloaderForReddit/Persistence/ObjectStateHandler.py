@@ -29,7 +29,7 @@ import logging
 
 from ViewModels.ListModel import ListModel
 from Persistence.ObjectUpdater import ObjectUpdater
-from Core import SystemUtil
+from Utils import SystemUtil
 from version import __version__
 
 

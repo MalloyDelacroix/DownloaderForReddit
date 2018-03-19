@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5.QtCore import QObject, pyqtSignal
 import prawcore
 
-from Core import Injector
+from Utils import Injector
 from UserFinder.UserFinderRedditObject import UserFinderUser, UserFinderSubreddit
 from Core.PostFilter import PostFilter
 from Core.Messages import Message

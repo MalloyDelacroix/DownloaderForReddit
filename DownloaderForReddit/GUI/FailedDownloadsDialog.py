@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5 import QtWidgets
 
 from GUI_Resources.FailedDownloadsDialog_auto import Ui_failed_downloads_dialog
-import Core.Injector
+import Utils.Injector
 
 
 class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
@@ -41,7 +41,7 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.settings_manager = Core.Injector.get_settings_manager()
+        self.settings_manager = Utils.Injector.get_settings_manager()
         geom = self.settings_manager.failed_downloads_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
 

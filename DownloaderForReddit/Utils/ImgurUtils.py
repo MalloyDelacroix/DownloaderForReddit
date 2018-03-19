@@ -2,8 +2,7 @@ import logging
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError
 
-from Core import Injector
-
+from Utils import Injector
 
 logger = logging.getLogger(__name__)
 imgur_client = None

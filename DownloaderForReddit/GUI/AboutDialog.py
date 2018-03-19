@@ -27,7 +27,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from GUI_Resources.AboutDialog_auto import Ui_About
 from version import __version__
-import Core.Injector
+import Utils.Injector
 
 
 class AboutDialog(QtWidgets.QDialog, Ui_About):
@@ -38,7 +38,7 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.settings_manager = Core.Injector.get_settings_manager()
+        self.settings_manager = Utils.Injector.get_settings_manager()
         geom = self.settings_manager.about_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
 

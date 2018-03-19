@@ -22,8 +22,7 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
-from Core import Injector
+from Utils import Injector
 
 
 class PostFilter:

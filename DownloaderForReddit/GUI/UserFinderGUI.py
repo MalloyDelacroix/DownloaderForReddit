@@ -28,7 +28,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from GUI_Resources.UserFinderGUI_auto import Ui_UserFinderGUI
 from UserFinder.UserFinder import UserFinder
-from Core import Injector
+from Utils import Injector
 from GUI.AddUserDialog import AddUserDialog
 from GUI.UserFinderSettingsGUI import UserFinderSettingsGUI
 from ViewModels.UserFinderListModel import UserFinderListModel

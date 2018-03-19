@@ -27,16 +27,14 @@ import datetime
 import copy
 import os
 from PyQt5 import QtCore, QtWidgets, QtGui
-import logging
 
 from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
-from Core import Injector
+from Utils import Injector
 from Core.Messages import Message
 from Core.AlphanumKey import ALPHANUM_KEY
 from ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
 from Core.RedditObjects import *
 from CustomWidgets.CustomListWidgetItem import CustomListItem
-from Core import SystemUtil
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):

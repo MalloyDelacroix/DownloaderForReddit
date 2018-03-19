@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5 import QtWidgets, QtCore
 
 from GUI_Resources.AddUserDialog_auto import Ui_add_user_dialog
-import Core.Injector
+import Utils.Injector
 
 
 class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
@@ -40,7 +40,7 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_user_dialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.settings_manager = Core.Injector.get_settings_manager()
+        self.settings_manager = Utils.Injector.get_settings_manager()
         geom = self.settings_manager.add_user_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         self.name = None

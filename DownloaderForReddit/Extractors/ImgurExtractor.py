@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
 
 from Extractors.BaseExtractor import BaseExtractor
-from Extractors import ImgurExtractorUtils
+from Utils import ImgurUtils
 from Core import Const
 
 
@@ -42,7 +42,7 @@ class ImgurExtractor(BaseExtractor):
         super().__init__(post, reddit_object, content_display_only)
         self.connected = False
         try:
-            self.client = ImgurExtractorUtils.get_client()
+            self.client = ImgurUtils.get_client()
             self.connected = True
         except ImgurClientError as e:
             if e.status_code == 500:

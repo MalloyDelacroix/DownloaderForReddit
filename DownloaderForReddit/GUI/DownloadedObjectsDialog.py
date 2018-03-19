@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import logging
 
 from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
-from Core import SystemUtil
+from Utils import SystemUtil
 from Core.AlphanumKey import ALPHANUM_KEY
 
 

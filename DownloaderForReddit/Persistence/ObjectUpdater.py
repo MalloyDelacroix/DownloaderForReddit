@@ -1,5 +1,5 @@
 from Core.RedditObjects import User, Subreddit
-from Core import Injector
+from Utils import Injector
 from version import __version__
 
 

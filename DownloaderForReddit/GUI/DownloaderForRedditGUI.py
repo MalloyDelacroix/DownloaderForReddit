@@ -43,11 +43,11 @@ from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
 from GUI.UserFinderGUI import UserFinderGUI
 from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
-import Core.Injector
+import Utils.Injector
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from ViewModels.ListModel import ListModel
 from GUI.AddUserDialog import AddUserDialog
-from Core import SystemUtil
+from Utils import SystemUtil
 from version import __version__
 
 
@@ -78,7 +78,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_finder = None
 
         # region Settings
-        self.settings_manager = Core.Injector.get_settings_manager()
+        self.settings_manager = Utils.Injector.get_settings_manager()
 
         geom = self.settings_manager.main_window_geom
         horz_splitter_state = self.settings_manager.horz_splitter_state

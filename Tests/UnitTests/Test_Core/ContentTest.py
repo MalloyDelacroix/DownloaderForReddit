@@ -4,7 +4,6 @@ from DownloaderForReddit.Core.Content import Content
 
 class ContentTest(unittest.TestCase):
 
-
     def make_content(self, subreddit_method):
         self.url = 'http://test-url.com/FluffyKitten.jpg'
         self.user = 'John Everyman'

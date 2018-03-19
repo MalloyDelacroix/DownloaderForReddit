@@ -27,8 +27,7 @@ import requests
 from PyQt5.QtCore import QRunnable
 import logging
 
-from Core import SystemUtil
-from Core import Injector
+from Utils import Injector, SystemUtil
 from Logging import LogUtils
 
 

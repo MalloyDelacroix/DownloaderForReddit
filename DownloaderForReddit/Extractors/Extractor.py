@@ -27,7 +27,7 @@ import logging
 
 from Extractors.BaseExtractor import BaseExtractor
 from Extractors.DirectExtractor import DirectExtractor
-from Core import Injector
+from Utils import Injector
 from Core import Const
 
 

@@ -30,7 +30,7 @@ from PyQt5 import QtWidgets, QtCore
 import logging
 
 from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
-from Core import Injector
+from Utils import Injector
 from Logging import Logger
 from version import __version__
 
