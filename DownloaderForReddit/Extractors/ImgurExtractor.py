@@ -41,6 +41,7 @@ class ImgurExtractor(BaseExtractor):
         imgur api via ImgurPython
         """
         super().__init__(post, reddit_object, content_display_only)
+        self.connected = False
         self.imgur_client_id = self.settings_manager.imgur_client_id
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
         if self.imgur_client_id is None or self.imgur_client_secret is None:
@@ -54,49 +55,55 @@ class ImgurExtractor(BaseExtractor):
         else:
             try:
                 self.client = ImgurClient(self.imgur_client_id, self.imgur_client_secret)
+                self.connected = True
             except ImgurClientError as e:
                 if e.status_code == 500:
                     self.over_capacity_error()
+                else:
+                    self.unknown_connection_error(e.status_code)
             except:
                 message = 'Failed to connect to imgur.com'
                 self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
-        try:
-            if 'i.imgur' in self.url:
-                self.extract_direct_link()
+        if self.connected:
+            try:
+                if 'i.imgur' in self.url:
+                    self.extract_direct_link()
 
-            elif "/a/" in self.url:
-                self.extract_album()
-            elif '/gallery/' in self.url:
-                try:
+                elif "/a/" in self.url:
                     self.extract_album()
-                except:
-                    pass
-            elif self.url.lower().endswith(Const.ALL_EXT):
-                self.extract_direct_mislinked()
-            else:
-                self.extract_single()
-        except ImgurClientError as e:
-
-            if e.status_code == 403:
-                if self.client.credits['ClientRemaining'] is None:
-                    self.failed_to_locate_error()
-                elif self.client.credits['ClientRemaining'] <= 0:
-                    self.no_credit_error()
+                elif '/gallery/' in self.url:
+                    try:
+                        self.extract_album()
+                    except:
+                        pass
+                elif self.url.lower().endswith(Const.ALL_EXT):
+                    self.extract_direct_mislinked()
                 else:
-                    self.failed_to_locate_error()
-            if e.status_code == 429:
+                    self.extract_single()
+            except ImgurClientError as e:
+                self.handle_client_error(e.status_code)
+            except ImgurClientRateLimitError:
                 self.rate_limit_exceeded_error()
-            if e.status_code == 500:
-                self.over_capacity_error()
-            if e.status_code == 404:
-                self.does_not_exist_error()
-        except ImgurClientRateLimitError:
+            except:
+                self.failed_to_locate_error()
+
+    def handle_client_error(self, status_code):
+        if status_code == 403:
+            if self.client.credits['ClientRemaining'] is None:
+                self.failed_to_locate_error()
+            elif self.client.credits['ClientRemaining'] <= 0:
+                self.no_credit_error()
+            else:
+                self.failed_to_locate_error()
+        if status_code == 429:
             self.rate_limit_exceeded_error()
-        except:
-            self.failed_to_locate_error()
+        if status_code == 500:
+            self.over_capacity_error()
+        if status_code == 404:
+            self.does_not_exist_error()
 
     def rate_limit_exceeded_error(self):
         message = 'Imgur rate limit exceeded'
@@ -118,6 +125,10 @@ class ImgurExtractor(BaseExtractor):
     def failed_to_locate_error(self):
         message = 'Failed to locate content'
         self.handle_failed_extract(message=message, extractor_error_message=message)
+
+    def unknown_connection_error(self, status_code):
+        message = 'Unknown imgur connection error'
+        self.handle_failed_extract(message=message, save=True, status_code=status_code)
 
     def extract_album(self):
         count = 1
