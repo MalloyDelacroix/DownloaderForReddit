@@ -63,10 +63,7 @@ class ImgurExtractor(BaseExtractor):
                 elif "/a/" in self.url:
                     self.extract_album()
                 elif '/gallery/' in self.url:
-                    try:
-                        self.extract_album()
-                    except:
-                        pass
+                    self.extract_album()
                 elif self.url.lower().endswith(Const.ALL_EXT):
                     self.extract_direct_mislinked()
                 else:
