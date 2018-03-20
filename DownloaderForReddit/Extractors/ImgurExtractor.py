@@ -59,7 +59,6 @@ class ImgurExtractor(BaseExtractor):
             try:
                 if 'i.imgur' in self.url:
                     self.extract_direct_link()
-
                 elif "/a/" in self.url:
                     self.extract_album()
                 elif '/gallery/' in self.url:
@@ -170,18 +169,8 @@ class ImgurExtractor(BaseExtractor):
                 index = self.url.find(ext)
                 url = '%s%s' % (self.url[:index], ext)
 
-        try:
-            domain, id_with_ext = url.rsplit('/', 1)
-            domain = 'https://i.imgur.com/'
-            url = '%s%s' % (domain, id_with_ext)
-            image_id, extension = id_with_ext.rsplit('.', 1)
-            file_name = self.get_filename(image_id)
-            if url.endswith('gifv') or url.endswith('gif'):
-                picture = self.client.get_image(image_id)
-                if picture.type == 'image/gif' and picture.animated:
-                    url = picture.mp4
-                    extension = 'mp4'
-            self.make_content(url, file_name, extension)
-        except NameError:
-            message = 'Unrecognized extension'
-            self.handle_failed_extract(message=message, extractor_error_message=message)
+        domain, id_with_ext = url.rsplit('/', 1)
+        domain = 'https://i.imgur.com/'
+        url = '%s%s' % (domain, id_with_ext)
+        self.url = url
+        self.extract_direct_link()
