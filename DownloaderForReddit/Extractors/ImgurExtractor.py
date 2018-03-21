@@ -57,14 +57,12 @@ class ImgurExtractor(BaseExtractor):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
             try:
-                if 'i.imgur' in self.url:
+                if self.url.lower().endswith(Const.ALL_EXT):
                     self.extract_direct_link()
                 elif "/a/" in self.url:
                     self.extract_album()
                 elif '/gallery/' in self.url:
                     self.extract_album()
-                elif self.url.lower().endswith(Const.ALL_EXT):
-                    self.extract_direct_mislinked()
                 else:
                     self.extract_single()
             except ImgurClientError as e:
@@ -75,6 +73,13 @@ class ImgurExtractor(BaseExtractor):
                 self.failed_to_locate_error()
 
     def handle_client_error(self, status_code):
+        """
+        Handles logging and reporting of errors that are reported by the imgur client.  These errors are handled
+        separately from other errors because they contain more meaningful information because imgur provides the status
+        code of the error and the meaning of the status code.
+        :param status_code: The error status code as reported by imgur.
+        :type status_code: int
+        """
         if status_code == 403:
             if self.client.credits['ClientRemaining'] is None:
                 self.failed_to_locate_error()
@@ -139,12 +144,8 @@ class ImgurExtractor(BaseExtractor):
         self.make_content(url, file_name, extension)
 
     def extract_direct_link(self):
-        for ext in Const.ALL_EXT:
-            if ext in self.url:
-                index = self.url.find(ext)
-                url = '%s%s' % (self.url[:index], ext)
-
         try:
+            url = self.get_direct_url()
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
             file_name = self.get_filename(image_id)
@@ -154,23 +155,36 @@ class ImgurExtractor(BaseExtractor):
                     url = picture.mp4
                     extension = 'mp4'
             self.make_content(url, file_name, extension)
-        except NameError:
+        except (AttributeError, NameError):
             message = 'Unrecognized extension'
             self.handle_failed_extract(message=message, extractor_error_message=message)
 
-    def extract_direct_mislinked(self):
+    def get_direct_url(self):
         """
-        All direct links to imgur.com must start with 'https://i.imgur.  Sometimes links get mis labeled somehow when
-        they are posted.  This method is to add the correct address beginning to mislinked imgur urls and get a proper
-        extraction
+        Checks to make sure the url extension is a recognized media extension and also checks if the url is mislinked.
+        :return: The correct url if the extension is valid, None if not.
+        :rtype: str
         """
         for ext in Const.ALL_EXT:
             if ext in self.url:
                 index = self.url.find(ext)
                 url = '%s%s' % (self.url[:index], ext)
+                return self.check_mislinked(url)
+        return None
 
-        domain, id_with_ext = url.rsplit('/', 1)
-        domain = 'https://i.imgur.com/'
-        url = '%s%s' % (domain, id_with_ext)
-        self.url = url
-        self.extract_direct_link()
+    def check_mislinked(self, url):
+        """
+        Each direct link hosted on imgur.com must start with https://i.imgur.  Sometimes for an as of yet unknown
+        reason, the "i." is left off the beginning of the url.  This will prevent the url from being downloaded if not
+        fixed.  This method detects this and corrects the url.
+        :param url: The possibly mislinked url that is to be checked.
+        :type url: str
+        :return: The url with the proper beginning if it is mislinked, the supplied url if not.
+        :rtype: str
+        """
+        if 'i.imgur' not in url:
+            domain, id_with_ext = url.rsplit('/', 1)
+            domain = 'https://i.imgur.com/'
+            return '%s%s' % (domain, id_with_ext)
+        else:
+            return url
