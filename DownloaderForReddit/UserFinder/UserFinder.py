@@ -54,7 +54,7 @@ class UserFinder(QObject):
         """
         super().__init__()
         self.settings_manager = Injector.get_settings_manager()
-        self._r = RedditUtils.reddit_instance
+        self._r = RedditUtils.get_reddit_instance()
         self.post_filter = PostFilter()
         self.subreddit_list = subreddit_list
         self.blacklist = user_blacklist

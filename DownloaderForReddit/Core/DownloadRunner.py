@@ -62,7 +62,7 @@ class DownloadRunner(QObject):
         self.start_time = time()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Injector.get_settings_manager()
-        self._r = RedditUtils.reddit_instance
+        self._r = RedditUtils.get_reddit_instance()
         self.post_filter = PostFilter()
         self.user_list = user_list
         self.subreddit_list = subreddit_list
