@@ -150,10 +150,10 @@ class Extractor:
         return self.check_image(content) and self.check_video(content) and self.check_duplicate(content)
 
     def check_image(self, content):
-        return self.reddit_object.download_images or not content.endswith(Const.IMAGE_EXT)
+        return self.reddit_object.download_images or content.file_ext not in Const.IMAGE_EXT
 
     def check_video(self, content):
-        return self.reddit_object.download_videos or not content.endswith(Const.VID_EXT)
+        return self.reddit_object.download_videos or content.file_ext not in Const.VID_EXT
 
     def check_duplicate(self, content):
         return not self.reddit_object.avoid_duplicates or content.url not in self.reddit_object.previous_downloads
