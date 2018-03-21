@@ -35,7 +35,7 @@ class VidbleExtractor(BaseExtractor):
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
-        A sublcass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via
+        A subclass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via
         BeautifulSoup4.
         """
         super().__init__(post, reddit_object, content_display_only)
@@ -55,13 +55,15 @@ class VidbleExtractor(BaseExtractor):
             message = 'Failed to locate content'
             self.handle_failed_extract(message=message, extractor_error_message=message)
 
+    def get_imgs(self):
+        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
+        return soup.find_all('img')
+
     def extract_single(self):
         domain, vidble_id = self.url.rsplit('/', 1)
         if '.' in vidble_id:
             vidble_id = vidble_id[:vidble_id.rfind('.')]
-        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
-        imgs = soup.find_all('img')
-        for img in imgs:
+        for img in self.get_imgs():
             img_class = img.get('class')
             if img_class is not None and img_class[0] == 'img2':
                 link = img.get('src')
@@ -73,9 +75,7 @@ class VidbleExtractor(BaseExtractor):
     def extract_album(self):
         count = 1
         domain, vidble_id = self.url.rsplit('/', 1)
-        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
-        imgs = soup.find_all('img')
-        for img in imgs:
+        for img in self.get_imgs():
             img_class = img.get('class')
             if img_class is not None and img_class[0] == 'img2':
                 link = img.get('src')
