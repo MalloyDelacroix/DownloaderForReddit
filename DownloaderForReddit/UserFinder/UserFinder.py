@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5.QtCore import QObject, pyqtSignal
 import prawcore
 
-from Utils import Injector
+from Utils import Injector, RedditUtils
 from UserFinder.UserFinderRedditObject import UserFinderUser, UserFinderSubreddit
 from Core.PostFilter import PostFilter
 from Core.Messages import Message
@@ -54,7 +54,7 @@ class UserFinder(QObject):
         """
         super().__init__()
         self.settings_manager = Injector.get_settings_manager()
-        self._r = self.settings_manager.r
+        self._r = RedditUtils.reddit_instance
         self.post_filter = PostFilter()
         self.subreddit_list = subreddit_list
         self.blacklist = user_blacklist

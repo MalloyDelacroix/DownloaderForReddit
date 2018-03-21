@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import praw
 from PyQt5.QtCore import QSettings
 import logging
 
@@ -47,11 +46,6 @@ class SettingsManager:
             'Do Not Include': 'EXCLUDE',
             'Include Only NSFW': 'ONLY'
         }
-
-    @property
-    def r(self):
-        return praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
-                           client_id='frGEUVAuHGL2PQ', client_secret=None)
 
     def check_first_run(self):
         cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
