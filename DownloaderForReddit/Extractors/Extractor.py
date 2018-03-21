@@ -94,7 +94,8 @@ class Extractor:
         """
         return post.subreddit if self.reddit_object.object_type != 'SUBREDDIT' else self.reddit_object.name
 
-    def assign_extractor(self, post):
+    @staticmethod
+    def assign_extractor(post):
         """
         Selects and returns the extractor to be used based on the url of the supplied post.
         :param post: The post that is to be extracted.
