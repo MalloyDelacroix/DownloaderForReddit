@@ -63,23 +63,32 @@ class Extractor:
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
-            self.reddit_object.failed_extracts.append('Failed to extract post: Url domain not supported\n'
-                                                      'Url: %s, User: %s, Subreddit: %s, Title: %s' %
-                                                      (post.url, post.author, post.subreddit, post.title))
-            self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
-                                                                            'reddit_object': self.reddit_object.json})
+            self.handle_unsupported_domain(post)
         except ConnectionError:
-            self.reddit_object.failed_extracts.append('Failed to establish a connection to domain: %s\nThis post has'
-                                                      'been saved and download will be attempted again next time' %
-                                                      post.url)
-            self.logger.error('Failed to establish connection to domain',
-                              extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
+            self.handle_connection_error(post)
         except:
-            self.reddit_object.failed_extracts.append('Failed to extract content from post\n'
-                                                      'Url: %s, User: %s Subreddit: %s, Title: %s' %
-                                                      (post.url, post.author, post.subreddit, post.title))
-            self.logger.error('Failed to extract content: Unknown error',
-                              extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
+            self.handle_unknown_error(post)
+
+    def handle_unsupported_domain(self, post):
+        self.reddit_object.failed_extracts.append('Failed to extract post: Url domain not supported\n'
+                                                  'Url: %s, User: %s, Subreddit: %s, Title: %s' %
+                                                  (post.url, post.author, post.subreddit, post.title))
+        self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
+                                                                        'reddit_object': self.reddit_object.json})
+
+    def handle_connection_error(self, post):
+        self.reddit_object.failed_extracts.append('Failed to establish a connection to domain: %s\nThis post has'
+                                                  'been saved and download will be attempted again next time' %
+                                                  post.url)
+        self.logger.error('Failed to establish connection to domain',
+                          extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
+
+    def handle_unknown_error(self, post):
+        self.reddit_object.failed_extracts.append('Failed to extract content from post\n'
+                                                  'Url: %s, User: %s Subreddit: %s, Title: %s' %
+                                                  (post.url, post.author, post.subreddit, post.title))
+        self.logger.error('Failed to extract content: Unknown error',
+                          extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
 
     def get_subreddit(self, post):
         """
