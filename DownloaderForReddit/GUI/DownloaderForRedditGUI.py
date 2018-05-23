@@ -41,7 +41,6 @@ from Core.RedditObjects import User, Subreddit
 from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
-from GUI.UserFinderGUI import UserFinderGUI
 from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 import Core.Injector
 from Persistence.ObjectStateHandler import ObjectStateHandler
@@ -1125,9 +1124,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     #     self.update_user_finder.emit()
 
     def display_user_finder(self, auto):
-        self.user_finder = UserFinderGUI(self.user_view_chooser_dict)
-        self.user_finder.closed.connect(self.close_user_finder)
-        self.user_finder.show()
+        pass
+        # self.user_finder = UserFinderGUI(self.user_view_chooser_dict)
+        # self.user_finder.closed.connect(self.close_user_finder)
+        # self.user_finder.show()
 
     def close_user_finder(self):
         self.user_finder = None
