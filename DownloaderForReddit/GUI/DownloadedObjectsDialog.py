@@ -125,6 +125,7 @@ class DownloadedObjectsDialog(RedditObjectSettingsDialog):
             try:
                 if len(self.file_dict) > 0:
                     self.file_dict[self.current_object.name].sort(key=ALPHANUM_KEY)
+                    self.setup_window_title(len(self.file_dict[self.current_object.name]))
                     for file in self.file_dict[self.current_object.name]:
                         file_name = os.path.basename(file)
                         item = QtWidgets.QListWidgetItem()
