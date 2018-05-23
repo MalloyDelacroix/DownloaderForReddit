@@ -298,8 +298,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         making these changes permanent until the save button is clicked.
         """
         self.current_temp_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
-        if self.current_temp_object.date_limit != SystemUtil.get_epoch(self.date_limit_edit.text()):
-            self.current_temp_object.custom_date_limit = SystemUtil.get_epoch(self.date_limit_edit.text())
+        if self.current_temp_object.date_limit != self.date_limit_edit.dateTime().toSecsSinceEpoch():
+            self.current_temp_object.custom_date_limit = self.date_limit_edit.dateTime().toSecsSinceEpoch()
         if not self.restrict_date_checkbox.isChecked():
             self.current_temp_object.custom_date_limit = 1
         self.current_temp_object.post_limit = self.post_limit_spinbox.value()
