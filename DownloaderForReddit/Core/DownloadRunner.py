@@ -39,6 +39,7 @@ class DownloadRunner(QObject):
     remove_invalid_object = pyqtSignal(object)
     finished = pyqtSignal()
     downloaded_objects_signal = pyqtSignal(dict)
+    failed_download_signal = pyqtSignal(object)
     unfinished_downloads_signal = pyqtSignal(list)
     status_bar_update = pyqtSignal(str)
     setup_progress_bar = pyqtSignal(int)
@@ -242,6 +243,7 @@ class DownloadRunner(QObject):
         self.extraction_thread.started.connect(self.extraction_runner.run_extraction)
         self.extraction_runner.update_progress_bar.connect(self.update_progress_bar)
         self.extraction_runner.send_object.connect(self.add_downloaded_object)
+        self.extraction_runner.send_failed_extract.connect(self.send_failed_extract)
         self.extraction_runner.finished.connect(self.extraction_thread.quit)
         self.extraction_runner.finished.connect(self.extraction_runner.deleteLater)
         self.extraction_thread.finished.connect(self.extraction_thread.deleteLater)
@@ -339,6 +341,15 @@ class DownloadRunner(QObject):
         """Emits a signal containing a dictionary of the last downloaded objects."""
         self.downloaded_objects_signal.emit(self.downloaded_objects)
 
+    def send_failed_extract(self, failed_post):
+        """
+        Emits a signal with the supplied post that failed to extract or download so that the main window can add the
+        object to the failed list.
+        :param failed_post: The post that failed to extract.
+        :type failed_post: Post
+        """
+        self.failed_download_signal.emit(failed_post)
+
     def stop_download(self):
         """Stops the download when the user selects to do so."""
         self.run = False
@@ -374,6 +385,7 @@ class ExtractionRunner(QObject):
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
     send_object = pyqtSignal(tuple)
+    send_failed_extract = pyqtSignal(object)
 
     def __init__(self, queue, valid_objects, post_queue, user_extract):
         """
@@ -406,7 +418,8 @@ class ExtractionRunner(QObject):
 
                 if len(working_object.failed_extracts) > 0:
                     for entry in working_object.failed_extracts:
-                        self.queue.put(entry)
+                        self.send_failed_extract.emit(entry)
+                        self.queue.put(entry.format_failed_text())
                 if len(working_object.content) > 0:
                     self.queue.put('Count %s' % len(working_object.content))
                     self.send_object.emit((working_object.name, [x.filename for x in working_object.content]))

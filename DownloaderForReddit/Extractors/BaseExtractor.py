@@ -63,7 +63,7 @@ class BaseExtractor:
         self.subreddit_save_method = reddit_object.subreddit_save_method
         self.name_downloads_by = reddit_object.name_downloads_by
         self.extracted_content = []
-        self.failed_extract_messages = []
+        self.failed_extract_posts = []
         self.failed_extracts_to_save = []
 
     def __str__(self):
@@ -178,14 +178,16 @@ class BaseExtractor:
                        encountered.
         """
         message_text = ': %s' % message if message else ''
+        failed_post = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date,
+                           status=message if message_text else 'Failed')
         extra = {'extractor_data': self.get_log_data()}
         if save and self.settings_manager.save_failed_extracts:
             self.save_failed_extract()
             message_text += ': This post has been saved and will be downloaded during the next run'
             extra['post_saved'] = True
+            failed_post.save_status = 'Saved'
 
-        self.failed_extract_messages.append('Failed to extract content: User: %s Subreddit: %s Title: %s Url: %s%s' %
-                                            (self.user, self.subreddit, self.post_title, self.url, message_text))
+        self.failed_extract_posts.append(failed_post)
         for key, value in kwargs.items():
             extra[key] = value
         self.logger.error('Failed to extract content', extra=extra)
@@ -212,5 +214,5 @@ class BaseExtractor:
                 'subreddit_save_method': self.subreddit_save_method,
                 'name_downloads_by': self.name_downloads_by,
                 'extracted_content_count': len(self.extracted_content),
-                'failed_extract_message_count': len(self.failed_extract_messages),
+                'failed_extract_message_count': len(self.failed_extract_posts),
                 'failed_extracts_to_save_count': len(self.failed_extracts_to_save)}

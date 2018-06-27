@@ -522,6 +522,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.thread.started.connect(self.download_runner.finish_downloads)
         self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
         self.download_runner.downloaded_objects_signal.connect(self.fill_downloaded_objects_list)
+        self.download_count.failed_download_signal.connect(self.handle_failed_download_object)
         self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
         self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
         self.download_runner.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
@@ -532,6 +533,14 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.thread.start()
         self.logger.info('Downloader thread started')
 
+    def handle_failed_download_object(self, failed_post):
+        """
+        Handles a post sent from the download runner that failed to be extracted or downloaded.
+        :param failed_post: The post that failed to extract or download.
+        :type failed_post: Post
+        """
+        self.failed_list.append(failed_post)
+
     def update_output(self, text):
         """
         Updates outputs the supplied text to the output box in the GUI.  Also supplies the content to update the status
@@ -539,7 +548,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         progress bar
         """
         if text.lower().startswith('fail'):
-            self.failed_list.append(text)
             self.output_box.append(text)
         elif text.startswith('Saved'):
             self.update_status_bar_download_count()

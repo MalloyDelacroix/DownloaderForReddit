@@ -127,7 +127,7 @@ class Extractor:
         :type extractor: BaseExtractor
         """
         self.save_submissions(extractor)
-        for x in extractor.failed_extract_messages:
+        for x in extractor.failed_extract_posts:
             self.reddit_object.failed_extracts.append(x)
         for content in extractor.extracted_content:
             if type(content) == str and content.startswith('Failed'):

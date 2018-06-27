@@ -1,7 +1,7 @@
 
 
 class Post(object):
-    def __init__(self, url, author, title, subreddit, created):
+    def __init__(self, url, author, title, subreddit, created, status='good'):
         """
         A class that holds information about a post made on reddit.  This class is used to save post information and
         is also used by the UserFinder.
@@ -10,6 +10,8 @@ class Post(object):
         :param title: The title of the post.
         :param subreddit: The subreddit in which the post was made.
         :param created: The epoch time that the post was made.
+        :param status: The status of the post.  This is used to hold status information about the post, including the
+                       reason the post failed to download if necessary.  Defaults to "good".
         """
         self.url = url
         self.author = author
@@ -17,3 +19,13 @@ class Post(object):
         self.subreddit = subreddit
         self.created = created
         self.score = None
+
+        self.status = status
+        self.save_status = 'Not Saved'
+
+    def __str__(self):
+        return self.format_failed_text()
+
+    def format_failed_text(self):
+        return 'Failed to download content:\nUser: %s  Subreddit: %s  Title: %s\nUrl:  %s\n%s\nSave Status: %s\n' % \
+               (self.author, self.subreddit, self.title, self.url, self.status, self.save_status)
