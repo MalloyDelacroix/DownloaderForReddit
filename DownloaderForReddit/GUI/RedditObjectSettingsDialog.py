@@ -305,9 +305,9 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         :type content_count: int
         """
         if self.stacked_widget.currentIndex() == 0:
-            text = 'Settings  -  %s' % self.current_temp_object.name
+            text = 'Settings  -  %s' % self.current_object.name
         else:
-            text = 'Content  -  %s: %s items' % (self.current_temp_object.name, content_count)
+            text = 'Content  -  %s: %s items' % (self.current_object.name, content_count)
         self.setWindowTitle(text)
 
     def save_temp_object(self):
