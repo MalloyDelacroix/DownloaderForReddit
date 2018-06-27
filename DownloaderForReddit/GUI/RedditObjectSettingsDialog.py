@@ -149,6 +149,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
         self.save_by_method_combo.currentIndexChanged.connect(self.set_save_path_name_label)
 
+        self.setup_window_title(None)
+
     @property
     def object_type_str(self):
         """Returns a string of the object type with the first letter capitalized to be used in displays."""
@@ -288,6 +290,23 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.setup()
         if self.stacked_widget.currentIndex() == 1:
             self.setup_content_list()
+        else:
+            self.setup_window_title(None)
+
+    def setup_window_title(self, content_count):
+        """
+        Sets the window title to indicate which view (settings or content) the dialog is currently in as well as the
+        name of the reddit object currently being viewed.  If the dialog is in content view, the content count is also
+        displayed after the objects name.
+        :param content_count: The content count to be displayed.  Will not be considered if the dialog is in the
+        settings view
+        :type content_count: int
+        """
+        if self.stacked_widget.currentIndex() == 0:
+            text = 'Settings  -  %s' % self.current_object.name
+        else:
+            text = 'Content  -  %s: %s items' % (self.current_object.name, content_count)
+        self.setWindowTitle(text)
 
     def save_temp_object(self):
         """
@@ -296,8 +315,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         making these changes permanent until the save button is clicked.
         """
         self.current_temp_object.do_not_edit = self.do_not_edit_checkbox.isChecked()
-        if self.current_temp_object.date_limit != SystemUtil.get_epoch(self.date_limit_edit.text()):
-            self.current_temp_object.custom_date_limit = SystemUtil.get_epoch(self.date_limit_edit.text())
+        if self.current_temp_object.date_limit != self.date_limit_edit.dateTime().toSecsSinceEpoch():
+            self.current_temp_object.custom_date_limit = self.date_limit_edit.dateTime().toSecsSinceEpoch()
         if not self.restrict_date_checkbox.isChecked():
             self.current_temp_object.custom_date_limit = 1
         self.current_temp_object.post_limit = self.post_limit_spinbox.value()
@@ -397,6 +416,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.view_downloads_button.setText('View Downloads')
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Ok).setVisible(True)
         self.save_cancel_buton_box.button(QtWidgets.QDialogButtonBox.Cancel).setText('Cancel')
+        self.setup_window_title(None)
 
     def setup_content_list(self):
         """Sets up the content list based on the current selected users save path."""
@@ -410,6 +430,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             try:
                 self.current_download_folder = self.get_download_folder()
                 if len(self.current_download_folder) > 0:
+                    self.setup_window_title(len(self.current_download_folder))
                     self.display_content()
             except FileNotFoundError:
                 self.logger.warning('No content found for reddit object',

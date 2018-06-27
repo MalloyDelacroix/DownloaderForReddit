@@ -283,7 +283,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.settings_manager.restrict_by_date = self.date_restriction_checkbox.isChecked()
         self.settings_manager.restrict_by_custom_date = self.restrict_by_custom_date_checkbox.isChecked()
-        self.settings_manager.custom_date = SystemUtil.get_epoch(self.date_limit_edit.text())
+        # self.settings_manager.custom_date = SystemUtil.get_epoch(self.date_limit_edit.text())
+        self.settings_manager.custom_date = self.date_limit_edit.dateTime().toSecsSinceEpoch()
 
         self.settings_manager.subreddit_sort_method = self.get_sort_by_method()
         self.settings_manager.subreddit_sort_top_method = \

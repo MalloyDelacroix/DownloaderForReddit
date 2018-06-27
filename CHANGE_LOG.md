@@ -2,4 +2,8 @@
 
 ## Unreleased
 
-* Fix image and video download filters
+
+##V2.3.0
+
+### Minor Changes
+* Fix title bar name not changing in last downloaded dialog

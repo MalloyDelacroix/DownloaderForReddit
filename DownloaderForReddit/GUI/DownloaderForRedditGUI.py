@@ -40,7 +40,6 @@ from Core.RedditObjects import User, Subreddit
 from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from GUI.UpdateDialogGUI import UpdateDialog
 from Core.UpdaterChecker import UpdateChecker
-from GUI.UserFinderGUI import UserFinderGUI
 from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from Utils import Injector, SystemUtil, ImgurUtils
 from Persistence.ObjectStateHandler import ObjectStateHandler
@@ -142,8 +141,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
         self.file_open_user_finder.setEnabled(False)
-        self.menuUser_Finder.setToolTip('The user finder has been disabled for this version but will be included '
-                                        'in the next release')
+        self.menuUser_Finder.setToolTip('The user finder has been disabled for this version, but will be included '
+                                        'in a future release')
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
@@ -1123,9 +1122,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     #     self.update_user_finder.emit()
 
     def display_user_finder(self, auto):
-        self.user_finder = UserFinderGUI(self.user_view_chooser_dict)
-        self.user_finder.closed.connect(self.close_user_finder)
-        self.user_finder.show()
+        pass
+        # self.user_finder = UserFinderGUI(self.user_view_chooser_dict)
+        # self.user_finder.closed.connect(self.close_user_finder)
+        # self.user_finder.show()
 
     def close_user_finder(self):
         self.user_finder = None

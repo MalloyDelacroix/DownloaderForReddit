@@ -106,6 +106,8 @@ def import_data_file(directory, file):
 
 def get_epoch(time_string):
     """
+    This method is deprecated for use with QDateTimeWidgets.  Use QDateTimeWidget.dateTime().toSecsSinceEpoch()
+
     Returns the epoch time for a date/time string and handles appropriately in the rare case that time is formatted
     incorrectly.
     :param time_string: The time string for which an epoch is requested.
