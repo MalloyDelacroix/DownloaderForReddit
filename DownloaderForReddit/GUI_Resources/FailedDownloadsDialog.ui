@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>659</width>
-    <height>294</height>
+    <width>998</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="font">
@@ -23,13 +23,6 @@
     <normaloff>Images/failed_download.png</normaloff>Images/failed_download.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="1">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QCheckBox" name="auto_display_checkbox">
      <property name="text">
@@ -37,8 +30,21 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QTextBrowser" name="textBrowser"/>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="QTableView" name="table_view"/>
+     <widget class="QTableView" name="detail_table"/>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -182,6 +182,7 @@ class SettingsManager:
         self.settings_dialog_geom = self.settings.value('settings_dialog_geom')
         self.add_user_dialog_geom = self.settings.value("add_user_dialog_geom")
         self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
+        self.failed_downloads_dialog_splitter_state = self.settings.value("failed_downloads_dialog_splitter_state", None)
         self.about_dialog_geom = self.settings.value("about_dialog_geom")
         self.update_dialog_geom = self.settings.value("update_dialog_geom")
         # endregion
@@ -301,6 +302,7 @@ class SettingsManager:
 
     def save_failed_downloads_dialog(self):
         self.settings.setValue("failed_downloads_dialog_geom", self.failed_downloads_dialog_geom)
+        self.settings.setValue("failed_downloads_dialog_splitter_state", self.failed_downloads_dialog_splitter_state)
 
     def save_about_dialog(self):
         self.settings.setValue("about_dialog_geom", self.about_dialog_geom)

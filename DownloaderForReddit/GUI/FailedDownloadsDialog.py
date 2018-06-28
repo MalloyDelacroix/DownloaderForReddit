@@ -23,9 +23,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 from GUI_Resources.FailedDownloadsDialog_auto import Ui_failed_downloads_dialog
+from ViewModels.FailedDownloadsDialogModels import FailedDownloadsTableModel, FailedDownloadsDetailTableModel
 import Utils.Injector
 
 
@@ -33,7 +34,7 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
 
     def __init__(self, fail_list):
         """
-        A dialog box that shows the failed downloads and any relevent information about them, such as: the user that
+        A dialog box that shows the failed downloads and any relevant information about them, such as: the user that
         posted the content to reddit, the subreddit it was posted in, the title of the post, the url that failed and
         a reason as to why it failed (ex: download or extraction error)
 
@@ -44,12 +45,32 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         self.settings_manager = Utils.Injector.get_settings_manager()
         geom = self.settings_manager.failed_downloads_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
+        splitter_state = self.settings_manager.failed_downloads_dialog_splitter_state
+        self.splitter.restoreState(splitter_state if splitter_state is not None else self.splitter.saveState())
 
-        for x in fail_list:
-            self.textBrowser.append(x)
-            self.textBrowser.append(' ')
+        self.detail_model = None
+        self.detail_table.setColumnWidth(0, 40)
+        self.detail_table.horizontalHeader().setStretchLastSection(True)
+        self.detail_table.setVisible(False)
+
+        self.table_model = FailedDownloadsTableModel(fail_list)
+        self.table_view.setModel(self.table_model)
+        self.table_view.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
+        self.table_view.setColumnWidth(3, 215)
+        self.table_view.horizontalHeader().setSectionResizeMode(5, QtWidgets.QHeaderView.Stretch)
+        self.table_view.clicked.connect(self.setup_detail_table)
 
         self.buttonBox.accepted.connect(self.accept)
+
+    def setup_detail_table(self):
+        """Sets up the detail table to display the selected post."""
+        post = self.table_model.data_list[self.table_view.currentIndex().row()]
+        self.detail_model = FailedDownloadsDetailTableModel(post)
+        self.detail_table.setModel(self.detail_model)
+        self.detail_table.setVisible(True)
+
+    def close_detail_table(self):
+        self.detail_table.setVisible(False)
 
     def accept(self):
         self.save_settings()
@@ -60,4 +81,12 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
 
     def save_settings(self):
         self.settings_manager.failed_downloads_dialog_geom = self.saveGeometry()
+        self.settings_manager.failed_downloads_dialog_splitter_state = self.splitter.saveState()
         self.settings_manager.save_failed_downloads_dialog()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            if self.detail_table.isVisible():
+                self.close_detail_table()
+            else:
+                self.close()

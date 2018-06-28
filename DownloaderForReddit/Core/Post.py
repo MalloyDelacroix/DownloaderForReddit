@@ -22,6 +22,8 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from Utils.SystemUtil import epoch_to_str
+
 
 class Post(object):
     def __init__(self, url, author, title, subreddit, created, status='good'):
@@ -48,6 +50,10 @@ class Post(object):
 
     def __str__(self):
         return self.format_failed_text()
+
+    @property
+    def date_posted(self):
+        return epoch_to_str(self.created)
 
     def format_failed_text(self):
         return 'Failed to download content:\nUser: %s  Subreddit: %s  Title: %s\nUrl:  %s\n%s\nSave Status: %s\n' % \
