@@ -48,6 +48,8 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         splitter_state = self.settings_manager.failed_downloads_dialog_splitter_state
         self.splitter.restoreState(splitter_state if splitter_state is not None else self.splitter.saveState())
 
+        self.setWindowTitle('%s failed downloads' % len(fail_list))
+
         self.detail_model = None
         self.detail_table.setColumnWidth(0, 40)
         self.detail_table.horizontalHeader().setStretchLastSection(True)
