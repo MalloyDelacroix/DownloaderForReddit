@@ -24,10 +24,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QCursor
 
 from GUI_Resources.FailedDownloadsDialog_auto import Ui_failed_downloads_dialog
 from ViewModels.FailedDownloadsDialogModels import FailedDownloadsTableModel, FailedDownloadsDetailTableModel
-import Utils.Injector
+from Utils import Injector
+from Utils import SystemUtil
 
 
 class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
@@ -42,7 +44,7 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.settings_manager = Utils.Injector.get_settings_manager()
+        self.settings_manager = Injector.get_settings_manager()
         geom = self.settings_manager.failed_downloads_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())
         splitter_state = self.settings_manager.failed_downloads_dialog_splitter_state
@@ -62,7 +64,30 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         self.table_view.horizontalHeader().setSectionResizeMode(5, QtWidgets.QHeaderView.Stretch)
         self.table_view.clicked.connect(self.setup_detail_table)
 
+        self.table_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.table_view.customContextMenuRequested.connect(self.display_context_menu)
+
         self.buttonBox.accepted.connect(self.accept)
+
+    def display_context_menu(self):
+        menu = QtWidgets.QMenu()
+        index = self.table_view.selectedIndexes()[0].row()
+        post = self.table_model.data_list[index]
+        visit_author_reddit = menu.addAction('Visit Author Page')
+        visit_subreddit = menu.addAction('Visit Subreddit')
+        visit_post_page = menu.addAction('Visit Post')
+        menu.addSeparator()
+        export_url_list = menu.addAction('Export Url List')
+        menu.addSeparator()
+        export_as_text = menu.addAction('Export Posts As Text')
+        export_as_json = menu.addAction('Export Posts As Json')
+        export_as_xml = menu.addAction('Export Posts As Xml')
+
+        visit_author_reddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/u/%s' % post.author))
+        visit_subreddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/r/%s' % post.subreddit))
+        visit_post_page.triggered.connect(lambda: SystemUtil.open_in_system(post.url))
+
+        menu.exec_(QCursor.pos())
 
     def setup_detail_table(self):
         """Sets up the detail table to display the selected post."""
