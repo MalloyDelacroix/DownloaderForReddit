@@ -93,6 +93,8 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
             self.endRemoveRows()
 
     def data(self, index, role=None):
+        if not index.isValid():
+            return None
         if role == Qt.DisplayRole:
             index = index.row()
             if self.display_list == 'previous_downloads':
