@@ -57,10 +57,10 @@ class ImgurExtractor(BaseExtractor):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
             try:
-                if self.url.lower().endswith(Const.ALL_EXT):
-                    self.extract_direct_link()
-                elif "/a/" in self.url:
+                if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
                     self.extract_album()
+                elif self.url.lower().endswith(Const.ALL_EXT):
+                    self.extract_direct_link()
                 elif '/gallery/' in self.url:
                     self.extract_album()
                 else:

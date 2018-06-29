@@ -522,7 +522,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.thread.started.connect(self.download_runner.finish_downloads)
         self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
         self.download_runner.downloaded_objects_signal.connect(self.fill_downloaded_objects_list)
-        self.download_count.failed_download_signal.connect(self.handle_failed_download_object)
+        self.download_runner.failed_download_signal.connect(self.handle_failed_download_object)
         self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
         self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
         self.download_runner.unfinished_downloads_signal.connect(self.set_unfinished_downloads)

@@ -32,6 +32,7 @@ from Core.Post import Post
 from Extractors.ImgurExtractor import ImgurExtractor
 from Extractors.GfycatExtractor import GfycatExtractor
 from Extractors.VidbleExtractor import VidbleExtractor
+from Extractors.RedditUploadsExtractor import RedditUploadsExtractor
 
 
 sys.modules['Post'] = Post
