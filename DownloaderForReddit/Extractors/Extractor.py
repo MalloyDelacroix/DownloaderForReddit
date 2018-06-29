@@ -29,6 +29,7 @@ from Extractors.BaseExtractor import BaseExtractor
 from Extractors.DirectExtractor import DirectExtractor
 from Utils import Injector
 from Core import Const
+from Utils.RedditUtils import convert_praw_post
 
 
 class Extractor:
@@ -70,23 +71,24 @@ class Extractor:
             self.handle_unknown_error(post)
 
     def handle_unsupported_domain(self, post):
-        self.reddit_object.failed_extracts.append('Failed to extract post: Url domain not supported\n'
-                                                  'Url: %s, User: %s, Subreddit: %s, Title: %s' %
-                                                  (post.url, post.author, post.subreddit, post.title))
+        post = convert_praw_post(post)
+        post.status = 'Failed to extract post: Url domain not supported'
+        self.reddit_object.failed_extracts.append(post)
         self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
                                                                         'reddit_object': self.reddit_object.json})
 
     def handle_connection_error(self, post):
-        self.reddit_object.failed_extracts.append('Failed to establish a connection to domain: %s\nThis post has'
-                                                  'been saved and download will be attempted again next time' %
-                                                  post.url)
+        post = convert_praw_post(post)
+        post.status = 'Failed to establish a connection to domain'
+        post.save_status = 'Saved' if self.settings_manager.save_failed_extracts else 'Not Saved'
+        self.reddit_object.failed_extracts.append(post)
         self.logger.error('Failed to establish connection to domain',
                           extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
 
     def handle_unknown_error(self, post):
-        self.reddit_object.failed_extracts.append('Failed to extract content from post\n'
-                                                  'Url: %s, User: %s Subreddit: %s, Title: %s' %
-                                                  (post.url, post.author, post.subreddit, post.title))
+        post = convert_praw_post(post)
+        post.status = 'Failed to extract content from post'
+        self.reddit_object.failed_extracts.append(post)
         self.logger.error('Failed to extract content: Unknown error',
                           extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
 
