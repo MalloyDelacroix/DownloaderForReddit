@@ -37,7 +37,13 @@ class JSONPostEncoder(json.JSONEncoder):
 
     def default(self, o):
         if isinstance(o, Post):
-            return [o.author, o.subreddit, o.title, o.date_posted, o.url, o.status, o.save_status]
+            return {'author': o.author,
+                    'subreddit': o.subreddit,
+                    'title': o.title,
+                    'created': o.date_posted,
+                    'url': o.url,
+                    'status': o.status,
+                    'save_status': o.save_status}
         return json.JSONEncoder.default(self, o)
 
 
