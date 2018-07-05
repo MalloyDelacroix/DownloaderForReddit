@@ -32,3 +32,9 @@ def export_text(object_list, file_path):
 def format_post_output(post):
     return 'Author: %s\nSubreddit: %s\nTitle: %s\nCreated: %s\nUrl: %s\nStatus: %s\nSave Status: %s' % \
             (post.author, post.subreddit, post.title, post.date_posted, post.url, post.status, post.save_status)
+
+
+def export_url_list(url_list, file_path):
+    with open(file_path, 'a') as file:
+        for url in url_list:
+            file.write('%s\n' % url)
