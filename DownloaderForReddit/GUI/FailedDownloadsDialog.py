@@ -80,18 +80,29 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         menu.addSeparator()
         export_url_list = menu.addAction('Export Url List')
         menu.addSeparator()
-        export_as_text = menu.addAction('Export Posts As Text')
-        export_as_json = menu.addAction('Export Posts As Json')
-        export_as_xml = menu.addAction('Export Posts As Xml')
+        export_selected_menu = menu.addMenu('Export Selected')
+        export_selected_as_text = export_selected_menu.addAction('Export As Text')
+        export_selected_as_json = export_selected_menu.addAction('Export As Json')
+        export_selected_as_xml = export_selected_menu.addAction('Export As Xml')
+
+        export_all_menu = menu.addMenu('Export All')
+        export_list_as_text = export_all_menu.addAction('Export As Text')
+        export_list_as_json = export_all_menu.addAction('Export As Json')
+        export_list_as_xml = export_all_menu.addAction('Export As Xml')
 
         visit_author_reddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/u/%s' % post.author))
         visit_subreddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/r/%s' % post.subreddit))
         visit_post_page.triggered.connect(lambda: SystemUtil.open_in_system(post.url))
 
         export_url_list.triggered.connect(self.export_url_list)
-        export_as_text.triggered.connect(self.export_list_to_text)
-        export_as_json.triggered.connect(self.export_list_to_json)
-        export_as_xml.triggered.connect(self.export_list_to_xml)
+
+        export_selected_as_text.triggered.connect(self.export_selected_to_text)
+        export_selected_as_json.triggered.connect(self.export_selected_to_json)
+        export_selected_as_xml.triggered.connect(self.export_selected_to_xml)
+
+        export_list_as_text.triggered.connect(self.export_list_to_text)
+        export_list_as_json.triggered.connect(self.export_list_to_json)
+        export_list_as_xml.triggered.connect(self.export_list_to_xml)
 
         menu.exec_(QCursor.pos())
 
@@ -129,13 +140,31 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         file_path = self.get_file_path('failed_urls.txt', 'Text Files (*.txt)')
         TextExporter.export_url_list(url_list, file_path)
 
+    def export_selected_to_text(self):
+        file_path = self.get_file_path('failed_urls.txt', 'Text Files (*.txt)')
+        TextExporter.export_url_list([self.table_model.data_list[x.row()] for x in
+                                      self.table_view.selectionModel().selectedRows()],
+                                     file_path)
+
     def export_list_to_text(self):
         file_path = self.get_file_path('failed_downloads.txt', 'Text Files (*txt)')
         TextExporter.export_text(self.table_model.data_list, file_path)
 
+    def export_selected_to_json(self):
+        file_path = self.get_file_path('failed_downloads.json', 'Json Files (*json)')
+        JsonExporter.export_json([self.table_model.data_list[x.row()] for x in
+                                  self.table_view.selectionModel().selectedRows()],
+                                 file_path)
+
     def export_list_to_json(self):
         file_path = self.get_file_path('failed_downloads.json', 'Json Files (*json)')
         JsonExporter.export_json(self.table_model.data_list, file_path)
+
+    def export_selected_to_xml(self):
+        file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*xml)')
+        XMLExporter.export_xml([self.table_model.data_list[x.row()] for x in
+                                self.table_view.selectionModel().selectedRows()],
+                               file_path)
 
     def export_list_to_xml(self):
         file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*xml)')

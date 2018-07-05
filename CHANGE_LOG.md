@@ -7,6 +7,7 @@
 
 ### Major Changes
 * Massively update the failed downloads dialog
+* Add ability to export failed downloads in multiple formats
 * Add new extractor for reddituploads
 
 ### Minor Changes
