@@ -22,25 +22,13 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import json
 
-from Core.Post import Post
-
-
-class PostCollection:
-
-    def __init__(self, post_list):
-        self.posts = post_list
-
-
-class JSONPostEncoder(json.JSONEncoder):
-
-    def default(self, o):
-        if isinstance(o, Post):
-            return [o.author, o.subreddit, o.title, o.date_posted, o.url, o.status, o.save_status]
-        return json.JSONEncoder.default(self, o)
-
-
-def export_json(object_list, file_path):
+def export_text(object_list, file_path):
     with open(file_path, 'a') as file:
-        json.dump(PostCollection(object_list).__dict__, file, cls=JSONPostEncoder, indent=4, ensure_ascii=False)
+        for post in object_list:
+            file.write(format_post_output(post) + '\n\n')
+
+
+def format_post_output(post):
+    return 'Author: %s\nSubreddit: %s\nTitle: %s\nCreated: %s\nUrl: %s\nStatus: %s\nSave Status: %s' % \
+            (post.author, post.subreddit, post.title, post.date_posted, post.url, post.status, post.save_status)
