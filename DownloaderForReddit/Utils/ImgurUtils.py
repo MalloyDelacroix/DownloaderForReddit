@@ -19,8 +19,6 @@ def get_client():
     global imgur_client
     global connection_attempts
 
-    Injector.get_queue().put('get client called')
-
     if not imgur_client:
         while connection_attempts < 3:
             try:
