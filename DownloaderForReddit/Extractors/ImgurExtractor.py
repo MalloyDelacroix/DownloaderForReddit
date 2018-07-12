@@ -126,7 +126,7 @@ class ImgurExtractor(BaseExtractor):
             url = pic.link
             address, extension = url.rsplit('.', 1)
             file_name = self.get_filename(album_id)
-            if pic.type == 'image/gif' and pic.animated:
+            if pic.animated:
                 extension = 'mp4'
                 url = pic.mp4
             self.make_content(url, file_name, extension, count)
@@ -138,7 +138,7 @@ class ImgurExtractor(BaseExtractor):
         url = pic.link
         address, extension = url.rsplit('.', 1)
         file_name = self.get_filename(image_id)
-        if pic.type == 'image/gif' and pic.animated:
+        if pic.animated:
             extension = 'mp4'
             url = pic.mp4
         self.make_content(url, file_name, extension)
@@ -149,9 +149,9 @@ class ImgurExtractor(BaseExtractor):
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
             file_name = self.get_filename(image_id)
-            if url.endswith('gifv') or url.endswith('gif'):
+            if Const.GIF_EXT or Const.VID_EXT:
                 picture = self.client.get_image(image_id)
-                if picture.type == 'image/gif' and picture.animated:
+                if picture.animated:
                     url = picture.mp4
                     extension = 'mp4'
             self.make_content(url, file_name, extension)
