@@ -31,7 +31,7 @@ from Core import Const
 
 class VidbleExtractor(BaseExtractor):
 
-    url_key = 'vidble'
+    url_key = ('vidble', )
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """

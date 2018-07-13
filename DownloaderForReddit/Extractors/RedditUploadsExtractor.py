@@ -31,7 +31,7 @@ from Core import Const
 
 class RedditUploadsExtractor(BaseExtractor):
 
-    url_key = 'reddituploads'
+    url_key = ('reddituploads', )
 
     def __init__(self, post, reddit_object, content_display_only=False):
         super().__init__(post, reddit_object, content_display_only)
@@ -47,9 +47,9 @@ class RedditUploadsExtractor(BaseExtractor):
             self.handle_failed_extract(message=message, extractor_error_message=message)
 
     def extract_single(self):
-        download_url = self.url + ".jpg"
+        download_url = self.url + "jpg"
         media_id = self.get_link_id()
-        self.make_content(download_url, self.get_filename(media_id), '.jpg')
+        self.make_content(download_url, self.get_filename(media_id), 'jpg')
 
     def extract_direct_link(self):
         """This is overridden here so that a proper media id can be extracted."""

@@ -116,7 +116,7 @@ class Extractor:
         """
         for extractor in BaseExtractor.__subclasses__():
             key = extractor.get_url_key()
-            if key is not None and key in post.url.lower():
+            if key is not None and any(x in post.url.lower() for x in key):
                 return extractor
         if post.url.lower().endswith(Const.ALL_EXT):
             return DirectExtractor

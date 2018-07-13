@@ -33,7 +33,7 @@ from Core.Post import Post
 
 class BaseExtractor:
 
-    url_key = None
+    url_key = (None, )
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
@@ -54,6 +54,7 @@ class BaseExtractor:
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Utils.Injector.get_settings_manager()
         self.url = post.url
+        self.domain = post.domain
         self.user = post.author
         self.post_title = post.title
         self.subreddit = post.subreddit if not reddit_object.object_type == 'SUBREDDIT' else reddit_object.name

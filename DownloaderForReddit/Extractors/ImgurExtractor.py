@@ -32,7 +32,7 @@ from Core import Const
 
 class ImgurExtractor(BaseExtractor):
 
-    url_key = 'imgur'
+    url_key = ('imgur', )
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
