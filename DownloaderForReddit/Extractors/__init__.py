@@ -33,6 +33,7 @@ from Extractors.ImgurExtractor import ImgurExtractor
 from Extractors.GfycatExtractor import GfycatExtractor
 from Extractors.VidbleExtractor import VidbleExtractor
 from Extractors.RedditUploadsExtractor import RedditUploadsExtractor
+from Extractors.GenericVideoExtractor import GenericVideoExtractor
 
 
 sys.modules['Post'] = Post

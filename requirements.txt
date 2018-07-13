@@ -8,3 +8,4 @@ PyQt5==5.10
 requests==2.12.3
 sip==4.19.7
 six==1.10.0
+youtube-dl==2018.7.10
