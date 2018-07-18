@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>Images/failed_download.png</normaloff>Images/failed_download.png</iconset>
+    <normaloff>../Resources/Images/failed_download.png</normaloff>../Resources/Images/failed_download.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">

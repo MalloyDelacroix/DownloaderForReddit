@@ -15,7 +15,7 @@ class Ui_About(object):
         About.setMinimumSize(QtCore.QSize(365, 230))
         About.setMaximumSize(QtCore.QSize(1000, 1000))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         About.setWindowIcon(icon)
         self.gridLayout_3 = QtWidgets.QGridLayout(About)
         self.gridLayout_3.setObjectName("gridLayout_3")

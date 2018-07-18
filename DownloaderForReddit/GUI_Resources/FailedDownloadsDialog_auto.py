@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'FailedDownloadsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -16,7 +16,7 @@ class Ui_failed_downloads_dialog(object):
         font.setPointSize(10)
         failed_downloads_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/failed_download.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/failed_download.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         failed_downloads_dialog.setWindowIcon(icon)
         self.gridLayout = QtWidgets.QGridLayout(failed_downloads_dialog)
         self.gridLayout.setObjectName("gridLayout")

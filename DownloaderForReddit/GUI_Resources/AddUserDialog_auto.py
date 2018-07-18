@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'AddUserDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,12 +11,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_add_user_dialog(object):
     def setupUi(self, add_user_dialog):
         add_user_dialog.setObjectName("add_user_dialog")
-        add_user_dialog.resize(259, 98)
+        add_user_dialog.resize(389, 133)
         font = QtGui.QFont()
         font.setPointSize(10)
         add_user_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         add_user_dialog.setWindowIcon(icon)
         self.gridLayout = QtWidgets.QGridLayout(add_user_dialog)
         self.gridLayout.setObjectName("gridLayout")

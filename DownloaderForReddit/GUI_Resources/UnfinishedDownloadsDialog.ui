@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
-    <height>95</height>
+    <width>414</width>
+    <height>96</height>
    </rect>
   </property>
   <property name="font">
@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>Images/RedditDownloaderIcon.png</normaloff>Images/RedditDownloaderIcon.png</iconset>
+    <normaloff>../Resources/Images/RedditDownloaderIcon.png</normaloff>../Resources/Images/RedditDownloaderIcon.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0" colspan="4">

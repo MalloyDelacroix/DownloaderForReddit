@@ -16,7 +16,7 @@ class Ui_RedditObjectSettingsDialog(object):
         font.setPointSize(10)
         RedditObjectSettingsDialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         RedditObjectSettingsDialog.setWindowIcon(icon)
         RedditObjectSettingsDialog.setModal(False)
         self.gridLayout = QtWidgets.QGridLayout(RedditObjectSettingsDialog)

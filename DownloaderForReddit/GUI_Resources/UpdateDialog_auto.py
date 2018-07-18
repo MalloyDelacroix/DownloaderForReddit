@@ -16,7 +16,7 @@ class Ui_update_dialog_box(object):
         font.setPointSize(10)
         update_dialog_box.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/update.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/update.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         update_dialog_box.setWindowIcon(icon)
         self.gridLayout_2 = QtWidgets.QGridLayout(update_dialog_box)
         self.gridLayout_2.setObjectName("gridLayout_2")

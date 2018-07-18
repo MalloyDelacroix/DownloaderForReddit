@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'UnfinishedDownloadsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,12 +11,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_unfinished_downloads_dialog(object):
     def setupUi(self, unfinished_downloads_dialog):
         unfinished_downloads_dialog.setObjectName("unfinished_downloads_dialog")
-        unfinished_downloads_dialog.resize(394, 95)
+        unfinished_downloads_dialog.resize(414, 96)
         font = QtGui.QFont()
         font.setPointSize(10)
         unfinished_downloads_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         unfinished_downloads_dialog.setWindowIcon(icon)
         self.gridLayout_2 = QtWidgets.QGridLayout(unfinished_downloads_dialog)
         self.gridLayout_2.setObjectName("gridLayout_2")

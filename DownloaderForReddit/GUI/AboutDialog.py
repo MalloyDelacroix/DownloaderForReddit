@@ -44,7 +44,7 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
 
         self.buttonBox.accepted.connect(self.accept)
 
-        pixmap = QtGui.QPixmap('Images/RedditDownloaderIcon.png')
+        pixmap = QtGui.QPixmap('Resources/Images/RedditDownloaderIcon.png')
         pixmap = pixmap.scaled(QtCore.QSize(183, 186), QtCore.Qt.KeepAspectRatio)
         self.logo_label.setFixedWidth(80)
         self.logo_label.setFixedHeight(82)

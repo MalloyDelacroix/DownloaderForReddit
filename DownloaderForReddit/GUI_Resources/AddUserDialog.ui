@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>259</width>
-    <height>98</height>
+    <width>389</width>
+    <height>133</height>
    </rect>
   </property>
   <property name="font">
@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>pictures/add.png</normaloff>pictures/add.png</iconset>
+    <normaloff>../Resources/Images/add.png</normaloff>../Resources/Images/add.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="2">
