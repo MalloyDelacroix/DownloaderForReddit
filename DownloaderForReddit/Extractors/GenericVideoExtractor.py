@@ -1,12 +1,12 @@
 import youtube_dl
-import pkg_resources
+import os
 
 from Extractors.BaseExtractor import BaseExtractor
 
 
 class GenericVideoExtractor(BaseExtractor):
 
-    supported_sites_file = pkg_resources.resource_filename(__name__, '../Resources/supported_video_sites.txt')
+    supported_sites_file = os.path.abspath('Resources/supported_video_sites.txt')
     file = open(supported_sites_file, 'r')
     url_key = [x.strip() for x in file.readlines()]
     file.close()
