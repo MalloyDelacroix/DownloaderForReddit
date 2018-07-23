@@ -31,7 +31,7 @@ from Core import Const
 
 class RedditUploadsExtractor(BaseExtractor):
 
-    url_key = ['reddituploads']
+    url_key = ['reddituploads', 'i.redd.it']
 
     def __init__(self, post, reddit_object, content_display_only=False):
         super().__init__(post, reddit_object, content_display_only)
@@ -44,7 +44,7 @@ class RedditUploadsExtractor(BaseExtractor):
                 self.extract_single()
         except:
             message = 'Failed to locate content'
-            self.handle_failed_extract(message=message, extractor_error_message=message)
+            self.handle_failed_extract(message=message, extractor_error_message=message, exc_info=True)
 
     def extract_single(self):
         download_url = self.url + "jpg"
@@ -66,4 +66,7 @@ class RedditUploadsExtractor(BaseExtractor):
         try:
             return reg.group()
         except AttributeError:
-            return self.url.split('.com/')[1]
+            if '.com' in self.url:
+                return self.url.split('.com/', 1)[1]
+            else:
+                return self.url.rsplit('/', 1)[1]
