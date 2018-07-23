@@ -1179,7 +1179,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                           '\nUser credits remaining: %s\nTime user credits reset: %s' %\
                           (credits_dict['ClientLimit'], credits_dict['ClientRemaining'], credits_dict['UserLimit'],
                            credits_dict['UserRemaining'],
-                           date.strftime(datetime.fromtimestamp(credits_dict['UserReset']), '%m-%d-%Y at %I:%M %p'))
+                           datetime.strftime(datetime.fromtimestamp(int(credits_dict['UserReset'])),
+                                             '%m-%d-%Y at %I:%M %p'))
             self.logger.info('Imgur client info calculated',
                              extra={'remaining_app_credits': credits_dict['ClientRemaining'],
                                     'remaining_user_credits': credits_dict['UserRemaining']})
