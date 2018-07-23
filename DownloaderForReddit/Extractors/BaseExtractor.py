@@ -179,7 +179,7 @@ class BaseExtractor:
                        encountered.
         """
         message_text = ': %s' % message if message else ''
-        failed_post = Post(self.url, self.user, self.post_title, self.subreddit, self.creation_date,
+        failed_post = Post(self.url, self.user.name, self.post_title, self.subreddit.display_name, self.creation_date,
                            status=message if message_text else 'Failed')
         extra = {'extractor_data': self.get_log_data()}
         if save and self.settings_manager.save_failed_extracts:
@@ -198,7 +198,7 @@ class BaseExtractor:
         Saves a failed extract as a Post object to be retried upon future runs.  This should only be done for certain
         errors, such as an over capacity error, that are very likely to not be encountered again on future runs.
         """
-        self.failed_extracts_to_save.append(Post(self.url, self.user, self.post_title, self.subreddit,
+        self.failed_extracts_to_save.append(Post(self.url, self.user.name, self.post_title, self.subreddit.display_name,
                                                  self.creation_date))
 
     def get_log_data(self):
@@ -206,8 +206,8 @@ class BaseExtractor:
         Returns a loggable dictionary of the extractors current variables to be put into the log.
         """
         return {'url': self.url,
-                'user': self.user,
-                'subreddit': self.subreddit,
+                'user': self.user.name,
+                'subreddit': self.subreddit.display_name,
                 'post_title': self.post_title,
                 'creation_date': self.creation_date,
                 'save_path': self.save_path,
