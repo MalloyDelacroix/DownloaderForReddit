@@ -1168,7 +1168,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
         try:
-            imgur_client = ImgurUtils.get_client()
+            imgur_client = ImgurUtils.get_new_client()
         except:
             self.logger.error('Failed to display imgur client information', exc_info=True)
             imgur_client = None

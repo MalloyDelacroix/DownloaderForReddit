@@ -39,6 +39,18 @@ def get_client():
     return imgur_client
 
 
+def get_new_client():
+    """
+    Resets the imgur client then calls get_client to create a new instance.  A new instance is sometimes needed as
+    once a client is established, the credit count does not refresh properly.
+    :return: A new instance of an imgur_client
+    :rtype: ImgurClient
+    """
+    global imgur_client
+    imgur_client = None
+    return get_client()
+
+
 def handle_invalid_client():
     message = 'No valid Imgur client detected.  In order to download content from imgur.com, you must ' \
               'have a valid imgur client id and client secret.  Please see the imgur client information' \
