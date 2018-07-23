@@ -29,7 +29,7 @@ from Core import Const
 
 class GfycatExtractor(BaseExtractor):
 
-    url_key = ('gfycat', )
+    url_key = ['gfycat']
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """

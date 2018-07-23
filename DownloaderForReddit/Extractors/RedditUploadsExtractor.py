@@ -31,7 +31,7 @@ from Core import Const
 
 class RedditUploadsExtractor(BaseExtractor):
 
-    url_key = ('reddituploads', )
+    url_key = ['reddituploads']
 
     def __init__(self, post, reddit_object, content_display_only=False):
         super().__init__(post, reddit_object, content_display_only)
