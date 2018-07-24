@@ -47,14 +47,15 @@ class RedditUploadsExtractor(BaseExtractor):
             self.handle_failed_extract(message=message, extractor_error_message=message, exc_info=True)
 
     def extract_single(self):
-        download_url = self.url + "jpg"
-        media_id = self.get_link_id()
-        self.make_content(download_url, self.get_filename(media_id), 'jpg')
+        if not self.url.endswith(Const.ALL_EXT):
+            self.url = self.url + '.jpg'  # add jpg extension here for direct download
+        media_id = self.clean_ext(self.get_link_id())
+        self.make_content(self.url, self.get_filename(media_id), 'jpg')
 
     def extract_direct_link(self):
         """This is overridden here so that a proper media id can be extracted."""
         ext = self.url.rsplit('.', 1)[1]
-        media_id = self.get_link_id()
+        media_id = self.clean_ext(self.get_link_id())
         self.make_content(self.url, self.get_filename(media_id), ext)
 
     def get_link_id(self):
@@ -70,3 +71,9 @@ class RedditUploadsExtractor(BaseExtractor):
                 return self.url.split('.com/', 1)[1]
             else:
                 return self.url.rsplit('/', 1)[1]
+
+    @staticmethod
+    def clean_ext(link_id):
+        if link_id.endswith(Const.ALL_EXT):
+            return link_id.rsplit('.', 1)[0]
+        return link_id
