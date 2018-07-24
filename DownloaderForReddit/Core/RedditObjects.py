@@ -32,7 +32,7 @@ from Logging import LogUtils
 class RedditObject:
 
     def __init__(self, version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
-                 nsfw_filter, name_downlads_by, user_added):
+                 nsfw_filter, name_downloads_by, user_added):
         """
         Class that holds the name and list of submissions for Reddit objects.  Also contains an empty content list that
         will be filled with Content objects that contain links for download.
@@ -54,7 +54,7 @@ class RedditObject:
         self.download_videos = download_videos
         self.download_images = download_images
         self.nsfw_filter = nsfw_filter
-        self.name_downloads_by = name_downlads_by
+        self.name_downloads_by = name_downloads_by
         self.user_added = user_added
         self.do_not_edit = False
         self.new_submissions = []  # Will be erased at end of download
