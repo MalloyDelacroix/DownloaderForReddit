@@ -660,11 +660,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def reset_date(self):
         self.current_temp_object.custom_date_limit = None
-        self.set_date_display()
+        self.set_date_display(self.current_temp_object)
 
     def set_date_to_now(self):
         self.current_temp_object.custom_date_limit = datetime.datetime.now().timestamp()
-        self.set_date_display()
+        self.set_date_display(self.current_temp_object)
 
     def resizeEvent(self, event):
         if self.content_icons_full_width:
