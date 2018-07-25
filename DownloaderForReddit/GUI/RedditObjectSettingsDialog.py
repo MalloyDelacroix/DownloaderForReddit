@@ -319,6 +319,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.current_temp_object.custom_date_limit = self.date_limit_edit.dateTime().toSecsSinceEpoch()
         if not self.restrict_date_checkbox.isChecked():
             self.current_temp_object.custom_date_limit = 1
+        if self.restrict_date_checkbox.isChecked() and self.current_temp_object.custom_date_limit == 1:
+            self.current_temp_object.custom_date_limit = 2  # done so checkbox stays checked without any downloads
         self.current_temp_object.post_limit = self.post_limit_spinbox.value()
         self.current_temp_object.name_downloads_by = self.name_downloads_combo.currentText()
         self.current_temp_object.save_path = self.custom_save_path_line_edit.text()
