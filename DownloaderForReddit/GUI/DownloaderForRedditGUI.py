@@ -207,9 +207,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.user_list_view).row()
+            user = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list[position]
             valid = True
         except AttributeError:
+            user = None
             valid = False
+
         user_settings = user_menu.addAction("User Settings")
         user_downloads = user_menu.addAction("View User Downloads")
         user_menu.addSeparator()
@@ -217,6 +220,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user_menu.addSeparator()
         add_user = user_menu.addAction("Add User")
         remove_user = user_menu.addAction("Remove User")
+
+        if user is not None:
+            user_menu.addSeparator()
+            download_enabled_text = 'Enable Download' if not user.enable_download else 'Disable Download'
+            toggle_download_enabled = user_menu.addAction(download_enabled_text)
+            toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
+
         add_user.triggered.connect(self.add_user_dialog)
         remove_user.triggered.connect(self.remove_user)
         user_settings.triggered.connect(lambda: self.user_settings(0, False))
@@ -239,9 +249,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         subreddit_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
+            subreddit = self.subreddit_view_chooser_dict[
+                self.subreddit_list_combo.currentText()].reddit_object_list[position]
             valid = True
         except AttributeError:
+            subreddit = None
             valid = False
+
         subreddit_settings = subreddit_menu.addAction("Subreddit Settings")
         subreddit_downloads = subreddit_menu.addAction("View Subreddit Downloads")
         subreddit_menu.addSeparator()
@@ -249,6 +263,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         subreddit_menu.addSeparator()
         add_subreddit = subreddit_menu.addAction("Add Subreddit")
         remove_subreddit = subreddit_menu.addAction("Remove Subreddit")
+
+        if subreddit is not None:
+            subreddit_menu.addSeparator()
+            download_enabled_text = 'Enable Download' if not subreddit.enable_download else 'Disable Download'
+            toggle_download_enabled = subreddit_menu.addAction(download_enabled_text)
+            toggle_download_enabled.triggered.connect(subreddit.toggle_enable_download)
+
         add_subreddit.triggered.connect(self.add_subreddit_dialog)
         remove_subreddit.triggered.connect(self.remove_subreddit)
         subreddit_settings.triggered.connect(lambda: self.subreddit_settings(0, False))

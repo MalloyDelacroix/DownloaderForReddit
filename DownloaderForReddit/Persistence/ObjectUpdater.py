@@ -69,6 +69,7 @@ class ObjectUpdater:
         cls.get_saved_content(old, new)
         cls.get_saved_submissions(old, new)
         cls.get_number_of_downloads(old, new)
+        cls.set_enable_download(old, new)
 
     @staticmethod
     def update_save_path(old, new):
@@ -143,6 +144,21 @@ class ObjectUpdater:
                 new.number_of_downloads = len(old.previous_downloads)
             except:
                 pass
+
+    @staticmethod
+    def set_enable_download(old, new):
+        """
+        Sets the new object's enable download to the old objects enable download state it it contains this attribute.
+        Sets the value to True if it does not.
+        :param old: The old reddit object.
+        :param new: The new reddit object.
+        :type old: RedditObject
+        type new: RedditObject
+        """
+        try:
+            new.enable_download = old.enable_download
+        except AttributeError:
+            new.enable_download = True
 
     @staticmethod
     def check_settings_manager(settings_manager):

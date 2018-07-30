@@ -169,6 +169,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         tooltip_dict = self.settings_manager.tooltip_display_dict
         self.tooltip_name_checkbox.setChecked(tooltip_dict['name'])
+        self.tooltip_enable_download_checkbox.setChecked(tooltip_dict['enable_download'])
         self.tooltip_do_not_edit_checkbox.setChecked(tooltip_dict['do_not_edit'])
         self.tooltip_last_download_date_checkbox.setChecked(tooltip_dict['last_download_date'])
         self.tooltip_custom_date_limit_checkbox.setChecked(tooltip_dict['custom_date_limit'])
@@ -313,6 +314,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
     def save_tooltip_display_settings(self):
         tooltip_dic = self.settings_manager.tooltip_display_dict
         tooltip_dic['name'] = self.tooltip_name_checkbox.isChecked()
+        tooltip_dic['enable_download'] = self.tooltip_enable_download_checkbox.isChecked()
         tooltip_dic['do_not_edit'] = self.tooltip_do_not_edit_checkbox.isChecked()
         tooltip_dic['last_download_date'] = self.tooltip_last_download_date_checkbox.isChecked()
         tooltip_dic['custom_date_limit'] = self.tooltip_custom_date_limit_checkbox.isChecked()

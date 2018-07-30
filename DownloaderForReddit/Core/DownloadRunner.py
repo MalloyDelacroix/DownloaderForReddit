@@ -65,8 +65,9 @@ class DownloadRunner(QObject):
         self.settings_manager = Injector.get_settings_manager()
         self._r = RedditUtils.get_reddit_instance()
         self.post_filter = PostFilter()
-        self.user_list = user_list
-        self.subreddit_list = subreddit_list
+        self.user_list = [user for user in user_list if user.enable_download] if user_list is not None else None
+        self.subreddit_list = [sub for sub in subreddit_list if sub.enable_download] if \
+            subreddit_list is not None else None
         self.queue = queue
         self.validated_objects = Queue()
         self.validated_subreddits = []

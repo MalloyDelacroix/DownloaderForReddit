@@ -68,6 +68,7 @@ class RedditObject:
         self.save_undownloaded_content = True
         self.object_type = None
         self.content_display_only = False
+        self.enable_download = True
 
     def __str__(self):
         return '%s: %s' % (self.object_type, self.name)
@@ -146,6 +147,9 @@ class RedditObject:
         self.content.clear()
         self.new_submissions = None
         self.failed_extracts.clear()
+
+    def toggle_enable_download(self):
+        self.enable_download = not self.enable_download
 
 
 class User(RedditObject):

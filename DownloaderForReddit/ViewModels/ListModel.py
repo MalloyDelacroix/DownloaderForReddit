@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
+from PyQt5.QtGui import QColor
 from operator import attrgetter
 import datetime
 import logging
@@ -118,6 +119,11 @@ class ListModel(QAbstractListModel):
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             return self.reddit_object_list[index.row()].name
+        elif role == Qt.ForegroundRole:
+            if not self.reddit_object_list[index.row()].enable_download:
+                return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
+            else:
+                return None
         elif role == Qt.DecorationRole:
             return None
         elif role == Qt.ToolTipRole:
@@ -135,6 +141,7 @@ class ListModel(QAbstractListModel):
         """
         tooltip_dict = {
             'name': 'Name: %s' % reddit_object.name,
+            'enable_download': 'Download Enabled: %s' % reddit_object.enable_download,
             'do_not_edit': 'Do Not Edit: %s' % reddit_object.do_not_edit,
             'last_download_date': 'Last Download Date: %s' % (self.format_date(reddit_object.date_limit) if
                                                              reddit_object.date_limit > 1136073600 else
