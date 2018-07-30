@@ -13,5 +13,10 @@ from reddit by this downloader)
 * Add new extractor for reddituploads
 
 ### Minor Changes
+
+### Bug Fixes
 * Fix title bar name not changing in last downloaded dialog
 * Fix index error when displaying saved content for some reddit objects
+* Fix crashes related to resetting date restriction from user/subreddit settings dialog
+* Fix imgur credits not updating properly
+* Fix gifv extraction
