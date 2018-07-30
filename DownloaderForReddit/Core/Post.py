@@ -22,11 +22,13 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from urllib.parse import urlparse
+
 from Utils.SystemUtil import epoch_to_str
 
 
 class Post(object):
-    def __init__(self, url, author, title, subreddit, created, status='good'):
+    def __init__(self, url, author, title, subreddit, created, status='good', domain=None):
         """
         A class that holds information about a post made on reddit.  This class is used to save post information and
         is also used by the UserFinder.
@@ -44,6 +46,7 @@ class Post(object):
         self.subreddit = subreddit
         self.created = created
         self.score = None
+        self.domain = domain if domain is not None else self.get_domain()
 
         self.status = status
         self.save_status = 'Not Saved'
@@ -54,6 +57,10 @@ class Post(object):
     @property
     def date_posted(self):
         return epoch_to_str(self.created)
+
+    def get_domain(self):
+        parsed_url = urlparse(self.url)
+        self.domain = '{url.netloc}'.format(url=parsed_url)
 
     def format_failed_text(self):
         return 'Failed to download content:\nUser: %s  Subreddit: %s  Title: %s\nUrl:  %s\n%s\nSave Status: %s\n' % \
