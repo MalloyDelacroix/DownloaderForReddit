@@ -11,6 +11,7 @@ from reddit by this downloader)
 * Massively update the failed downloads dialog
 * Add ability to export failed downloads in multiple formats
 * Add new extractor for reddituploads
+* Add ability to exclude a user/subreddit from download without removing them from the download list
 
 ### Minor Changes
 
