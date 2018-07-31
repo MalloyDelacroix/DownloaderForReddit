@@ -100,7 +100,7 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
             if self.display_list == 'previous_downloads':
                 return self.reddit_object.previous_downloads[index]
             elif self.display_list == 'saved_submissions':
-                return self.reddit_object.saved_submissions[index]
+                return self.reddit_object.saved_submissions[index].url  # TODO: show more info on click
             elif self.display_list == 'saved_content':
                 item = self.content_display[index]
                 return '%s:  %s' % (item[0], item[1])

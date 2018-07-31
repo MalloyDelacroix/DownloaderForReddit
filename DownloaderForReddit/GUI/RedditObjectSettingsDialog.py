@@ -647,9 +647,13 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def open_link(self):
         """Opens a link from the 'previous_downloads' list in the default web browser."""
-        if self.current_item_display == 'previous_downloads':
+        if self.current_item_display == 'saved_content':
+            return None
+        elif self.current_item_display == 'previous_downloads':
             link = self.current_object.previous_downloads[self.item_display_list_view.currentIndex().row()]
-            SystemUtil.open_in_system(link)
+        else:
+            link = self.current_object.saved_submissions[self.item_display_list_view.currentIndex().row()]
+        SystemUtil.open_in_system(link)
 
     def set_icons_full_width(self):
         self.content_icons_full_width = True
