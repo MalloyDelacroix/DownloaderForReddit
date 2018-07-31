@@ -20,3 +20,5 @@ from reddit by this downloader)
 * Fix crashes related to resetting date restriction from user/subreddit settings dialog
 * Fix imgur credits not updating properly
 * Fix gifv extraction
+* Fix saved submission display in reddit object settings dialog
+* Fix save submissions not being removed from saved list upon download
