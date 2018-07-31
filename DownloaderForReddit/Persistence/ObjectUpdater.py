@@ -1,5 +1,6 @@
 from Core.RedditObjects import User, Subreddit
 from Utils import Injector
+from Core.Post import Post
 from version import __version__
 
 
@@ -113,8 +114,8 @@ class ObjectUpdater:
         except AttributeError:
             pass
 
-    @staticmethod
-    def get_saved_submissions(old, new):
+    @classmethod
+    def get_saved_submissions(cls, old, new):
         """
         Transfers saved submissions for previous reddit object to new reddit object.
         :param old: The old reddit object.
@@ -123,9 +124,26 @@ class ObjectUpdater:
         :type new: RedditObject
         """
         try:
-            new.saved_submissions = old.saved_submissions
+            new.saved_submissions = [cls.update_saved_post_version(post) for post in old.saved_submissions]
         except AttributeError:
             pass
+
+    @staticmethod
+    def update_saved_post_version(old_post):
+        """
+        Updates old format posts that have been saved to the new Post format with extra attributes that are needed
+        throughout the application.
+        :param old_post: The saved post that needs to be updated.
+        :type old_post: Post
+        :return: A new post with updated attribute fields.
+        :rtype: Post
+        """
+        try:
+            old_post.save_status
+            old_post.domain
+            return old_post
+        except AttributeError:
+            return Post(old_post.url, old_post.author, old_post.title, old_post.created, None)
 
     @staticmethod
     def get_number_of_downloads(old, new):
