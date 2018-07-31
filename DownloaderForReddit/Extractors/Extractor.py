@@ -58,7 +58,8 @@ class Extractor:
         :param post: The post that is to be extracted.
         :type post: Praw.Post
         """
-        self.reddit_object.set_date_limit(post.created)
+        if post.created is not None:  # None here indicates an outdated saved post which contains no created date
+            self.reddit_object.set_date_limit(post.created)
         try:
             extractor = self.assign_extractor(post)(post, self.reddit_object)
             extractor.extract_content()
