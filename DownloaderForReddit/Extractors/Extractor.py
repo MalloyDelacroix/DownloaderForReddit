@@ -49,6 +49,7 @@ class Extractor:
     def run(self):
         for post in self.reddit_object.saved_submissions:
             self.extract(post)
+            self.reddit_object.saved_submissions.remove(post)
         for post in self.reddit_object.new_submissions:
             self.extract(post)
 
