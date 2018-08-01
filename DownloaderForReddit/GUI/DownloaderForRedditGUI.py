@@ -44,7 +44,7 @@ from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from Utils import Injector, SystemUtil, ImgurUtils
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from ViewModels.ListModel import ListModel
-from GUI.AddUserDialog import AddUserDialog
+from GUI.AddRedditObjectDialog import AddUserDialog
 from version import __version__
 
 
@@ -193,7 +193,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.check_for_updates(False)
+        # self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
@@ -700,7 +700,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             #                                         self.user_view_chooser_dict[self.user_lists_combo.currentText()]))
             dialog = add_user_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                self.add_user(add_user_dialog.name, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
+                current_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+                if add_user_dialog.layout_style == 'SINGLE':
+                    self.add_user(add_user_dialog.name, current_list)
+                else:
+                    for name in add_user_dialog.object_name_list_model.name_list:
+                        self.add_user(name, current_list)
         else:
             Message.no_user_list(self)
 
@@ -823,7 +828,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             # add_sub_dialog.add_another_button.clicked.connect(lambda: self.add_subreddit(add_sub_dialog.name))
             dialog = add_sub_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                self.add_subreddit(add_sub_dialog.name)
+                if add_sub_dialog.layout_style == 'SINGLE':
+                    self.add_subreddit(add_sub_dialog.name)
+                else:
+                    for name in add_sub_dialog.object_name_list_model.name_list:
+                        self.add_subreddit(name)
         else:
             Message.no_user_list(self)
 
@@ -938,48 +947,48 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 count += 1
             self.logger.info('Subreddit list imported from text file', extra={'file_count': count})
 
-    def get_names_from_text(self):
-        """
-        Reads a text file and splits the text into usable names.  Also filters each name for forbidden characters.
-        """
-        text_file = self.select_text_file()
-        if text_file:
-            return_list = []
-            with open(text_file, 'r') as file:
-                content = file.readlines()
-                names = [line for line in content]
-                for name in names:
-                    if ',' in name:
-                        return_list.extend(self.split_names(name))
-                    else:
-                        return_list.append(self.remove_forbidden_chars(name))
-            return return_list
-        else:
-            return None
-
-    def split_names(self, name):
-        """Splits the supplied text into multiple names if the text contains a comma."""
-        return [self.remove_forbidden_chars(x) for x in name.split(',') if x != '\n']
-
-    def remove_forbidden_chars(self, name):
-        """Removes forbidden characters from the supplied name and returns the new name."""
-        return ''.join(x for x in name if x != ' ' and x != '' and x != '\n')
-
-    def select_text_file(self):
-        """
-        Opens a dialog for the user to select a text file and returns the path to the selected file if it exists.
-        :return: The path to the user selected file.
-        :rtype: str
-        """
-        file_path = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select Text File to Import From',
-                                                              self.settings_manager.save_directory,
-                                                              'Text File (*.txt)')[0])
-        if os.path.isfile(file_path) and file_path.endswith('.txt'):
-            return file_path
-        else:
-            self.logger.warning('Tried to import invalid text file: %s' % file_path)
-            Message.invalid_file_path(self)
-            return None
+    # def get_names_from_text(self):
+    #     """
+    #     Reads a text file and splits the text into usable names.  Also filters each name for forbidden characters.
+    #     """
+    #     text_file = self.select_text_file()
+    #     if text_file:
+    #         return_list = []
+    #         with open(text_file, 'r') as file:
+    #             content = file.readlines()
+    #             names = [line for line in content]
+    #             for name in names:
+    #                 if ',' in name:
+    #                     return_list.extend(self.split_names(name))
+    #                 else:
+    #                     return_list.append(self.remove_forbidden_chars(name))
+    #         return return_list
+    #     else:
+    #         return None
+    #
+    # def split_names(self, name):
+    #     """Splits the supplied text into multiple names if the text contains a comma."""
+    #     return [self.remove_forbidden_chars(x) for x in name.split(',') if x != '\n']
+    #
+    # def remove_forbidden_chars(self, name):
+    #     """Removes forbidden characters from the supplied name and returns the new name."""
+    #     return ''.join(x for x in name if x != ' ' and x != '' and x != '\n')
+    #
+    # def select_text_file(self):
+    #     """
+    #     Opens a dialog for the user to select a text file and returns the path to the selected file if it exists.
+    #     :return: The path to the user selected file.
+    #     :rtype: str
+    #     """
+    #     file_path = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select Text File to Import From',
+    #                                                           self.settings_manager.save_directory,
+    #                                                           'Text File (*.txt)')[0])
+    #     if os.path.isfile(file_path) and file_path.endswith('.txt'):
+    #         return file_path
+    #     else:
+    #         self.logger.warning('Tried to import invalid text file: %s' % file_path)
+    #         Message.invalid_file_path(self)
+    #         return None
 
     def get_selected_view_index(self, list_view):
         """Returns a single index if multiple are selected"""
