@@ -248,11 +248,14 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
                                                len(self.object_name_list_view.selectedIndexes()))
 
     def accept(self):
+        if self.object_name_list_model.checker_running:
+            self.object_name_list_model.stop_name_checker()
         if self.layout_style == 'SINGLE':
-            self.name = self.user_name_line_edit.text()
+            self.name = self.object_name_line_edit.text()
         super().accept()
 
     def closeEvent(self, event):
+        print('\n\nclose event called\n\n')
         if self.object_name_list_model.checker_running:
             self.object_name_list_model.stop_name_checker()
             event.ignore()

@@ -674,47 +674,47 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens the dialog to enter the user name"""
         if self.user_lists_combo != '' and len(self.user_view_chooser_dict) > 0:
             add_user_dialog = AddUserDialog('USER')
-            # add_user_dialog.add_another_button.clicked.connect(lambda: self.add_user(add_user_dialog.name,
-            #                                         self.user_view_chooser_dict[self.user_lists_combo.currentText()]))
             dialog = add_user_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                current_list = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
                 if add_user_dialog.layout_style == 'SINGLE':
-                    self.add_user(add_user_dialog.name, current_list)
+                    self.add_single_user(add_user_dialog.name)
                 else:
-                    for name in add_user_dialog.object_name_list_model.name_list:
-                        self.add_user(name, current_list)
+                    self.add_multiple_users(add_user_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
 
-    def add_found_user(self, lst):
-        """Adds a user found by the user finder to the supplied list which is selected from the user finder GUI"""
-        insertion_list = self.user_view_chooser_dict[lst[1]]
-        new_user = lst[0]
-        self.add_user(new_user, insertion_list)
-
-    def add_user(self, new_user, list_model):
-        """
-        Creates a new User object from the supplied user name and adds the User to the supplied list model.
-        :param new_user: The name of the user which is to be added to the supplied list_model.
-        :param list_model: The list model that the supplied user is to be added to.
-        :type new_user: str
-        :type list_model: ListModel
-        """
+    def add_single_user(self, new_user):
         try:
-            if new_user != '' and new_user != ' ':
-                if list_model.check_name(new_user):
-                    self.logger.info('Unable to add user: name already in list', extra={'name': new_user})
-                    Message.name_in_list(self, new_user)
-                else:
-                    user = self.make_user(new_user)
-                    self.add_reddit_object_to_list(user, list_model)
-                    self.refresh_user_count()
-            else:
-                self.logger.warning('Unable to add user: Invalid name', extra={'name': new_user})
+            list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+            user = self.make_user(new_user)
+            reply = self.add_reddit_object_to_list(user, list_model)
+            if reply == 'NAME_EXISTS':
+                Message.name_in_list(self, new_user)
+            elif reply == 'INVALID_NAME':
                 Message.not_valid_name(self, new_user)
+            else:
+                self.refresh_user_count()
         except KeyError:
-            self.logger.warning('Unable to add user: No user list available', exc_info=True)
+            Message.no_user_list(self)
+
+    def add_multiple_users(self, user_list):
+        try:
+            existing_names = []
+            invalid_names = []
+            list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+            for name in user_list:
+                user = self.make_user(name)
+                reply = self.add_reddit_object_to_list(user, list_model)
+                if reply == 'NAME_EXISTS':
+                    existing_names.append(name)
+                elif reply == 'INVALID_NAME':
+                    invalid_names.append(name)
+            self.refresh_user_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
+        except KeyError:
             Message.no_user_list(self)
 
     def add_reddit_object_to_list(self, reddit_object, list_model):
@@ -725,9 +725,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :type reddit_object: RedditObject
         :type list_model: ListModel
         """
-        list_model.insertRow(reddit_object)
-        list_model.sort_lists((self.list_sort_method, self.list_order_method))
-        self.set_not_saved()
+        if reddit_object.name != '' and ' ' not in reddit_object.name:
+            if not list_model.check_name(reddit_object.name):
+                list_model.insertRow(reddit_object)
+                list_model.sort_lists((self.list_sort_method, self.list_order_method))
+                self.set_not_saved()
+                return 'ADDED'
+            else:
+                return 'NAME_EXISTS'
+        else:
+            return 'INVALID_NAME'
 
     def make_user(self, name):
         """
@@ -803,18 +810,50 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             add_sub_dialog = AddUserDialog('SUBREDDIT')
             add_sub_dialog.setWindowTitle('Add Subreddit Dialog')
             add_sub_dialog.label.setText('Enter a new subreddit:')
-            # add_sub_dialog.add_another_button.clicked.connect(lambda: self.add_subreddit(add_sub_dialog.name))
             dialog = add_sub_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
                 if add_sub_dialog.layout_style == 'SINGLE':
-                    self.add_subreddit(add_sub_dialog.name)
+                    self.add_single_subreddit(add_sub_dialog.name)
                 else:
-                    for name in add_sub_dialog.object_name_list_model.name_list:
-                        self.add_subreddit(name)
+                    self.add_multiple_subreddits(add_sub_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
 
-    def add_subreddit(self, new_sub):
+    def add_single_subreddit(self, new_sub):
+        try:
+            list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+            subreddit = self.make_subreddit(new_sub)
+            reply = self.add_reddit_object_to_list(subreddit, list_model)
+            if reply == 'NAME_EXISTS':
+                Message.name_in_list(self, new_sub)
+            elif reply == 'INVALID_NAME':
+                Message.not_valid_name(self, new_sub)
+            else:
+                self.refresh_user_count()
+        except KeyError:
+            Message.no_user_list(self)
+
+    def add_multiple_subreddits(self, sub_list):
+        try:
+            existing_names = []
+            invalid_names = []
+            list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+            for name in sub_list:
+                sub = self.make_subreddit(name)
+                reply = self.add_reddit_object_to_list(sub, list_model)
+                if reply == 'NAME_EXISTS':
+                    existing_names.append(name)
+                elif reply == 'INVALID_NAME':
+                    invalid_names.append(name)
+            self.refresh_subreddit_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
+        except KeyError:
+            Message.no_user_list(self)
+
+    def add_subreddit_to_list(self, new_sub):
         """
         Creates a new Subreddit object from the supplied subreddit name and adds the Subreddit to the current list
         model.
