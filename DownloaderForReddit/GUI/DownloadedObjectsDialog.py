@@ -29,7 +29,7 @@ import logging
 
 from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from Utils import SystemUtil
-from Core.AlphanumKey import ALPHANUM_KEY
+from Utils.AlphanumKey import ALPHANUM_KEY
 
 
 class DownloadedObjectsDialog(RedditObjectSettingsDialog):
