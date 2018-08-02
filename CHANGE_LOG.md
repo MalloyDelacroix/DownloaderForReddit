@@ -26,3 +26,4 @@ from reddit by this downloader)
 * Fix gifv extraction
 * Fix saved submission display in reddit object settings dialog
 * Fix save submissions not being removed from saved list upon download
+* Tertiary windows now open in center of main window instead of saved location
