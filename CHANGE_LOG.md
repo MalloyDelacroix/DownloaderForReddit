@@ -17,6 +17,7 @@ from reddit by this downloader)
   * List copy and paste now supported
 
 ### Minor Changes
+* Add imgur credit limit check and rate limiter for all extractors to avoid failed extractions due to exceeding a domains rate limit
 
 ### Bug Fixes
 * Fix title bar name not changing in last downloaded dialog
