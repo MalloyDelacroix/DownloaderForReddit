@@ -164,7 +164,7 @@ class BaseExtractor:
                     self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
 
-    def handle_failed_extract(self, message=None, save=False, **kwargs):
+    def handle_failed_extract(self, message=None, save=False, log=True, **kwargs):
         """
         Handles the logging and output of error messages encountered while extracting content and saves posts if
         instructed to do so.
@@ -172,8 +172,12 @@ class BaseExtractor:
                         the main window output.
         :param save: Indicates whether the post should be saved or not.  Posts should only be saved for error such as
                      connection errors that are not likely to be repeated on subsequent runs.
+        :param log: Indicates whether this failed extract should be logged or not.  This should be used to prevent
+                    log spamming for extraction errors that are likely to happen very frequently (such as imgur rate
+                    limit error)
         :type message: str
         :type save: bool
+        :type log: bool
         :param kwargs: These are keyword arguments that are put into the 'extra' dictionary in the log.  These should be
                        any other parameters that will be helpful in diagnosing problems from the log if an error is
                        encountered.
@@ -191,7 +195,8 @@ class BaseExtractor:
         self.failed_extract_posts.append(failed_post)
         for key, value in kwargs.items():
             extra[key] = value
-        self.logger.error('Failed to extract content', extra=extra)
+        if log:
+            self.logger.error('Failed to extract content', extra=extra)
 
     def save_failed_extract(self):
         """

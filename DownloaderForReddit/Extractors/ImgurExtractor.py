@@ -56,21 +56,25 @@ class ImgurExtractor(BaseExtractor):
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
-            try:
-                if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
-                    self.extract_album()
-                elif self.url.lower().endswith(Const.ALL_EXT):
-                    self.extract_direct_link()
-                elif '/gallery/' in self.url:
-                    self.extract_album()
-                else:
-                    self.extract_single()
-            except ImgurClientError as e:
-                self.handle_client_error(e.status_code)
-            except ImgurClientRateLimitError:
-                self.rate_limit_exceeded_error()
-            except:
-                self.failed_to_locate_error()
+            if not ImgurUtils.credit_limit_hit:
+                try:
+                    if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
+                        self.extract_album()
+                    elif self.url.lower().endswith(Const.ALL_EXT):
+                        self.extract_direct_link()
+                    elif '/gallery/' in self.url:
+                        self.extract_album()
+                    else:
+                        self.extract_single()
+                except ImgurClientError as e:
+                    self.handle_client_error(e.status_code)
+                except ImgurClientRateLimitError:
+                    self.rate_limit_exceeded_error()
+                except:
+                    self.failed_to_locate_error()
+            else:
+                message = 'Out of imgur credits'
+                self.handle_failed_extract(message=message, save=True, log=False)
 
     def handle_client_error(self, status_code):
         """
@@ -99,6 +103,7 @@ class ImgurExtractor(BaseExtractor):
         self.handle_failed_extract(message=message, save=True, imgur_error_message='rate limit exceeded')
 
     def no_credit_error(self):
+        ImgurUtils.credit_limit_hit = True
         message = 'Not enough imgur credits to extract post'
         self.handle_failed_extract(message=message, save=True, imgur_error_message='not enough credits')
 

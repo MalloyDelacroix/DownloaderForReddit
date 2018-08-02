@@ -7,6 +7,7 @@ from Utils import Injector
 logger = logging.getLogger(__name__)
 imgur_client = None
 connection_attempts = 0
+credit_limit_hit = False
 
 
 def get_client():
