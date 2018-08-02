@@ -39,8 +39,6 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.settings_manager = Utils.Injector.get_settings_manager()
-        geom = self.settings_manager.about_dialog_geom
-        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
 
         self.buttonBox.accepted.connect(self.accept)
 
@@ -64,10 +62,3 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
     def accept(self):
         self.save_settings()
         super().accept()
-
-    def closeEvent(self, QCloseEvent):
-        self.save_settings()
-
-    def save_settings(self):
-        self.settings_manager.about_dialog_geom = self.saveGeometry()
-        self.settings_manager.save_about_dialog()
