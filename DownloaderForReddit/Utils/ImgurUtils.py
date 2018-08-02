@@ -25,13 +25,14 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from imgurpython import ImgurClient
 from imgurpython.helpers.error import ImgurClientError
+from time import time
 
 from Utils import Injector
 
 logger = logging.getLogger(__name__)
 imgur_client = None
 connection_attempts = 0
-credit_limit_hit = False
+credit_time_limit = 1
 
 
 def get_client():
@@ -82,3 +83,26 @@ def handle_invalid_client():
               'dialog in the settings menu.'
     Injector.get_queue().put(message)
     logger.warning('Invalid imgur client id or secret')
+
+
+def check_credit_time_limit():
+    """
+    Checks the global credit time limit (which is the time that the user imgur credits refresh) and returns True if the
+    current time is greater than the limit (indicating there are credits remaining) and False if the time is less than
+    the limit.
+    :return: True if credits remain and False if not
+    :rtype: bool
+    """
+    global credit_time_limit
+    return time() > credit_time_limit
+
+
+def set_credit_time_limit(refresh_time=time() + 3605):
+    """
+    Sets the global credit time limit to indicate when imgur user credits will refresh.  Defaults to one hour in the
+    future from the current time.  The refresh limit can be supplied.
+    :param refresh_time: The time at which the imgur user credits will refresh.
+    :type refresh_time: int
+    """
+    global credit_time_limit
+    credit_time_limit = refresh_time

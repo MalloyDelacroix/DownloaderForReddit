@@ -56,7 +56,7 @@ class ImgurExtractor(BaseExtractor):
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
-            if not ImgurUtils.credit_limit_hit:
+            if ImgurUtils.check_credit_time_limit():
                 try:
                     if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
                         self.extract_album()
@@ -99,11 +99,20 @@ class ImgurExtractor(BaseExtractor):
             self.does_not_exist_error()
 
     def rate_limit_exceeded_error(self):
-        message = 'Imgur rate limit exceeded'
+        """
+        Handles a rate limit error reported from imgur.  The rate limit error can indicate too many api calls are being
+        called in too short of a window (attempts are made to mitigate this by the application) or that the user is out
+        of imgur user credits.
+        """
+        if self.client.credits['UserRemaining'] <= 0:
+            message = 'Out of user credits'
+            ImgurUtils.set_credit_time_limit(refresh_time=int(self.client.credits['UserReset']))
+        else:
+            message = 'Imgur rate limit exceeded'
         self.handle_failed_extract(message=message, save=True, imgur_error_message='rate limit exceeded')
 
     def no_credit_error(self):
-        ImgurUtils.credit_limit_hit = True
+        ImgurUtils.set_credit_time_limit()
         message = 'Not enough imgur credits to extract post'
         self.handle_failed_extract(message=message, save=True, imgur_error_message='not enough credits')
 
