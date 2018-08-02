@@ -44,7 +44,7 @@ from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from Utils import Injector, SystemUtil, ImgurUtils
 from Persistence.ObjectStateHandler import ObjectStateHandler
 from ViewModels.ListModel import ListModel
-from GUI.AddUserDialog import AddUserDialog
+from GUI.AddRedditObjectDialog import AddUserDialog
 from version import __version__
 
 
@@ -177,12 +177,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.subreddit_list_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_list_combo.customContextMenuRequested.connect(self.subreddit_list_combo_right_click)
 
-        self.add_user_button.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.add_user_button.customContextMenuRequested.connect(self.add_user_button_right_click)
-
-        self.add_subreddit_button.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.add_subreddit_button.customContextMenuRequested.connect(self.add_subreddit_button_right_click)
-
         self.progress_bar = QtWidgets.QProgressBar()
         self.statusbar.addPermanentWidget(self.progress_bar)
         self.bar_count = 0
@@ -193,7 +187,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.check_for_updates(False)
+        # self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
@@ -207,9 +201,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.user_list_view).row()
+            user = self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list[position]
             valid = True
         except AttributeError:
+            user = None
             valid = False
+
         user_settings = user_menu.addAction("User Settings")
         user_downloads = user_menu.addAction("View User Downloads")
         user_menu.addSeparator()
@@ -217,6 +214,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user_menu.addSeparator()
         add_user = user_menu.addAction("Add User")
         remove_user = user_menu.addAction("Remove User")
+
+        if user is not None:
+            user_menu.addSeparator()
+            download_enabled_text = 'Enable Download' if not user.enable_download else 'Disable Download'
+            toggle_download_enabled = user_menu.addAction(download_enabled_text)
+            toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
+
         add_user.triggered.connect(self.add_user_dialog)
         remove_user.triggered.connect(self.remove_user)
         user_settings.triggered.connect(lambda: self.user_settings(0, False))
@@ -239,9 +243,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         subreddit_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
+            subreddit = self.subreddit_view_chooser_dict[
+                self.subreddit_list_combo.currentText()].reddit_object_list[position]
             valid = True
         except AttributeError:
+            subreddit = None
             valid = False
+
         subreddit_settings = subreddit_menu.addAction("Subreddit Settings")
         subreddit_downloads = subreddit_menu.addAction("View Subreddit Downloads")
         subreddit_menu.addSeparator()
@@ -249,6 +257,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         subreddit_menu.addSeparator()
         add_subreddit = subreddit_menu.addAction("Add Subreddit")
         remove_subreddit = subreddit_menu.addAction("Remove Subreddit")
+
+        if subreddit is not None:
+            subreddit_menu.addSeparator()
+            download_enabled_text = 'Enable Download' if not subreddit.enable_download else 'Disable Download'
+            toggle_download_enabled = subreddit_menu.addAction(download_enabled_text)
+            toggle_download_enabled.triggered.connect(subreddit.toggle_enable_download)
+
         add_subreddit.triggered.connect(self.add_subreddit_dialog)
         remove_subreddit.triggered.connect(self.remove_subreddit)
         subreddit_settings.triggered.connect(lambda: self.subreddit_settings(0, False))
@@ -281,22 +296,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         remove_list = menu.addAction('Remove Subreddit List')
         add_list.triggered.connect(self.add_subreddit_list)
         remove_list.triggered.connect(self.remove_subreddit_list)
-        menu.exec(QtGui.QCursor.pos())
-
-    def add_user_button_right_click(self):
-        menu = QtWidgets.QMenu()
-        import_users_from_folder = menu.addAction('Import Users From Folder')
-        import_users_from_text_file = menu.addAction('Import Users From Text File')
-        import_users_from_folder.triggered.connect(self.import_user_list_from_folder)
-        import_users_from_text_file.triggered.connect(self.import_user_list_from_text_file)
-        menu.exec(QtGui.QCursor.pos())
-
-    def add_subreddit_button_right_click(self):
-        menu = QtWidgets.QMenu()
-        import_subreddits_from_folder = menu.addAction('Import Subreddits From Folder')
-        import_subreddits_from_text_file = menu.addAction('Import Subreddits From Text File')
-        import_subreddits_from_folder.triggered.connect(self.import_subreddit_list_from_folder)
-        import_subreddits_from_text_file.triggered.connect(self.import_subreddit_list_from_text_file)
         menu.exec(QtGui.QCursor.pos())
 
     def user_settings(self, page, from_menu):
@@ -674,43 +673,48 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def add_user_dialog(self):
         """Opens the dialog to enter the user name"""
         if self.user_lists_combo != '' and len(self.user_view_chooser_dict) > 0:
-            add_user_dialog = AddUserDialog()
-            add_user_dialog.add_another_button.clicked.connect(lambda: self.add_user(add_user_dialog.name,
-                                                    self.user_view_chooser_dict[self.user_lists_combo.currentText()]))
+            add_user_dialog = AddUserDialog('USER', self)
             dialog = add_user_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                self.add_user(add_user_dialog.name, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
+                if add_user_dialog.layout_style == 'SINGLE':
+                    self.add_single_user(add_user_dialog.name)
+                else:
+                    self.add_multiple_users(add_user_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
 
-    def add_found_user(self, lst):
-        """Adds a user found by the user finder to the supplied list which is selected from the user finder GUI"""
-        insertion_list = self.user_view_chooser_dict[lst[1]]
-        new_user = lst[0]
-        self.add_user(new_user, insertion_list)
-
-    def add_user(self, new_user, list_model):
-        """
-        Creates a new User object from the supplied user name and adds the User to the supplied list model.
-        :param new_user: The name of the user which is to be added to the supplied list_model.
-        :param list_model: The list model that the supplied user is to be added to.
-        :type new_user: str
-        :type list_model: ListModel
-        """
+    def add_single_user(self, new_user):
         try:
-            if new_user != '' and new_user != ' ':
-                if list_model.check_name(new_user):
-                    self.logger.info('Unable to add user: name already in list', extra={'name': new_user})
-                    Message.name_in_list(self, new_user)
-                else:
-                    user = self.make_user(new_user)
-                    self.add_reddit_object_to_list(user, list_model)
-                    self.refresh_user_count()
-            else:
-                self.logger.warning('Unable to add user: Invalid name', extra={'name': new_user})
+            list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+            user = self.make_user(new_user)
+            reply = self.add_reddit_object_to_list(user, list_model)
+            if reply == 'NAME_EXISTS':
+                Message.name_in_list(self, new_user)
+            elif reply == 'INVALID_NAME':
                 Message.not_valid_name(self, new_user)
+            else:
+                self.refresh_user_count()
         except KeyError:
-            self.logger.warning('Unable to add user: No user list available', exc_info=True)
+            Message.no_user_list(self)
+
+    def add_multiple_users(self, user_list):
+        try:
+            existing_names = []
+            invalid_names = []
+            list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+            for name in user_list:
+                user = self.make_user(name)
+                reply = self.add_reddit_object_to_list(user, list_model)
+                if reply == 'NAME_EXISTS':
+                    existing_names.append(name)
+                elif reply == 'INVALID_NAME':
+                    invalid_names.append(name)
+            self.refresh_user_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
+        except KeyError:
             Message.no_user_list(self)
 
     def add_reddit_object_to_list(self, reddit_object, list_model):
@@ -721,9 +725,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :type reddit_object: RedditObject
         :type list_model: ListModel
         """
-        list_model.insertRow(reddit_object)
-        list_model.sort_lists((self.list_sort_method, self.list_order_method))
-        self.set_not_saved()
+        if reddit_object.name != '' and ' ' not in reddit_object.name:
+            if not list_model.check_name(reddit_object.name):
+                list_model.insertRow(reddit_object)
+                list_model.sort_lists((self.list_sort_method, self.list_order_method))
+                self.set_not_saved()
+                return 'ADDED'
+            else:
+                return 'NAME_EXISTS'
+        else:
+            return 'INVALID_NAME'
 
     def make_user(self, name):
         """
@@ -796,17 +807,53 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def add_subreddit_dialog(self):
         """See add_user_dialog"""
         if self.subreddit_list_combo != '' and len(self.subreddit_view_chooser_dict) > 0:
-            add_sub_dialog = AddUserDialog()
+            add_sub_dialog = AddUserDialog('SUBREDDIT', self)
             add_sub_dialog.setWindowTitle('Add Subreddit Dialog')
             add_sub_dialog.label.setText('Enter a new subreddit:')
-            add_sub_dialog.add_another_button.clicked.connect(lambda: self.add_subreddit(add_sub_dialog.name))
             dialog = add_sub_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
-                self.add_subreddit(add_sub_dialog.name)
+                if add_sub_dialog.layout_style == 'SINGLE':
+                    self.add_single_subreddit(add_sub_dialog.name)
+                else:
+                    self.add_multiple_subreddits(add_sub_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
 
-    def add_subreddit(self, new_sub):
+    def add_single_subreddit(self, new_sub):
+        try:
+            list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+            subreddit = self.make_subreddit(new_sub)
+            reply = self.add_reddit_object_to_list(subreddit, list_model)
+            if reply == 'NAME_EXISTS':
+                Message.name_in_list(self, new_sub)
+            elif reply == 'INVALID_NAME':
+                Message.not_valid_name(self, new_sub)
+            else:
+                self.refresh_user_count()
+        except KeyError:
+            Message.no_user_list(self)
+
+    def add_multiple_subreddits(self, sub_list):
+        try:
+            existing_names = []
+            invalid_names = []
+            list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
+            for name in sub_list:
+                sub = self.make_subreddit(name)
+                reply = self.add_reddit_object_to_list(sub, list_model)
+                if reply == 'NAME_EXISTS':
+                    existing_names.append(name)
+                elif reply == 'INVALID_NAME':
+                    invalid_names.append(name)
+            self.refresh_subreddit_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
+        except KeyError:
+            Message.no_user_list(self)
+
+    def add_subreddit_to_list(self, new_sub):
         """
         Creates a new Subreddit object from the supplied subreddit name and adds the Subreddit to the current list
         model.
@@ -856,32 +903,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         except AttributeError:
             pass
 
-    def import_user_list_from_folder(self):
-        """Opens a file dialog and then imports the names of the subfolders as users to the current user list"""
-        master_folder = self.select_directory()
-        if master_folder:
-            reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
-                                                      'Import names of all subfolders from %s?' % master_folder,
-                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
-            if reply == QtWidgets.QMessageBox.Ok:
-                for folder in os.listdir(master_folder):
-                    self.add_user(folder, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
-                self.logger.info('User list imported from folder',
-                                 extra={'folder_count': len(os.listdir(master_folder))})
-
-    def import_subreddit_list_from_folder(self):
-        """See import_user_list_from_folder"""
-        master_folder = self.select_directory()
-        if master_folder:
-            reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
-                                                      'Import names of all subfolders from %s?' % master_folder,
-                                                      QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
-            if reply == QtWidgets.QMessageBox.Ok:
-                for folder in os.listdir(master_folder):
-                    self.add_subreddit(folder)
-                self.logger.info('Subreddit list import from folder',
-                                 extra={'folder_count': len(os.listdir(master_folder))})
-
     def select_directory(self):
         """
         Opens a dialog for the user to select a directory then verifies and returns the selected directory if it exists,
@@ -894,69 +915,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if os.path.isdir(folder):
             return folder
         else:
-            Message.invalid_file_path(self)
-            return None
-
-    def import_user_list_from_text_file(self):
-        """Reads users from a selected text file and adds the names to the user list."""
-        user_list = self.get_names_from_text()
-        count = 0
-        if user_list:
-            for name in user_list:
-                self.add_user(name, self.user_view_chooser_dict[self.user_lists_combo.currentText()])
-                count += 1
-            self.logger.info('User list imported from text file', extra={'file_count': count})
-
-    def import_subreddit_list_from_text_file(self):
-        """Reads subreddits from a selected text file and adds the names to the subreddit list."""
-        sub_list = self.get_names_from_text()
-        count = 0
-        if sub_list:
-            for name in sub_list:
-                self.add_subreddit(name)
-                count += 1
-            self.logger.info('Subreddit list imported from text file', extra={'file_count': count})
-
-    def get_names_from_text(self):
-        """
-        Reads a text file and splits the text into usable names.  Also filters each name for forbidden characters.
-        """
-        text_file = self.select_text_file()
-        if text_file:
-            return_list = []
-            with open(text_file, 'r') as file:
-                content = file.readlines()
-                names = [line for line in content]
-                for name in names:
-                    if ',' in name:
-                        return_list.extend(self.split_names(name))
-                    else:
-                        return_list.append(self.remove_forbidden_chars(name))
-            return return_list
-        else:
-            return None
-
-    def split_names(self, name):
-        """Splits the supplied text into multiple names if the text contains a comma."""
-        return [self.remove_forbidden_chars(x) for x in name.split(',') if x != '\n']
-
-    def remove_forbidden_chars(self, name):
-        """Removes forbidden characters from the supplied name and returns the new name."""
-        return ''.join(x for x in name if x != ' ' and x != '' and x != '\n')
-
-    def select_text_file(self):
-        """
-        Opens a dialog for the user to select a text file and returns the path to the selected file if it exists.
-        :return: The path to the user selected file.
-        :rtype: str
-        """
-        file_path = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select Text File to Import From',
-                                                              self.settings_manager.save_directory,
-                                                              'Text File (*.txt)')[0])
-        if os.path.isfile(file_path) and file_path.endswith('.txt'):
-            return file_path
-        else:
-            self.logger.warning('Tried to import invalid text file: %s' % file_path)
             Message.invalid_file_path(self)
             return None
 

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'RedditObjectSettingsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -16,7 +16,7 @@ class Ui_RedditObjectSettingsDialog(object):
         font.setPointSize(10)
         RedditObjectSettingsDialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Resources/Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../Resources/Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         RedditObjectSettingsDialog.setWindowIcon(icon)
         RedditObjectSettingsDialog.setModal(False)
         self.gridLayout = QtWidgets.QGridLayout(RedditObjectSettingsDialog)
@@ -45,7 +45,6 @@ class Ui_RedditObjectSettingsDialog(object):
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.page)
-        self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
@@ -70,9 +69,6 @@ class Ui_RedditObjectSettingsDialog(object):
         self.gridLayout_4.addLayout(self.gridLayout_2, 2, 0, 2, 1)
         self.gridLayout_3 = QtWidgets.QGridLayout()
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.do_not_edit_checkbox = QtWidgets.QCheckBox(self.page)
-        self.do_not_edit_checkbox.setObjectName("do_not_edit_checkbox")
-        self.gridLayout_3.addWidget(self.do_not_edit_checkbox, 2, 0, 1, 1)
         self.download_object_button = QtWidgets.QPushButton(self.page)
         self.download_object_button.setObjectName("download_object_button")
         self.gridLayout_3.addWidget(self.download_object_button, 1, 0, 1, 1)
@@ -80,6 +76,12 @@ class Ui_RedditObjectSettingsDialog(object):
         self.editing_disabled_label.setEnabled(True)
         self.editing_disabled_label.setObjectName("editing_disabled_label")
         self.gridLayout_3.addWidget(self.editing_disabled_label, 0, 0, 1, 1)
+        self.do_not_edit_checkbox = QtWidgets.QCheckBox(self.page)
+        self.do_not_edit_checkbox.setObjectName("do_not_edit_checkbox")
+        self.gridLayout_3.addWidget(self.do_not_edit_checkbox, 3, 0, 1, 1)
+        self.enable_download_checkbox = QtWidgets.QCheckBox(self.page)
+        self.enable_download_checkbox.setObjectName("enable_download_checkbox")
+        self.gridLayout_3.addWidget(self.enable_download_checkbox, 2, 0, 1, 1)
         self.gridLayout_4.addLayout(self.gridLayout_3, 0, 0, 1, 1)
         self.gridLayout_5 = QtWidgets.QGridLayout()
         self.gridLayout_5.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
@@ -147,7 +149,6 @@ class Ui_RedditObjectSettingsDialog(object):
         self.page_2 = QtWidgets.QWidget()
         self.page_2.setObjectName("page_2")
         self.gridLayout_7 = QtWidgets.QGridLayout(self.page_2)
-        self.gridLayout_7.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_7.setObjectName("gridLayout_7")
         self.gridLayout_6 = QtWidgets.QGridLayout()
         self.gridLayout_6.setObjectName("gridLayout_6")
@@ -177,11 +178,12 @@ class Ui_RedditObjectSettingsDialog(object):
         self.total_downloads_title_label.setText(_translate("RedditObjectSettingsDialog", "Total User Downloads: "))
         self.total_downloads_label.setText(_translate("RedditObjectSettingsDialog", "0"))
         self.item_display_list_label.setText(_translate("RedditObjectSettingsDialog", "Previous Downloads:"))
-        self.do_not_edit_checkbox.setToolTip(_translate("RedditObjectSettingsDialog", "<html><head/><body><p><span style=\" font-size:10pt;\">If checked the changes made in this dialog will not be overwritten by the program when it is run.  The user date limit, avoid duplicates , and download naming method will all remain as they are when this dialog is saved.  The previous downloads will continue to be added to.</span></p></body></html>"))
-        self.do_not_edit_checkbox.setText(_translate("RedditObjectSettingsDialog", "Do not overwrite these settings"))
         self.download_object_button.setToolTip(_translate("RedditObjectSettingsDialog", "<html><head/><body><p><span style=\" font-size:10pt;\">Download this user only with the settings as they are in this dialog</span></p></body></html>"))
         self.download_object_button.setText(_translate("RedditObjectSettingsDialog", "Download This User"))
         self.editing_disabled_label.setText(_translate("RedditObjectSettingsDialog", "Editing disabled while downloader is running"))
+        self.do_not_edit_checkbox.setToolTip(_translate("RedditObjectSettingsDialog", "<html><head/><body><p><span style=\" font-size:10pt;\">If checked the changes made in this dialog will not be overwritten by the program when it is run.  The user date limit, avoid duplicates , and download naming method will all remain as they are when this dialog is saved.  The previous downloads will continue to be added to.</span></p></body></html>"))
+        self.do_not_edit_checkbox.setText(_translate("RedditObjectSettingsDialog", "Do not overwrite these settings"))
+        self.enable_download_checkbox.setText(_translate("RedditObjectSettingsDialog", "Enable download"))
         self.nsfw_filter_label.setText(_translate("RedditObjectSettingsDialog", "NSFW filter:"))
         self.sub_sort_label.setText(_translate("RedditObjectSettingsDialog", "Sort Subreddit By:"))
         self.label.setText(_translate("RedditObjectSettingsDialog", "Post Limit:"))

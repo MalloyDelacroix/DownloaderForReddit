@@ -537,6 +537,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="tooltip_enable_download_checkbox">
+            <property name="text">
+             <string>Download Enabled</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="tooltip_do_not_edit_checkbox">
             <property name="text">
              <string>Do Not Edit</string>

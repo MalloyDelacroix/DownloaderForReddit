@@ -124,16 +124,6 @@
         </item>
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="do_not_edit_checkbox">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;If checked the changes made in this dialog will not be overwritten by the program when it is run.  The user date limit, avoid duplicates , and download naming method will all remain as they are when this dialog is saved.  The previous downloads will continue to be added to.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Do not overwrite these settings</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QPushButton" name="download_object_button">
             <property name="toolTip">
@@ -151,6 +141,23 @@
             </property>
             <property name="text">
              <string>Editing disabled while downloader is running</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="do_not_edit_checkbox">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;If checked the changes made in this dialog will not be overwritten by the program when it is run.  The user date limit, avoid duplicates , and download naming method will all remain as they are when this dialog is saved.  The previous downloads will continue to be added to.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Do not overwrite these settings</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="enable_download_checkbox">
+            <property name="text">
+             <string>Enable download</string>
             </property>
            </widget>
           </item>

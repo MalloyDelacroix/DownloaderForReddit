@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditSettingsGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,7 +13,7 @@ class Ui_SettingsGUI(object):
         SettingsGUI.setObjectName("SettingsGUI")
         SettingsGUI.resize(754, 855)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Resources/Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../Resources/Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         SettingsGUI.setWindowIcon(icon)
         self.gridLayout_8 = QtWidgets.QGridLayout(SettingsGUI)
         self.gridLayout_8.setObjectName("gridLayout_8")
@@ -25,7 +25,6 @@ class Ui_SettingsGUI(object):
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
         self.gridLayout_9 = QtWidgets.QGridLayout(self.page)
-        self.gridLayout_9.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_9.setObjectName("gridLayout_9")
         self.formLayout = QtWidgets.QFormLayout()
         self.formLayout.setObjectName("formLayout")
@@ -286,7 +285,6 @@ class Ui_SettingsGUI(object):
         self.page_2 = QtWidgets.QWidget()
         self.page_2.setObjectName("page_2")
         self.gridLayout_10 = QtWidgets.QGridLayout(self.page_2)
-        self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_10.setObjectName("gridLayout_10")
         self.tooltip_group_box = QtWidgets.QGroupBox(self.page_2)
         font = QtGui.QFont()
@@ -298,6 +296,9 @@ class Ui_SettingsGUI(object):
         self.tooltip_name_checkbox = QtWidgets.QCheckBox(self.tooltip_group_box)
         self.tooltip_name_checkbox.setObjectName("tooltip_name_checkbox")
         self.verticalLayout_2.addWidget(self.tooltip_name_checkbox)
+        self.tooltip_enable_download_checkbox = QtWidgets.QCheckBox(self.tooltip_group_box)
+        self.tooltip_enable_download_checkbox.setObjectName("tooltip_enable_download_checkbox")
+        self.verticalLayout_2.addWidget(self.tooltip_enable_download_checkbox)
         self.tooltip_do_not_edit_checkbox = QtWidgets.QCheckBox(self.tooltip_group_box)
         self.tooltip_do_not_edit_checkbox.setObjectName("tooltip_do_not_edit_checkbox")
         self.verticalLayout_2.addWidget(self.tooltip_do_not_edit_checkbox)
@@ -424,6 +425,7 @@ class Ui_SettingsGUI(object):
         self.tooltip_group_box.setToolTip(_translate("SettingsGUI", "<html><head/><body><p>Choose which reddit object attributes are displayed via tooltip when hovering over reddit objects in the main window.</p></body></html>"))
         self.tooltip_group_box.setTitle(_translate("SettingsGUI", "Tooltip Display Options"))
         self.tooltip_name_checkbox.setText(_translate("SettingsGUI", "Name"))
+        self.tooltip_enable_download_checkbox.setText(_translate("SettingsGUI", "Download Enabled"))
         self.tooltip_do_not_edit_checkbox.setText(_translate("SettingsGUI", "Do Not Edit"))
         self.tooltip_last_download_date_checkbox.setText(_translate("SettingsGUI", "Last Content Download Date"))
         self.tooltip_custom_date_limit_checkbox.setText(_translate("SettingsGUI", "Custom Date Limit"))

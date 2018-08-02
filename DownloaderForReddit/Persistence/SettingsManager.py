@@ -101,6 +101,7 @@ class SettingsManager:
         # region Display Settings
         self.tooltip_display_dict = {
             'name': self.settings.value('tooltip_name', True, type=bool),
+            'enable_download': self.settings.value('enable_download', True, type=bool),
             'do_not_edit': self.settings.value('tooltip_do_not_edit', False, type=bool),
             'last_download_date': self.settings.value('tooltip_last_download_date', True, type=bool),
             'custom_date_limit': self.settings.value('tooltip_custom_date_limit', False, type=bool),

@@ -31,7 +31,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import Utils.Injector
 from Core.DownloadRunner import DownloadRunner
-from GUI.AddUserDialog import AddUserDialog
+from GUI.AddRedditObjectDialog import AddUserDialog
 from GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
 from UserFinder import UserFinder_Obsolete
 from Core.Messages import Message

@@ -94,9 +94,19 @@ class Message(object):
         reply = message.information(self, 'Invalid Name', text, message.Ok)
         return reply == message.Ok
 
+    def invalid_names(self, name_list):
+        text = '%s\nare not valid names' % '\n'.join(x for x in name_list)
+        reply = message.information(self, 'Invalid Names', text, message.Ok)
+        return reply == message.Ok
+
     def name_in_list(self, name):
         text = '"%s" is already in the list' % name
         reply = message.information(self, 'Existing Name', text, message.Ok)
+        return reply == message.Ok
+
+    def names_in_list(self, name_list):
+        text = '%s\nalready in list' % '\n'.join(x for x in name_list)
+        reply = message.information(self, 'Existing Names', text, message.Ok)
         return reply == message.Ok
 
     def no_download_folder(self, object_type):
