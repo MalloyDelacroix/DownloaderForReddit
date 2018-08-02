@@ -35,14 +35,14 @@ from Core.Messages import Message
 
 class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
 
-    def __init__(self, object_type):
+    def __init__(self, object_type, parent=None):
         """
         A dialog that opens to allow for the user to add a new reddit username to the username list. An instance of this
         class is also used as a dialog to add subreddits, but two object names are overwritten. This dialog is basically
         a standard input dialog, but with the addition of a third button that allows the user to add more than one name
         without closing the dialog.  Shortcut keys have also been added to facilitate ease of use
         """
-        QtWidgets.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Injector.get_settings_manager()
@@ -51,8 +51,7 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
 
         self.object_name_list_view = QtWidgets.QListView()
         self.object_name_list_view.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.object_name_list_model = AddRedditObjectListModel(self.object_type)
-        self.object_name_list_model.close.connect(self.close)
+        self.object_name_list_model = AddRedditObjectListModel(self.object_type, self)
         self.object_name_list_model.name_list_updated.connect(self.name_count_updated)
         self.object_name_list_view.setModel(self.object_name_list_model)
 
@@ -148,12 +147,12 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
 
     def import_from_file(self):
         """Imports a list of names from a text file."""
-        if self.layout_style == 'SINGLE':
-            self.toggle_layout()
         name_list = self.get_names_from_text()
         if name_list:
             for name in name_list:
                 self.object_name_list_model.insertRow(name)
+        if len(self.object_name_list_model.name_list) > 0 and self.layout_style == 'SINGLE':
+            self.toggle_layout()
 
     def get_names_from_text(self):
         """
@@ -204,8 +203,6 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         Imports a list of names form a directory.  Each subfolder in the directory will be registered as a name to be
         added.
         """
-        if self.layout_style == 'SINGLE':
-            self.toggle_layout()
         master_folder = self.select_directory()
         if master_folder:
             reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
@@ -215,6 +212,8 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
                 for folder in (folder for folder in os.listdir(master_folder) if
                                os.path.isdir(os.path.join(master_folder, folder))):
                     self.add_name_to_list(name=folder)
+                if self.layout_style == 'SINGLE':
+                    self.toggle_layout()
 
     def select_directory(self):
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
@@ -248,14 +247,10 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
                                                len(self.object_name_list_view.selectedIndexes()))
 
     def accept(self):
-        if self.object_name_list_model.checker_running:
-            self.object_name_list_model.stop_name_checker()
+        self.object_name_list_model.stop_name_checker()
         if self.layout_style == 'SINGLE':
             self.name = self.object_name_line_edit.text()
         super().accept()
 
     def closeEvent(self, event):
-        print('\n\nclose event called\n\n')
-        if self.object_name_list_model.checker_running:
-            self.object_name_list_model.stop_name_checker()
-            event.ignore()
+        self.object_name_list_model.stop_name_checker()

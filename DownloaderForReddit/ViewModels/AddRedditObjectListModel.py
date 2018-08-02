@@ -1,3 +1,27 @@
+"""
+Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
+users or on the subreddits.
+
+
+Copyright (C) 2017, Kyle Hickey
+
+
+This file is part of the Downloader for Reddit.
+
+Downloader for Reddit is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Downloader for Reddit is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap
 import os
@@ -7,12 +31,15 @@ from Utils.RedditUtils import NameChecker
 
 
 class AddRedditObjectListModel(QAbstractListModel):
+    """
+    A list model that handles the the list view for the AddRedditObjectDialog.
+    """
 
     name_list_updated = pyqtSignal()
-    close = pyqtSignal()
 
-    def __init__(self, object_type):
+    def __init__(self, object_type, parent=None):
         super().__init__()
+        self.parent = parent
         self.object_type = object_type
         self.queue = Queue()
         self.name_list = []
@@ -73,23 +100,18 @@ class AddRedditObjectListModel(QAbstractListModel):
     def start_name_check_thread(self):
         """Initializes a NameChecker object, then runs it in another thread."""
         self.name_checker = NameChecker(self.object_type, self.queue)
-        self.thread = QThread()
+        self.thread = QThread(self)
         self.name_checker.moveToThread(self.thread)
         self.name_checker.name_validation.connect(self.validate_name)
         self.name_checker.finished.connect(self.thread.quit)
         self.name_checker.finished.connect(self.name_checker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.clean_up_run)
         self.thread.started.connect(self.name_checker.run)
         self.thread.start()
 
     def stop_name_checker(self):
         if self.name_checker:
             self.name_checker.stop_run()
-
-    def clean_up_run(self):
-        self.checker_running = False
-        self.close.emit()
 
     def validate_name(self, name_tup):
         self.validation_dict[name_tup[0]] = name_tup[1]

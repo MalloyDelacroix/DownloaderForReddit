@@ -673,7 +673,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def add_user_dialog(self):
         """Opens the dialog to enter the user name"""
         if self.user_lists_combo != '' and len(self.user_view_chooser_dict) > 0:
-            add_user_dialog = AddUserDialog('USER')
+            add_user_dialog = AddUserDialog('USER', self)
             dialog = add_user_dialog.exec_()
             if dialog == QtWidgets.QDialog.Accepted:
                 if add_user_dialog.layout_style == 'SINGLE':
@@ -807,7 +807,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def add_subreddit_dialog(self):
         """See add_user_dialog"""
         if self.subreddit_list_combo != '' and len(self.subreddit_view_chooser_dict) > 0:
-            add_sub_dialog = AddUserDialog('SUBREDDIT')
+            add_sub_dialog = AddUserDialog('SUBREDDIT', self)
             add_sub_dialog.setWindowTitle('Add Subreddit Dialog')
             add_sub_dialog.label.setText('Enter a new subreddit:')
             dialog = add_sub_dialog.exec_()
