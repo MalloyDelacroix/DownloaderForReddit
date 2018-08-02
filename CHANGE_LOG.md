@@ -12,6 +12,9 @@ from reddit by this downloader)
 * Add ability to export failed downloads in multiple formats
 * Add new extractor for reddituploads
 * Add ability to exclude a user/subreddit from download without removing them from the download list
+* Massively update the add user/subreddit dialog
+  * Dialog now handles importing from text file or sub folders instead of main window
+  * List copy and paste now supported
 
 ### Minor Changes
 
