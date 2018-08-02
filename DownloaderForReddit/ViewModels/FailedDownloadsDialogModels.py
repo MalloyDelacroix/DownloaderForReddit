@@ -52,7 +52,7 @@ class FailedDownloadsTableModel(QAbstractTableModel):
         col = index.column()
         try:
             item = getattr(self.data_list[row], attrify(self.header_data[col]))
-        except AttributeError:
+        except (AttributeError, TypeError):
             item = None
         return item
 
