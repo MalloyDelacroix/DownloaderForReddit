@@ -140,7 +140,7 @@ class Content(QRunnable):
     def handle_exception(self):
         """Handles logging and output in case of a failed save due to a general exception."""
         self.logger.error('Failed to save content: Exception while saving file',
-                          extra={'save_path': self.filename}, exc_info=True)
+                          extra={'url': self.url, 'save_path': self.filename}, exc_info=True)
         self.queue.put('Failed to save content: %s' % self.filename)
 
     @staticmethod
