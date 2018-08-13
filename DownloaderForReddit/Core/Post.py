@@ -39,6 +39,16 @@ class Post(object):
         :param created: The epoch time that the post was made.
         :param status: The status of the post.  This is used to hold status information about the post, including the
                        reason the post failed to download if necessary.  Defaults to "good".
+        :param domain: The domain name of the site hosting the post.  This can be supplied by reddit but defaults to
+                       None.  If the default value is taken, this class will determine the domain name based on the
+                       supplied url.
+        :type url: str
+        :type author: str
+        :type title: str
+        :type subreddit: str
+        :type created: long
+        :type status: str
+        :type domain: str
         """
         self.url = url
         self.author = author
