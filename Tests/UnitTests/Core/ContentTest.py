@@ -14,8 +14,11 @@ class ContentTest(unittest.TestCase):
         self.file_ext = '.jpg'
         self.save_path = 'C:/Users/Gorgoth/Downloads/'
         self.subreddit_save_method = subreddit_method
+        self.date_created = '86400'
+        self.display_only = False
         self.content = Content(self.url, self.user, self.post_title, self.subreddit, self.submission_id,
-                               self.number_in_seq, self.file_ext, self.save_path, self.subreddit_save_method)
+                               self.number_in_seq, self.file_ext, self.save_path, self.subreddit_save_method,
+                               self.date_created, self.display_only)
 
     def test_file_name_subreddit_save_method_none(self):
         self.make_content(None)
@@ -63,8 +66,7 @@ class ContentTest(unittest.TestCase):
         name_two = 'nam/e fo*rbid<d:en char?act..er>s'
         name_three = 'regular name that should be accepted'
         name_one_correct = 'this is a test of a name that has more than two hundred and thirty characters to see if ' \
-                          'the clean file name method will correctly limit the size of this name to something shorter ' \
-                          'that can be stored on the file system - these ...'
+                           'the clean file name method will correctly limit the size of this name to something...'
         name_two_correct = 'nam#e fo#rbid#d#en char#act##er#s'
         self.assertEqual(Content.clean_filename(name_one), name_one_correct)
         self.assertEqual(Content.clean_filename(name_two), name_two_correct)
