@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch
 import logging
 from bs4 import BeautifulSoup
-import os
 
 from DownloaderForReddit.Extractors.VidbleExtractor import VidbleExtractor
 from DownloaderForReddit.Utils import Injector
