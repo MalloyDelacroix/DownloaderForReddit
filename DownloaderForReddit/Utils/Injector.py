@@ -23,7 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 from queue import Queue
 
-from Persistence.SettingsManager import SettingsManager
+from ..Persistence.SettingsManager import SettingsManager
 
 
 settings_manager = None

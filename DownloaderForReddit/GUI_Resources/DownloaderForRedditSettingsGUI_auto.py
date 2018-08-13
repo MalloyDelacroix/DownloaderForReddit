@@ -13,7 +13,7 @@ class Ui_SettingsGUI(object):
         SettingsGUI.setObjectName("SettingsGUI")
         SettingsGUI.resize(754, 855)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../Resources/Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         SettingsGUI.setWindowIcon(icon)
         self.gridLayout_8 = QtWidgets.QGridLayout(SettingsGUI)
         self.gridLayout_8.setObjectName("gridLayout_8")

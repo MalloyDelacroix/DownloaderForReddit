@@ -29,12 +29,12 @@ import subprocess
 import sys
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-import Utils.Injector
-from Core.DownloadRunner import DownloadRunner
-from GUI.AddRedditObjectDialog import AddUserDialog
-from GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
-from UserFinder import UserFinder_Obsolete
-from Core.Messages import Message
+from ..Utils import Injector
+from ..Core.DownloadRunner import DownloadRunner
+from ..GUI.AddRedditObjectDialog import AddUserDialog
+from ..GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
+from ..UserFinder import UserFinder_Obsolete
+from ..Core.Messages import Message
 
 
 class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
@@ -62,7 +62,7 @@ class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):
         self.running = False
         self.auto_opened = False
 
-        self.settings_manager = Utils.Injector.get_settings_manager()
+        self.settings_manager = Injector.get_settings_manager()
 
         geom = self.settings_manager.user_finder_GUI_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())

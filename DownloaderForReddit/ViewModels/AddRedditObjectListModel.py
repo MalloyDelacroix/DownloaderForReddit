@@ -27,7 +27,7 @@ from PyQt5.QtGui import QPixmap
 import os
 from queue import Queue
 
-from Utils.RedditUtils import NameChecker
+from ..Utils.RedditUtils import NameChecker
 
 
 class AddRedditObjectListModel(QAbstractListModel):

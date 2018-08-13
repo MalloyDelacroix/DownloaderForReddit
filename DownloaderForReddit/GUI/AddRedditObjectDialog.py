@@ -27,10 +27,10 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QCursor
 import logging
 
-from GUI_Resources.AddRedditObjectDialog_auto import Ui_add_reddit_object_dialog
-from ViewModels.AddRedditObjectListModel import AddRedditObjectListModel
-from Utils import Injector
-from Core.Messages import Message
+from ..GUI_Resources.AddRedditObjectDialog_auto import Ui_add_reddit_object_dialog
+from ..ViewModels.AddRedditObjectListModel import AddRedditObjectListModel
+from ..Utils import Injector
+from ..Core.Messages import Message
 
 
 class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):

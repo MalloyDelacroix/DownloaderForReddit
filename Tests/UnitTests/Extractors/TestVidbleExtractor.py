@@ -2,14 +2,15 @@ import unittest
 from unittest.mock import patch
 import logging
 from bs4 import BeautifulSoup
+import os
 
-from Extractors.VidbleExtractor import VidbleExtractor
-from Utils import Injector
+from DownloaderForReddit.Extractors.VidbleExtractor import VidbleExtractor
+from DownloaderForReddit.Utils import Injector
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
 
-class VidbleExtractorTest(unittest.TestCase):
+class TestVidbleExtractor(unittest.TestCase):
 
     logging.disable(logging.CRITICAL)
 
@@ -19,7 +20,7 @@ class VidbleExtractorTest(unittest.TestCase):
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()
 
-    @patch('Extractors.VidbleExtractor.get_imgs')
+    @patch('DownloaderForReddit.Extractors.VidbleExtractor.get_imgs')
     def test_extract_single_show(self, s_mock):
         s_mock.return_value = self.get_single_soup_show()
         ve = VidbleExtractor(MockObjects.get_mock_post_vidble(), MockObjects.get_blank_user())
@@ -30,7 +31,7 @@ class VidbleExtractorTest(unittest.TestCase):
         self.check_output(content)
         self.assertTrue(len(ve.failed_extract_posts) == 0)
 
-    @patch('Extractors.VidbleExtractor.get_imgs')
+    @patch('DownloaderForReddit.Extractors.VidbleExtractor.get_imgs')
     def test_extract_single_explore(self, s_mock):
         s_mock.return_value = self.get_single_soup_explore()
         post = MockObjects.get_mock_post_vidble()
@@ -46,14 +47,14 @@ class VidbleExtractorTest(unittest.TestCase):
     def test_extract_album(self):
         pass  # TODO: Find album to make test html page from
 
-    @patch('Extractors.VidbleExtractor.extract_single')
+    @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_single')
     def test_extract_content_assignment_single_show(self, es_mock):
         ve = VidbleExtractor(MockObjects.get_mock_post_vidble(), MockObjects.get_blank_user())
         ve.extract_content()
 
         es_mock.assert_called()
 
-    @patch('Extractors.VidbleExtractor.extract_single')
+    @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_single')
     def test_extract_content_assignment_single_explore(self, es_mock):
         post = MockObjects.get_mock_post_vidble()
         post.url = post.url.replace('show', 'explore')
@@ -65,7 +66,7 @@ class VidbleExtractorTest(unittest.TestCase):
     def test_extract_content_assignment_album(self):
         pass  # TODO: Test this method after an album html file is made
 
-    @patch('Extractors.VidbleExtractor.extract_direct_link')
+    @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_direct_link')
     def test_extract_content_assignment_direct(self, es_mock):
         post = MockObjects.get_mock_post_vidble()
         post.url = self.extracted_single_url_explore
@@ -81,12 +82,12 @@ class VidbleExtractorTest(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/toqeUzXBIl.jpg', content.filename)
 
     def get_single_soup_show(self):
-        with open('Resources/vidble_single_test_show.html', 'r') as file:
+        with open('Tests/UnitTests/Extractors/Resources/vidble_single_test_show.html', 'r') as file:
             soup = BeautifulSoup(file, 'html.parser')
         return soup.find_all('img')
 
     def get_single_soup_explore(self):
-        with open('Resources/vidble_single_test_explore.html', 'r') as file:
+        with open('Tests/UnitTests/Extractors/Resources/vidble_single_test_explore.html', 'r') as file:
             soup = BeautifulSoup(file, 'html.parser')
         return soup.find_all('img')
 

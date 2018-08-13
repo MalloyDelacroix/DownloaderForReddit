@@ -23,9 +23,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Extractors import BaseExtractor
-from Core import RedditObjects
 import sys
 
-sys.modules['RedditObjects'] = RedditObjects
-sys.modules['BaseExtractor'] = BaseExtractor
+from ..Extractors import BaseExtractor
+from ..Core import RedditObjects
+
+sys.modules['Core.RedditObjects'] = RedditObjects
+sys.modules['Extractors.BaseExtractor'] = BaseExtractor

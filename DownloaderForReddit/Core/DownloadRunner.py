@@ -29,9 +29,9 @@ from queue import Queue
 from time import time
 import logging
 
-from Utils import Injector, RedditUtils
-from Core.PostFilter import PostFilter
-from Extractors.Extractor import Extractor
+from ..Utils import Injector, RedditUtils
+from ..Core.PostFilter import PostFilter
+from ..Extractors.Extractor import Extractor
 
 
 class DownloadRunner(QObject):

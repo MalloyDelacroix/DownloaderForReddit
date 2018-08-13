@@ -25,15 +25,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 
-from Core.Post import Post
+from ..Core.Post import Post
 
 # Import each extractor class in the Extractors package so that BaseExtractor.__subclasses__() will pick up the
 # extractor class to be used in the Extractor.assign_extractor method.
-from Extractors.ImgurExtractor import ImgurExtractor
-from Extractors.GfycatExtractor import GfycatExtractor
-from Extractors.VidbleExtractor import VidbleExtractor
-from Extractors.RedditUploadsExtractor import RedditUploadsExtractor
-from Extractors.GenericVideoExtractor import GenericVideoExtractor
+from .ImgurExtractor import ImgurExtractor
+from .GfycatExtractor import GfycatExtractor
+from .VidbleExtractor import VidbleExtractor
+from .RedditUploadsExtractor import RedditUploadsExtractor
+from .GenericVideoExtractor import GenericVideoExtractor
 
 
 sys.modules['Post'] = Post

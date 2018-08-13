@@ -7,7 +7,7 @@ from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
 
-class DirectExtractorTest(unittest.TestCase):
+class TestDirectExtractor(unittest.TestCase):
 
     logging.disable(logging.CRITICAL)
 

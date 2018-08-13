@@ -28,13 +28,12 @@ import copy
 import os
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
-from Utils import Injector
-from Core.Messages import Message
-from Utils.AlphanumKey import ALPHANUM_KEY
-from ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
-from Core.RedditObjects import *
-from CustomWidgets.CustomListWidgetItem import CustomListItem
+from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
+from ..Core.Messages import Message
+from ..Utils.AlphanumKey import ALPHANUM_KEY
+from ..ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
+from ..Core.RedditObjects import *
+from ..CustomWidgets.CustomListWidgetItem import CustomListItem
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):

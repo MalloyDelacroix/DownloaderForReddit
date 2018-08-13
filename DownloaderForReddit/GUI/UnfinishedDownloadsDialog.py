@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets
 
-from GUI_Resources.UnfinishedDownloadsDialog_auto import Ui_unfinished_downloads_dialog
+from ..GUI_Resources.UnfinishedDownloadsDialog_auto import Ui_unfinished_downloads_dialog
 
 
 class UnfinishedDownloadsDialog(QtWidgets.QDialog, Ui_unfinished_downloads_dialog):

@@ -24,7 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 
-from Core.Post import Post
+from ...Core.Post import Post
 
 
 class PostCollection:

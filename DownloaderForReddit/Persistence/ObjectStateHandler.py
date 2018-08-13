@@ -27,10 +27,10 @@ import shelve
 import os
 import logging
 
-from ViewModels.ListModel import ListModel
-from Persistence.ObjectUpdater import ObjectUpdater
-from Utils import SystemUtil
-from version import __version__
+from ..ViewModels.ListModel import ListModel
+from ..Persistence.ObjectUpdater import ObjectUpdater
+from ..Utils import SystemUtil
+from ..version import __version__
 
 
 class ObjectStateHandler:

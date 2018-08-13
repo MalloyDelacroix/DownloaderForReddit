@@ -26,11 +26,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from time import sleep, time
 
-from Extractors.BaseExtractor import BaseExtractor
-from Extractors.DirectExtractor import DirectExtractor
-from Utils import Injector
-from Core import Const
-from Utils.RedditUtils import convert_praw_post
+from ..Extractors.BaseExtractor import BaseExtractor
+from ..Extractors.DirectExtractor import DirectExtractor
+from ..Utils import Injector
+from ..Core import Const
+from ..Utils.RedditUtils import convert_praw_post
 from . import timeout_dict
 
 

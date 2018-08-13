@@ -24,7 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from urllib.parse import urlparse
 
-from Utils.SystemUtil import epoch_to_str
+from ..Utils.SystemUtil import epoch_to_str
 
 
 class Post(object):

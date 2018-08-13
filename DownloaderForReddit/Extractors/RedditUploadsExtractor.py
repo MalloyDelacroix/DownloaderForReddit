@@ -25,8 +25,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
 
-from Extractors.BaseExtractor import BaseExtractor
-from Core import Const
+from ..Extractors.BaseExtractor import BaseExtractor
+from ..Core import Const
 
 
 class RedditUploadsExtractor(BaseExtractor):

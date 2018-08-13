@@ -27,8 +27,8 @@ import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal
 import logging
 
-from Core.Post import Post
-from version import __version__
+from ..Core.Post import Post
+from ..version import __version__
 
 
 reddit_instance = None

@@ -25,9 +25,9 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import youtube_dl
 
-from Extractors.BaseExtractor import BaseExtractor
-from Core import Const
-from Logging import LogUtils
+from ..Extractors.BaseExtractor import BaseExtractor
+from ..Core import Const
+from ..Logging import LogUtils
 
 
 class GenericVideoExtractor(BaseExtractor):
@@ -37,7 +37,7 @@ class GenericVideoExtractor(BaseExtractor):
         url_key = [x.strip() for x in file.readlines()]
         file.close()
     except FileNotFoundError:
-        url_key = []
+        url_key = None
         LogUtils.log_proxy(__name__, 'WARNING', message='Failed to load supported video sites')
 
     def __init__(self, post, reddit_object, content_display_only=False):

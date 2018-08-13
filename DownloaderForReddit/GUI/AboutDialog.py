@@ -25,9 +25,9 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from GUI_Resources.AboutDialog_auto import Ui_About
-from version import __version__
-import Utils.Injector
+from ..GUI_Resources.AboutDialog_auto import Ui_About
+from ..version import __version__
+from ..Utils import Injector
 
 
 class AboutDialog(QtWidgets.QDialog, Ui_About):
@@ -38,7 +38,7 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
         """
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
-        self.settings_manager = Utils.Injector.get_settings_manager()
+        self.settings_manager = Injector.get_settings_manager()
 
         self.buttonBox.accepted.connect(self.accept)
 

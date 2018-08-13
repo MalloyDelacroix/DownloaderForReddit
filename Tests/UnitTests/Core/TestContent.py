@@ -2,7 +2,7 @@ import unittest
 from DownloaderForReddit.Core.Content import Content
 
 
-class ContentTest(unittest.TestCase):
+class TestContent(unittest.TestCase):
 
     def make_content(self, subreddit_method):
         self.url = 'http://test-url.com/FluffyKitten.jpg'

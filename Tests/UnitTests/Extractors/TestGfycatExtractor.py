@@ -2,20 +2,20 @@ import unittest
 from unittest.mock import patch
 import logging
 
-from Extractors.GfycatExtractor import GfycatExtractor
-from Utils import Injector
+from DownloaderForReddit.Extractors.GfycatExtractor import GfycatExtractor
+from DownloaderForReddit.Utils import Injector
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
 
-class GfycatExtractorTest(unittest.TestCase):
+class TestGfycatExtractor(unittest.TestCase):
 
     logging.disable(logging.CRITICAL)
 
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()
 
-    @patch('Extractors.GfycatExtractor.get_json')
+    @patch('DownloaderForReddit.Extractors.GfycatExtractor.get_json')
     def test_extract_single(self, j_mock):
         dir_url = 'https://giant.gfycat.com/KindlyElderlyCony.webm'
         j_mock.return_value = {'gfyItem': {'webmUrl': dir_url}}
@@ -31,14 +31,14 @@ class GfycatExtractorTest(unittest.TestCase):
         ge.extract_direct_link()
         self.check_output(ge, post.url)
 
-    @patch('Extractors.GfycatExtractor.extract_single')
+    @patch('DownloaderForReddit.Extractors.GfycatExtractor.extract_single')
     def test_extract_content_assignment_single(self, es_mock):
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat(), MockObjects.get_blank_user())
         ge.extract_content()
 
         es_mock.assert_called()
 
-    @patch('Extractors.GfycatExtractor.extract_direct_link')
+    @patch('DownloaderForReddit.Extractors.GfycatExtractor.extract_direct_link')
     def test_extract_content_assignment_direct(self, es_mock):
         post = MockObjects.get_mock_post_gfycat()
         post.url += '.webm'
@@ -47,7 +47,7 @@ class GfycatExtractorTest(unittest.TestCase):
 
         es_mock.assert_called()
 
-    @patch('Extractors.GfycatExtractor.extract_single')
+    @patch('DownloaderForReddit.Extractors.GfycatExtractor.extract_single')
     def test_failed_connection(self, es_mock):
         es_mock.side_effect = ConnectionError()
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat(), MockObjects.get_blank_user())

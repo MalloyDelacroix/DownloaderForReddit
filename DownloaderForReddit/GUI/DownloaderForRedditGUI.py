@@ -29,23 +29,23 @@ from datetime import datetime
 from PyQt5 import QtWidgets, QtCore, QtGui
 import logging
 
-from GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
-from GUI.AboutDialog import AboutDialog
-from GUI.DownloadedObjectsDialog import DownloadedObjectsDialog
-from GUI.FailedDownloadsDialog import FailedDownloadsDialog
-from Core.Messages import Message, UnfinishedDownloadsWarning
-from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
-from Core.DownloadRunner import DownloadRunner
-from Core.RedditObjects import User, Subreddit
-from GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
-from GUI.UpdateDialogGUI import UpdateDialog
-from Core.UpdaterChecker import UpdateChecker
-from GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
-from Utils import Injector, SystemUtil, ImgurUtils
-from Persistence.ObjectStateHandler import ObjectStateHandler
-from ViewModels.ListModel import ListModel
-from GUI.AddRedditObjectDialog import AddUserDialog
-from version import __version__
+from ..GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
+from ..GUI.AboutDialog import AboutDialog
+from ..GUI.DownloadedObjectsDialog import DownloadedObjectsDialog
+from ..GUI.FailedDownloadsDialog import FailedDownloadsDialog
+from ..Core.Messages import Message, UnfinishedDownloadsWarning
+from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
+from ..Core.DownloadRunner import DownloadRunner
+from ..Core.RedditObjects import User, Subreddit
+from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
+from ..GUI.UpdateDialogGUI import UpdateDialog
+from ..Core.UpdaterChecker import UpdateChecker
+from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
+from ..Utils import Injector, SystemUtil, ImgurUtils
+from ..Persistence.ObjectStateHandler import ObjectStateHandler
+from ..ViewModels.ListModel import ListModel
+from ..GUI.AddRedditObjectDialog import AddUserDialog
+from ..version import __version__
 
 
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):

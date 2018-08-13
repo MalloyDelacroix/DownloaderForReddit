@@ -23,10 +23,10 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from Extractors.BaseExtractor import *
-import Utils.Injector
-from Utils import SystemUtil
-from Logging import LogUtils
+from ..Extractors.BaseExtractor import *
+from ..Utils import Injector
+from ..Utils import SystemUtil
+from ..Logging import LogUtils
 
 
 class RedditObject:
@@ -142,7 +142,7 @@ class RedditObject:
             LogUtils.log_proxy(__name__, 'ERROR', 'Failed to create directory', exc_info=True, reddit_object=self.json)
 
     def clear_download_session_data(self):
-        if Utils.Injector.get_settings_manager().save_undownloaded_content:
+        if Injector.get_settings_manager().save_undownloaded_content:
             self.save_unfinished_downloads()
         self.content.clear()
         self.new_submissions = None

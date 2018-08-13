@@ -27,9 +27,9 @@ import os
 from PyQt5.QtCore import QSettings
 import logging
 
-from Persistence.ObjectStateHandler import ObjectStateHandler
-from Persistence.ObjectUpdater import ObjectUpdater
-from version import __version__
+from ..Persistence.ObjectStateHandler import ObjectStateHandler
+from ..Persistence.ObjectUpdater import ObjectUpdater
+from ..version import __version__
 
 
 class SettingsManager:

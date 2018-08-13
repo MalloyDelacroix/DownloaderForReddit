@@ -27,8 +27,8 @@ import requests
 from PyQt5.QtCore import QRunnable
 import logging
 
-from Utils import Injector, SystemUtil
-from Logging import LogUtils
+from ..Utils import Injector, SystemUtil
+from ..Logging import LogUtils
 
 
 class Content(QRunnable):

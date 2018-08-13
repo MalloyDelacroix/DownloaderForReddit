@@ -28,11 +28,10 @@ import os
 from PyQt5 import QtWidgets, QtCore
 import logging
 
-from GUI_Resources.DownloaderForRedditSettingsGUI_auto import Ui_SettingsGUI
-import Utils.Injector
-from Utils import SystemUtil
-from Core.Messages import Message
-from GUI.ImgurClientDialog import ImgurClientDialog
+from ..GUI_Resources.DownloaderForRedditSettingsGUI_auto import Ui_SettingsGUI
+from ..Utils import Injector
+from ..Core.Messages import Message
+from ..GUI.ImgurClientDialog import ImgurClientDialog
 
 
 class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
@@ -71,7 +70,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
             'PLACEHOLDER': self.gif_display_placeholder_radio
         }
 
-        self.settings_manager = Utils.Injector.get_settings_manager()
+        self.settings_manager = Injector.get_settings_manager()
 
         geom = self.settings_manager.settings_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())

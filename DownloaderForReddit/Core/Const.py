@@ -30,4 +30,5 @@ GIF_EXT = ('.gif', '.gifv', '.webm')
 VID_EXT = ('.mp4', '.wmv', '.avi', '.mpg', '.divx')
 ALL_EXT = IMAGE_EXT + GIF_EXT + VID_EXT
 
-SUPPORTED_SITES_FILE = os.path.abspath('Resources/supported_video_sites.txt')
+RESOURCES = os.path.abspath('Resources/')
+SUPPORTED_SITES_FILE = os.path.join(RESOURCES, 'supported_video_sites.txt')

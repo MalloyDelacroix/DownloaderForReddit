@@ -29,10 +29,10 @@ import sys
 from PyQt5 import QtWidgets, QtCore
 import logging
 
-from GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
-from Utils import Injector
-from Logging import Logger
-from version import __version__
+from DownloaderForReddit.GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
+from DownloaderForReddit.Utils import Injector
+from DownloaderForReddit.Logging import Logger
+from DownloaderForReddit.version import __version__
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #   QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)

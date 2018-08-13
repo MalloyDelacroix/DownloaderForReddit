@@ -27,8 +27,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import jsonlogger
 
-from Utils import SystemUtil
-from Logging.StreamFormatter import JsonStreamFormatter
+from ..Utils import SystemUtil
+from ..Logging.StreamFormatter import JsonStreamFormatter
 
 
 def make_logger():

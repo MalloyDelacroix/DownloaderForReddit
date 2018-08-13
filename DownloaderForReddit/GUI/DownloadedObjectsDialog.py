@@ -27,9 +27,9 @@ import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 import logging
 
-from GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
-from Utils import SystemUtil
-from Utils.AlphanumKey import ALPHANUM_KEY
+from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
+from ..Utils import SystemUtil
+from ..Utils.AlphanumKey import ALPHANUM_KEY
 
 
 class DownloadedObjectsDialog(RedditObjectSettingsDialog):

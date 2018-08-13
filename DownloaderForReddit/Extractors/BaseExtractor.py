@@ -26,9 +26,9 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import requests
 import logging
 
-from Core.Content import Content
-import Utils.Injector
-from Core.Post import Post
+from ..Core.Content import Content
+from ..Utils import Injector
+from ..Core.Post import Post
 
 
 class BaseExtractor:
@@ -52,7 +52,7 @@ class BaseExtractor:
         :type content_display_only: bool
         """
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.settings_manager = Utils.Injector.get_settings_manager()
+        self.settings_manager = Injector.get_settings_manager()
         self.url = post.url
         self.domain = post.domain
         self.user = post.author

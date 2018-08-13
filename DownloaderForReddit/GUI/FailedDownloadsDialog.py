@@ -26,11 +26,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QCursor
 
-from GUI_Resources.FailedDownloadsDialog_auto import Ui_failed_downloads_dialog
-from ViewModels.FailedDownloadsDialogModels import FailedDownloadsTableModel, FailedDownloadsDetailTableModel
-from Utils import Injector
-from Utils import SystemUtil
-from Utils.Exporters import TextExporter, JsonExporter, XMLExporter
+from ..GUI_Resources.FailedDownloadsDialog_auto import Ui_failed_downloads_dialog
+from ..ViewModels.FailedDownloadsDialogModels import FailedDownloadsTableModel, FailedDownloadsDetailTableModel
+from ..Utils import Injector
+from ..Utils import SystemUtil
+from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
 
 
 class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):

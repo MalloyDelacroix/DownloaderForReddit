@@ -25,9 +25,9 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtWidgets import QDialog
 
-from GUI_Resources.UpdateDialog_auto import Ui_update_dialog_box
-import Utils.Injector
-from version import __version__
+from ..GUI_Resources.UpdateDialog_auto import Ui_update_dialog_box
+from ..Utils import Injector
+from ..version import __version__
 
 
 class UpdateDialog(QDialog, Ui_update_dialog_box):
@@ -44,7 +44,7 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
         """
         super().__init__()
         self.setupUi(self)
-        self.settings_manager = Utils.Injector.settings_manager
+        self.settings_manager = Injector.settings_manager
 
         geom = self.settings_manager.update_dialog_geom
         self.restoreGeometry(geom if geom is not None else self.saveGeometry())

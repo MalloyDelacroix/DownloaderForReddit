@@ -25,9 +25,9 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
 
-from Extractors.BaseExtractor import BaseExtractor
-from Utils import ImgurUtils
-from Core import Const
+from ..Extractors.BaseExtractor import BaseExtractor
+from ..Utils import ImgurUtils
+from ..Core import Const
 
 
 class ImgurExtractor(BaseExtractor):

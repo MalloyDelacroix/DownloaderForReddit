@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../Resources/Images/settings_single_gear.png</normaloff>../Resources/Images/settings_single_gear.png</iconset>
+    <normaloff>../../Resources/Images/settings_single_gear.png</normaloff>../../Resources/Images/settings_single_gear.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_8">
    <item row="0" column="0" colspan="3">
