@@ -70,6 +70,34 @@ class BaseExtractor:
     def __str__(self):
         return __name__
 
+    @property
+    def user_name(self):
+        """
+        A helper property to get the str name of the user associated with the supplied post.  Depending on if the post
+        is fresh from reddit or a cached post object, the value for 'self.user' may be a praw object or a string.  This
+        property is used when only the string name is needed in either case.
+        :return: The name of the user associated with the class supplied post.
+        :rtype: str
+        """
+        try:
+            return self.user.name
+        except AttributeError:
+            return self.user
+
+    @property
+    def subreddit_name(self):
+        """
+        A helper property to get the str name of the subreddit associated with the supplied post. Depending on if the
+        post is fresh from reddit or a cached post object, the value for 'self.subreddit' may be a praw object or a
+        string.  This property is used when only the string name is needed in either case.
+        :return: The name of the subreddit associated with the class supplied post.
+        :rtype: str
+        """
+        try:
+            return self.subreddit.display_name
+        except AttributeError:
+            return self.subreddit
+
     @classmethod
     def get_url_key(cls):
         """
@@ -183,7 +211,7 @@ class BaseExtractor:
                        encountered.
         """
         message_text = ': %s' % message if message else ''
-        failed_post = Post(self.url, self.user.name, self.post_title, self.subreddit.display_name, self.creation_date,
+        failed_post = Post(self.url, self.user_name, self.post_title, self.subreddit_name, self.creation_date,
                            status=message if message_text else 'Failed')
         extra = {'extractor_data': self.get_log_data()}
         if save and self.settings_manager.save_failed_extracts:
@@ -203,7 +231,7 @@ class BaseExtractor:
         Saves a failed extract as a Post object to be retried upon future runs.  This should only be done for certain
         errors, such as an over capacity error, that are very likely to not be encountered again on future runs.
         """
-        self.failed_extracts_to_save.append(Post(self.url, self.user.name, self.post_title, self.subreddit.display_name,
+        self.failed_extracts_to_save.append(Post(self.url, self.user_name, self.post_title, self.subreddit_name,
                                                  self.creation_date))
 
     def get_log_data(self):
@@ -211,8 +239,8 @@ class BaseExtractor:
         Returns a loggable dictionary of the extractors current variables to be put into the log.
         """
         return {'url': self.url,
-                'user': self.user.name,
-                'subreddit': self.subreddit.display_name,
+                'user': self.user_name,
+                'subreddit': self.subreddit_name,
                 'post_title': self.post_title,
                 'creation_date': self.creation_date,
                 'save_path': self.save_path,
