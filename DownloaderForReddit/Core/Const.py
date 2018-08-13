@@ -22,8 +22,12 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+
 
 IMAGE_EXT = ('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.webm')  # TODO: remove gif extensions after gif settings added
 GIF_EXT = ('.gif', '.gifv', '.webm')
 VID_EXT = ('.mp4', '.wmv', '.avi', '.mpg', '.divx')
 ALL_EXT = IMAGE_EXT + GIF_EXT + VID_EXT
+
+SUPPORTED_SITES_FILE = os.path.abspath('Resources/supported_video_sites.txt')
