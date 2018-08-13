@@ -38,7 +38,7 @@ class GenericVideoExtractor(BaseExtractor):
         file.close()
     except FileNotFoundError:
         url_key = []
-        LogUtils.log_proxy(__name__, 'Failed to load supported video sites')
+        LogUtils.log_proxy(__name__, 'WARNING', message='Failed to load supported video sites')
 
     def __init__(self, post, reddit_object, content_display_only=False):
         super().__init__(post, reddit_object, content_display_only)
