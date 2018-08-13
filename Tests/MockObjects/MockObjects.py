@@ -78,3 +78,15 @@ def get_mock_post_vidble():
     post = get_generic_mock_post()
     post.url = 'https://vidble.com/show/toqeUzXBIl'
     return post
+
+
+class MockPrawPost:
+
+    def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None):
+        self.url = url
+        self.author = author
+        self.title = title
+        self.subreddit = subreddit
+        self.created = created
+        self.score = score
+        self.over_18 = over_18
