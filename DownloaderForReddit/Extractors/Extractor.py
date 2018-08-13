@@ -31,7 +31,7 @@ from ..Extractors.DirectExtractor import DirectExtractor
 from ..Utils import Injector
 from ..Core import Const
 from ..Utils.RedditUtils import convert_praw_post
-from . import timeout_dict
+# from . import timeout_dict
 
 
 class Extractor:
@@ -65,7 +65,7 @@ class Extractor:
             self.reddit_object.set_date_limit(post.created)
         try:
             extractor = self.assign_extractor(post)(post, self.reddit_object)
-            self.check_timeout(extractor)
+            # self.check_timeout(extractor)
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
