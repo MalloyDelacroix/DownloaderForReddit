@@ -378,7 +378,3 @@ class MockClientResponse:
             return '%sgif.mp4' % url
         except TypeError:
             return None
-
-
-if __name__ == '__main__':
-    unittest.main()

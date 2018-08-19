@@ -92,7 +92,3 @@ class TestVidbleExtractor(unittest.TestCase):
 
     def get_album_soup(self):
         pass
-
-
-if __name__ == '__main__':
-    unittest.main()

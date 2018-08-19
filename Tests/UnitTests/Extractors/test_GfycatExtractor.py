@@ -63,7 +63,3 @@ class TestGfycatExtractor(unittest.TestCase):
         self.assertEqual(1521473630, content.date_created)
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/KindlyElderlyCony.webm', content.filename)
         self.assertTrue(len(ge.failed_extract_posts) == 0)
-
-
-if __name__ == '__main__':
-    unittest.main()
