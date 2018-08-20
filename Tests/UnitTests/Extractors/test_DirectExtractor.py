@@ -27,7 +27,3 @@ class TestDirectExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/3jfd9nlksd.jpg', content.filename)
-
-
-if __name__ == '__main__':
-    unittest.main()

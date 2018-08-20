@@ -93,7 +93,3 @@ class TestExtractor(unittest.TestCase):
         ex.extract(post)
         failed_post = user.failed_extracts[0]
         self.assertTrue(failed_post.status.startswith('Failed to extract post: Url domain not supported'))
-
-
-if __name__ == '__main__':
-    unittest.main()

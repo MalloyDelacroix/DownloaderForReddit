@@ -86,7 +86,3 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(post_filter.date_filter(post, user))
         post = MockPrawPost(created=MOCK_DATE_LIMIT - 1000)
         self.assertFalse(post_filter.date_filter(post, user))
-
-
-if __name__ == '__main__':
-    unittest.main()
