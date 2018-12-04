@@ -20,7 +20,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../Resources/Images/settings_three_gears.png</normaloff>../Resources/Images/settings_three_gears.png</iconset>
+    <normaloff>../../Resources/Images/settings_three_gears.png</normaloff>../../Resources/Images/settings_three_gears.png</iconset>
   </property>
   <property name="modal">
    <bool>false</bool>

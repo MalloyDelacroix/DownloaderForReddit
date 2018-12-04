@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'RedditObjectSettingsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -16,7 +16,7 @@ class Ui_RedditObjectSettingsDialog(object):
         font.setPointSize(10)
         RedditObjectSettingsDialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../Resources/Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         RedditObjectSettingsDialog.setWindowIcon(icon)
         RedditObjectSettingsDialog.setModal(False)
         self.gridLayout = QtWidgets.QGridLayout(RedditObjectSettingsDialog)
