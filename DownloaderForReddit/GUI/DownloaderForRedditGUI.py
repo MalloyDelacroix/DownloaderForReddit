@@ -936,12 +936,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Opens a dialog that shows the downloads of any user that has been added to the last downloaded users list.
         """
         if len(self.last_downloaded_objects) > 0:
-            obj_display_list = [user for user in
-                                self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
-                                if user.name in self.last_downloaded_objects]
-            obj_display_list.extend(sub for sub in
-                                    self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
-                                    .reddit_object_list if sub.name in self.last_downloaded_objects)
+            obj_display_list = self.get_last_downloaded_users()
+            obj_display_list.extend(self.get_last_downloaded_subs())
 
             downloaded_objects_dialog = DownloadedObjectsDialog(obj_display_list, obj_display_list[0],
                                                                 self.last_downloaded_objects)
@@ -949,6 +945,32 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             downloaded_objects_dialog.show()
         else:
             Message.no_users_downloaded(self)
+
+    def get_last_downloaded_users(self):
+        """
+        Creates and returns a list of users from the current user list that are also in the last downloaded objects list
+        without errors if the application user does not have either a user list created.
+        :return: A list of users from the current user list that are also in the downloaded objects list.
+        """
+        try:
+            return [user for user in
+                    self.user_view_chooser_dict[self.user_lists_combo.currentText()].reddit_object_list
+                    if user.name in self.last_downloaded_objects]
+        except KeyError:
+            return []
+
+    def get_last_downloaded_subs(self):
+        """
+        Creates and returns a list of subreddits from the current subreddit list that are also in the last downloaded
+        objects list without errors if the application user does not have a subreddit list created.
+        :return: A list of subreddits from the current subreddit list that are also in the downloaded objects list.
+        """
+        try:
+            return [sub for sub in
+                    self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()].reddit_object_list
+                    if sub.name in self.last_downloaded_objects]
+        except KeyError:
+            return []
 
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
