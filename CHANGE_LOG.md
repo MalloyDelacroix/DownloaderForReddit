@@ -17,7 +17,8 @@ from reddit by this downloader)
   * List copy and paste now supported
 
 ### Minor Changes
-* Add imgur credit limit check for all extractors to avoid failed extractions due to exceeding a domains rate limit
+* Add imgur credit limit check to avoid additional imgur api calls when out of credits
+    * These posts can be saved (see settings) for future download without having to be re-extracted from reddit
 
 ### Bug Fixes
 * Fix title bar name not changing in last downloaded dialog
