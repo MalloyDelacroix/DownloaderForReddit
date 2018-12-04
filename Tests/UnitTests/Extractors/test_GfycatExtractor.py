@@ -21,7 +21,7 @@ class TestGfycatExtractor(unittest.TestCase):
         j_mock.return_value = {'gfyItem': {'webmUrl': dir_url}}
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat(), MockObjects.get_blank_user())
         ge.extract_single()
-        j_mock.assert_called_with('https://gfycat.com/cajax/get/KindlyElderlyCony')
+        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/KindlyElderlyCony')
         self.check_output(ge, dir_url)
 
     def test_direct_extraction(self):
