@@ -37,7 +37,7 @@ class GfycatExtractor(BaseExtractor):
         api
         """
         super().__init__(post, reddit_object, content_display_only)
-        self.api_caller = "https://gfycat.com/cajax/get/"
+        self.api_caller = "https://api.gfycat.com/v1/gfycats/"
 
     def extract_content(self):
         """Dictates which extraction method should be used"""
