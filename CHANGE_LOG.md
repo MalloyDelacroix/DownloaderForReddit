@@ -17,7 +17,7 @@ from reddit by this downloader)
   * List copy and paste now supported
 
 ### Minor Changes
-* Add imgur credit limit check and rate limiter for all extractors to avoid failed extractions due to exceeding a domains rate limit
+* Add imgur credit limit check for all extractors to avoid failed extractions due to exceeding a domains rate limit
 
 ### Bug Fixes
 * Fix title bar name not changing in last downloaded dialog
@@ -28,3 +28,5 @@ from reddit by this downloader)
 * Fix saved submission display in reddit object settings dialog
 * Fix save submissions not being removed from saved list upon download
 * Tertiary windows now open in center of main window instead of saved location
+* Updated gfycat api caller to new version
+* Fix last downloaded dialog error when user or subreddit list has not been set
