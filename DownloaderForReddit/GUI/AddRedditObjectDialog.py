@@ -80,6 +80,9 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
 
+        self.object_name_line_edit.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.object_name_line_edit.customContextMenuRequested.connect(self.context_menu)
+
     def context_menu(self):
         menu = QtWidgets.QMenu()
         toggle_text = 'Switch To List' if self.layout_style == 'SINGLE' else 'Switch To Single Line'
