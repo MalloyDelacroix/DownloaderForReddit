@@ -78,8 +78,8 @@ class Extractor:
         post = convert_praw_post(post)
         post.status = 'Failed to extract post: Url domain not supported'
         self.reddit_object.failed_extracts.append(post)
-        self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
-                                                                        'reddit_object': self.reddit_object.json})
+        self.logger.error('Failed to find extractor for domain',
+                          extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
 
     def handle_connection_error(self, post):
         post = convert_praw_post(post)
