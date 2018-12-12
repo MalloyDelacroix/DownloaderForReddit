@@ -65,7 +65,6 @@ class Extractor:
             self.reddit_object.set_date_limit(post.created)
         try:
             extractor = self.assign_extractor(post)(post, self.reddit_object)
-            # self.check_timeout(extractor)
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
@@ -75,29 +74,12 @@ class Extractor:
         except:
             self.handle_unknown_error(post)
 
-    @staticmethod
-    def check_timeout(extractor):
-        """
-        Checks the timeout dict (located in the Extractor modules __init__.py file) to make sure calls are not being
-        made to any website more than once every 2 seconds.
-        :param extractor: The extractor that is currently being used and should be checked for timeout limit.
-        :type extractor: BaseExtractor
-        """
-        try:
-            elapsed = time() - timeout_dict[type(extractor).__name__]
-            if elapsed < 2.1:
-                sleep(2.1 - elapsed)
-        except KeyError:
-            pass
-        finally:
-            timeout_dict[type(extractor).__name__] = time()
-
     def handle_unsupported_domain(self, post):
         post = convert_praw_post(post)
         post.status = 'Failed to extract post: Url domain not supported'
         self.reddit_object.failed_extracts.append(post)
-        self.logger.error('Failed to find extractor for domain', extra={'url': post.url,
-                                                                        'reddit_object': self.reddit_object.json})
+        self.logger.error('Failed to find extractor for domain',
+                          extra={'url': post.url, 'reddit_object': self.reddit_object.json}, exc_info=True)
 
     def handle_connection_error(self, post):
         post = convert_praw_post(post)

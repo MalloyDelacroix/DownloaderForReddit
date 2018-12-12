@@ -85,7 +85,7 @@ class DownloadRunner(QObject):
         self.start_extractor()
         self.start_downloader()
 
-        self.download_number = 0
+        self.final_download_count = 0
 
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
@@ -171,6 +171,11 @@ class DownloadRunner(QObject):
         self.update_progress_bar()  # Once for validation, once for would be extraction
 
     def get_download_count(self, reddit_object):
+        """
+        Finds and returns the number of downloads that the supplied reddit object has had during it's lifespan.
+        :param reddit_object: A RedditObject for which the number of previous downloads is requested.
+        :return: The number of previous downloads that the supplied reddit object has.
+        """
         try:
             download_count = len(reddit_object.previous_downloads)
         except:
@@ -201,7 +206,7 @@ class DownloadRunner(QObject):
         except TypeError:
             pass
         self.logger.info('Download finished', extra={'download_type': 'User' if self.user_run else 'Subreddit',
-                                                     'download_count': self.download_number,
+                                                     'download_count': self.final_download_count,
                                                      'download_time': time_string})
         self.queue.put('\nFinished\nTime: %s' % time_string)
         if len(self.downloaded_objects) > 0:
@@ -261,6 +266,7 @@ class DownloadRunner(QObject):
         self.downloader_thread = QThread()
         self.downloader.moveToThread(self.downloader_thread)
         self.downloader_thread.started.connect(self.downloader.download)
+        self.downloader.download_count_signal.connect(self.set_final_download_count)
         self.downloader.finished.connect(self.downloader_thread.quit)
         self.downloader.finished.connect(self.downloader.deleteLater)
         self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
@@ -363,10 +369,12 @@ class DownloadRunner(QObject):
             for post in self.queued_posts.get():
                 self.unfinished_downloads_signal.emit(post)
 
+    @DeprecationWarning
     def finish_downloads(self):
+        """This method is deprecated."""
         self.queued_posts = self.unfinished_downloads_list
-        self.download_number = len(self.queued_posts)
-        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.download_number)
+        self.final_download_count = len(self.queued_posts)
+        self.status_bar_update.emit('Downloaded: 0  of  %s' % self.final_download_count)
         self.start_downloader()
 
     def skip_user_validation(self):
@@ -379,6 +387,9 @@ class DownloadRunner(QObject):
 
     def update_progress_bar(self):
         self.update_progress_bar_signal.emit()
+
+    def set_final_download_count(self, count):
+        self.final_download_count = count
 
 
 class ExtractionRunner(QObject):
@@ -457,6 +468,7 @@ class ExtractionRunner(QObject):
 class Downloader(QObject):
 
     finished = pyqtSignal()
+    download_count_signal = pyqtSignal(int)
 
     def __init__(self, queue, thread_limit):
         """
@@ -486,6 +498,7 @@ class Downloader(QObject):
                 self.run = False
         self.download_pool.waitForDone()
         self.logger.info('Downloader finished', extra={'download_count': self.download_count})
+        self.download_count_signal.emit(self.download_count)
         self.finished.emit()
 
     def stop(self):
