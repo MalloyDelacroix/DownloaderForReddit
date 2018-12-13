@@ -1323,18 +1323,21 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def save_state(self):
         """Pickles the user and subreddit lists and saves any settings that need to be saved"""
-        self.settings_manager.save_all()
-        save_object_dict = {
-            'user_view_chooser_dict': self.user_view_chooser_dict,
-            'sub_view_chooser_dict': self.subreddit_view_chooser_dict,
-            'current_user_view': self.user_lists_combo.currentText(),
-            'current_sub_view': self.subreddit_list_combo.currentText()
-        }
-        if not ObjectStateHandler.save_pickled_state(save_object_dict):
-            Message.failed_to_save(self)
-            self.set_not_saved()
+        if not self.running:
+            self.settings_manager.save_all()
+            save_object_dict = {
+                'user_view_chooser_dict': self.user_view_chooser_dict,
+                'sub_view_chooser_dict': self.subreddit_view_chooser_dict,
+                'current_user_view': self.user_lists_combo.currentText(),
+                'current_sub_view': self.subreddit_list_combo.currentText()
+            }
+            if not ObjectStateHandler.save_pickled_state(save_object_dict):
+                Message.failed_to_save(self)
+                self.set_not_saved()
+            else:
+                self.set_saved()
         else:
-            self.set_saved()
+            Message.cannot_save_while_running(self)
 
     def import_save_file(self):
         """
