@@ -31,7 +31,7 @@ from ..Extractors.DirectExtractor import DirectExtractor
 from ..Utils import Injector
 from ..Core import Const
 from ..Utils.RedditUtils import convert_praw_post
-# from . import timeout_dict
+from .import time_limit_dict, timeout_dict
 
 
 class Extractor:
@@ -65,6 +65,7 @@ class Extractor:
             self.reddit_object.set_date_limit(post.created)
         try:
             extractor = self.assign_extractor(post)(post, self.reddit_object)
+            self.check_timeout(extractor)
             extractor.extract_content()
             self.handle_content(extractor)
         except TypeError:
@@ -73,6 +74,22 @@ class Extractor:
             self.handle_connection_error(post)
         except:
             self.handle_unknown_error(post)
+
+    @staticmethod
+    def check_timeout(extractor):
+        """
+        Checks the timeout dict (located in the Extractor modules __init__.py file) to make sure calls are not being
+        made to any website more than once every 2 seconds.
+        :param extractor: The extractor that is currently being used and should be checked for timeout limit.
+        :type extractor: BaseExtractor
+        """
+        try:
+            limit = time_limit_dict[type(extractor).__name__]
+            elapsed = time() - timeout_dict[type(extractor).__name__]
+            if elapsed < limit:
+                sleep(limit - elapsed)
+        except KeyError:
+            pass
 
     def handle_unsupported_domain(self, post):
         post = convert_praw_post(post)

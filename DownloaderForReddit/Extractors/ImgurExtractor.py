@@ -28,6 +28,7 @@ from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitErro
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Utils import ImgurUtils
 from ..Core import Const
+from . import time_limit_dict, timeout_dict
 
 
 class ImgurExtractor(BaseExtractor):
@@ -56,6 +57,7 @@ class ImgurExtractor(BaseExtractor):
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
+            self.logger.error('Rate check')
             if ImgurUtils.check_credit_time_limit():
                 try:
                     if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
@@ -87,7 +89,7 @@ class ImgurExtractor(BaseExtractor):
         if status_code == 403:
             if self.client.credits['ClientRemaining'] is None:
                 self.failed_to_locate_error()
-            elif self.client.credits['ClientRemaining'] <= 0:
+            elif int(self.client.credits['ClientRemaining']) <= 0:
                 self.no_credit_error()
             else:
                 self.failed_to_locate_error()
@@ -104,12 +106,20 @@ class ImgurExtractor(BaseExtractor):
         called in too short of a window (attempts are made to mitigate this by the application) or that the user is out
         of imgur user credits.
         """
-        if self.client.credits['UserRemaining'] <= 0:
+        user_credits = self.client.credits['UserRemaining']
+        if user_credits and int(user_credits) <= 0:
             message = 'Out of user credits'
             ImgurUtils.set_credit_time_limit(refresh_time=int(self.client.credits['UserReset']))
         else:
-            message = 'Imgur rate limit exceeded'
+            self.set_timeout()
+            message = 'Imgur rate limit exceeded;  Setting time out limit of %s' % (timeout_dict[type(self).__class__])
         self.handle_failed_extract(message=message, save=True, imgur_error_message='rate limit exceeded')
+
+    def set_timeout(self):
+        try:
+            timeout_dict[type(self).__name__] += Const.TIMEOUT_INCREMENT
+        except (KeyError, TypeError):
+            timeout_dict[type(self).__name__] = Const.TIMEOUT_INCREMENT
 
     def no_credit_error(self):
         ImgurUtils.set_credit_time_limit()

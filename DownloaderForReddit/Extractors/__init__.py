@@ -39,4 +39,5 @@ from .GenericVideoExtractor import GenericVideoExtractor
 sys.modules['Post'] = Post
 
 # A dict for keeping track of timeout times for each extractor
-# timeout_dict = {}
+time_limit_dict = {}
+timeout_dict = {}

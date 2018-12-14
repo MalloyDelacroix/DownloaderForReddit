@@ -97,7 +97,7 @@ def check_credit_time_limit():
     return time() > credit_time_limit
 
 
-def set_credit_time_limit(refresh_time=time() + 3605):
+def set_credit_time_limit(refresh_time=(time() + 3605)):
     """
     Sets the global credit time limit to indicate when imgur user credits will refresh.  Defaults to one hour in the
     future from the current time.  The refresh limit can be supplied.
