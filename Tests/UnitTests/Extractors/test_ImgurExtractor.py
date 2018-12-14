@@ -4,7 +4,8 @@ import logging
 from imgurpython.helpers.error import ImgurClientError
 
 from DownloaderForReddit.Extractors.ImgurExtractor import ImgurExtractor
-from DownloaderForReddit.Utils import Injector, ImgurUtils
+from DownloaderForReddit.Utils import Injector, ImgurUtils, ExtractorUtils
+from DownloaderForReddit.Core import Const
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
@@ -32,6 +33,7 @@ class TestImgurExtractor(unittest.TestCase):
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()
         ImgurUtils.credit_time_limit = 1
+        ExtractorUtils.timeout_dict.clear()
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
     def test_extract_album(self, img_mock):
@@ -259,6 +261,36 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertTrue('Out of user credits' in failed_post.status)
         self.assertTrue(len(ie.failed_extracts_to_save) > 0)
         self.assertTrue(ImgurUtils.credit_time_limit == TIME)
+
+    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
+    def test_imgur_rate_limit_exceeded_credit_dict_is_null(self, img_mock):
+        img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
+        img_mock.credits = {'UserRemaining': None}
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+        failed_post = ie.failed_extract_posts[0]
+        self.assertTrue('rate limit exceeded' in failed_post.status)
+        self.assertTrue(len(ie.failed_extracts_to_save) > 0)
+
+    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
+    def test_multiple_imgur_rate_limit_exceeded_with_timeout_dict(self, img_mock):
+        img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
+        img_mock.credits = {'UserRemaining': None}
+        increment = Const.TIMEOUT_INCREMENT
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+        self.assertEqual(ExtractorUtils.timeout_dict[type(ie).__name__], increment)
+        increment += Const.TIMEOUT_INCREMENT
+
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+        self.assertEqual(ExtractorUtils.timeout_dict[type(ie).__name__], increment)
+        increment += Const.TIMEOUT_INCREMENT
+
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+        self.assertEqual(ExtractorUtils.timeout_dict[type(ie).__name__], increment)
+
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
     def test_imgur_no_credit_error(self, img_mock):

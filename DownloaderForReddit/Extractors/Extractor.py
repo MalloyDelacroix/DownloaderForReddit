@@ -24,14 +24,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import logging
-from time import sleep, time
+# from time import sleep, time
+import time
 
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Extractors.DirectExtractor import DirectExtractor
 from ..Utils import Injector
 from ..Core import Const
 from ..Utils.RedditUtils import convert_praw_post
-from .import time_limit_dict, timeout_dict
+from ..Utils import ExtractorUtils
 
 
 class Extractor:
@@ -84,10 +85,11 @@ class Extractor:
         :type extractor: BaseExtractor
         """
         try:
-            limit = time_limit_dict[type(extractor).__name__]
-            elapsed = time() - timeout_dict[type(extractor).__name__]
+            limit = ExtractorUtils.time_limit_dict[type(extractor).__name__]
+            elapsed = time.time() - ExtractorUtils.timeout_dict[type(extractor).__name__]
             if elapsed < limit:
-                sleep(limit - elapsed)
+                time.sleep(limit - elapsed)
+            ExtractorUtils.set_timeout(extractor)
         except KeyError:
             pass
 

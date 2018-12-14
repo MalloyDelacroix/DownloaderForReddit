@@ -3,10 +3,14 @@ from unittest.mock import patch
 import logging
 
 from DownloaderForReddit.Extractors.Extractor import Extractor
+from DownloaderForReddit.Extractors.ImgurExtractor import ImgurExtractor
 from DownloaderForReddit.Utils import Injector
+from DownloaderForReddit.Core import Const
+from DownloaderForReddit.Utils import ExtractorUtils
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
+import time
 
 class TestExtractor(unittest.TestCase):
 
@@ -93,3 +97,14 @@ class TestExtractor(unittest.TestCase):
         ex.extract(post)
         failed_post = user.failed_extracts[0]
         self.assertTrue(failed_post.status.startswith('Failed to extract post: Url domain not supported'))
+
+    @patch('DownloaderForReddit.Extractors.Extractor')
+    @patch('DownloaderForReddit.Extractors.ImgurExtractor')
+    @patch('time.sleep', return_value=None)
+    def test_timeout_dict(self, sleep_mock, ex_mock, extractor_mock):
+        extractor_mock.assign_extractor.return_value = ex_mock
+        ExtractorUtils.time_limit_dict['ImgurExtractor'] = Const.TIMEOUT_INCREMENT
+        ExtractorUtils.timeout_dict['ImgurExtractor'] = time.time()
+        extractor = Extractor(MockObjects.get_user_with_single_content())
+        extractor.extract(MockObjects.get_mock_post_imgur())
+        sleep_mock.assert_called_with(Const.TIMEOUT_INCREMENT)
