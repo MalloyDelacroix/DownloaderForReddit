@@ -107,4 +107,4 @@ class TestExtractor(unittest.TestCase):
         ExtractorUtils.timeout_dict['ImgurExtractor'] = time.time()
         extractor = Extractor(MockObjects.get_user_with_single_content())
         extractor.extract(MockObjects.get_mock_post_imgur())
-        sleep_mock.assert_called_with(Const.TIMEOUT_INCREMENT)
+        sleep_mock.assert_called()
