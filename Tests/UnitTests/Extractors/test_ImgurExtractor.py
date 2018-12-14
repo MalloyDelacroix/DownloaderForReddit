@@ -34,6 +34,7 @@ class TestImgurExtractor(unittest.TestCase):
         Injector.settings_manager = MockSettingsManager()
         ImgurUtils.credit_time_limit = 1
         ExtractorUtils.timeout_dict.clear()
+        ExtractorUtils.time_limit_dict.clear()
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
     def test_extract_album(self, img_mock):
@@ -279,17 +280,17 @@ class TestImgurExtractor(unittest.TestCase):
         increment = Const.TIMEOUT_INCREMENT
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
         ie.extract_content()
-        self.assertEqual(ExtractorUtils.timeout_dict[type(ie).__name__], increment)
+        self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
         increment += Const.TIMEOUT_INCREMENT
 
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
         ie.extract_content()
-        self.assertEqual(ExtractorUtils.timeout_dict[type(ie).__name__], increment)
+        self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
         increment += Const.TIMEOUT_INCREMENT
 
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
         ie.extract_content()
-        self.assertEqual(ExtractorUtils.timeout_dict[type(ie).__name__], increment)
+        self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
 
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
