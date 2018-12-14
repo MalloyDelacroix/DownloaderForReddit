@@ -28,7 +28,7 @@ from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitErro
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Utils import ImgurUtils
 from ..Core import Const
-from ..Utils import ExtractorUtils
+from ..Utils import ExtractorUtils, Injector
 
 
 class ImgurExtractor(BaseExtractor):
@@ -57,7 +57,6 @@ class ImgurExtractor(BaseExtractor):
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
-            self.logger.error('Rate check')
             if ImgurUtils.check_credit_time_limit():
                 try:
                     if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
@@ -112,11 +111,16 @@ class ImgurExtractor(BaseExtractor):
             ImgurUtils.set_credit_time_limit(refresh_time=int(self.client.credits['UserReset']))
         else:
             self.set_timeout()
-            message = 'Imgur rate limit exceeded;  Setting time out limit of %s' % \
+            message = 'Imgur rate limit exceeded.  Setting time out limit of %s seconds' % \
                       (ExtractorUtils.timeout_dict[type(self).__name__])
+            Injector.get_queue().put('\n%s\n' % message)
         self.handle_failed_extract(message=message, save=True, imgur_error_message='rate limit exceeded')
 
     def set_timeout(self):
+        """
+        Sets the timeout limit and last extracted time for this extractor in the event of a rate limit exception.  This
+        is used in the Extractor class to limit api call frequency.
+        """
         try:
             ExtractorUtils.time_limit_dict[type(self).__name__] += Const.TIMEOUT_INCREMENT
         except (KeyError, TypeError):
