@@ -3,7 +3,26 @@
 ## Unreleased
 
 
-## V2.3.0
+## v2.3.2
+
+### Minor Changes
+* Layout rate limiter structure
+  * At this time only the ImgurExtractor is affected by the rate limiter due to user reported errors
+
+
+## Released
+
+
+## v2.3.1
+
+### Minor Changes
+* Update failed to save dialog to give reason when trying to save while downloader is running
+
+### Bug Fixes
+* Fix minor logging error in extractor
+
+
+## v2.3.0
 
 ### Major Changes
 * Add youtube-dl video download support (any site that can be downloaded by the youtube-dl project can now be downloaded
