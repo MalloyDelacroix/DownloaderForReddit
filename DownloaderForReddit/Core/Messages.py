@@ -58,6 +58,11 @@ class Message(object):
         reply = message.information(self, 'Save Failed', text, message.Ok)
         return reply == message.Ok
 
+    def cannot_save_while_running(self):
+        text = 'Cannot save while downloader is running.  Please wait for the download session to finish and try again'
+        reply = message.information(self, 'Cannot Save While Running', text, message.Ok)
+        return reply == message.Ok
+
     def remove_reddit_object(self, name):
         text = 'Are you sure you sure you want to remove %s from the list along with all associated information?' % name
         reply = message.question(self, 'Remove %s' % name, text, message.Yes, message.No)
