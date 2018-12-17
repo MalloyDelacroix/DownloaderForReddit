@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import logging
-# from time import sleep, time
 import time
 
 from ..Extractors.BaseExtractor import BaseExtractor

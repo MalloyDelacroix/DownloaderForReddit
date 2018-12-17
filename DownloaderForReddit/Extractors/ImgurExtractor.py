@@ -112,7 +112,7 @@ class ImgurExtractor(BaseExtractor):
         else:
             self.set_timeout()
             message = 'Imgur rate limit exceeded.  Setting time out limit of %s seconds' % \
-                      (ExtractorUtils.timeout_dict[type(self).__name__])
+                      (ExtractorUtils.time_limit_dict[type(self).__name__])
             Injector.get_queue().put('\n%s\n' % message)  # inform user of rate limit
         self.handle_failed_extract(message=message, save=True, imgur_error_message='rate limit exceeded')
 
