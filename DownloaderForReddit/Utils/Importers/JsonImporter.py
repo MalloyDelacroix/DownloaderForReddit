@@ -45,6 +45,7 @@ def import_list_from_json(file_path):
         reddit_object = make_reddit_object(ro)
         if reddit_object is not None:
             reddit_objects.append(reddit_object)
+    return reddit_objects if len(reddit_objects) > 0 else None
 
 
 def make_reddit_object(element):
