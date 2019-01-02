@@ -88,15 +88,20 @@ def make_reddit_object_element(parent, ro):
     :param ro: The RedditObject which is to be formatted into an xml element.
     """
     ro_element = et.SubElement(parent, '%s' % ro.object_type.lower())
-    et.SubElement(ro_element, 'attr', name=ro.name)
-    et.SubElement(ro_element, 'attr', version=ro.version)
-    et.SubElement(ro_element, 'attr', save_path=ro.save_path)
-    et.SubElement(ro_element, 'attr', post_limit=str(ro.post_limit))
-    et.SubElement(ro_element, 'attr', avoid_duplicates=str(ro.avoid_duplicates))
-    et.SubElement(ro_element, 'attr', download_videos=str(ro.download_videos))
-    et.SubElement(ro_element, 'attr', download_images=str(ro.download_images))
-    et.SubElement(ro_element, 'attr', nsfw_filter=ro.nsfw_filter)
-    et.SubElement(ro_element, 'attr', added_on=epoch_to_str(ro.user_added))
-    et.SubElement(ro_element, 'attr', do_not_edit=str(ro.do_not_edit))
-    et.SubElement(ro_element, 'attr', save_undownloaded_content=str(ro.save_undownloaded_content))
-    et.SubElement(ro_element, 'attr', download_enabled=str(ro.enable_download))
+    et.SubElement(ro_element, 'name').text = ro.name
+    et.SubElement(ro_element, 'version').text = ro.version
+    et.SubElement(ro_element, 'save_path').text = ro.save_path
+    et.SubElement(ro_element, 'post_limit').text = str(ro.post_limit)
+    et.SubElement(ro_element, 'avoid_duplicates').text = str(ro.avoid_duplicates)
+    et.SubElement(ro_element, 'download_videos').text = str(ro.download_videos)
+    et.SubElement(ro_element, 'download_images').text = str(ro.download_images)
+    et.SubElement(ro_element, 'nsfw_filter').text = ro.nsfw_filter
+    et.SubElement(ro_element, 'name_downloads_by').text = ro.name_downloads_by
+    et.SubElement(ro_element, 'subreddit_save_method').text = ro.subreddit_save_method
+    et.SubElement(ro_element, 'date_limit', epoch=str(ro.date_limit), readable=epoch_to_str(ro.date_limit))
+    et.SubElement(ro_element, 'custom_date_limit', epoch=str(ro.custom_date_limit),
+                  readable=epoch_to_str(ro.custom_date_limit))
+    et.SubElement(ro_element, 'added_on', epoch=str(ro.user_added), readable=epoch_to_str(ro.user_added))
+    et.SubElement(ro_element, 'do_not_edit').text = str(ro.do_not_edit)
+    et.SubElement(ro_element, 'save_undownloaded_content').text = str(ro.save_undownloaded_content)
+    et.SubElement(ro_element, 'download_enabled').text = str(ro.enable_download)
