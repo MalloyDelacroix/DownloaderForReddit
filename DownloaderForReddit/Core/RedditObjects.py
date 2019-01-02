@@ -77,7 +77,7 @@ class RedditObject:
     def json(self):
         """
         Returns json encodable dict of the reddit objects attributes and and count of the items in the various lists.
-        This is used for logging purposes.
+        This is used for logging and export purposes.
         :return: A dict of json encodable attributes.
         :rtype: dict
         """
@@ -99,7 +99,9 @@ class RedditObject:
                 'custom_date_limit': self.custom_date_limit,
                 'content_count': len(self.content),
                 'failed_extract_count': len(self.failed_extracts),
-                'saved_content_count': len(self.saved_content)}
+                'saved_content_count': len(self.saved_content),
+                'save_undownloaded_content': self.save_undownloaded_content,
+                'download_enabled': self.enable_download}
 
     @property
     def number_of_downloads(self):
