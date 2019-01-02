@@ -78,13 +78,26 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         self.object_name_line_edit.textChanged.connect(self.check_line_edit_text)
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self.context_menu)
+        self.customContextMenuRequested.connect(lambda: self.show_context_menu(False))
 
         self.object_name_line_edit.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.object_name_line_edit.customContextMenuRequested.connect(self.context_menu)
+        self.object_name_line_edit.customContextMenuRequested.connect(lambda: self.show_context_menu(True))
 
-    def context_menu(self):
+    def show_context_menu(self, text_edit):
+        """
+        Creates a context menu for the dialog with options to switch the ui between the single line input and the list
+        input, as well as options for importing a list of reddit objects.
+        :param text_edit: True if the context menu is being requested from a line edit.  If True, standard copy and
+                          paste methods will be included in the context menu.
+        """
         menu = QtWidgets.QMenu()
+        if text_edit:
+            copy = menu.addAction('Copy')
+            paste = menu.addAction('Paste')
+            menu.addSeparator()
+            copy.triggered.connect(lambda: QtWidgets.QApplication.clipboard().setText(self.object_name_line_edit.text()))
+            paste.triggered.connect(lambda:
+                                    self.object_name_line_edit.setText(QtWidgets.QApplication.clipboard().text()))
         toggle_text = 'Switch To List' if self.layout_style == 'SINGLE' else 'Switch To Single Line'
         toggle_layout = menu.addAction(toggle_text)
         import_from_file = menu.addAction('Import From File')
