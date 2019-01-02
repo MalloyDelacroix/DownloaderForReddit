@@ -63,4 +63,4 @@ def export_reddit_objects_to_text(object_list, file_path):
     """
     with open(file_path, 'a') as file:
         for ro in object_list:
-            file.write(ro.name)
+            file.write(ro.name + '\n')

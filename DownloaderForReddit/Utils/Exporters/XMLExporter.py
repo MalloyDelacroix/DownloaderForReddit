@@ -26,6 +26,8 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import xml.etree.cElementTree as et
 from xml.dom import minidom
 
+from ...Utils.SystemUtil import epoch_to_str
+
 
 def export_posts_to_xml(post_list, file_path):
     """
@@ -89,11 +91,12 @@ def make_reddit_object_element(parent, ro):
     et.SubElement(ro_element, 'attr', name=ro.name)
     et.SubElement(ro_element, 'attr', version=ro.version)
     et.SubElement(ro_element, 'attr', save_path=ro.save_path)
-    et.SubElement(ro_element, 'attr', post_limit=ro.post_limit)
-    et.SubElement(ro_element, 'attr', avoid_duplicates=ro.avoid_duplicates)
-    et.SubElement(ro_element, 'attr', download_videos=ro.download_videos)
-    et.SubElement(ro_element, 'attr', download_images=ro.download_images)
+    et.SubElement(ro_element, 'attr', post_limit=str(ro.post_limit))
+    et.SubElement(ro_element, 'attr', avoid_duplicates=str(ro.avoid_duplicates))
+    et.SubElement(ro_element, 'attr', download_videos=str(ro.download_videos))
+    et.SubElement(ro_element, 'attr', download_images=str(ro.download_images))
     et.SubElement(ro_element, 'attr', nsfw_filter=ro.nsfw_filter)
-    et.SubElement(ro_element, 'attr', added_on=ro.added_on)
-    et.SubElement(ro_element, 'attr', do_not_edit=ro.do_not_edit)
-
+    et.SubElement(ro_element, 'attr', added_on=epoch_to_str(ro.user_added))
+    et.SubElement(ro_element, 'attr', do_not_edit=str(ro.do_not_edit))
+    et.SubElement(ro_element, 'attr', save_undownloaded_content=str(ro.save_undownloaded_content))
+    et.SubElement(ro_element, 'attr', download_enabled=str(ro.enable_download))

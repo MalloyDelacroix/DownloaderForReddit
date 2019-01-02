@@ -26,6 +26,7 @@ import json
 
 from ...Core.Post import Post
 from ...Core.RedditObjects import RedditObject
+from ...Utils.SystemUtil import epoch_to_str
 
 
 class PostCollection:
@@ -70,8 +71,10 @@ class JSONRedditObjectEncoder(json.JSONEncoder):
                 'download_videos': o.download_videos,
                 'download_images': o.download_images,
                 'nsfw_filter': o.nsfw_filter,
-                'added_on': o.user_added,
-                'do_not_edit': o.do_not_edit
+                'added_on': epoch_to_str(o.user_added),
+                'do_not_edit': o.do_not_edit,
+                'save_undownloaded_content': o.save_undownloaded_content,
+                'download_enabled': o.enable_download
             }
 
 
