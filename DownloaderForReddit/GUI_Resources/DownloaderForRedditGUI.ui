@@ -255,11 +255,30 @@
     <property name="title">
      <string>Lists</string>
     </property>
+    <widget class="QMenu" name="file_export_user_list">
+     <property name="title">
+      <string>Export User List</string>
+     </property>
+     <addaction name="export_user_list_as_text_menu_item"/>
+     <addaction name="export_user_list_as_json_menu_item"/>
+     <addaction name="export_user_list_as_xml_menu_item"/>
+    </widget>
+    <widget class="QMenu" name="file_export_subreddit_list">
+     <property name="title">
+      <string>Export Subreddit List</string>
+     </property>
+     <addaction name="export_sub_list_as_text_menu_item"/>
+     <addaction name="export_sub_list_as_json_menu_item"/>
+     <addaction name="export_sub_list_as_xml_menu_item"/>
+    </widget>
     <addaction name="file_add_user_list"/>
     <addaction name="file_add_subreddit_list"/>
     <addaction name="separator"/>
     <addaction name="file_remove_user_list"/>
     <addaction name="file_remove_subreddit_list"/>
+    <addaction name="separator"/>
+    <addaction name="file_export_user_list"/>
+    <addaction name="file_export_subreddit_list"/>
     <addaction name="separator"/>
     <addaction name="file_failed_download_list"/>
     <addaction name="file_unfinished_downloads"/>
@@ -451,6 +470,36 @@
   <action name="file_import_save_file">
    <property name="text">
     <string>Import Save File</string>
+   </property>
+  </action>
+  <action name="export_user_list_as_text_menu_item">
+   <property name="text">
+    <string>Export As Text</string>
+   </property>
+  </action>
+  <action name="export_user_list_as_json_menu_item">
+   <property name="text">
+    <string>Export As Json</string>
+   </property>
+  </action>
+  <action name="export_sub_list_as_text_menu_item">
+   <property name="text">
+    <string>Export As Text</string>
+   </property>
+  </action>
+  <action name="export_sub_list_as_json_menu_item">
+   <property name="text">
+    <string>Export As Json</string>
+   </property>
+  </action>
+  <action name="export_sub_list_as_xml_menu_item">
+   <property name="text">
+    <string>Export As Xml</string>
+   </property>
+  </action>
+  <action name="export_user_list_as_xml_menu_item">
+   <property name="text">
+    <string>Export As Xml</string>
    </property>
   </action>
  </widget>

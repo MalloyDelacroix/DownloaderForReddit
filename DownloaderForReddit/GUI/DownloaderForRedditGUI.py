@@ -42,6 +42,7 @@ from ..GUI.UpdateDialogGUI import UpdateDialog
 from ..Core.UpdaterChecker import UpdateChecker
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..Utils import Injector, SystemUtil, ImgurUtils
+from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
 from ..Persistence.ObjectStateHandler import ObjectStateHandler
 from ..ViewModels.ListModel import ListModel
 from ..GUI.AddRedditObjectDialog import AddUserDialog
@@ -104,6 +105,15 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_remove_user_list.triggered.connect(self.remove_user_list)
         self.file_add_subreddit_list.triggered.connect(self.add_subreddit_list)
         self.file_remove_subreddit_list.triggered.connect(self.remove_subreddit_list)
+
+        self.export_user_list_as_text_menu_item.triggered.connect(self.export_user_list_to_text)
+        self.export_user_list_as_json_menu_item.triggered.connect(self.export_user_list_to_json)
+        self.export_user_list_as_xml_menu_item.triggered.connect(self.export_user_list_to_xml)
+
+        self.export_sub_list_as_text_menu_item.triggered.connect(self.export_subreddit_list_to_text)
+        self.export_sub_list_as_json_menu_item.triggered.connect(self.export_subreddit_list_to_json)
+        self.export_sub_list_as_xml_menu_item.triggered.connect(self.export_subreddit_list_to_xml)
+
         self.file_failed_download_list.triggered.connect(self.display_failed_downloads)
         self.file_last_downloaded_list.triggered.connect(self.open_last_downloaded_list)
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
@@ -624,6 +634,27 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.set_not_saved()
         self.logger.info('User list changed to: %s' % new_list_view)
 
+    def export_user_list_to_text(self):
+        current_list = self.user_lists_combo.currentText()
+        file_path = self.get_file_path(current_list, 'Text Files (*.txt)')
+        if file_path is not None:
+            TextExporter.export_reddit_objects_to_text(self.user_view_chooser_dict[current_list].reddit_object_list,
+                                                       file_path)
+
+    def export_user_list_to_json(self):
+        current_list = self.user_lists_combo.currentText()
+        file_path = self.get_file_path(current_list, 'Json Files (*.json)')
+        if file_path is not None:
+            JsonExporter.export_reddit_objects_to_json(self.user_view_chooser_dict[current_list].reddit_object_list,
+                                                       file_path)
+
+    def export_user_list_to_xml(self):
+        current_list = self.user_lists_combo.currentText()
+        file_path = self.get_file_path(current_list, 'Xml Files (*.xml)')
+        if file_path is not None:
+            XMLExporter.export_reddit_objects_to_xml(self.user_view_chooser_dict[current_list].reddit_object_list,
+                                                     file_path)
+
     def add_subreddit_list(self):
         new_subreddit_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog",
                                                                 "Enter the new user list:")
@@ -669,6 +700,33 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.subreddit_view_chooser_dict[new_list_view].sort_lists((self.list_sort_method, self.list_order_method))
         self.refresh_subreddit_count()
         self.set_not_saved()
+
+    def export_subreddit_list_to_text(self):
+        current_list = self.subreddit_list_combo.currentText()
+        file_path = self.get_file_path(current_list, 'Text Files (*.txt)')
+        if file_path is not None:
+            TextExporter.export_reddit_objects_to_text(
+                self.subreddit_view_chooser_dict[current_list].reddit_object_list, file_path)
+
+    def export_subreddit_list_to_json(self):
+        current_list = self.subreddit_list_combo.currentText()
+        file_path = self.get_file_path(current_list, 'Json Files (*.json)')
+        if file_path is not None:
+            JsonExporter.export_reddit_objects_to_json(
+                self.subreddit_view_chooser_dict[current_list].reddit_object_list, file_path)
+
+    def export_subreddit_list_to_xml(self):
+        current_list = self.subreddit_list_combo.currentText()
+        file_path = self.get_file_path(current_list, 'Xml Files (*.xml)')
+        if file_path is not None:
+            XMLExporter.export_reddit_objects_to_xml(self.subreddit_view_chooser_dict[current_list].reddit_object_list,
+                                                     file_path)
+
+    def get_file_path(self, suggested_name, ext):
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Export Path',
+                                                             self.settings_manager.save_directory +
+                                                             suggested_name, ext)
+        return file_path if file_path != '' else None
 
     def add_user_dialog(self):
         """Opens the dialog to enter the user name"""
