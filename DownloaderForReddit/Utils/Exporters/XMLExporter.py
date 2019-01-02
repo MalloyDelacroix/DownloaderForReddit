@@ -27,9 +27,15 @@ import xml.etree.cElementTree as et
 from xml.dom import minidom
 
 
-def export_xml(object_list, file_path):
+def export_posts_to_xml(post_list, file_path):
+    """
+    Exports the supplied list of posts to an xml format with each xml element representing one post with all of its
+    attributes.
+    :param post_list: The list of posts that are to be formatted into an xml file.
+    :param file_path: The path at which the xml file will be created.
+    """
     root = et.Element('failed_posts')
-    for post in object_list:
+    for post in post_list:
         make_post_element(root, post)
     xml = minidom.parseString(et.tostring(root)).toprettyxml(indent='    ')
     with open(file_path, 'a') as file:
@@ -37,6 +43,11 @@ def export_xml(object_list, file_path):
 
 
 def make_post_element(parent, post):
+    """
+    Creates an xml element from the supplied posts attributes.
+    :param parent: The parent xml element that the created xml element will be a child of.
+    :param post: The post that is to be formatted into an xml element.
+    """
     post_element = et.SubElement(parent, 'post')
     et.SubElement(post_element, 'attr', author=post.author)
     et.SubElement(post_element, 'attr', subreddit=post.subreddit)
@@ -45,3 +56,44 @@ def make_post_element(parent, post):
     et.SubElement(post_element, 'attr', url=post.url)
     et.SubElement(post_element, 'attr', status=post.status)
     et.SubElement(post_element, 'attr', save_status=post.save_status)
+
+
+def export_reddit_objects_to_xml(object_list, file_path):
+    """
+    Exports the supplied list of RedditObjects to an xml format with each xml element representing one reddit object
+    with all of its relevant and formattable attributes.  Some attributes are omitted from export either due to the
+    resulting file size or irrelevancy.
+    :param object_list: A list of RedditObjects which are to be exported to an xml file.
+    :param file_path: The path at which the xml file will be created.
+    """
+    root = et.Element('reddit_objects')
+    user_root = et.SubElement(root, 'users')
+    subreddit_root = et.SubElement(root, 'subreddits')
+    for ro in object_list:
+        if ro.object_type == 'USER':
+            make_reddit_object_element(user_root, ro)
+        else:
+            make_reddit_object_element(subreddit_root, ro)
+    xml = minidom.parseString(et.tostring(root)).toprettyxml(indent='    ')
+    with open(file_path, 'a') as file:
+        file.write(xml)
+
+
+def make_reddit_object_element(parent, ro):
+    """
+    Creates an xml element from the supplied RedditObjects attributes.
+    :param parent: The parent xml object that the created xml element will be a child of.
+    :param ro: The RedditObject which is to be formatted into an xml element.
+    """
+    ro_element = et.SubElement(parent, '%s' % ro.object_type.lower())
+    et.SubElement(ro_element, 'attr', name=ro.name)
+    et.SubElement(ro_element, 'attr', version=ro.version)
+    et.SubElement(ro_element, 'attr', save_path=ro.save_path)
+    et.SubElement(ro_element, 'attr', post_limit=ro.post_limit)
+    et.SubElement(ro_element, 'attr', avoid_duplicates=ro.avoid_duplicates)
+    et.SubElement(ro_element, 'attr', download_videos=ro.download_videos)
+    et.SubElement(ro_element, 'attr', download_images=ro.download_images)
+    et.SubElement(ro_element, 'attr', nsfw_filter=ro.nsfw_filter)
+    et.SubElement(ro_element, 'attr', added_on=ro.added_on)
+    et.SubElement(ro_element, 'attr', do_not_edit=ro.do_not_edit)
+

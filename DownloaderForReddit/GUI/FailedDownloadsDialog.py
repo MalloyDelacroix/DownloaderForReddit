@@ -148,27 +148,27 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
 
     def export_list_to_text(self):
         file_path = self.get_file_path('failed_downloads.txt', 'Text Files (*txt)')
-        TextExporter.export_text(self.table_model.data_list, file_path)
+        TextExporter.export_posts_to_text(self.table_model.data_list, file_path)
 
     def export_selected_to_json(self):
         file_path = self.get_file_path('failed_downloads.json', 'Json Files (*json)')
-        JsonExporter.export_json([self.table_model.data_list[x.row()] for x in
-                                  self.table_view.selectionModel().selectedRows()],
-                                 file_path)
+        JsonExporter.export_posts_to_json([self.table_model.data_list[x.row()] for x in
+                                           self.table_view.selectionModel().selectedRows()],
+                                          file_path)
 
     def export_list_to_json(self):
         file_path = self.get_file_path('failed_downloads.json', 'Json Files (*json)')
-        JsonExporter.export_json(self.table_model.data_list, file_path)
+        JsonExporter.export_posts_to_json(self.table_model.data_list, file_path)
 
     def export_selected_to_xml(self):
         file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*xml)')
-        XMLExporter.export_xml([self.table_model.data_list[x.row()] for x in
-                                self.table_view.selectionModel().selectedRows()],
-                               file_path)
+        XMLExporter.export_posts_to_xml([self.table_model.data_list[x.row()] for x in
+                                         self.table_view.selectionModel().selectedRows()],
+                                        file_path)
 
     def export_list_to_xml(self):
         file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*xml)')
-        XMLExporter.export_xml(self.table_model.data_list, file_path)
+        XMLExporter.export_posts_to_xml(self.table_model.data_list, file_path)
 
     def get_file_path(self, suggested_name, extension):
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select Save Path',
