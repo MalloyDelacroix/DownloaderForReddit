@@ -128,6 +128,9 @@ class AddRedditObjectListModel(QAbstractListModel):
             self.name_checker.stop_run()
 
     def validate_name(self, name_tup):
-        self.validation_dict[name_tup[0]] = name_tup[1]
-        index = self.createIndex(self.name_list.index(name_tup[0]), 0)
-        self.dataChanged.emit(index, index)
+        try:
+            self.validation_dict[name_tup[0]] = name_tup[1]
+            index = self.createIndex(self.name_list.index(name_tup[0]), 0)
+            self.dataChanged.emit(index, index)
+        except ValueError:
+            self.stop_name_checker()

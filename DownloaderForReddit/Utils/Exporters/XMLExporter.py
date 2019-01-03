@@ -104,10 +104,10 @@ def make_reddit_object_element(parent, ro):
     et.SubElement(ro_element, 'nsfw_filter').text = ro.nsfw_filter
     et.SubElement(ro_element, 'name_downloads_by').text = ro.name_downloads_by
     et.SubElement(ro_element, 'subreddit_save_method').text = ro.subreddit_save_method
-    et.SubElement(ro_element, 'date_limit', epoch=str(ro.date_limit), timestamp=epoch_to_str(ro.date_limit))
+    et.SubElement(ro_element, 'date_limit', epoch=str(ro.date_limit), timestamp=str(epoch_to_str(ro.date_limit)))
     et.SubElement(ro_element, 'custom_date_limit', epoch=str(ro.custom_date_limit),
-                  timestamp=epoch_to_str(ro.custom_date_limit))
-    et.SubElement(ro_element, 'added_on', epoch=str(ro.user_added), timestamp=epoch_to_str(ro.user_added))
+                  timestamp=str(epoch_to_str(ro.custom_date_limit)))
+    et.SubElement(ro_element, 'added_on', epoch=str(ro.user_added), timestamp=str(epoch_to_str(ro.user_added)))
     et.SubElement(ro_element, 'do_not_edit').text = str(ro.do_not_edit)
     et.SubElement(ro_element, 'save_undownloaded_content').text = str(ro.save_undownloaded_content)
     et.SubElement(ro_element, 'download_enabled').text = str(ro.enable_download)

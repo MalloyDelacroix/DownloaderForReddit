@@ -81,7 +81,7 @@ def make_reddit_object(element):
             reddit_object = Subreddit(version, name, save_path, post_limit, avoid_duplicates, download_videos,
                                       download_images, nsfw_filter, subreddit_save_method, name_downloads_by, added_on)
         reddit_object.date_limit = date_limit
-        reddit_object.custom_date_limit = float(custom_date_limit) if custom_date_limit is not None else None
+        reddit_object.custom_date_limit = float(custom_date_limit) if custom_date_limit != 'None' else None
         reddit_object.do_not_edit = do_not_edit
         reddit_object.save_undownloaded_content = save_undownloaded_content
         reddit_object.download_enabled = download_enabled

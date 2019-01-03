@@ -905,6 +905,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if add_sub_dialog.layout_style == 'SINGLE':
                     self.add_single_subreddit(add_sub_dialog.name)
                 else:
+                    self.add_complete_subreddits(add_sub_dialog.object_name_list_model.complete_reddit_object_list)
                     self.add_multiple_subreddits(add_sub_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
@@ -958,7 +959,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             existing_names = []
             invalid_names = []
-            list_model = self.subreddit_view_chooser_dict[self.subreddit_lists_combo.currentText()]
+            list_model = self.subreddit_view_chooser_dict[self.subreddit_list_combo.currentText()]
             for sub in sub_list:
                 reply = self.add_reddit_object_to_list(sub, list_model)
                 if reply == 'NAME_EXISTS':
