@@ -129,4 +129,7 @@ def import_data_file(directory, file):
 
 
 def epoch_to_str(epoch_time):
-    return datetime.datetime.fromtimestamp(epoch_time).strftime('%m/%d/%Y %I:%M %p')
+    if type(epoch_time) == int or type(epoch_time) == float:
+        return datetime.datetime.fromtimestamp(epoch_time).strftime('%m/%d/%Y %I:%M %p')
+    else:
+        return None
