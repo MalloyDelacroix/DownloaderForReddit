@@ -73,9 +73,13 @@ class JSONRedditObjectEncoder(json.JSONEncoder):
                 'nsfw_filter': o.nsfw_filter,
                 'name_downloads_by': o.name_downloads_by,
                 'subreddit_save_method': o.subreddit_save_method,
-                'date_limit': o.date_limit,
-                'custom_date_limit': o.custom_date_limit,
-                'added_on': epoch_to_str(o.user_added),
+                'date_limit_epoch': o.date_limit,
+                'date_limit_readable': epoch_to_str(o.date_limit),
+                'custom_date_limit_epoch': o.custom_date_limit,
+                'custom_date_limit_readable': epoch_to_str(o.custom_date_limit) if o.custom_date_limit is not None else
+                None,
+                'added_on_epoch': o.user_added,
+                'added_on_readable': epoch_to_str(o.user_added),
                 'do_not_edit': o.do_not_edit,
                 'save_undownloaded_content': o.save_undownloaded_content,
                 'download_enabled': o.enable_download

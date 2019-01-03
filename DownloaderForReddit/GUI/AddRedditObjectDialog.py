@@ -30,6 +30,7 @@ import logging
 from ..GUI_Resources.AddRedditObjectDialog_auto import Ui_add_reddit_object_dialog
 from ..ViewModels.AddRedditObjectListModel import AddRedditObjectListModel
 from ..Utils import Injector
+from ..Utils.Importers import TextImporter, JsonImporter, XMLImporter
 from ..Core.Messages import Message
 
 
@@ -100,7 +101,9 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
                                     self.object_name_line_edit.setText(QtWidgets.QApplication.clipboard().text()))
         toggle_text = 'Switch To List' if self.layout_style == 'SINGLE' else 'Switch To Single Line'
         toggle_layout = menu.addAction(toggle_text)
-        import_from_file = menu.addAction('Import From File')
+        import_text_file = menu.addAction('Import From Text File')
+        import_json_file = menu.addAction('Import From Json File')
+        import_xml_file = menu.addAction('Import From Xml File')
         import_from_directory = menu.addAction('Import From Directory')
 
         if self.layout_style == 'MULTIPLE':
@@ -109,8 +112,11 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
             clear_non_valid.triggered.connect(self.object_name_list_model.clear_non_valid)
 
         toggle_layout.triggered.connect(self.toggle_layout)
-        import_from_file.triggered.connect(self.import_from_file)
+        import_text_file.triggered.connect(self.import_from_text_file)
+        import_json_file.triggered.connect(self.import_from_json_file)
+        import_xml_file.triggered.connect(self.import_from_xml_file)
         import_from_directory.triggered.connect(self.import_from_directory)
+
         menu.exec(QCursor.pos())
 
     def toggle_layout(self):
@@ -161,56 +167,39 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         else:
             self.add_name_to_list()
 
-    def import_from_file(self):
-        """Imports a list of names from a text file."""
-        name_list = self.get_names_from_text()
-        if name_list:
-            for name in name_list:
-                self.object_name_list_model.insertRow(name)
-        if len(self.object_name_list_model.name_list) > 0 and self.layout_style == 'SINGLE':
-            self.toggle_layout()
+    def import_from_text_file(self):
+        file_path = self.select_file(('Select Text File', 'Text File (*.txt)'))
+        if file_path is not None and file_path.endswith('txt'):
+            for name in TextImporter.import_list_from_text_file(file_path):
+                self.add_name_to_list(name)
+        self.setup_list_view()
 
-    def get_names_from_text(self):
-        """
-        Reads a text file and splits the text into usable names.  Also filters each name for forbidden characters.
-        """
-        text_file = self.select_text_file()
-        if text_file:
-            return_list = []
-            with open(text_file, 'r') as file:
-                content = file.readlines()
-                names = [line for line in content]
-                for name in names:
-                    if ',' in name:
-                        return_list.extend(self.split_names(name))
-                    else:
-                        return_list.append(self.remove_forbidden_chars(name))
-            return return_list
-        else:
-            return None
+    def import_from_json_file(self):
+        file_path = self.select_file(('Select Json File', 'Json File (*.json)'))
+        if file_path is not None and file_path.endswith('json'):
+            for ro in JsonImporter.import_list_from_json(file_path):
+                self.add_complete_object_to_list(ro)
+        self.setup_list_view()
 
-    def split_names(self, name):
-        """Splits the supplied text into multiple names if the text contains a comma."""
-        return [self.remove_forbidden_chars(x) for x in name.split(',') if x != '\n']
+    def import_from_xml_file(self):
+        file_path = self.select_file(('Select Xml File', 'Xml File (*.xml)'))
+        if file_path is not None and file_path.endswith('xml'):
+            for ro in XMLImporter.import_list_from_xml(file_path):
+                self.add_complete_object_to_list(ro)
+        self.setup_list_view()
 
-    @staticmethod
-    def remove_forbidden_chars(name):
-        """Removes forbidden characters from the supplied name and returns the new name."""
-        return ''.join(x for x in name if x not in (' ', '', '\n'))
-
-    def select_text_file(self):
+    def select_file(self, var):
         """
         Opens a dialog for the user to select a text file and returns the path to the selected file if it exists.
         :return: The path to the user selected file.
         :rtype: str
         """
-        file_path = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select Text File to Import From',
-                                                              self.settings_manager.save_directory,
-                                                              'Text File (*.txt)')[0])
-        if os.path.isfile(file_path) and file_path.endswith('.txt'):
+        file_path = str(QtWidgets.QFileDialog.getOpenFileName(self, var[0], self.settings_manager.save_directory,
+                                                              var[1])[0])
+        if os.path.isfile(file_path):
             return file_path
         else:
-            self.logger.warning('Tried to import invalid text file: %s' % file_path)
+            self.logger.warning('Tried to import invalid file: %s' % file_path)
             Message.invalid_file_path(self)
             return None
 
@@ -258,6 +247,10 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
                     self.object_name_list_model.insertRow(name)
         self.object_name_line_edit.clear()
 
+    def add_complete_object_to_list(self, ro):
+        if ro is not None:
+            self.object_name_list_model.add_complete_object(ro)
+
     def remove_name_from_list(self):
         self.object_name_list_model.removeRows(self.object_name_list_view.currentIndex().row(),
                                                len(self.object_name_list_view.selectedIndexes()))
@@ -266,6 +259,10 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         self.object_name_list_model.stop_name_checker()
         if self.layout_style == 'SINGLE':
             self.name = self.object_name_line_edit.text()
+        else:
+            for ro in self.object_name_list_model.complete_reddit_object_list:
+                if ro.name in self.object_name_list_model.name_list:
+                    self.object_name_list_model.name_list.remove(ro.name)
         super().accept()
 
     def closeEvent(self, event):

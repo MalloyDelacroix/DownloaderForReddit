@@ -44,6 +44,7 @@ class AddRedditObjectListModel(QAbstractListModel):
         self.queue = Queue()
         self.name_list = []
         self.validation_dict = {}
+        self.complete_reddit_object_list = []
 
         self.name_checker = None
         self.start_name_check_thread()
@@ -72,6 +73,10 @@ class AddRedditObjectListModel(QAbstractListModel):
             name = self.name_list[pos]
             self.name_list.remove(name)
             del self.validation_dict[name]
+            try:
+                del self.complete_reddit_object_list[pos]
+            except IndexError:
+                pass
         self.name_list_updated.emit()
         self.endRemoveRows()
         return True
@@ -96,6 +101,15 @@ class AddRedditObjectListModel(QAbstractListModel):
                 return self.valid_img
             else:
                 return self.non_valid_img
+
+    def add_complete_object(self, reddit_object):
+        """
+        Adds a complete reddit object to the complete reddit object list and inserts the name of the reddit object in
+        the data view and to be checked by the name checker.
+        :param reddit_object: A complete reddit object that has been imported from a file.
+        """
+        self.complete_reddit_object_list.append(reddit_object)
+        self.insertRow(reddit_object.name)
 
     def start_name_check_thread(self):
         """Initializes a NameChecker object, then runs it in another thread."""

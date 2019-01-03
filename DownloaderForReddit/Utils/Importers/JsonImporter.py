@@ -66,9 +66,9 @@ def make_reddit_object(element):
         nsfw_filter = element['nsfw_filter']
         name_downloads_by = element['name_downloads_by']
         subreddit_save_method = element['subreddit_save_method']
-        date_limit = int(element['date_limit'])
-        custom_date_limit = element['custom_date_limit']
-        added_on = element['added_on']
+        date_limit = int(element['date_limit_epoch'])
+        custom_date_limit = element['custom_date_limit_epoch']
+        added_on = element['added_on_epoch']
         do_not_edit = element['do_not_edit']
         save_undownloaded_content = element['save_undownloaded_content']
         download_enabled = element['download_enabled']

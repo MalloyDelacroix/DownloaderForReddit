@@ -737,6 +737,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if add_user_dialog.layout_style == 'SINGLE':
                     self.add_single_user(add_user_dialog.name)
                 else:
+                    self.add_complete_users(add_user_dialog.object_name_list_model.complete_reddit_object_list)
                     self.add_multiple_users(add_user_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
@@ -756,6 +757,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             Message.no_user_list(self)
 
     def add_multiple_users(self, user_list):
+        """
+        Makes and adds multiple users to the current user list from multiple names supplied by the
+        AddRedditObjectDialog.
+        :param user_list: A list of names to be made into users and added to the current user list
+        :return:
+        """
         try:
             existing_names = []
             invalid_names = []
@@ -767,6 +774,31 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     existing_names.append(name)
                 elif reply == 'INVALID_NAME':
                     invalid_names.append(name)
+            self.refresh_user_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
+        except KeyError:
+            Message.no_user_list(self)
+
+    def add_complete_users(self, user_list):
+        """
+        Adds a complete User object to the current user list which is supplied from the AddRedditObjectDialog.  The only
+        way this method should be used is when a complete user is imported from a method that allows for complete object
+        import (ie: json or xml import).
+        :param user_list: The list of complete Users to be added to the current list.
+        """
+        try:
+            existing_names = []
+            invalid_names = []
+            list_model = self.user_view_chooser_dict[self.user_lists_combo.currentText()]
+            for user in user_list:
+                reply = self.add_reddit_object_to_list(user, list_model)
+                if reply == 'NAME_EXISTS':
+                    existing_names.append(user.name)
+                elif reply == 'INVALID_NAME':
+                    invalid_names.append(user.name)
             self.refresh_user_count()
             if len(existing_names) > 0:
                 Message.names_in_list(self, existing_names)
@@ -892,6 +924,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             Message.no_user_list(self)
 
     def add_multiple_subreddits(self, sub_list):
+        """
+        Makes and adds multiple subreddits to the current subreddit list from multiple names supplied by the
+        AddRedditObjectDialog.
+        :param sub_list: A list of names to be made into subreddits and added to the current subreddit list.
+        """
         try:
             existing_names = []
             invalid_names = []
@@ -903,6 +940,31 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     existing_names.append(name)
                 elif reply == 'INVALID_NAME':
                     invalid_names.append(name)
+            self.refresh_subreddit_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
+        except KeyError:
+            Message.no_user_list(self)
+
+    def add_complete_subreddits(self, sub_list):
+        """
+        Adds a complete Subreddit object to the current subreddit list which is supplied from the AddRedditObjectDialog.
+        The only way this method should be used is when a complete subreddit is imported from a method that allows for
+        complete import (ie: json or xml import).
+        :param sub_list: The list of complete Subreddits to be added to the current list.
+        """
+        try:
+            existing_names = []
+            invalid_names = []
+            list_model = self.subreddit_view_chooser_dict[self.subreddit_lists_combo.currentText()]
+            for sub in sub_list:
+                reply = self.add_reddit_object_to_list(sub, list_model)
+                if reply == 'NAME_EXISTS':
+                    existing_names.append(sub.name)
+                elif reply == 'INVALID_NAME':
+                    invalid_names.append(sub.name)
             self.refresh_subreddit_count()
             if len(existing_names) > 0:
                 Message.names_in_list(self, existing_names)
