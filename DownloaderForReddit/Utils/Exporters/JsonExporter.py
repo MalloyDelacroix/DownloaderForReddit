@@ -23,10 +23,14 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import json
+import logging
 
 from ...Core.Post import Post
 from ...Core.RedditObjects import RedditObject
 from ...Utils.SystemUtil import epoch_to_str
+
+
+logger = logging.getLogger(__name__)
 
 
 class PostCollection:
@@ -94,6 +98,7 @@ def export_posts_to_json(post_list, file_path):
     """
     with open(file_path, 'a') as file:
         json.dump(PostCollection(post_list).__dict__, file, cls=JSONPostEncoder, indent=4, ensure_ascii=False)
+    logger.info('Exported post list to json file', extra={'export_count': len(post_list)})
 
 
 def export_reddit_objects_to_json(object_list, file_path):
@@ -105,3 +110,4 @@ def export_reddit_objects_to_json(object_list, file_path):
     with open(file_path, 'a') as file:
         json.dump(RedditObjectCollection(object_list).__dict__, file, cls=JSONRedditObjectEncoder, indent=4,
                   ensure_ascii=False)
+    logger.info('Exported reddit object list to json file', extra={'export_count': len(object_list)})

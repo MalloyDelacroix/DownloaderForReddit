@@ -45,6 +45,7 @@ def import_list_from_text_file(file_path):
             reddit_objects.extend(split_names(name))
         else:
             reddit_objects.append(remove_forbidden_chars(name))
+    logger.info('Imported from file', extra={'import_count': len(reddit_objects)})
     return reddit_objects if len(reddit_objects) > 0 else None
 
 

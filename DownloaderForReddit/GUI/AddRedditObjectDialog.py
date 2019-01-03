@@ -169,24 +169,32 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
 
     def import_from_text_file(self):
         file_path = self.select_file(('Select Text File', 'Text File (*.txt)'))
+        count = 0
         if file_path is not None and file_path.endswith('txt'):
             for name in TextImporter.import_list_from_text_file(file_path):
                 self.add_name_to_list(name)
+                count += 1
         self.setup_list_view()
+        self.logger.info('Imported %s reddit object names from text file' % count)
 
     def import_from_json_file(self):
         file_path = self.select_file(('Select Json File', 'Json File (*.json)'))
+        count = 0
         if file_path is not None and file_path.endswith('json'):
             for ro in JsonImporter.import_list_from_json(file_path):
                 self.add_complete_object_to_list(ro)
+                count += 1
         self.setup_list_view()
+        self.logger.info('Imported %s complete reddit objects from json file' % count)
 
     def import_from_xml_file(self):
         file_path = self.select_file(('Select Xml File', 'Xml File (*.xml)'))
+        count = 0
         if file_path is not None and file_path.endswith('xml'):
             for ro in XMLImporter.import_list_from_xml(file_path):
                 self.add_complete_object_to_list(ro)
         self.setup_list_view()
+        self.logger.info('Imported %s complete reddit objects from xml file' % count)
 
     def select_file(self, var):
         """
@@ -209,16 +217,19 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         added.
         """
         master_folder = self.select_directory()
-        if master_folder:
+        if master_folder is not None:
             reply = QtWidgets.QMessageBox.information(self, 'Import From Folder?',
                                                       'Import names of all subfolders from %s?' % master_folder,
                                                       QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
             if reply == QtWidgets.QMessageBox.Ok:
+                count = 0
                 for folder in (folder for folder in os.listdir(master_folder) if
                                os.path.isdir(os.path.join(master_folder, folder))):
                     self.add_name_to_list(name=folder)
+                    count += 1
                 if self.layout_style == 'SINGLE':
                     self.toggle_layout()
+                self.logger.info('Imported %s reddit object names from folders' % count)
 
     def select_directory(self):
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',

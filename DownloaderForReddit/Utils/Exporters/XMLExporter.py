@@ -25,8 +25,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import xml.etree.cElementTree as et
 from xml.dom import minidom
+import logging
 
 from ...Utils.SystemUtil import epoch_to_str
+
+
+logger = logging.getLogger(__name__)
 
 
 def export_posts_to_xml(post_list, file_path):
@@ -42,6 +46,7 @@ def export_posts_to_xml(post_list, file_path):
     xml = minidom.parseString(et.tostring(root)).toprettyxml(indent='    ')
     with open(file_path, 'a') as file:
         file.write(xml)
+    logger.info('Exported post list to xml file', extra={'export_count': len(post_list)})
 
 
 def make_post_element(parent, post):
@@ -79,6 +84,7 @@ def export_reddit_objects_to_xml(object_list, file_path):
     xml = minidom.parseString(et.tostring(root)).toprettyxml(indent='    ')
     with open(file_path, 'a') as file:
         file.write(xml)
+    logger.info('Exported reddit object list to xml file', extra={'export_count': len(object_list)})
 
 
 def make_reddit_object_element(parent, ro):

@@ -46,6 +46,7 @@ def import_list_from_xml(file_path):
             ro = make_reddit_object(child)
             if ro is not None:
                 reddit_objects.append(ro)
+    logger.info('Imported from file', extra={'import_count': len(reddit_objects)})
     return reddit_objects if len(reddit_objects) > 0 else None
 
 
