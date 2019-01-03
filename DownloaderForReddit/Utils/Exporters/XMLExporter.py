@@ -56,13 +56,13 @@ def make_post_element(parent, post):
     :param post: The post that is to be formatted into an xml element.
     """
     post_element = et.SubElement(parent, 'post')
-    et.SubElement(post_element, 'attr', author=post.author)
-    et.SubElement(post_element, 'attr', subreddit=post.subreddit)
-    et.SubElement(post_element, 'attr', title=post.title)
-    et.SubElement(post_element, 'attr', created=post.date_posted)
-    et.SubElement(post_element, 'attr', url=post.url)
-    et.SubElement(post_element, 'attr', status=post.status)
-    et.SubElement(post_element, 'attr', save_status=post.save_status)
+    et.SubElement(post_element, 'author').text = post.author
+    et.SubElement(post_element, 'subreddit').text = post.subreddit
+    et.SubElement(post_element, 'title').text = post.title
+    et.SubElement(post_element, 'created', epoch=post.created, timestamp=post.date_posted)
+    et.SubElement(post_element, 'url').text = post.url
+    et.SubElement(post_element, 'status').text = post.status
+    et.SubElement(post_element, 'save_status').text = post.save_status
 
 
 def export_reddit_objects_to_xml(object_list, file_path):
@@ -104,10 +104,10 @@ def make_reddit_object_element(parent, ro):
     et.SubElement(ro_element, 'nsfw_filter').text = ro.nsfw_filter
     et.SubElement(ro_element, 'name_downloads_by').text = ro.name_downloads_by
     et.SubElement(ro_element, 'subreddit_save_method').text = ro.subreddit_save_method
-    et.SubElement(ro_element, 'date_limit', epoch=str(ro.date_limit), readable=epoch_to_str(ro.date_limit))
+    et.SubElement(ro_element, 'date_limit', epoch=str(ro.date_limit), timestamp=epoch_to_str(ro.date_limit))
     et.SubElement(ro_element, 'custom_date_limit', epoch=str(ro.custom_date_limit),
-                  readable=epoch_to_str(ro.custom_date_limit))
-    et.SubElement(ro_element, 'added_on', epoch=str(ro.user_added), readable=epoch_to_str(ro.user_added))
+                  timestamp=epoch_to_str(ro.custom_date_limit))
+    et.SubElement(ro_element, 'added_on', epoch=str(ro.user_added), timestamp=epoch_to_str(ro.user_added))
     et.SubElement(ro_element, 'do_not_edit').text = str(ro.do_not_edit)
     et.SubElement(ro_element, 'save_undownloaded_content').text = str(ro.save_undownloaded_content)
     et.SubElement(ro_element, 'download_enabled').text = str(ro.enable_download)
