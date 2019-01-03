@@ -23,7 +23,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import xml.etree.cElementTree as et
-from xml.dom import minidom
 import logging
 
 from ...Core.RedditObjects import User, Subreddit
