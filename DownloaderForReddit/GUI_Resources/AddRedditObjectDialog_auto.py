@@ -16,7 +16,7 @@ class Ui_add_reddit_object_dialog(object):
         font.setPointSize(10)
         add_reddit_object_dialog.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../Resources/Images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources/Images/add.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         add_reddit_object_dialog.setWindowIcon(icon)
         self.vert_layout = QtWidgets.QVBoxLayout(add_reddit_object_dialog)
         self.vert_layout.setObjectName("vert_layout")
