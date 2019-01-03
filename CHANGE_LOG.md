@@ -1,16 +1,32 @@
 # Change Log
 
-## Unreleased
+# Unreleased
 
+## v2.3.3
+
+### Minor Changes
+* Add user and subreddit list exporting options
+* Allow importing user and subreddit lists from json and xml files
+
+  * User or subreddit lists that have been exported to json or xml format will contain all information for the associated
+reddit object (except for previously downloaded urls).  By doing this, reddit object lists that are exported
+to json or xml file types can then be imported at a later date retaining the reddit objects user set attributes (ie: 
+last downloaded post date, post limit, media filters, date added, etc.) 
+
+### Bug Fixes
+* Restore copy and paste functionality to add reddit object dialog input line
+
+
+
+
+
+# Released
 
 ## v2.3.2
 
 ### Minor Changes
 * Layout rate limiter structure
   * At this time only the ImgurExtractor is affected by the rate limiter due to user reported errors
-
-
-## Released
 
 
 ## v2.3.1
