@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import subprocess
+import os
 import logging
 from distutils.spawn import find_executable
 
@@ -46,15 +47,25 @@ class MergeSet:
 
 
 def merge_videos():
-    if ffmpeg_valid():
+    if ffmpeg_valid:
         for ms in videos_to_merge:
             try:
-                cmd = 'ffmpeg -i %s -i %s -c:v copy -c:a aac -strict experimental %s' % \
-                      (ms.video_path, ms.audio_path, ms.final_path)
+                cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
+                      (ms.video_path, ms.audio_path, ms.output_path)
                 subprocess.call(cmd)
+                logger.info('Successfully merged %s videos' % len(videos_to_merge))
             except:
                 logger.error('Failed to merge videos', extra={'video_path': ms.video_path, 'audio_path': ms.audio_path,
-                                                              'output_path': ms.output_path})
+                                                              'output_path': ms.output_path}, exc_info=True)
+        clean_up()
     else:
         logger.warning('Ffmpeg is not installed: unable to merge video and audio files',
                        extra={'videos_to_merge': len(videos_to_merge)})
+
+
+def clean_up():
+    for ms in videos_to_merge:
+        if os.path.exists(ms.output_path):
+            os.remove(ms.video_path)
+            os.remove(ms.audio_path)
+    videos_to_merge.clear()

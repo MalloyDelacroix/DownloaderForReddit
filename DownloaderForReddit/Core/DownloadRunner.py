@@ -29,7 +29,7 @@ from queue import Queue
 from time import time
 import logging
 
-from ..Utils import Injector, RedditUtils
+from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.PostFilter import PostFilter
 from ..Extractors.Extractor import Extractor
 
@@ -205,6 +205,7 @@ class DownloadRunner(QObject):
                 user.clear_download_session_data()
         except TypeError:
             pass
+        VideoMerger.merge_videos()
         self.logger.info('Download finished', extra={'download_type': 'User' if self.user_run else 'Subreddit',
                                                      'download_count': self.final_download_count,
                                                      'download_time': time_string})

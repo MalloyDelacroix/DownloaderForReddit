@@ -12,6 +12,7 @@ class RedditVideoExtractor(BaseExtractor):
         self.post = self.get_host_vid(post)
         self.url = None
         self.contains_audio = False
+        self.get_vid_url()
 
     @staticmethod
     def get_host_vid(post):
@@ -23,12 +24,8 @@ class RedditVideoExtractor(BaseExtractor):
         :return: The top level post which holds the video information to be downloaded.
         """
         try:
-            if post.is_crosspost:
-                return RedditUtils.get_reddit_instance().submission(post.crosspost_parent.split('_')[1])
-            else:
-                return post
+            return RedditUtils.get_reddit_instance().submission(post.crosspost_parent.split('_')[1])
         except AttributeError:
-            # checked because sometimes, for whatever reason, a submission does not have an 'is_crosspost' attribute
             return post
 
     def get_vid_url(self):
@@ -37,23 +34,27 @@ class RedditVideoExtractor(BaseExtractor):
         file.
         """
         try:
-            self.url = self.url = self.post.media['reddit_video']['fallback_url']
+            self.url = self.post.media['reddit_video']['fallback_url']
             self.contains_audio = self.post.is_video
         except AttributeError:
             self.url = self.post.url
 
     def extract_content(self):
-        video_content = self.get_video_content()
-        try:
-            if self.contains_audio:
-                self.get_audio_content()
-                audio_content = self.get_audio_content()
-                if audio_content is not None and video_content is not None:
-                    VideoMerger.videos_to_merge.append(VideoMerger.MergeSet(video_content.filename,
-                                                                            audio_content.filename,
-                                                                            self.get_filename(self.post.id)))
-        except:
-            message = 'Failed to located content'
+        if self.url is not None:
+            video_content = self.get_video_content()
+            try:
+                if self.contains_audio:
+                    self.get_audio_content()
+                    audio_content = self.get_audio_content()
+                    if audio_content is not None and video_content is not None:
+                        VideoMerger.videos_to_merge.append(
+                            VideoMerger.MergeSet(video_content.filename, audio_content.filename,
+                                                 video_content.filename.replace('(video)', '')))
+            except:
+                message = 'Failed to located content'
+                self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
+        else:
+            message = 'Failed to find acceptable url for download'
             self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
 
     def get_video_content(self):
