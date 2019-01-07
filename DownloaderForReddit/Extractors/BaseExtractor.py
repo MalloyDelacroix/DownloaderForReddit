@@ -182,15 +182,18 @@ class BaseExtractor:
                           settings.
         :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
         :param extension: The extension of the supplied url and the url used for the downloaded file.
+        :return: The content object that was created.
         :type url: str
         :type file_name: str
         :type extension: str
         :type count: int
+        :rtype: Content
         """
         count = ' %s' % count if count else ''
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
                     self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
+        return x
 
     def handle_failed_extract(self, message=None, save=False, log=True, log_exception=False, **kwargs):
         """
