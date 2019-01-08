@@ -45,21 +45,22 @@ class RedditVideoExtractor(BaseExtractor):
             self.url = self.get_download_vid().url
 
     def extract_content(self):
-        if self.url is not None:
-            video_content = self.get_video_content()
-            try:
-                if self.contains_audio:
-                    audio_content = self.get_audio_content()
-                    if audio_content is not None and video_content is not None:
-                        VideoMerger.videos_to_merge.append(
-                            VideoMerger.MergeSet(video_content.filename, audio_content.filename,
-                                                 video_content.filename.replace('(video)', '')))
-            except:
-                message = 'Failed to located content'
+        if self.settings_manager.download_reddit_hosted_videos:
+            if self.url is not None:
+                video_content = self.get_video_content()
+                try:
+                    if self.contains_audio:
+                        audio_content = self.get_audio_content()
+                        if audio_content is not None and video_content is not None:
+                            VideoMerger.videos_to_merge.append(
+                                VideoMerger.MergeSet(video_content.filename, audio_content.filename,
+                                                     video_content.filename.replace('(video)', '')))
+                except:
+                    message = 'Failed to located content'
+                    self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
+            else:
+                message = 'Failed to find acceptable url for download'
                 self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
-        else:
-            message = 'Failed to find acceptable url for download'
-            self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
 
     def get_video_content(self):
         ext = 'mp4'

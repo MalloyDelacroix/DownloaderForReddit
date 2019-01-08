@@ -133,6 +133,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
                 self.nsfw_filter_combo.setCurrentText(key)
                 break
 
+        self.download_reddit_videos_checkbox.setChecked(self.settings_manager.download_reddit_hosted_videos)
+
         self.save_directory_line_edit.setText(self.settings_manager.save_directory)
 
         self.sub_sort_top_combo.addItems(self.sub_sort_top_str_dict.keys())
@@ -298,6 +300,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.settings_manager.nsfw_filter = self.settings_manager.nsfw_filter_dict[self.nsfw_filter_combo.currentText()]
 
+        self.settings_manager.download_reddit_hosted_videos = self.download_reddit_videos_checkbox.isChecked()
+
         self.settings_manager.save_subreddits_by = self.subreddit_save_by_combo.currentText()
         self.settings_manager.name_downloads_by = self.name_downloads_by_combo.currentText()
 
@@ -358,6 +362,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.link_filter_video_checkbox.setChecked(True)
         self.link_filter_image_checkbox.setChecked(True)
         self.link_filter_avoid_duplicates_checkbox.setChecked(True)
+        self.nsfw_filter_combo.setCurrentText('Include')
+        self.download_reddit_videos_checkbox.setChecked(True)
         self.subreddit_save_by_combo.setCurrentIndex(0)
         self.name_downloads_by_combo.setCurrentIndex(0)
         self.post_limit_spinbox.setValue(25)
