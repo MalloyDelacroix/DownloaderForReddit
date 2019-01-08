@@ -9,7 +9,8 @@ class RedditVideoExtractor(BaseExtractor):
 
     def __init__(self, post, reddit_object, content_display_only=False):
         super().__init__(post, reddit_object, content_display_only)
-        self.post = self.get_host_vid(post)
+        self.post = post
+        self.host_vid = self.get_host_vid(post)
         self.url = None
         self.contains_audio = False
         self.get_vid_url()
@@ -18,15 +19,19 @@ class RedditVideoExtractor(BaseExtractor):
     def get_host_vid(post):
         """
         Finds the actual submission that holds the video file to be extracted.  If the post is the original post that
-        the video was uploaded to, then the found post is returned.  If the post is a crosspost from another location,
+        the video was uploaded to, then None is returned.  If the post is a crosspost from another location,
         the parent crosspost is returned as it is the post which holds the full video information.
         :param post: The post which is to be extracted.
-        :return: The top level post which holds the video information to be downloaded.
+        :return: The top level post which holds the video information to be downloaded if the supplied post is a
+                 crosspost, otherwise None.
         """
         try:
             return RedditUtils.get_reddit_instance().submission(post.crosspost_parent.split('_')[1])
         except AttributeError:
-            return post
+            return None
+
+    def get_download_vid(self):
+        return self.host_vid if self.host_vid is not None else self.post
 
     def get_vid_url(self):
         """
@@ -34,17 +39,16 @@ class RedditVideoExtractor(BaseExtractor):
         file.
         """
         try:
-            self.url = self.post.media['reddit_video']['fallback_url']
-            self.contains_audio = self.post.is_video
+            self.url = self.get_download_vid().media['reddit_video']['fallback_url']
+            self.contains_audio = self.get_download_vid().is_video
         except AttributeError:
-            self.url = self.post.url
+            self.url = self.get_download_vid().url
 
     def extract_content(self):
         if self.url is not None:
             video_content = self.get_video_content()
             try:
                 if self.contains_audio:
-                    self.get_audio_content()
                     audio_content = self.get_audio_content()
                     if audio_content is not None and video_content is not None:
                         VideoMerger.videos_to_merge.append(
@@ -64,7 +68,7 @@ class RedditVideoExtractor(BaseExtractor):
     def get_audio_content(self):
         ext = 'mp3'
         index = self.url.rfind('/')
-        url = self.url[:index] + '/audio'
+        url = self.url[:index] + '/audio'  # replace end of fallback url to target audio file
         return self.make_content(url, self.make_name(False), ext)
 
     def make_name(self, video_url):

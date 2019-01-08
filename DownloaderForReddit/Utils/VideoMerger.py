@@ -28,6 +28,8 @@ import os
 import logging
 from distutils.spawn import find_executable
 
+from ..Utils import Injector
+
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +66,10 @@ def merge_videos():
 
 
 def clean_up():
+    queue = Injector.get_queue()
     for ms in videos_to_merge:
         if os.path.exists(ms.output_path):
             os.remove(ms.video_path)
             os.remove(ms.audio_path)
+            queue.put('Merged reddit video: %s' % ms.output_path)
     videos_to_merge.clear()
