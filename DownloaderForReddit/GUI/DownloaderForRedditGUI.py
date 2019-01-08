@@ -1571,3 +1571,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def no_update_available_dialog(self):
         Message.up_to_date_message(self)
+
+    def check_ffmpeg(self):
+        Message.ffmpeg_warning(self)

@@ -213,6 +213,15 @@ class Message(object):
         reply = message.question(self, 'Overwrite File?', text, message.Yes, message.No)
         return reply == message.Yes
 
+    def ffmpeg_warning(self):
+        text = 'Ffmpeg is not installed on the system.  This application relies on ffmpeg in order to join video and ' \
+               'audio files downloaded from v.redd.it, as they are served and downloaded as two separate files. ' \
+               'Please see the help menu for more information about installing and setting up ffmpeg.  \n ' \
+               'Would you like to disable video downloads from v.redd.it?  (this action can be undone from the ' \
+               'settings menu)'
+        reply = message.information(self, 'ffmpeg Not Installed', text, message.Yes, message.No)
+        return reply == message.Yes
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 
