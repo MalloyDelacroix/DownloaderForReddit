@@ -4,6 +4,10 @@
 
 ## v2.3.3
 
+### Major Changes
+* Videos hosted on reddit via v.redd.it links are now downloaded with audio.
+  * FFmpeg must be installed on host system in order to merge video and audio files.
+
 ### Minor Changes
 * Add user and subreddit list exporting options
 * Allow importing user and subreddit lists from json and xml files
