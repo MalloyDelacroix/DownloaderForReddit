@@ -300,6 +300,7 @@
     <addaction name="file_imgur_credits"/>
     <addaction name="separator"/>
     <addaction name="file_user_manual"/>
+    <addaction name="file_ffmpeg_requirement"/>
     <addaction name="separator"/>
     <addaction name="file_check_for_updates"/>
     <addaction name="separator"/>
@@ -500,6 +501,11 @@
   <action name="export_user_list_as_xml_menu_item">
    <property name="text">
     <string>Export As Xml</string>
+   </property>
+  </action>
+  <action name="file_ffmpeg_requirement">
+   <property name="text">
+    <string>FFmpeg Requirement</string>
    </property>
   </action>
  </widget>
