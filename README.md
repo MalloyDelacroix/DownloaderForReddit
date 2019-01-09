@@ -36,7 +36,7 @@ Imgur will allow you 12,500 downloads per day. Your remaining Imgur credits can 
 
 #### Reddit Video Posts:
 
-Due to the way they are hosted by reddit, video's that are downloaded from v.redd.it will be two files, one video and one audio.  In order for the application to merge the two files into one playable video after download, [FFMpeg](https://www.ffmpeg.org/) must be installed and on the system path.
+Due to the way they are hosted by reddit, video's that are downloaded from v.redd.it will be two files, one video and one audio.  In order for the application to merge the two files into one playable video after download, [FFmpeg](https://www.ffmpeg.org/) must be installed and on the system path.
 
 Please see this [wikiHow article](https://www.wikihow.com/Install-FFmpeg-on-Windows) for more information on how to install FFmpeg on a Windows system.
 
