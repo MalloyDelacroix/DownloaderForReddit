@@ -41,7 +41,7 @@ from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
 from ..Core.UpdaterChecker import UpdateChecker
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
-from ..Utils import Injector, SystemUtil, ImgurUtils
+from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
 from ..Persistence.ObjectStateHandler import ObjectStateHandler
 from ..ViewModels.ListModel import ListModel
@@ -196,6 +196,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.progress_label)
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
+
+        self.check_ffmpeg()
 
         # self.check_for_updates(False)
 
@@ -1573,4 +1575,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Message.up_to_date_message(self)
 
     def check_ffmpeg(self):
-        Message.ffmpeg_warning(self)
+        """
+        Checks that ffmpeg is installed on the host system and notifies the user if it is not installed.  Will also
+        disable reddit video download depending on the user input through the dialog.
+        """
+        if not VideoMerger.ffmpeg_valid:
+            disable = Message.ffmpeg_warning(self)
+            self.settings_manager.download_reddit_hosted_videos = not disable

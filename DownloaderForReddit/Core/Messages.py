@@ -214,11 +214,9 @@ class Message(object):
         return reply == message.Yes
 
     def ffmpeg_warning(self):
-        text = 'Ffmpeg is not installed on the system.  This application relies on ffmpeg in order to join video and ' \
-               'audio files downloaded from v.redd.it, as they are served and downloaded as two separate files. ' \
-               'Please see the help menu for more information about installing and setting up ffmpeg.  \n ' \
-               'Would you like to disable video downloads from v.redd.it?  (this action can be undone from the ' \
-               'settings menu)'
+        text = 'Ffmpeg not detected.  Videos hosted by reddit will be downloaded as two separate files (video and ' \
+               'audio) and cannot be merged without ffmpeg.  See help menu for more information.\n\nThis dialog will ' \
+               'not display again.\n\nDo you want to disable reddit video download?'
         reply = message.information(self, 'ffmpeg Not Installed', text, message.Yes, message.No)
         return reply == message.Yes
 
