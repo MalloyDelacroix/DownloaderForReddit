@@ -240,7 +240,7 @@ class DownloadRunner(QObject):
 
     def start_extractor(self):
         """
-        Initializes an BaseExtractor object, starts a separate thread, and then runs the extractor from the new thread so
+        Initializes an Extractor object, starts a separate thread, and then runs the extractor from the new thread so
         that content can be simultaneously extracted, validated, and downloaded.
         """
         self.extraction_runner = ExtractionRunner(self.queue, self.validated_objects, self.queued_posts, self.user_run)
@@ -459,7 +459,7 @@ class ExtractionRunner(QObject):
         Cleans up items for the end of the extraction run.
         """
         self.post_queue.put(None)
-        self.logger.info('BaseExtractor finished', extra={'extracted_content_count': self.extract_count})
+        self.logger.info('Extractor finished', extra={'extracted_content_count': self.extract_count})
         self.finished.emit()
 
     def stop(self):
