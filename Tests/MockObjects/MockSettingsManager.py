@@ -21,3 +21,4 @@ class MockSettingsManager:
         self.download_videos = True
         self.avoid_duplicates = True
 
+        self.download_reddit_hosted_videos = True

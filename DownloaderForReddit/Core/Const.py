@@ -33,3 +33,5 @@ ALL_EXT = IMAGE_EXT + GIF_EXT + VID_EXT
 RESOURCES = os.path.abspath('Resources/')
 SUPPORTED_SITES_FILE = os.path.join(RESOURCES, 'supported_video_sites.txt')
 TIMEOUT_INCREMENT = 0.25
+
+RUN = True

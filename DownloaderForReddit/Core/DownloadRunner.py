@@ -31,6 +31,7 @@ import logging
 
 from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.PostFilter import PostFilter
+from ..Core import Const
 from ..Extractors.Extractor import Extractor
 
 
@@ -86,6 +87,8 @@ class DownloadRunner(QObject):
         self.start_downloader()
 
         self.final_download_count = 0
+
+        Const.RUN = True
 
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
@@ -360,9 +363,10 @@ class DownloadRunner(QObject):
 
     def stop_download(self):
         """Stops the download when the user selects to do so."""
+        self.queue.put('\nStopped\n')
+        Const.RUN = False
         self.run = False
         self.stop.emit()
-        self.queue.put('\nStopped\n')
         self.logger.info('Downloader stopped', extra={'run_time': self.calculate_run_time()})
 
     def send_unfinished_downloads(self):
