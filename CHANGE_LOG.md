@@ -17,6 +17,9 @@ reddit object (except for previously downloaded urls).  By doing this, reddit ob
 to json or xml file types can then be imported at a later date retaining the reddit objects user set attributes (ie: 
 last downloaded post date, post limit, media filters, date added, etc.) 
 
+* Sopping downloader now stops in progress downloads when the stop button is pressed.
+
+
 ### Bug Fixes
 * Restore copy and paste functionality to add reddit object dialog input line
 
