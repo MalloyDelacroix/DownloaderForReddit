@@ -623,7 +623,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.user_list_view.setModel(None)
                 self.refresh_user_count()
                 self.set_not_saved()
-                self.logger.info('User list removed', extra={'name': current_user_list, 'list_size': list_size})
+                self.logger.info('User list removed', extra={'list_name': current_user_list, 'list_size': list_size})
         except KeyError:
             self.logger.warning('Unable to remove user list: No user list available to remove', exc_info=True)
             Message.no_user_list(self)
@@ -692,7 +692,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.subreddit_list_view.setModel(None)
                 self.refresh_subreddit_count()
                 self.set_not_saved()
-                self.logger.info('Subreddit list removed', extra={'name': current_sub_list, 'list_size': list_size})
+                self.logger.info('Subreddit list removed', extra={'list_name': current_sub_list,
+                                                                  'list_size': list_size})
         except KeyError:
             self.logger.warning('Unable to remove subreddit list: No list to remove', exc_info=True)
             Message.no_subreddit_list(self)

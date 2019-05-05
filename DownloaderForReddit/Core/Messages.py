@@ -40,7 +40,7 @@ class Message(object):
 
     def no_user_list(self):
         text = 'There are no user lists available. To add a user, please add a user list'
-        reply = message.warning(self, 'Warning', text, message.Ok)
+        reply = message.warning(self, 'No User List', text, message.Ok)
         return reply == message.Ok
 
     def no_subreddit_list(self):
