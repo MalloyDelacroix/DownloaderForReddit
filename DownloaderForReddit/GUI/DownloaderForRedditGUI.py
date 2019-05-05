@@ -908,7 +908,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.add_complete_subreddits(add_sub_dialog.object_name_list_model.complete_reddit_object_list)
                     self.add_multiple_subreddits(add_sub_dialog.object_name_list_model.name_list)
         else:
-            Message.no_user_list(self)
+            Message.no_subreddit_list(self)
 
     def add_single_subreddit(self, new_sub):
         try:
