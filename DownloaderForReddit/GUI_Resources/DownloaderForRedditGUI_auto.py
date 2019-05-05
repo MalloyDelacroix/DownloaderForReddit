@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -205,6 +205,8 @@ class Ui_MainWindow(object):
         self.export_sub_list_as_xml_menu_item.setObjectName("export_sub_list_as_xml_menu_item")
         self.export_user_list_as_xml_menu_item = QtWidgets.QAction(MainWindow)
         self.export_user_list_as_xml_menu_item.setObjectName("export_user_list_as_xml_menu_item")
+        self.file_ffmpeg_requirement = QtWidgets.QAction(MainWindow)
+        self.file_ffmpeg_requirement.setObjectName("file_ffmpeg_requirement")
         self.menuFile.addAction(self.file_open_settings)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.file_save)
@@ -237,6 +239,7 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.file_imgur_credits)
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.file_user_manual)
+        self.menuHelp.addAction(self.file_ffmpeg_requirement)
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.file_check_for_updates)
         self.menuHelp.addSeparator()
@@ -316,4 +319,5 @@ class Ui_MainWindow(object):
         self.export_sub_list_as_json_menu_item.setText(_translate("MainWindow", "Export As Json"))
         self.export_sub_list_as_xml_menu_item.setText(_translate("MainWindow", "Export As Xml"))
         self.export_user_list_as_xml_menu_item.setText(_translate("MainWindow", "Export As Xml"))
+        self.file_ffmpeg_requirement.setText(_translate("MainWindow", "FFmpeg Requirement"))
 

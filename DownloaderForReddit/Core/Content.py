@@ -27,6 +27,7 @@ import requests
 from PyQt5.QtCore import QRunnable
 import logging
 
+from ..Core import Const
 from ..Utils import Injector, SystemUtil
 from ..Logging import LogUtils
 
@@ -108,10 +109,11 @@ class Content(QRunnable):
             if response.status_code == 200:
                 with open(self.filename, 'wb') as file:
                     for chunk in response.iter_content(1024):
-                        file.write(chunk)
-                self.set_file_modified_date()
-                self.queue.put('Saved: %s' % self.filename)
-                self.downloaded = True
+                        if Const.RUN:
+                            file.write(chunk)
+                        else:
+                            break
+                self.finish_download()
                 return None
             else:
                 self.handle_unsuccessful_response(response.status_code)
@@ -119,6 +121,19 @@ class Content(QRunnable):
             self.handle_connection_error()
         except:
             self.handle_exception()
+
+    def finish_download(self):
+        """
+        Handles the end of a download by notifying the user of the download status, then setting the date modified or
+        deleting the unfinished file depending on whether or not the download was stopped.
+        """
+        if Const.RUN:
+            self.set_file_modified_date()
+            self.queue.put('Saved: %s' % self.filename)
+            self.downloaded = True
+        else:
+            SystemUtil.delete_file(self.filename)
+            self.queue.put('Stopped: %s' % self.filename)
 
     def handle_unsuccessful_response(self, status_code):
         """Handles logging and output in case of a failed response from the server."""

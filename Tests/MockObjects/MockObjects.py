@@ -80,9 +80,16 @@ def get_mock_post_vidble():
     return post
 
 
+def get_mock_post_reddit_video():
+    post = MockPrawPost('https://v.redd.it/lkfmw864od1971', 'Gorgoth', 'Reddit Video Broh', 'PublicFreakout',
+                        1521473630, 3500, False, False)
+    return post
+
+
 class MockPrawPost:
 
-    def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None):
+    def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None,
+                 is_video=False, crosspost_parent=None, media=None):
         self.url = url
         self.author = author
         self.title = title
@@ -90,3 +97,9 @@ class MockPrawPost:
         self.created = created
         self.score = score
         self.over_18 = over_18
+        self.is_video = is_video
+        self.crosspost_parent = crosspost_parent
+        self.media = media
+
+        self.id = 'abcde'
+        self.domain = 'reddit'

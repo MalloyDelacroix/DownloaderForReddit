@@ -29,8 +29,9 @@ from queue import Queue
 from time import time
 import logging
 
-from ..Utils import Injector, RedditUtils
+from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.PostFilter import PostFilter
+from ..Core import Const
 from ..Extractors.Extractor import Extractor
 
 
@@ -86,6 +87,8 @@ class DownloadRunner(QObject):
         self.start_downloader()
 
         self.final_download_count = 0
+
+        Const.RUN = True
 
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
@@ -205,6 +208,7 @@ class DownloadRunner(QObject):
                 user.clear_download_session_data()
         except TypeError:
             pass
+        VideoMerger.merge_videos()
         self.logger.info('Download finished', extra={'download_type': 'User' if self.user_run else 'Subreddit',
                                                      'download_count': self.final_download_count,
                                                      'download_time': time_string})
@@ -239,7 +243,7 @@ class DownloadRunner(QObject):
 
     def start_extractor(self):
         """
-        Initializes an BaseExtractor object, starts a separate thread, and then runs the extractor from the new thread so
+        Initializes an Extractor object, starts a separate thread, and then runs the extractor from the new thread so
         that content can be simultaneously extracted, validated, and downloaded.
         """
         self.extraction_runner = ExtractionRunner(self.queue, self.validated_objects, self.queued_posts, self.user_run)
@@ -359,9 +363,10 @@ class DownloadRunner(QObject):
 
     def stop_download(self):
         """Stops the download when the user selects to do so."""
+        self.queue.put('\nStopped\n')
+        Const.RUN = False
         self.run = False
         self.stop.emit()
-        self.queue.put('\nStopped\n')
         self.logger.info('Downloader stopped', extra={'run_time': self.calculate_run_time()})
 
     def send_unfinished_downloads(self):
@@ -458,7 +463,7 @@ class ExtractionRunner(QObject):
         Cleans up items for the end of the extraction run.
         """
         self.post_queue.put(None)
-        self.logger.info('BaseExtractor finished', extra={'extracted_content_count': self.extract_count})
+        self.logger.info('Extractor finished', extra={'extracted_content_count': self.extract_count})
         self.finished.emit()
 
     def stop(self):

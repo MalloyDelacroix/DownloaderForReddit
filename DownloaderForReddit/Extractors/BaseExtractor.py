@@ -182,17 +182,20 @@ class BaseExtractor:
                           settings.
         :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
         :param extension: The extension of the supplied url and the url used for the downloaded file.
+        :return: The content object that was created.
         :type url: str
         :type file_name: str
         :type extension: str
         :type count: int
+        :rtype: Content
         """
         count = ' %s' % count if count else ''
         x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
                     self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
+        return x
 
-    def handle_failed_extract(self, message=None, save=False, log=True, **kwargs):
+    def handle_failed_extract(self, message=None, save=False, log=True, log_exception=False, **kwargs):
         """
         Handles the logging and output of error messages encountered while extracting content and saves posts if
         instructed to do so.
@@ -203,9 +206,11 @@ class BaseExtractor:
         :param log: Indicates whether this failed extract should be logged or not.  This should be used to prevent
                     log spamming for extraction errors that are likely to happen very frequently (such as imgur rate
                     limit error)
+        :param log_exception: If True and log is True, the current exception will be logged if there is one.
         :type message: str
         :type save: bool
         :type log: bool
+        :type log_exception: bool
         :param kwargs: These are keyword arguments that are put into the 'extra' dictionary in the log.  These should be
                        any other parameters that will be helpful in diagnosing problems from the log if an error is
                        encountered.
@@ -224,7 +229,7 @@ class BaseExtractor:
         for key, value in kwargs.items():
             extra[key] = value
         if log:
-            self.logger.error('Failed to extract content', extra=extra)
+            self.logger.error('Failed to extract content', extra=extra, exc_info=log_exception)
 
     def save_failed_extract(self):
         """

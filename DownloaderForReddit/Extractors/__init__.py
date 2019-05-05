@@ -33,6 +33,7 @@ from .ImgurExtractor import ImgurExtractor
 from .GfycatExtractor import GfycatExtractor
 from .VidbleExtractor import VidbleExtractor
 from .RedditUploadsExtractor import RedditUploadsExtractor
+from .RedditVideoExtractor import RedditVideoExtractor
 from .GenericVideoExtractor import GenericVideoExtractor
 
 

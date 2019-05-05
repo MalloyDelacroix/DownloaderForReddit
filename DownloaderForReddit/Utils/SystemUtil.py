@@ -133,3 +133,12 @@ def epoch_to_str(epoch_time):
         return datetime.datetime.fromtimestamp(epoch_time).strftime('%m/%d/%Y %I:%M %p')
     else:
         return None
+
+
+def delete_file(file_path):
+    """
+    Deletes the file at the supplied file path.
+    :param file_path: The path of the file to be deleted.
+    """
+    if os.path.exists(file_path):
+        os.remove(file_path)

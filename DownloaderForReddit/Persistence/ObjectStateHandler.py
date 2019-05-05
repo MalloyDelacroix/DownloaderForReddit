@@ -44,6 +44,8 @@ class ObjectStateHandler:
     total_sub_count = 0
     user_update_count = 0
     sub_update_count = 0
+    saved_post_count = 0
+    saved_content_count = 0
 
     @classmethod
     def load_pickled_state(cls):
@@ -70,6 +72,7 @@ class ObjectStateHandler:
                     x.reddit_object_list = user_list
                     user_view_chooser_dict[x.name] = x
                     cls.total_user_count += len(user_list)
+                    cls.sum_saved_objects(user_list)
 
                 for name, sub_list in subreddit_list_models.items():
                     sub_list = cls.check_subreddit_objects(sub_list)
@@ -77,10 +80,13 @@ class ObjectStateHandler:
                     x.reddit_object_list = sub_list
                     subreddit_view_chooser_dict[name] = x
                     cls.total_sub_count += len(sub_list)
+                    cls.sum_saved_objects(sub_list)
             cls.logger.info('Object lists loaded from save file', extra={'total_users': cls.total_user_count,
                                                                          'total_subreddits': cls.total_sub_count,
                                                                          'updated_users': cls.user_update_count,
-                                                                         'updated_subreddits': cls.sub_update_count})
+                                                                         'updated_subreddits': cls.sub_update_count,
+                                                                         'saved_submissions': cls.saved_post_count,
+                                                                         'saved_content': cls.saved_content_count})
             return {'user_dict': user_view_chooser_dict, 'sub_dict': subreddit_view_chooser_dict,
                     'last_user_view': last_user_view, 'last_sub_view': last_subreddit_view}
         except KeyError:
@@ -92,6 +98,12 @@ class ObjectStateHandler:
         except Exception:
             cls.logger.error('Failed to load from save file', extra={'save_file_location': save_path}, exc_info=True)
             return False
+
+    @classmethod
+    def sum_saved_objects(cls, ro_list):
+        for ro in ro_list:
+            cls.saved_post_count += len(ro.saved_submissions)
+            cls.saved_content_count += len(ro.saved_content)
 
     @classmethod
     def get_save_path(cls):
@@ -123,7 +135,9 @@ class ObjectStateHandler:
                 shelf['current_user_view'] = object_dict['current_user_view']
                 shelf['current_subreddit_view'] = object_dict['current_sub_view']
             cls.logger.info('Objects successfully saved', extra={'total_users_saved': cls.total_user_count,
-                                                                 'total_subreddits_saved': cls.total_sub_count})
+                                                                 'total_subreddits_saved': cls.total_sub_count,
+                                                                 'total_saved_submissions': cls.saved_post_count,
+                                                                 'total_saved_content': cls.saved_content_count})
             return True
         except Exception:
             cls.logger.error('Unable to save to save_file', extra={'save_file_location': save_path}, exc_info=True)
@@ -144,8 +158,10 @@ class ObjectStateHandler:
             list_models[key] = value.reddit_object_list
             if value.list_type == 'user':
                 cls.total_user_count += len(value.reddit_object_list)
+                cls.sum_saved_objects(value.reddit_object_list)
             else:
                 cls.total_sub_count += len(value.reddit_object_list)
+                cls.sum_saved_objects(value.reddit_object_list)
         return list_models
 
     @classmethod

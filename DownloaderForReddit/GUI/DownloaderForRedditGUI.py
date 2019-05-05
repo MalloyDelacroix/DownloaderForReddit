@@ -41,11 +41,12 @@ from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
 from ..Core.UpdaterChecker import UpdateChecker
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
-from ..Utils import Injector, SystemUtil, ImgurUtils
+from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
 from ..Persistence.ObjectStateHandler import ObjectStateHandler
 from ..ViewModels.ListModel import ListModel
 from ..GUI.AddRedditObjectDialog import AddUserDialog
+from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..version import __version__
 
 
@@ -119,6 +120,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
         self.file_user_manual.triggered.connect(self.open_user_manual)
+        self.file_ffmpeg_requirement.triggered.connect(self.display_ffmpeg_info_dialog)
         self.file_check_for_updates.triggered.connect(lambda: self.check_for_updates(True))
         self.file_about.triggered.connect(self.display_about_dialog)
         self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
@@ -197,7 +199,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        # self.check_for_updates(False)
+        self.check_ffmpeg()
+        self.check_for_updates(False)
 
     def set_saved(self):
         self.saved = True
@@ -1571,3 +1574,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def no_update_available_dialog(self):
         Message.up_to_date_message(self)
+
+    def display_ffmpeg_info_dialog(self):
+        dialog = FfmpegInfoDialog()
+        dialog.exec_()
+
+    def check_ffmpeg(self):
+        """
+        Checks that ffmpeg is installed on the host system and notifies the user if it is not installed.  Will also
+        disable reddit video download depending on the user input through the dialog.
+        """
+        if not VideoMerger.ffmpeg_valid:
+            disable = Message.ffmpeg_warning(self)
+            self.settings_manager.download_reddit_hosted_videos = not disable

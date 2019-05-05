@@ -213,6 +213,13 @@ class Message(object):
         reply = message.question(self, 'Overwrite File?', text, message.Yes, message.No)
         return reply == message.Yes
 
+    def ffmpeg_warning(self):
+        text = 'Ffmpeg not detected.  Videos hosted by reddit will be downloaded as two separate files (video and ' \
+               'audio) and cannot be merged without ffmpeg.  See help menu for more information.\n\nThis dialog will ' \
+               'not display again.\n\nDo you want to disable reddit video download?'
+        reply = message.information(self, 'ffmpeg Not Installed', text, message.Yes, message.No)
+        return reply == message.Yes
+
 
 class UnfinishedDownloadsWarning(QDialog, Ui_Dialog):
 

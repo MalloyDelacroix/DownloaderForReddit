@@ -488,7 +488,6 @@ raiplayplaylist
 raywenderlich
 rbmaradio
 rdsredbulltv
-reddit
 redditr
 redtube
 regiotv
@@ -697,7 +696,6 @@ voxmedia
 voxmediavolume
 vporn
 vprovrak
-v.redd.it
 vrtvrtnuvrv
 vrvvshare
 vubevuclip
