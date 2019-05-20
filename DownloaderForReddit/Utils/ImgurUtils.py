@@ -50,7 +50,11 @@ def get_client():
             try:
                 client_id = Injector.settings_manager.imgur_client_id
                 client_secret = Injector.settings_manager.imgur_client_secret
-                imgur_client = ImgurClient(client_id, client_secret)
+                mashape_key = Injector.settings_manager.imgur_mashape_key
+                if(len(mashape_key) > 0):
+                    imgur_client = ImgurClient(client_id, client_secret, mashape_key=mashape_key)
+                else:
+                    imgur_client = ImgurClient(client_id,client_secret)
                 connection_attempts = 0
                 break
             except ImgurClientError as e:

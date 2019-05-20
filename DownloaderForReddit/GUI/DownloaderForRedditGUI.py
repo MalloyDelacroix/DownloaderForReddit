@@ -1274,21 +1274,24 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
         imgur_client = self.get_imgur_client()
         if imgur_client is not None:
-            credits_dict = imgur_client.credits
-            dialog_text = 'Application credit limit: %s\nApplication credits remaining: %s\n\nUser credit limit: %s' \
-                          '\nUser credits remaining: %s\nTime user credits reset: %s' %\
-                          (credits_dict['ClientLimit'], credits_dict['ClientRemaining'], credits_dict['UserLimit'],
-                           credits_dict['UserRemaining'],
-                           datetime.strftime(datetime.fromtimestamp(int(credits_dict['UserReset'])),
-                                             '%m-%d-%Y at %I:%M %p'))
-            self.logger.info('Imgur client info calculated',
-                             extra={'remaining_app_credits': credits_dict['ClientRemaining'],
-                                    'remaining_user_credits': credits_dict['UserRemaining']})
+            if not hasattr(imgur_client, 'mashape_key') or imgur_client.mashape_key is None:
+                credits_dict = imgur_client.credits
+                dialog_text = 'Application credit limit: %s\nApplication credits remaining: %s\n\nUser credit limit: %s' \
+                            '\nUser credits remaining: %s\nTime user credits reset: %s' %\
+                            (credits_dict['ClientLimit'], credits_dict['ClientRemaining'], credits_dict['UserLimit'],
+                            credits_dict['UserRemaining'],
+                            datetime.strftime(datetime.fromtimestamp(int(credits_dict['UserReset'])),
+                                                '%m-%d-%Y at %I:%M %p'))
+                self.logger.info('Imgur client info calculated',
+                                extra={'remaining_app_credits': credits_dict['ClientRemaining'],
+                                        'remaining_user_credits': credits_dict['UserRemaining']})
+            else:
+                dialog_text = 'You are using the commercial Imgur API!'
             QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
 
     def get_imgur_client(self):
         try:
-            return ImgurUtils.get_client()
+            return ImgurUtils.get_new_client()
         except:
             self.logger.error('Failed to display imgur client information', exc_info=True)
             return None
