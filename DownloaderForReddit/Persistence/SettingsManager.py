@@ -64,6 +64,7 @@ class SettingsManager:
         self.auto_save = self.settings.value('auto_save', False, type=bool)
         self.imgur_client_id = self.settings.value('imgur_client_id', None, type=str)
         self.imgur_client_secret = self.settings.value('imgur_client_secret', None, type=str)
+        self.imgur_mashape_key = self.settings.value('imgur_mashape_key',None,type=str)
         self.auto_display_failed_list = self.settings.value("auto_display_failed_list", True, type=bool)
 
         self.restrict_by_score = self.settings.value('restrict_by_score', False, type=bool)
@@ -207,6 +208,7 @@ class SettingsManager:
         self.settings.setValue("auto_save", self.auto_save)
         self.settings.setValue("imgur_client_id", self.imgur_client_id)
         self.settings.setValue("imgur_client_secret", self.imgur_client_secret)
+        self.settings.setValue("imgur_mashape_key", self.imgur_mashape_key)
         self.settings.setValue("auto_display_failed_list", self.auto_display_failed_list)
         self.settings.setValue("restrict_by_score", self.restrict_by_score)
         self.settings.setValue("score_limit_operator", self.score_limit_operator)

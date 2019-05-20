@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ImgurClientDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.6
+# Created by: PyQt5 UI code generator 5.11.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_imgur_client_dialog(object):
     def setupUi(self, imgur_client_dialog):
         imgur_client_dialog.setObjectName("imgur_client_dialog")
-        imgur_client_dialog.resize(412, 108)
+        imgur_client_dialog.resize(412, 112)
         font = QtGui.QFont()
         font.setPointSize(10)
         imgur_client_dialog.setFont(font)
@@ -45,6 +45,12 @@ class Ui_imgur_client_dialog(object):
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
+        self.label_3 = QtWidgets.QLabel(imgur_client_dialog)
+        self.label_3.setObjectName("label_3")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
+        self.lineEdit_3 = QtWidgets.QLineEdit(imgur_client_dialog)
+        self.lineEdit_3.setObjectName("lineEdit_3")
+        self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.lineEdit_3)
         self.gridLayout.addLayout(self.formLayout, 0, 0, 1, 2)
 
         self.retranslateUi(imgur_client_dialog)
@@ -58,4 +64,5 @@ class Ui_imgur_client_dialog(object):
         self.imgur_client_help_button.setText(_translate("imgur_client_dialog", "?"))
         self.label.setText(_translate("imgur_client_dialog", "Imgur Client_Id:"))
         self.label_2.setText(_translate("imgur_client_dialog", "Imgur Client_Secret:"))
+        self.label_3.setText(_translate("imgur_client_dialog", "Mashape Key"))
 

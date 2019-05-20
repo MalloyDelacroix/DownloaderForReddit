@@ -91,6 +91,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
 
         self.imgur_client_id = self.settings_manager.imgur_client_id
         self.imgur_client_secret = self.settings_manager.imgur_client_secret
+        self.imgur_mashape_key =   self.settings_manager.imgur_mashape_key
         self.auto_save_checkbox.setCheckState(self.settings_manager.auto_save)
 
         self.post_limit_spinbox.setValue(self.settings_manager.post_limit)
@@ -194,10 +195,12 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         imgur_dialog = ImgurClientDialog()
         imgur_dialog.client_id_line_edit.setText(self.imgur_client_id)
         imgur_dialog.client_secret_line_edit.setText(self.imgur_client_secret)
+        imgur_dialog.mashape_key_line_edit.setText(self.imgur_mashape_key)
         dialog = imgur_dialog.exec_()
         if dialog == QtWidgets.QDialog.Accepted:
             self.imgur_client_id = imgur_dialog.client_id_line_edit.text()
             self.imgur_client_secret = imgur_dialog.client_secret_line_edit.text()
+            self.imgur_mashape_key = imgur_dialog.mashape_key_line_edit.text()
             self.logger.info('Imgur client_id and client_secret set',
                              extra={'valid_client_id': self.imgur_client_id is not None,
                                     'valid_client_secret': self.imgur_client_secret is not None})
@@ -277,8 +280,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
     def save_settings(self):
         self.settings_manager.imgur_client_id = self.imgur_client_id
         self.settings_manager.imgur_client_secret = self.imgur_client_secret
+        self.settings_manager.imgur_mashape_key = self.imgur_mashape_key
         self.settings_manager.auto_save = self.auto_save_checkbox.isChecked()
-
         self.settings_manager.restrict_by_score = self.restrict_to_score_checkbox.isChecked()
         self.settings_manager.score_limit_operator = self.score_operator_dict[self.post_score_combo.currentText()]
         self.settings_manager.post_score_limit = self.post_score_limit_spin_box.value()

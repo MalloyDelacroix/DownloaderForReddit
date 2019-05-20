@@ -39,6 +39,7 @@ class ImgurClientDialog(QtWidgets.QDialog, Ui_imgur_client_dialog):
 
         self.client_id_line_edit = self.lineEdit
         self.client_secret_line_edit = self.lineEdit_2
+        self.mashape_key_line_edit = self.lineEdit_3
         self.imgur_client_help_button.clicked.connect(self.help_dialog)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.close)
@@ -51,13 +52,14 @@ class ImgurClientDialog(QtWidgets.QDialog, Ui_imgur_client_dialog):
                              'each user to get their own credentials from imgur.com and supply them to the app for '
                              'personal use.<br>Each client is only allowed 12,200 requests per day, so to keep '
                              'each user from running out of requests, this client information is not '
-                             'supplied by the app.<br><br>Please follow the link below to obtain an imgur client-id'
+                             'supplied by the app.<br><br>Please follow the link below to obtain an imgur client-id '
                              'and client-secret. You will need an imgur account<br><br>Recommended details to enter:'
                              '<br>Application name: Downloader for Reddit<br>Authorization type: Anonymous usage '
                              'without authorization<br>Authorization callback url: https://google.com (any valid url '
                              'will work here and it does not matter for anonymous usage)<br>Application '
                              'website: https://github.com/MalloyDelacroix/DownloaderForReddit<br>Email: '
-                             'Your email address to email your credentials to.')
+                             'Your email address to email your credentials to. If you need more requests, you can <br>'
+                             'use the comercial endpoint at https://rapidapi.com/imgur/api/imgur-9.')
         help_message.setTextFormat(QtCore.Qt.RichText)
         help_message.setInformativeText("<a href='https://api.imgur.com/oauth2/addclient'>https://api.imgur.com/oauth2/addclient<a/>")
         help_message.exec_()
