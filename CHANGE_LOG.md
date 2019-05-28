@@ -21,7 +21,8 @@ last downloaded post date, post limit, media filters, date added, etc.)
 
 
 ### Bug Fixes
-* Restore copy and paste functionality to add reddit object dialog input line
+* Restore copy and paste functionality to add reddit object dialog input line.
+* Fix error message when trying to add a subreddit without an existing subreddit list.
 
 
 
