@@ -18,6 +18,8 @@ to json or xml file types can then be imported at a later date retaining the red
 last downloaded post date, post limit, media filters, date added, etc.) 
 
 * Sopping downloader now stops in progress downloads when the stop button is pressed.
+* Add support for Imgur's commercial API endpoint.  See https://rapidapi.com/imgur/api/imgur-9/pricing for more 
+information about obtaining the commercial api credentials.
 
 
 ### Bug Fixes
