@@ -7,4 +7,4 @@ assignees: ''
 
 ---
 
-*Issues marked with the **Need Information** label will be deleted after 30 days if no information is provided*
+*Issues marked with the **Need Information** label will be closed after 30 days if additional information is not provided*

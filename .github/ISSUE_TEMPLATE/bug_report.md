@@ -26,4 +26,4 @@ Steps to reproduce the behavior:
 
 ------------------------------------------------------------------------------------------------------------
 
-**Note:** All issues marked with the **Information Needed** label will be deleted after 30 days if no information is provided.
+**Note:** All issues marked with the **Information Needed** label will be closed after 30 days if no information is provided.
