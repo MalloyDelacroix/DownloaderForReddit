@@ -6,13 +6,15 @@ This project has a [Contributor Code Of Conduct]( DownloaderForReddit/CODE_OF_CO
 ## Creating an Issue
 
 Please create a new issue for each item that can be resolved.  Avoid grouping multiple bugs or feature requests into the same issue.
+* Check the unreleased section of the [changelog]( DownloaderForReddit/CHANGE_LOG.md ) to make sure your issue or feature request has not already been implemented.
+
+**Note:** Any issue with the **Information Needed** label will be closed after 30 days if the additional information is not provided.
 
 ### Bugs
 * For all but the most trivial issues, please attach the latest log file produced by the application to your issue.  This greatly helps solve issues.
   * Be sure that the issue that you are reporting is the last thing that happened when running the application so that it is the last item in the log.
   * Please attach the actual log file to the issue, not the copied and pasted text from the log.
 * Please include enough information in your issue that the problem can be identified and reproduced.
-* Check the unreleased section of the [changelog]( DownloaderForReddit/CHANGE_LOG.md ) to make sure the issue you are reporting has not already been resolved.
 * Indicate which operating system and version of the Downloader For Reddit you are using
  
  ### Request For Features / Improvements
