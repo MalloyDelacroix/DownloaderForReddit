@@ -1588,6 +1588,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Checks that ffmpeg is installed on the host system and notifies the user if it is not installed.  Will also
         disable reddit video download depending on the user input through the dialog.
         """
-        if not VideoMerger.ffmpeg_valid:
+        if not VideoMerger.ffmpeg_valid and self.settings_manager.display_ffmpeg_warning_dialog:
             disable = Message.ffmpeg_warning(self)
             self.settings_manager.download_reddit_hosted_videos = not disable
+            self.settings_manager.display_ffmpeg_warning_dialog = False
