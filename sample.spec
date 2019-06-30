@@ -1,43 +1,54 @@
 # -*- mode: python -*-
+import os
+
+# work-around for https://github.com/pyinstaller/pyinstaller/issues/4064
+import distutils
+if distutils.distutils_path.endswith('__init__.py'):
+    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
+
 
 block_cipher = None
 
-added_files = [('<path-to-project-directory>/Resources/Images/*', 'Resources/Images'),
-			   ('<path-to-virtual-env>/Lib/site-packages/praw/praw.ini', '.'),
-			   ('<path-to-project-directory>/README.md', '.'), 
-			   ('<path-to-project-directory>/LICENSE', '.'), 
-			   ('<path-to-project-directory>/The Downloader For Reddit - User Manual.pdf', '.'),
-			   ('<path-to-project-directory>/Resources/supported_video_sites.txt', 'Resources')]
+dir_path = os.path.abspath(SPECPATH)
+venv_path = '<path-to-virtual-env>'
 
-a = Analysis(['<path-to-project-directory>/main.py'],
-             pathex=['<path-to-virtual-env>/Scripts', 
-					 '<path-to-virtual-env>/Lib/site-packages/PyQt5/Qt/bin',
-					 '<path-to-virtual-env>/Lib/site-packages',
-					 '<path-to-project-directory>'],
-             binaries=[],
-             datas=added_files,
-             hiddenimports=[],
-             hookspath=[],
-             runtime_hooks=[],
-             excludes=[],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher)
+
+added_files = [(dir_path + '/Resources/Images/*', 'Resources/Images'),
+			   (venv_path + '/Lib/site-packages/praw/praw.ini', '.'),
+			   (dir_path + '/README.md', '.'), 
+			   (dir_path + '/LICENSE', '.'), 
+			   (dir_path + '/The Downloader For Reddit - User Manual.pdf', '.'),
+			   (dir_path + '/Resources/supported_video_sites.txt', 'Resources')]
+
+a = Analysis([dir_path + '/main.py'],
+			 pathex=[venv_path + '/Scripts', 
+					 venv_path + '/Lib/site-packages/PyQt5/Qt/bin',
+					 venv_path + '/Lib/site-packages',
+					 dir_path],
+			 binaries=[],
+			 datas=added_files,
+			 hiddenimports=['resource'],
+			 hookspath=[],
+			 runtime_hooks=[],
+			 excludes=[],
+			 win_no_prefer_redirects=False,
+			 win_private_assemblies=False,
+			 cipher=block_cipher)
 pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+			 cipher=block_cipher)
 exe = EXE(pyz,
-          a.scripts,
-          exclude_binaries=True,
-          name='DownloaderForReddit',
+		  a.scripts,
+		  exclude_binaries=True,
+		  name='DownloaderForReddit',
           debug=False,
-          strip=False,
-          upx=True,
+		  strip=False,
+		  upx=True,
           console=False, 
-		  icon='<path-to-project-directory>/Resources/Images/RedditDownloaderIcon_48x48.ico')
+		  icon= dir_path + '/Resources/Images/RedditDownloaderIcon_48x48.ico')
 coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='DownloaderForReddit')
+			   a.binaries,
+			   a.zipfiles,
+			   a.datas,
+			   strip=False,
+			   upx=True,
+			   name='DownloaderForReddit')
