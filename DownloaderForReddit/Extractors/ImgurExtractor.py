@@ -155,6 +155,8 @@ class ImgurExtractor(BaseExtractor):
         domain, album_id = self.url.rsplit('/', 1)
         for pic in self.client.get_album_images(album_id):
             url = pic.link
+            if('?' in url):
+                url = url[:url.find('?')]
             address, extension = url.rsplit('.', 1)
             file_name = self.get_filename(album_id)
             if pic.animated:
