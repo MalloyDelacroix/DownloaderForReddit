@@ -186,8 +186,11 @@ class SettingsManager:
         # region Misc Dialogs
         self.settings_dialog_geom = self.settings.value('settings_dialog_geom')
         self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
-        self.failed_downloads_dialog_splitter_state = self.settings.value("failed_downloads_dialog_splitter_state", None)
+        self.failed_downloads_dialog_splitter_state = self.settings.value("failed_downloads_dialog_splitter_state",
+                                                                          None)
         self.update_dialog_geom = self.settings.value("update_dialog_geom")
+        self.download_users_on_add = self.settings.value('download_users_on_add', False, type=bool)
+        self.download_subreddits_on_add = self.settings.value('download_subreddits_on_add', False, type=bool)
         # endregion
 
     def load_picked_objects(self):
@@ -310,6 +313,10 @@ class SettingsManager:
     def save_update_dialog(self):
         self.settings.setValue("do_not_notify_update", self.do_not_notify_update)
         self.settings.setValue("update_dialog_geom", self.update_dialog_geom)
+
+    def save_add_dialog(self):
+        self.settings.setValue('download_users_on_add', self.download_users_on_add)
+        self.settings.setValue('download_subreddits_on_add', self.download_subreddits_on_add)
 
     @property
     def json(self):

@@ -73,6 +73,9 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
 
         self.name = None
 
+        self.init_download_on_add_checkbox()
+        self.download_on_add_checkbox.toggled.connect(self.toggle_download_on_add_checkbox)
+
         self.ok_cancel_button_box.accepted.connect(self.accept)
         self.ok_cancel_button_box.rejected.connect(self.close)
 
@@ -128,15 +131,41 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
     def setup_list_view(self):
         self.vert_layout.insertLayout(0, self.list_layout)
         self.add_name_to_list()
+        self.download_on_add_checkbox.setVisible(False)
         self.layout_style = 'MULTIPLE'
 
     def setup_line_edit_view(self):
         self.vert_layout.removeItem(self.list_layout)
+        self.download_on_add_checkbox.setVisible(True)
         self.layout_style = 'SINGLE'
 
     def name_count_updated(self):
         self.object_name_list_view.scrollToBottom()
         self.name_count_label.setText('%s names in list' % len(self.object_name_list_model.name_list))
+
+    def init_download_on_add_checkbox(self):
+        if self.object_type == 'USER':
+            checked = self.settings_manager.download_users_on_add
+        else:
+            checked = self.settings_manager.download_subreddits_on_add
+        self.download_on_add_checkbox.setChecked(checked)
+        self.download_on_add_checkbox.setToolTip(
+            'Added {reddit_object} will be downloaded immediately after being added.\n'
+            'Not available when download is in progress or in multi-add mode'.format(
+                reddit_object=self.object_type.lower())
+        )
+
+    def toggle_download_on_add_checkbox(self):
+        """
+        Handles changing the settings in the settings manager that dictates if users or subreddits are downloaded
+        automatically after being added.  Will handle differently depending on if this dialog is being used for adding
+        users or subreddits.  This setting is saved to the system on toggle, not on dialog accept or close.
+        """
+        if self.object_type == 'USER':
+            self.settings_manager.download_users_on_add = self.download_on_add_checkbox.isChecked()
+        else:
+            self.settings_manager.download_subreddits_on_add = self.download_on_add_checkbox.isChecked()
+        self.settings_manager.save_add_dialog()
 
     def keyPressEvent(self, event):
         key = event.key()

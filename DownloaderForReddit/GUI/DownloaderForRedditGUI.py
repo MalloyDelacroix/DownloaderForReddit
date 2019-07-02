@@ -458,9 +458,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         except:
             self.output_box.append('\nThere was an error establishing a connection. Please try again later.\n'
-                                   'If the error occured after content was extracted, this content has been added to '
-                                   'the previously downloaded list. To attemp to redownload this content please uncheck'
-                                   ' the "avoid duplicates" checkbox in settings')
+                                   'If the error occurred after content was extracted, this content has been added to '
+                                   'the previously downloaded list. To attempt to re-download this content please '
+                                   'uncheck the "avoid duplicates" checkbox in settings')
         """
 
     def run_user(self):
@@ -763,15 +763,23 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 Message.not_valid_name(self, new_user)
             else:
                 self.refresh_user_count()
+                self.check_user_download_on_add(user)
         except KeyError:
             Message.no_user_list(self)
+
+    def check_user_download_on_add(self, user):
+        """
+        Checks the settings manager to determine if the supplied user should be downloaded as a single download.
+        :param user: The User that was just added to a list and is checked for single download eligibility.
+        """
+        if not self.running and self.settings_manager.download_users_on_add:
+            self.run_single_user((user, None))
 
     def add_multiple_users(self, user_list):
         """
         Makes and adds multiple users to the current user list from multiple names supplied by the
         AddRedditObjectDialog.
         :param user_list: A list of names to be made into users and added to the current user list
-        :return:
         """
         try:
             existing_names = []
@@ -931,8 +939,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 Message.not_valid_name(self, new_sub)
             else:
                 self.refresh_user_count()
+                self.check_subreddit_download_on_add(subreddit)
         except KeyError:
             Message.no_user_list(self)
+
+    def check_subreddit_download_on_add(self, subreddit):
+        """
+        Checks the settings manager to determine if the supplied subreddit should be downloaded as a single download.
+        :param subreddit: The Subreddit that was just added to a list and is checked for single download eligibility.
+        """
+        if not self.running and self.settings_manager.download_subreddits_on_add:
+            self.run_single_subreddit((subreddit, None))
 
     def add_multiple_subreddits(self, sub_list):
         """
