@@ -20,11 +20,14 @@ last downloaded post date, post limit, media filters, date added, etc.)
 * Sopping downloader now stops in progress downloads when the stop button is pressed.
 * Add support for Imgur's commercial API endpoint.  See https://rapidapi.com/imgur/api/imgur-9/pricing for more 
 information about obtaining the commercial api credentials.
+* Add ability to download a user or subreddit as a single download from the main GUI lists context menus
+* Add option to download a user or subreddit as a single download immediately after they are added
 
 
 ### Bug Fixes
 * Restore copy and paste functionality to add reddit object dialog input line.
 * Fix error message when trying to add a subreddit without an existing subreddit list.
+* Fix imgur url formatting that happened in some circumstances
 
 
 
