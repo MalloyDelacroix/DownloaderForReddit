@@ -233,6 +233,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             download_enabled_text = 'Enable Download' if not user.enable_download else 'Disable Download'
             toggle_download_enabled = user_menu.addAction(download_enabled_text)
             toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
+            user_menu.addSeparator()
+            download_single = user_menu.addAction('Download %s' % user.name)
+            download_single.triggered.connect(lambda: self.run_single_user((user, None)))
 
         add_user.triggered.connect(self.add_user_dialog)
         remove_user.triggered.connect(self.remove_user)
@@ -276,6 +279,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             download_enabled_text = 'Enable Download' if not subreddit.enable_download else 'Disable Download'
             toggle_download_enabled = subreddit_menu.addAction(download_enabled_text)
             toggle_download_enabled.triggered.connect(subreddit.toggle_enable_download)
+            subreddit_menu.addSeparator()
+            download_single = subreddit_menu.addAction('Download %s' % subreddit.name)
+            download_single.triggered.connect(lambda: self.run_single_subreddit((subreddit, None)))
 
         add_subreddit.triggered.connect(self.add_subreddit_dialog)
         remove_subreddit.triggered.connect(self.remove_subreddit)
