@@ -12,8 +12,6 @@ from Tests.MockObjects import MockObjects
 
 class TestImgurExtractor(unittest.TestCase):
 
-    logging.disable(logging.CRITICAL)
-
     url_host_dict = {
         'SINGLE': 'https://imgur.com/fb2yRj0',
         'ALBUM': 'https://imgur.com/a/Bi63r'

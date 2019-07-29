@@ -1,5 +1,4 @@
 import unittest
-import logging
 
 from DownloaderForReddit.Core.PostFilter import PostFilter
 from DownloaderForReddit.Utils import Injector
@@ -12,8 +11,6 @@ MOCK_DATE_LIMIT = 1500000000
 
 
 class MyTestCase(unittest.TestCase):
-
-    logging.disable(logging.CRITICAL)
 
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()

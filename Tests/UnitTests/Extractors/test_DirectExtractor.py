@@ -1,5 +1,4 @@
 import unittest
-import logging
 
 from DownloaderForReddit.Extractors.DirectExtractor import DirectExtractor
 from DownloaderForReddit.Utils import Injector
@@ -8,8 +7,6 @@ from Tests.MockObjects import MockObjects
 
 
 class TestDirectExtractor(unittest.TestCase):
-
-    logging.disable(logging.CRITICAL)
 
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()

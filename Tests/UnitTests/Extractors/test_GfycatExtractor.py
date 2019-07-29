@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-import logging
 
 from DownloaderForReddit.Extractors.GfycatExtractor import GfycatExtractor
 from DownloaderForReddit.Utils import Injector
@@ -9,8 +8,6 @@ from Tests.MockObjects import MockObjects
 
 
 class TestGfycatExtractor(unittest.TestCase):
-
-    logging.disable(logging.CRITICAL)
 
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()

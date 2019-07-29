@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-import logging
 
 from DownloaderForReddit.Extractors.RedditVideoExtractor import RedditVideoExtractor
 from DownloaderForReddit.Utils import Injector
@@ -10,8 +9,6 @@ from Tests.MockObjects import MockObjects
 
 
 class TestRedditVideoExtractor(unittest.TestCase):
-
-    logging.disable(logging.CRITICAL)
 
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()

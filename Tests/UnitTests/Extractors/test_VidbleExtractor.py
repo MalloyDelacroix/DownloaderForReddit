@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch
-import logging
 from bs4 import BeautifulSoup
 
 from DownloaderForReddit.Extractors.VidbleExtractor import VidbleExtractor
@@ -10,8 +9,6 @@ from Tests.MockObjects import MockObjects
 
 
 class TestVidbleExtractor(unittest.TestCase):
-
-    logging.disable(logging.CRITICAL)
 
     extracted_single_url_show = 'https://vidble.com/toqeUzXBIl_med.jpg'
     extracted_single_url_explore = 'https://vidble.com/toqeUzXBIl.jpg'

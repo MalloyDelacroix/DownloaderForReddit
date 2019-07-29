@@ -1,9 +1,7 @@
 import unittest
 from unittest.mock import patch
-import logging
 
 from DownloaderForReddit.Extractors.Extractor import Extractor
-from DownloaderForReddit.Extractors.ImgurExtractor import ImgurExtractor
 from DownloaderForReddit.Utils import Injector
 from DownloaderForReddit.Core import Const
 from DownloaderForReddit.Utils import ExtractorUtils
@@ -13,8 +11,6 @@ from Tests.MockObjects import MockObjects
 import time
 
 class TestExtractor(unittest.TestCase):
-
-    logging.disable(logging.CRITICAL)
 
     link_dict = {
         'DIRECT': 'https://unsupported_site.com/image/3jfd9nlksd.jpg',
