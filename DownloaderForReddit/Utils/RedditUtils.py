@@ -26,10 +26,13 @@ import praw
 import prawcore
 from PyQt5.QtCore import QObject, pyqtSignal
 import logging
+from datetime import datetime
 
 from ..Core.Post import Post
 from ..version import __version__
 
+
+logger = logging.getLogger('DownloaderForReddit.{}'.format(__name__))
 
 reddit_instance = None
 
@@ -46,12 +49,38 @@ def convert_praw_post(praw_post):
     """
     A utility function that converts a praw submission object into a Post object which can be marshaled.  The method
     first checks to make sure that the supplied post is an instance of a praw submission object.
+
+    In some instances, such as when a post has been removed by reddit, some attributes may be missing from the post
+    retrieved from reddit.  An attempt is made to check some of these attributes individually, but in the case that
+    too many attributes are missing, a dummy post object is returned.
     """
-    if isinstance(praw_post, praw.models.reddit.submission.Submission):
-        return Post(praw_post.url, praw_post.author.name, praw_post.title, praw_post.subreddit.display_name,
-                    praw_post.created, domain=praw_post.domain)
-    else:
-        return praw_post
+    try:
+        return Post(url=praw_post.url, author=get_post_author_name(praw_post), title=praw_post.title,
+                    subreddit=get_post_sub_name(praw_post), created=praw_post.created, domain=praw_post.domain)
+    except:
+        logger.warning('Failed to convert praw post to internal post object.  Some post attributes are likely missing')
+        return Post('unknown', 'unknown', 'unknown', 'unknown', int(datetime.now().timestamp()),
+                    status='failed to convert post')
+
+
+def get_post_author_name(praw_post):
+    """
+    Handles an exception thrown in the event that a post retrieved from reddit does not have an author attribute.
+    """
+    try:
+        return praw_post.author.name
+    except AttributeError:
+        return 'Unable to find author name'
+
+
+def get_post_sub_name(praw_post):
+    """
+    Handles an exception thrown in the event that a post retrieved from reddit does not have a subreddit attribute.
+    """
+    try:
+        return praw_post.subreddit.display_name
+    except AttributeError:
+        return 'Unable to find subreddit name'
 
 
 class NameChecker(QObject):
