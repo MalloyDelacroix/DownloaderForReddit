@@ -105,6 +105,7 @@ class ImgurExtractor(BaseExtractor):
         called in too short of a window (attempts are made to mitigate this by the application) or that the user is out
         of imgur user credits.
         """
+        self.client = ImgurUtils.get_new_client() #We need to get a new client to refresh our credit count
         user_credits = self.client.credits['UserRemaining']
         if user_credits is not None and int(user_credits) <= 0:
             message = 'Out of user credits'
