@@ -170,6 +170,8 @@ class ImgurExtractor(BaseExtractor):
         domain, image_id = self.url.rsplit('/', 1)
         pic = self.client.get_image(image_id)
         url = pic.link
+        if '?' in url:
+            url = url[:url.find('?')]
         address, extension = url.rsplit('.', 1)
         file_name = self.get_filename(image_id)
         if pic.animated:
@@ -180,6 +182,8 @@ class ImgurExtractor(BaseExtractor):
     def extract_direct_link(self):
         try:
             url = self.get_direct_url()
+            if '?' in url:
+                url = url[:url.find('?')]
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
             file_name = self.get_filename(image_id)
