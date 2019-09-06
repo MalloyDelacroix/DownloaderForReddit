@@ -51,10 +51,11 @@ def get_client():
                 client_id = Injector.settings_manager.imgur_client_id
                 client_secret = Injector.settings_manager.imgur_client_secret
                 mashape_key = Injector.settings_manager.imgur_mashape_key
-                if(len(mashape_key) > 0):
-                    imgur_client = ImgurClient(client_id, client_secret, mashape_key=mashape_key)
-                else:
-                    imgur_client = ImgurClient(client_id,client_secret)
+                imgur_client = ImgurClient(client_id,client_secret)
+                user_credits = imgur_client.credits['UserRemaining']
+                if user_credits is not None and int(user_credits) <= 0:
+                    if(len(mashape_key) > 0):
+                        imgur_client = ImgurClient(client_id, client_secret, mashape_key=mashape_key)
                 connection_attempts = 0
                 break
             except ImgurClientError as e:
