@@ -340,11 +340,19 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         """Downloads only the current reddit object."""
         self.logger.info('Preparing to download single', extra={'reddit_object': self.current_object.json})
         self.replace_current_object_with_temp()
-        download_method = self.get_single_download_subreddit_method()
-        self.download_object_button.setText('Downloading...')
-        self.download_object_button.setDisabled(True)
+        download_method = self.get_single_download_subreddit_method()        
         self.save_temp_object()
         self.single_download.emit((self.current_object, download_method))
+
+    def started_download_gui_shift(self):
+        """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
+        self.download_object_button.setText('Downloading...')
+        self.download_object_button.setDisabled(True)
+
+    def finished_download_gui_shift(self):
+        """Re-enables disabled GUI options"""
+        self.download_object_button.setText('Download')
+        self.download_object_button.setDisabled(False)
 
     def replace_current_object_with_temp(self):
         """

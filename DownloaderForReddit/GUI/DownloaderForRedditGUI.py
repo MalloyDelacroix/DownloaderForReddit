@@ -201,6 +201,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.check_ffmpeg()
         self.check_for_updates(False)
+        self.open_object_dialogs = []
 
     def set_saved(self):
         self.saved = True
@@ -334,11 +335,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                               current_list_model.reddit_object_list[position],
                                                               self.running)
             user_settings_dialog.single_download.connect(self.run_single_user)
+            self.open_object_dialogs.append(user_settings_dialog)
             user_settings_dialog.show()
             if page == 1:
                 user_settings_dialog.change_to_downloads_view()
             if not user_settings_dialog.closed:
                 dialog = user_settings_dialog.exec_()
+                self.open_object_dialogs.remove(user_settings_dialog)
                 if dialog == QtWidgets.QDialog.Accepted:
                     self.set_not_saved()
                     if user_settings_dialog.restore_defaults:
@@ -366,11 +369,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                    current_list_model.reddit_object_list[position],
                                                                    self.running)
             subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
+            self.open_object_dialogs.append(subreddit_settings_dialog)
             subreddit_settings_dialog.show()
             if page == 1:
                 subreddit_settings_dialog.change_to_downloads_view()
             if not subreddit_settings_dialog.closed:
                 dialog = subreddit_settings_dialog.exec_()
+                self.open_object_dialogs.remove(subreddit_settings_dialog)
                 if dialog == QtWidgets.QDialog.Accepted:
                     self.set_not_saved()
                     if not subreddit_settings_dialog.restore_defaults:
@@ -436,7 +441,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Runs the extractor with the intended settings"""
         try:
             self.failed_list.clear()
-            self.started_download_gui_shift()
             if self.settings_manager.user_finder_run_with_main:
                 self.display_user_finder(True)
             if self.download_users_checkbox.isChecked() and not self.download_subreddit_checkbox.isChecked():
@@ -478,7 +482,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user = download_tuple[0]
         self.logger.info('Single user download initiated', extra={'user': user.name,
                                                                   'settings': self.settings_manager.json})
-        self.started_download_gui_shift()
         user_list = [user]
         self.download_runner = DownloadRunner(user_list, None, self.queue, None)
         self.start_reddit_extractor_thread('USER')
@@ -497,7 +500,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.logger.info('Single subreddit download initiated', extra={'subreddit': download_tuple[0].name,
                                                                        'settings': self.settings_manager.json})
-        self.started_download_gui_shift()
         subreddit_list = [download_tuple[0]]
         self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
         self.download_runner.single_subreddit_run_method = download_tuple[1]
@@ -521,7 +523,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.logger.info('Unfinished downloads download initiated', extra={'list_size': len(self.unfinished_downloads),
                                                                            'settings': self.settings_manager.json})
         self.download_count = 0
-        self.started_download_gui_shift()
         self.download_runner = DownloadRunner(None, None, self.queue, self.unfinished_downloads)
         self.start_reddit_extractor_thread('UNFINISHED')
 
@@ -549,6 +550,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_runner.finished.connect(self.download_runner.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.finished_download_gui_shift)
+        for dialog in self.open_object_dialogs:
+            dialog.started_download_gui_shift()
+            self.thread.finished.connect(dialog.finished_download_gui_shift)
+        self.started_download_gui_shift()
         self.thread.start()
         self.logger.info('Downloader thread started')
 

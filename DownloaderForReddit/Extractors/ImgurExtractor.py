@@ -105,6 +105,7 @@ class ImgurExtractor(BaseExtractor):
         called in too short of a window (attempts are made to mitigate this by the application) or that the user is out
         of imgur user credits.
         """
+        self.client = ImgurUtils.get_new_client() #We need to get a new client to refresh our credit count
         user_credits = self.client.credits['UserRemaining']
         if user_credits is not None and int(user_credits) <= 0:
             message = 'Out of user credits'
@@ -169,6 +170,8 @@ class ImgurExtractor(BaseExtractor):
         domain, image_id = self.url.rsplit('/', 1)
         pic = self.client.get_image(image_id)
         url = pic.link
+        if '?' in url:
+            url = url[:url.find('?')]
         address, extension = url.rsplit('.', 1)
         file_name = self.get_filename(image_id)
         if pic.animated:
@@ -179,6 +182,8 @@ class ImgurExtractor(BaseExtractor):
     def extract_direct_link(self):
         try:
             url = self.get_direct_url()
+            if '?' in url:
+                url = url[:url.find('?')]
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
             file_name = self.get_filename(image_id)
