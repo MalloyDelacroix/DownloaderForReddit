@@ -38,6 +38,7 @@ from ..Extractors.Extractor import Extractor
 class DownloadRunner(QObject):
 
     remove_invalid_object = pyqtSignal(object)
+    remove_forbidden_object = pyqtSignal(object)
     finished = pyqtSignal()
     downloaded_objects_signal = pyqtSignal(dict)
     failed_download_signal = pyqtSignal(object)
@@ -107,7 +108,10 @@ class DownloadRunner(QObject):
                     self.handle_invalid_reddit_object(user)
                 except prawcore.RequestException:
                     self.handle_failed_connection()
-
+                except prawcore.exceptions.Forbidden:
+                    self.handle_forbidden_reddit_object(user)
+                except:
+                    self.handle_unknown_exception(user)
         self.validated_objects.put(None)  # Shuts down the extractor
 
     def validate_subreddits(self):
@@ -127,6 +131,10 @@ class DownloadRunner(QObject):
                     self.handle_invalid_reddit_object(sub)
                 except prawcore.RequestException:
                     self.handle_failed_connection()
+                except prawcore.exceptions.Forbidden:
+                    self.handle_forbidden_reddit_object(sub)
+                except:
+                    self.handle_unknown_exception(sub)
         self.validated_objects.put(None)
 
     def validate_users_and_subreddits(self):
@@ -156,6 +164,10 @@ class DownloadRunner(QObject):
                     self.handle_invalid_reddit_object(user)
                 except prawcore.RequestException:
                     self.handle_failed_connection()
+                except prawcore.exceptions.Forbidden:
+                    self.handle_forbidden_reddit_object(user)
+                except:
+                    self.handle_unknown_exception(user)
 
         self.validated_objects.put(None)
 
@@ -170,8 +182,7 @@ class DownloadRunner(QObject):
         self.logger.info('Invalid %s detected' % reddit_object.object_type.lower(),
                          extra={'reddit_object': reddit_object.name,
                                 'download_count': self.get_download_count(reddit_object)})
-        self.update_progress_bar()
-        self.update_progress_bar()  # Once for validation, once for would be extraction
+        self.update_progress_for_error()
 
     def get_download_count(self, reddit_object):
         """
@@ -194,6 +205,34 @@ class DownloadRunner(QObject):
         self.queue.put('Could not establish a connection to reddit\n'
                        'This may mean that reddit is currently unavailable\n'
                        'Please try again later')
+
+    def handle_forbidden_reddit_object(self, reddit_object):
+        """
+        Handles logging and informing actions necessary when access is attempted for a forbidden reddit object.
+        :param reddit_object: A RedditObject for which access is forbidden.
+        :type reddit_object: RedditObject
+        """
+        self.remove_forbidden_object.emit(reddit_object)
+        self.queue.put(f'Download from {reddit_object.name} is forbidden')
+        self.logger.info(f'Access to {reddit_object.name} is forbidden',
+                         extra={'object_type': reddit_object.object_type,
+                                'download_count': self.get_download_count(reddit_object)})
+        self.update_progress_for_error()
+
+    def handle_unknown_exception(self, reddit_object):
+        self.queue.put(f'Unknown error when interacting with {reddit_object.name}')
+        self.logger.error('Encountered unknown error when interacting with reddit object',
+                          extra={'reddit_object': reddit_object.name}, exc_info=True)
+        self.update_progress_for_error()
+
+    def update_progress_for_error(self):
+        """
+        Updates the progress the appropriate amount of times so that no discrepancy is shown in the number of objects
+        iterated through and the progress bar when an error occurs when working with an object and it is not validated
+        or extracted.
+        """
+        self.update_progress_bar()
+        self.update_progress_bar()  # Once for validation, once for would be extraction
 
     def downloads_finished(self):
         """Cleans up objects that need to be changed after the download is complete."""

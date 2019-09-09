@@ -83,6 +83,13 @@ class Message(object):
         text = '%s is not a valid %s. Would you like to remove this %s from the %s list?' % (name, type_, type_, type_)
         reply = message.question(self, 'Invalid Object', text, message.Yes, message.No)
         return reply == message.Yes
+
+    def reddit_object_forbidden(self, name, type_):
+        type_ = type_.lower()
+        text = f'Forbidden: You do not have permission to access {name}.  Would you like to remove this {type_} from ' \
+            f'the {type_} list?'
+        reply = message.question(self, 'Forbidden Object', text, message.Yes, message.No)
+        return reply == message.Yes
     
     def user_not_valid(self, user):
         text = '%s is not a valid user. Would you like to remove this user from the user list?' % user

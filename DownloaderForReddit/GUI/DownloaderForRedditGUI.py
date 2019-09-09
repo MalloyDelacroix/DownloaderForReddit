@@ -539,6 +539,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         elif download_type == 'UNFINISHED':
             self.thread.started.connect(self.download_runner.finish_downloads)
         self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
+        self.download_runner.remove_forbidden_object.connect(self.remove_forbidden_reddit_object)
         self.download_runner.downloaded_objects_signal.connect(self.fill_downloaded_objects_list)
         self.download_runner.failed_download_signal.connect(self.handle_failed_download_object)
         self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
@@ -892,19 +893,44 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param reddit_object: The reddit object (User or Subreddit) that is invalid and is to be removed.
         :type reddit_object: RedditObject
         """
-        name = reddit_object.name
         if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
-            working_list = self.get_working_list(reddit_object.object_type)
-            working_list.remove_reddit_object(reddit_object)
+            self.remove_object(reddit_object, True, 'Invalid')
+
+    def remove_forbidden_reddit_object(self, reddit_object):
+        """
+        Handles removing the supplied reddit object if access to the object is forbidden (ie: a private subreddit).
+        This method will not rename the download folder.
+        :param reddit_object: The reddit object to which access if forbidden.
+        :type reddit_object: RedditObject
+        """
+        name = reddit_object.name
+        if Message.reddit_object_forbidden(self, name, reddit_object.object_type):
+            self.remove_object(reddit_object, False, 'Forbidden')
+
+    def remove_object(self, reddit_object, rename, reason):
+        """
+        Handles the actual removal of the supplied reddit object from the list that it is found in.
+        :param reddit_object: The reddit object that is to be removed.
+        :param rename: True if the objects download folder is to be renamed.
+        :param reason: The reason that the object is being removed.  Used for logging purposes.
+        :type reddit_object: RedditObject
+        :type rename: bool
+        :type reason: str
+        """
+        working_list = self.get_working_list(reddit_object.object_type)
+        working_list.remove_reddit_object(reddit_object)
+        rename_message = 'Not Attempted'
+        if rename:
             if not SystemUtil.rename_directory_deleted(reddit_object.save_directory):
-                rename_log = 'Failed'
+                rename_message = 'Failed'
                 Message.failed_to_rename_error(self, reddit_object.name)
             else:
-                rename_log = 'Success'
-            self.refresh_object_count()
-            self.set_not_saved()
-            self.logger.info('Invalid reddit object removed', extra={'object_name': name,
-                                                                     'folder_rename': rename_log})
+                rename_message = 'Success'
+        self.refresh_object_count()
+        self.set_not_saved()
+        self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
+                                                                 'folder_rename': rename_message,
+                                                                 'removal_reason': reason})
 
     def get_working_list(self, object_type):
         if object_type == 'USER':
