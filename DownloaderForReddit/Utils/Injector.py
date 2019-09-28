@@ -24,9 +24,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from queue import Queue
 
 from ..Persistence.SettingsManager import SettingsManager
+from ..Database.DatabaseHandler import DatabaseHandler
 
 
 settings_manager = None
+database_handler = None
 queue = None
 
 
@@ -35,6 +37,13 @@ def get_settings_manager():
     if settings_manager is None:
         settings_manager = SettingsManager()
     return settings_manager
+
+
+def get_database_handler():
+    global database_handler
+    if database_handler is None:
+        database_handler = DatabaseHandler()
+    return database_handler
 
 
 def get_queue():
