@@ -1,8 +1,9 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
 
-from ..Database.DatabaseHandler import DatabaseHandler
+from .DatabaseHandler import DatabaseHandler
+from .ModelEnums import DownloadNameMethod, SubredditSaveStructure
 
 
 Base = DatabaseHandler.base
@@ -44,6 +45,8 @@ class RedditObject(Base):
     last_download = Column(DateTime, nullable=True)
     significant = Column(Boolean, default=False)
     post_sort_method = Column(String, default='NEW')
+    download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.title)
+    subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.sub_name)
 
 
 class User(RedditObject):
