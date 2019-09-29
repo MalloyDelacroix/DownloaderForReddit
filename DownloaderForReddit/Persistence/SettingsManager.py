@@ -100,6 +100,8 @@ class SettingsManager:
         self.save_undownloaded_content = self.settings.value("save_undownloaded_content", True, type=bool)
         self.save_failed_extracts = self.settings.value('save_failed_extracts', True, type=bool)
         self.set_file_modified_date = self.settings.value('set_file_modified_date', False, type=bool)
+        self.current_user_list = self.settings.value('current_user_list', None, type=str)
+        self.current_subreddit_list = self.settings.value('current_subreddit_list', None, type=str)
         # endregion
 
         # region Display Settings
@@ -236,6 +238,8 @@ class SettingsManager:
         self.settings.setValue("save_undownloaded_content", self.save_undownloaded_content)
         self.settings.setValue('save_failed_extracts', self.save_failed_extracts)
         self.settings.setValue('set_file_modified_date', self.set_file_modified_date)
+        self.settings.setValue('current_user_list', self.current_user_list)
+        self.settings.setValue('current_subreddit_list', self.current_subreddit_list)
 
     def save_display_settings(self):
         self.settings.setValue('tooltip_name', self.tooltip_display_dict['name'])

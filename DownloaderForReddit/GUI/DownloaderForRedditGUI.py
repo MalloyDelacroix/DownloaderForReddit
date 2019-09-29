@@ -44,7 +44,7 @@ from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
 from ..Persistence.ObjectStateHandler import ObjectStateHandler
-from ..ViewModels.ListModel import ListModel
+from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..GUI.AddRedditObjectDialog import AddUserDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..version import __version__
@@ -98,8 +98,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.queue = queue
         self.receiver = receiver
-        self.user_view_chooser_dict = {}
-        self.subreddit_view_chooser_dict = {}
+
+        self.user_list_model = None
+        self.user_list_view.setModel(self.user_list_model)
+        self.subreddit_list_model = None
+        self.subreddit_list_view.setModel(self.subreddit_list_model)
+
         self.load_state()
 
         self.file_add_user_list.triggered.connect(self.add_user_list)
@@ -159,7 +163,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_save.triggered.connect(self.save_state)
         self.file_import_save_file.triggered.connect(self.import_save_file)
-        self.file_open_save_file_location.triggered.connect(self.open_save_file_location)
+        self.file_open_save_file_location.triggered.connect(self.open_data_directory)
         self.file_exit.triggered.connect(self.close_from_menu)
 
         self.download_button.clicked.connect(self.button_assignment)
@@ -199,8 +203,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.check_ffmpeg()
-        self.check_for_updates(False)
+        # self.check_ffmpeg()
+        # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
 
     def set_saved(self):
@@ -1400,11 +1404,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def change_list_sort_method(self):
         """Applies the sort and order function to each list model"""
-        for key, value in self.user_view_chooser_dict.items():
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-        for key, value in self.subreddit_view_chooser_dict.items():
-            value.sort_lists((self.list_sort_method, self.list_order_method))
-        self.set_not_saved()
+        self.get_current_user_list().sort_lists(self.list_sort_method, self.list_order_method)
+        self.get_current_subreddit_list().sort_lists(self.list_sort_method, self.list_order_method)
 
     def set_view_menu_items_checked(self):
         """A dispatch table to set the correct view menu item checked"""
@@ -1466,133 +1467,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager.save_main_window()
 
     def load_state(self):
-        reddit_object_list = ObjectStateHandler.load_pickled_state()
-        if reddit_object_list is False:
-            Message.save_file_permission_denied(self, ObjectStateHandler.get_save_path())
-        else:
-            try:
-                last_user_view = reddit_object_list['last_user_view']
-                last_subreddit_view = reddit_object_list['last_sub_view']
-                self.user_view_chooser_dict = reddit_object_list['user_dict']
-                self.subreddit_view_chooser_dict = reddit_object_list['sub_dict']
-
-                for name in self.user_view_chooser_dict.keys():
-                    self.user_lists_combo.addItem(name)
-                for name in self.subreddit_view_chooser_dict.keys():
-                    self.subreddit_list_combo.addItem(name)
-                self.user_lists_combo.setCurrentText(last_user_view)
-                self.subreddit_list_combo.setCurrentText(last_subreddit_view)
-                self.set_last_view_model('USER', last_user_view)
-                self.set_last_view_model('SUB', last_subreddit_view)
-                self.logger.info('Save_file successfully loaded into gui')
-            except KeyError:
-                self.logger.error('Load state key error', exc_info=True)
-            except TypeError:
-                self.logger.error('Load state error: No save file found', exc_info=True)
-
-    def set_last_view_model(self, view_dict, last_view):
-        try:
-            if view_dict == 'USER':
-                self.user_list_view.setModel(self.user_view_chooser_dict[last_view])
-            else:
-                self.subreddit_list_view.setModel(self.subreddit_view_chooser_dict[last_view])
-        except KeyError:
-            pass
-
-    def save_state(self):
-        """Pickles the user and subreddit lists and saves any settings that need to be saved"""
-        if not self.running:
-            self.settings_manager.save_all()
-            save_object_dict = {
-                'user_view_chooser_dict': self.user_view_chooser_dict,
-                'sub_view_chooser_dict': self.subreddit_view_chooser_dict,
-                'current_user_view': self.user_lists_combo.currentText(),
-                'current_sub_view': self.subreddit_list_combo.currentText()
-            }
-            if not ObjectStateHandler.save_pickled_state(save_object_dict):
-                Message.failed_to_save(self)
-                self.set_not_saved()
-            else:
-                self.set_saved()
-        else:
-            Message.cannot_save_while_running(self)
-
-    def import_save_file(self):
         """
-        Has the user select a save file, then moves the file to the applications data folder.  If a save file already
-        exists, the user is asked if they want to overwrite.  If the file is successfully moved, load_state is called
-        to load up the new save file.
-        """
-        imported = False
-        save_file = self.select_save_file()
-        if save_file is not None:
-            file_name = self.get_file_name(save_file)
-            if file_name == 'save_file':
-                folder = os.path.dirname(save_file)
-                if self.move_save_files(folder, True):
-                    imported = True
-                    self.logger.info('Save file imported')
-                else:
-                    if Message.overwrite_save_file_question(self):
-                        imported = self.move_save_files(folder, False)
-                        self.logger.info('Save file imported: Old save file overwritten')
-            if imported:
-                self.load_new_save_file()
-
-    def load_new_save_file(self):
-        """Clears the list names from the list chooser combos and loads the newly moved save file into the GUI"""
-        self.user_lists_combo.clear()
-        self.subreddit_list_combo.clear()
-        self.load_state()
-
-    def move_save_files(self, source_folder, first_attempt):
-        """
-        Attemps to move any file in the supplied source with the name 'save_file' to the applications data folder.
-        :param source_folder: The folder in which the save_file the user selected resides.
-        :param first_attempt: Indicates if this is the first or second attempt to move files. Determines if existing
-                              save files will be overwritten.
-        :type source_folder: str
-        :type first_attempt: bool
-        :return: True if the move was successful and False if it was not.
-        :rtype: bool
+        Loads the last used user and subreddit lists from the database.  Handled here in its own method so that any
+        problems with loading can be logged.
         """
         try:
-            for file in os.listdir(source_folder):
-                if self.get_file_name(file) == 'save_file':
-                    new_path = os.path.join(SystemUtil.get_data_directory(), file)
-                    if os.path.isfile(new_path) and not first_attempt:
-                        os.remove(new_path)
-                    else:
-                        return False
-                    SystemUtil.import_data_file(source_folder, file)
-            return True
-        except FileExistsError:
-            self.logger.error('Failed to move save file: File already exists',
-                              extra={'source_folder': source_folder}, exc_info=True)
-            self.update_output('Error: Failed to import save file: Existing save file could not be overwritten')
-            return False
+            self.user_list_model.set_list(self.settings_manager.current_user_list)
+            self.subreddit_list_model.set_list(self.settings_manager.current_subreddit_list)
+        except:
+            self.logger.error('Failed to load list models from database', exc_info=True)
 
-    def select_save_file(self):
-        """
-        Opens a dialog for the user to select a file then verifies and returns the selected file if it exists, and
-        returns None if it does not.
-        :return: A path to a user selected file.
-        :rtype: str
-        """
-        file = str(QtWidgets.QFileDialog.getOpenFileName(self, 'Select File', os.path.expanduser('~'))[0])
-        if file != '':
-            if os.path.isfile(file):
-                return file
-            else:
-                Message.invalid_file_path(self)
-        return None
-
-    def get_file_name(self, path):
-        """Extracts only the file name without extension from the supplied file path."""
-        name = os.path.basename(path)
-        return os.path.splitext(name)[0]
-
-    def open_save_file_location(self):
+    def open_data_directory(self):
         """
         Opens the applications data directory in the default system file manager.
         """
