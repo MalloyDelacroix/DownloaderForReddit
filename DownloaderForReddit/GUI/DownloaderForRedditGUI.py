@@ -47,6 +47,7 @@ from ..Persistence.ObjectStateHandler import ObjectStateHandler
 from ..ViewModels.ListModel import ListModel
 from ..GUI.AddRedditObjectDialog import AddUserDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
+from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
 from ..version import __version__
 
 
@@ -764,7 +765,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             user = self.make_user(new_user)
             reply = self.add_reddit_object_to_list(user, list_model)
             if reply == 'NAME_EXISTS':
-                Message.name_in_list(self, new_user)
+                self.handle_existing_user_name(new_user)
             elif reply == 'INVALID_NAME':
                 Message.not_valid_name(self, new_user)
             else:
@@ -772,6 +773,36 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.check_user_download_on_add(user)
         except KeyError:
             Message.no_user_list(self)
+
+    def handle_existing_user_name(self, user_name):
+        """
+        Handles when an existing user name is added to the list.  If the settings manager indicates that users should
+        be downloaded on add, a dialog is used to ascertain if the app user wants to run a single download for the
+        user they are attempting to add.
+        :param user_name: The name of the existing user.
+        """
+        if not self.running and self.settings_manager.download_users_on_add:
+            existing_user_dialog = ExistingRedditObjectAddDialog(user_name, 'USER')
+            dialog = existing_user_dialog.exec_()
+            if dialog == QtWidgets.QDialog.Accepted:
+                self.download_existing_user(user_name)
+        else:
+            Message.name_in_list(self, user_name)
+
+    def download_existing_user(self, user_name):
+        """
+        Gets an existing User object from the current list that has the supplied user_name, then runs a single download
+        for that user.
+        :param user_name: The name of the user for which a single download is to be run
+        """
+        current_list = self.get_working_list('USER')
+        user = None
+        for item in current_list.reddit_object_list:
+            if item.name == user_name:
+                user = item
+                break
+        if user is not None:
+            self.run_single_user((user, None))
 
     def check_user_download_on_add(self, user):
         """
@@ -938,6 +969,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                  'removal_reason': reason})
 
     def get_working_list(self, object_type):
+        """
+        Returns the list that is currently being displayed based on the supplied object type.
+        :param object_type: The type of list that is to be returned.
+        :return: The List model that of the supplied object type that is currently being displayed.
+        """
         if object_type == 'USER':
             return self.user_view_chooser_dict[self.user_lists_combo.currentText()]
         else:
@@ -973,6 +1009,36 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.check_subreddit_download_on_add(subreddit)
         except KeyError:
             Message.no_user_list(self)
+
+    def handle_existing_subreddit_name(self, sub_name):
+        """
+        Handles when an existing subreddit name is added to the list.  If the settings manager indicates that subreddits
+        should be downloaded on add, a dialog is used to ascertain if the app user wants to run a single download for
+        the subreddit they are attempting to add.
+        :param sub_name: The name of the existing subreddit.
+        """
+        if not self.running and self.settings_manager.download_subreddits_on_add:
+            existing_sub_dialog = ExistingRedditObjectAddDialog(sub_name, 'SUBREDDIT')
+            dialog = existing_sub_dialog.exec_()
+            if dialog == QtWidgets.QDialog.Accepted:
+                self.download_existing_subreddit(sub_name)
+        else:
+            Message.name_in_list(self, sub_name)
+
+    def download_existing_subreddit(self, sub_name):
+        """
+        Gets an existing Subreddit object from the current list that has the supplied sub_name, then runs a single
+        download for that subreddit.
+        :param sub_name: The name of the subreddit for which a single download is to be run.
+        """
+        current_list = self.get_working_list('SUBREDDIT')
+        sub = None
+        for item in current_list.reddit_object_list:
+            if item.name == sub_name:
+                sub = item
+                break
+        if sub is not None:
+            self.run_single_subreddit((sub, None))
 
     def check_subreddit_download_on_add(self, subreddit):
         """
