@@ -128,11 +128,15 @@ def import_data_file(directory, file):
         shutil.copy(source, dest)
 
 
-def epoch_to_str(epoch_time):
+def epoch_to_datetime(epoch_time):
     if type(epoch_time) == int or type(epoch_time) == float:
-        return datetime.datetime.fromtimestamp(epoch_time).strftime('%m/%d/%Y %I:%M %p')
+        return datetime.datetime.fromtimestamp(epoch_time)
     else:
         return None
+
+
+def epoch_to_str(epoch_time):
+    return epoch_to_datetime(epoch_time).strftime('%m/%d/%Y %I:%M %p')
 
 
 def delete_file(file_path):

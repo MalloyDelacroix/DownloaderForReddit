@@ -53,7 +53,7 @@ class ListModel(QAbstractListModel):
         self.list_type = list_type
         self.reddit_object_list = []
 
-    def sort_lists(self, method):
+    def sort_list(self, method):
         """
         Takes a tuple set by the view menu in the GUI, the first variable being the sort method and the second being
         the sort order (as an int which is interpreted as True or False), and sorts the display list accordingly

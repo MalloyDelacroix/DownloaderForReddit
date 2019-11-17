@@ -1,10 +1,11 @@
-from datetime import datetime
 import logging
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 from PyQt5.QtGui import QColor
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy import desc
 
 from ..Utils import Injector
-from Database.Models import RedditObject, RedditObjectList
+from ..Database.Models import RedditObject, RedditObjectList
 
 
 class RedditObjectListModel(QAbstractListModel):
@@ -20,18 +21,31 @@ class RedditObjectListModel(QAbstractListModel):
         self.db = Injector.get_database_handler()
         self.session = self.db.get_session()
         self.list = None
+        self.reddit_objects = None
 
     def add_new_list(self, list_name, list_type):
         new_list = RedditObjectList(name=list_name, list_type=list_type)
         self.session.add(new_list)
         self.session.commit()
+        self.list = new_list
+
+    def delete_current_list(self):
+        pass
 
     def set_list(self, list_name):
-        self.list = self.session.query(RedditObjectList).filter(RedditObjectList.name == list_name).one()
+        try:
+            self.list = self.session.query(RedditObjectList).filter(RedditObjectList.name == list_name).one()
+            self.reddit_objects = self.list.reddit_objects
+        except NoResultFound:
+            print('No reddit object list found')
+            pass  # TODO: to log or not to log...
 
     def sort_list(self, method, order):
-        # TODO: figure out how to sort this
-        pass
+        try:
+            # TODO: map this to user selectable sort methods
+            self.reddit_objects = self.list.reddit_objects.order_by(RedditObject.name)
+        except AttributeError:
+            pass
 
     def check_name(self, name):
         """
@@ -72,19 +86,22 @@ class RedditObjectListModel(QAbstractListModel):
         return True
 
     def rowCount(self, parent=QModelIndex(), *args, **kwargs):
-        return len(self.list.reddit_objects)
+        try:
+            return self.list.reddit_objects.count()
+        except AttributeError:
+            return 0
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self.list.reddit_objects[row].name
+            return self.reddit_objects[row].name
         elif role == Qt.ForegroundRole:
-            if not self.list.reddit_objects[row].download_enabled:
+            if not self.reddit_objects[row].download_enabled:
                 return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
             else:
                 return None
         elif role == Qt.ToolTipRole:
-            return self.set_tooltips(self.reddit_object_list[row])
+            return self.set_tooltips(self.reddit_objects[row])
         else:
             return None
 
@@ -108,10 +125,10 @@ class RedditObjectListModel(QAbstractListModel):
             'subreddit_save_method': f'Subreddit Save Method: {reddit_object.subreddit_save_structure}',
             'download_images': f'Download Images: {reddit_object.download_images}',
             'download_videos': f'Download Videos: {reddit_object.download_videos}',
-            'avoid_duplicats': f'Avoid Duplicats: {reddit_object.avoid_duplicates}',
+            'avoid_duplicates': f'Avoid Duplicates: {reddit_object.avoid_duplicates}',
             'nsfw_filter': f'NSFW Filter: {self.nsfw_filter_display(reddit_object.download_nsfw)}',
-            'undownloaded_content': f'Undownloaded Content: {"TODO: add undownloaded count"}',
-            'unextracted_posts': f'Unextracted Posts: {"TODO: add unextracted count"}',
+            'undownloaded_content_count': f'Undownloaded Content: {"TODO: add undownloaded count"}',
+            'unextracted_post_count': f'Unextracted Posts: {"TODO: add unextracted count"}',
             'total_downloads': f'Total Downloads: {"TODO: add total download count"}',
             'date_added': f'Date Added: {reddit_object.date_added}'
         }

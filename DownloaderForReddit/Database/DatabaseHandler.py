@@ -2,6 +2,7 @@ import os
 from sqlalchemy.ext.declarative import declarative_base
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
+from contextlib import contextmanager
 
 from ..Utils import SystemUtil
 
@@ -20,6 +21,28 @@ class DatabaseHandler:
     def get_session(self):
         """Returns a new instance of a database session."""
         return self.Session()
+
+    @contextmanager
+    def get_scoped_session(self):
+        session = self.Session()
+        try:
+            yield session
+        except:
+            raise
+        finally:
+            session.close()
+
+    @contextmanager
+    def get_scoped_update_session(self):
+        session = self.Session()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.commit()
 
     def commit_and_close(self, session):
         """Commit all uncommitted changes to the database."""

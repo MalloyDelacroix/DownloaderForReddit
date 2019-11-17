@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import DownloadNameMethod, SubredditSaveStructure
+from ..Core import Const
 
 
 Base = DatabaseHandler.base
@@ -23,7 +24,7 @@ class RedditObjectList(Base):
     name = Column(String, unique=True)
     date_created = Column(DateTime, default=datetime.now())
     list_type = Column(String, nullable=False)
-    reddit_objects = relationship('RedditObject', secondary=list_association, backref='lists')
+    reddit_objects = relationship('RedditObject', secondary=list_association, backref='lists', lazy='dynamic')
 
 
 class RedditObject(Base):
@@ -39,7 +40,7 @@ class RedditObject(Base):
     download_nsfw = Column(Integer, default=0)  # -1 = exclude | 0 = include | 1 = only include
     date_added = Column(DateTime, default=datetime.now())
     lock_settings = Column(Boolean, default=False)
-    absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(1119537833))
+    absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
     date_limit = Column(DateTime, nullable=True)
     download_enabled = Column(Boolean, default=True)
     last_download = Column(DateTime, nullable=True)
@@ -48,6 +49,13 @@ class RedditObject(Base):
     download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.title)
     subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.sub_name)
 
+    object_type = Column(String(15))
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'REDDIT_OBJECT',
+        'polymorphic_on':  object_type,
+    }
+
 
 class User(RedditObject):
 
@@ -55,7 +63,9 @@ class User(RedditObject):
 
     id = Column(ForeignKey('reddit_objects.id'), primary_key=True)
 
-    object_type = 'USER'
+    __mapper_args__ = {
+        'polymorphic_identity': 'USER',
+    }
 
 
 class Subreddit(RedditObject):
@@ -64,7 +74,9 @@ class Subreddit(RedditObject):
 
     id = Column(ForeignKey('reddit_objects.id'), primary_key=True)
 
-    object_type = 'SUBREDDIT'
+    __mapper_args__ = {
+        'polymorphic_identity': 'SUBREDDIT',
+    }
 
 
 class Post(Base):

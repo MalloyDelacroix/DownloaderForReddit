@@ -27,8 +27,10 @@ import os
 from PyQt5.QtCore import QSettings
 import logging
 
-from ..Persistence.ObjectStateHandler import ObjectStateHandler
-from ..Persistence.ObjectUpdater import ObjectUpdater
+from .ObjectStateHandler import ObjectStateHandler
+from .ObjectUpdater import ObjectUpdater
+from ..Database import ModelEnums
+from ..Utils import SystemUtil
 from ..version import __version__
 
 
@@ -42,9 +44,9 @@ class SettingsManager:
             ObjectUpdater.check_settings_manager(self)
 
         self.nsfw_filter_dict = {
-            'Include': 'INCLUDE',
-            'Do Not Include': 'EXCLUDE',
-            'Include Only NSFW': 'ONLY'
+            0: 'Include',
+            -1: 'Do Not Include',
+            1: 'Include Only NSFW'
         }
 
     def check_first_run(self):
@@ -64,7 +66,7 @@ class SettingsManager:
         self.auto_save = self.settings.value('auto_save', False, type=bool)
         self.imgur_client_id = self.settings.value('imgur_client_id', None, type=str)
         self.imgur_client_secret = self.settings.value('imgur_client_secret', None, type=str)
-        self.imgur_mashape_key = self.settings.value('imgur_mashape_key',None,type=str)
+        self.imgur_mashape_key = self.settings.value('imgur_mashape_key', None, type=str)
         self.auto_display_failed_list = self.settings.value("auto_display_failed_list", True, type=bool)
 
         self.restrict_by_score = self.settings.value('restrict_by_score', False, type=bool)
@@ -81,12 +83,16 @@ class SettingsManager:
         self.custom_date = self.settings.value('settings_custom_date', 86400, type=int)
         if self.custom_date < 86400:
             self.custom_date = 86400
+        self.date_limit_epoch = self.settings.value('date_limit_epoch', 86400, type=int)
 
         self.download_videos = self.settings.value('download_video', True, type=bool)
         self.download_images = self.settings.value('download_images', True, type=bool)
         self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
 
-        self.nsfw_filter = self.settings.value('nsfw_filter', 'INCLUDE', type=str)
+        try:
+            self.nsfw_filter = self.settings.value('nsfw_filter', 0, type=int)
+        except TypeError:
+            self.nsfw_filter = 0
 
         self.download_reddit_hosted_videos = self.settings.value('download_reddit_hosted_videos', True, type=bool)
         self.display_ffmpeg_warning_dialog = self.settings.value('display_ffmpeg_warning_dialog', True, type=bool)
@@ -107,22 +113,22 @@ class SettingsManager:
         # region Display Settings
         self.tooltip_display_dict = {
             'name': self.settings.value('tooltip_name', True, type=bool),
-            'enable_download': self.settings.value('enable_download', True, type=bool),
-            'do_not_edit': self.settings.value('tooltip_do_not_edit', False, type=bool),
+            'download_enabled': self.settings.value('enable_download', True, type=bool),
+            'lock_settings': self.settings.value('tooltip_do_not_edit', False, type=bool),
             'last_download_date': self.settings.value('tooltip_last_download_date', True, type=bool),
-            'custom_date_limit': self.settings.value('tooltip_custom_date_limit', False, type=bool),
+            'date_limit': self.settings.value('tooltip_date_limit', False, type=bool),
+            'absolute_date_limit': self.settings.value('tooltip_absolute_date_limit', False, type=bool),
             'post_limit': self.settings.value('tooltip_post_limit', False, type=bool),
-            'name_downloads_by': self.settings.value('tooltip_name_downloads_by', False, type=bool),
+            'download_naming_method': self.settings.value('tooltip_name_downloads_by', False, type=bool),
             'subreddit_save_method': self.settings.value('tooltip_subreddit_save_method', False, type=bool),
-            'save_path': self.settings.value('tooltip_save_path', False, type=bool),
             'download_videos': self.settings.value('tooltip_download_videos', False, type=bool),
             'download_images': self.settings.value('tooltip_download_images', False, type=bool),
             'avoid_duplicates': self.settings.value('tooltip_avoid_duplicates', False, type=bool),
             'nsfw_filter': self.settings.value('tooltip_nsfw_filter', False, type=bool),
-            'saved_content_count': self.settings.value('tooltip_saved_content_count', False, type=bool),
-            'saved_submission_count': self.settings.value('tooltip_saved_submission_count', False, type=bool),
-            'total_download_count': self.settings.value('tooltip_total_download_count', True, type=bool),
-            'added_on_date': self.settings.value('tooltip_added_on_date', False, type=bool)
+            'undownloaded_content_count': self.settings.value('tooltip_undownloaded_content_count', False, type=bool),
+            'unextracted_post_count': self.settings.value('tooltip_unextracted_post_count', False, type=bool),
+            'total_downloads': self.settings.value('tooltip_total_downloads', False, type=bool),
+            'date_added': self.settings.value('tooltip_date_added', False, type=bool)
         }
         self.gif_display_method = self.settings.value('gif_display_method', 'PLACEHOLDER', str)
         # endregion
@@ -147,44 +153,6 @@ class SettingsManager:
             'reddit_object_settings_dialog_splitter_state', None)
         # endregion
 
-        # region UserFinder GUI
-        self.user_finder_GUI_geom = self.settings.value('user_finder_GUI_geometry', None)
-        self.user_finder_splitter_one_state = self.settings.value('user_finder_splitter_one_state', None)
-        self.user_finder_splitter_two_state = self.settings.value('user_finder_splitter_two_state', None)
-        self.user_finder_splitter_three_state = self.settings.value('user_finder_splitter_three_state', None)
-        self.user_finder_top_sort_method = self.settings.value('user_finder_top_sort_method', 'MONTH', type=str)
-        self.user_finder_show_users_reddit_page = self.settings.value('user_finder_show_users_reddit_page', False,
-                                                                      type=bool)
-        self.user_finder_filter_by_score = self.settings.value('user_finder_filter_by_score', False, type=bool)
-        self.user_finder_score_limit = self.settings.value('user_finder_score_limit', 3000, type=int)
-        self.user_finder_post_limit = self.settings.value('user_finder_post_limit', 5, type=int)
-
-        self.user_finder_subreddit_list = self.settings.value('user_finder_subreddit_list', ['filler'], type=str)
-        self.user_finder_user_blacklist = self.settings.value('user_finder_blacklist', ['filler'], type=str)
-
-        self.user_finder_user_list_sort_method = self.settings.value('user_finder_user_list_sort_method', 'NAME',
-                                                                     type=str)
-        self.user_finder_user_list_sort_order = self.settings.value('user_finder_user_list_sort_order', 'ASC', type=str)
-        self.user_finder_preview_size = self.settings.value('user_finder_preview_size', 110, type=int)
-        # endregion
-
-        # region UserFinderSettings
-        self.user_finder_sample_size = self.settings.value('user_finder_sample_size', 5, type=int)
-        self.user_finder_sample_type_method = self.settings.value('user_finder_sample_type_method', 'TOP',
-                                                                  type=str)
-        self.user_finder_run_with_main = self.settings.value('user_finder_run_with_main', False, type=bool)
-        self.user_finder_auto_add_found = self.settings.value('user_finder_auto_add_found', False, type=bool)
-        self.user_finder_auto_add_user_list = self.settings.value('user_finder_auto_add_user_list', None, type=str)
-
-        self.user_finder_auto_run_silent = self.settings.value('user_finder_auto_run_silent', False, type=bool)
-        self.user_finder_double_click_operation = self.settings.value('user_finder_double_click_operation', 'DIALOG',
-                                                                      type=str)
-        # endregion
-
-        # region UserFinderSettingsGUISettings
-        self.user_finder_settings_gui_geom = self.settings.value('user_finder_settings_gui_geom', None)
-        # endregion
-
         # region Misc Dialogs
         self.settings_dialog_geom = self.settings.value('settings_dialog_geom')
         self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
@@ -194,6 +162,18 @@ class SettingsManager:
         self.download_users_on_add = self.settings.value('download_users_on_add', False, type=bool)
         self.download_subreddits_on_add = self.settings.value('download_subreddits_on_add', False, type=bool)
         # endregion
+
+    @property
+    def date_limit(self):
+        return SystemUtil.epoch_to_datetime(self.date_limit_epoch)
+
+    @property
+    def download_name_method(self):
+        return ModelEnums.DownloadNameMethod[self.name_downloads_by]
+
+    @property
+    def subreddit_save_structure(self):
+        return ModelEnums.SubredditSaveStructure[self.save_subreddits_by]
 
     def load_picked_objects(self):
         return ObjectStateHandler.load_pickled_state()
@@ -225,6 +205,7 @@ class SettingsManager:
         self.settings.setValue("restrict_by_date", self.restrict_by_date)
         self.settings.setValue("restrict_by_custom_date", self.restrict_by_custom_date)
         self.settings.setValue("settings_custom_date", self.custom_date)
+        self.settings.setValue('date_limit_epoch', self.date_limit_epoch)
         self.settings.setValue("download_video", self.download_videos)
         self.settings.setValue("download_images", self.download_images)
         self.settings.setValue("avoid_duplicates", self.avoid_duplicates)
