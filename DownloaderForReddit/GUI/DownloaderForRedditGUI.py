@@ -52,7 +52,6 @@ from ..version import __version__
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     stop_download = QtCore.pyqtSignal()
-    update_user_finder = QtCore.pyqtSignal()
 
     def __init__(self, queue, receiver):
         """
@@ -148,11 +147,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.file_last_downloaded_list.setEnabled(False)
         if len(self.failed_list) < 1:
             self.file_failed_download_list.setEnabled(False)
-
-        # self.file_open_user_finder.triggered.connect(lambda: self.display_user_finder(False))
-        self.file_open_user_finder.setEnabled(False)
-        self.menuUser_Finder.setToolTip('The user finder has been disabled for this version, but will be included '
-                                        'in a future release')
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_open_save_file_location.triggered.connect(self.open_data_directory)
@@ -428,8 +422,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Runs the extractor with the intended settings"""
         try:
             self.failed_list.clear()
-            if self.settings_manager.user_finder_run_with_main:
-                self.display_user_finder(True)
             if self.download_users_checkbox.isChecked() and not self.download_subreddit_checkbox.isChecked():
                 self.run_user()
             elif not self.download_users_checkbox.isChecked() and self.download_subreddit_checkbox.isChecked():
