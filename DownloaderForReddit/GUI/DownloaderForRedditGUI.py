@@ -381,7 +381,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_user = None
         try:
             position = self.get_selected_view_index(self.user_list_view).row()
-            selected_user = self.user_list_model.list[position]
+            selected_user = self.user_list_model.reddit_objects[position]
             SystemUtil.open_in_system(selected_user.save_directory)
             self.logger.info('User download folder opened', extra={'user': selected_user.name})
         except AttributeError:
@@ -398,7 +398,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         selected_sub = None
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
-            selected_sub = self.subreddit_list_model.list[position]
+            selected_sub = self.subreddit_list_model.reddit_objects[position]
             path = os.path.join(selected_sub.save_directory, selected_sub.name) if \
                 selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
             SystemUtil.open_in_system(path)
@@ -437,14 +437,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.logger.error('Run called with no items available to download', exc_info=True)
             Message.nothing_to_download(self)
             self.finished_download_gui_shift()
-
-        """
-        except:
-            self.output_box.append('\nThere was an error establishing a connection. Please try again later.\n'
-                                   'If the error occurred after content was extracted, this content has been added to '
-                                   'the previously downloaded list. To attempt to re-download this content please '
-                                   'uncheck the "avoid duplicates" checkbox in settings')
-        """
 
     def run_user(self):
         user_list = self.user_list_model.list
