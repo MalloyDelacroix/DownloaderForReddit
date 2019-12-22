@@ -61,3 +61,9 @@ class DatabaseHandler:
             session.add(args[0])
         session.commit()
         session.close()
+
+    def get_object_session(self, obj):
+        return self.Session.object_session(obj)
+
+    def commit_object(self, obj):
+        self.get_object_session(obj).commit()
