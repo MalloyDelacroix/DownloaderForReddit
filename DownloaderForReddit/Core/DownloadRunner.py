@@ -29,8 +29,9 @@ from queue import Queue
 from time import time
 import logging
 
+from ..Database.Models import User, Subreddit
 from ..Utils import Injector, RedditUtils, VideoMerger
-from ..Core.PostFilter import PostFilter
+from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core import Const
 from ..Extractors.Extractor import Extractor
 
@@ -48,7 +49,7 @@ class DownloadRunner(QObject):
     update_progress_bar_signal = pyqtSignal()
     stop = pyqtSignal()
 
-    def __init__(self, user_list, subreddit_list, queue, unfinished_downloads_list):
+    def __init__(self, user_list, subreddit_list, queue):
         """
         Class that does the main part of the work for the program.  This class contains the praw instance that is used
         for actually extracting the content from reddit.  When an instance is created all settings parameters must be
@@ -64,12 +65,17 @@ class DownloadRunner(QObject):
         super().__init__()
         self.start_time = time()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.db = Injector.get_database_handler()
         self.settings_manager = Injector.get_settings_manager()
         self._r = RedditUtils.get_reddit_instance()
-        self.post_filter = PostFilter()
-        self.user_list = [user for user in user_list if user.enable_download] if user_list is not None else None
-        self.subreddit_list = [sub for sub in subreddit_list if sub.enable_download] if \
-            subreddit_list is not None else None
+        self.post_filter = SubmissionFilter()
+        # self.user_list = [user for user in user_list if user.enable_download] if user_list is not None else None
+        # self.subreddit_list = [sub for sub in subreddit_list if sub.enable_download] if \
+        #     subreddit_list is not None else None
+        self.user_list = user_list
+        self.subreddit_list = subreddit_list
+        self.users = None
+        self.subreddits = None
         self.queue = queue
         self.validated_objects = Queue()
         self.validated_subreddits = []
@@ -79,7 +85,6 @@ class DownloadRunner(QObject):
         self.user_run = True if self.user_list is not None else False
         self.single_subreddit_run_method = None
 
-        self.unfinished_downloads_list = unfinished_downloads_list
         self.load_undownloaded_content = self.settings_manager.save_undownloaded_content
 
         self.queued_posts = Queue()
@@ -91,10 +96,21 @@ class DownloadRunner(QObject):
 
         Const.RUN = True
 
+    def run_users(self):
+        self.users = self.user_list.reddit_objects
+        self.validate_users()
+
+    def run_subreddits(self):
+        self.subreddits = self.subreddit_list.reddit_objects
+
+    def run_combo(self):
+        self.users = self.user_list.reddit_objects
+        self.subreddits = self.subreddit_list.reddit_objects
+
     def validate_users(self):
         """Validates users and builds a list of all posts to reddit that meet the user provided criteria"""
         self.setup_progress_bar.emit(len(self.user_list) * 2)
-        for user in self.user_list:
+        for user in self.users:
             if self.run:
                 redditor = self._r.redditor(user.name)
                 try:
