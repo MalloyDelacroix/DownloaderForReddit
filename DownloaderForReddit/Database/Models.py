@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import DownloadNameMethod, SubredditSaveStructure
@@ -48,6 +49,7 @@ class RedditObject(Base):
     post_sort_method = Column(String, default='NEW')
     download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.title)
     subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.sub_name)
+    new = Column(Boolean, default=True)
 
     object_type = Column(String(15))
 
@@ -55,6 +57,10 @@ class RedditObject(Base):
         'polymorphic_identity': 'REDDIT_OBJECT',
         'polymorphic_on':  object_type,
     }
+
+    def toggle_enable_download(self):
+        self.download_enabled = not self.download_enabled
+        Session.object_session(self).commit()
 
 
 class User(RedditObject):
