@@ -23,6 +23,9 @@ class RedditObjectListModel(QAbstractListModel):
         self.list = None
         self.reddit_objects = None
 
+    def commit_changes(self):
+        self.session.commit()
+
     def add_new_list(self, list_name, list_type):
         new_list = RedditObjectList(name=list_name, list_type=list_type)
         self.session.add(new_list)
