@@ -25,59 +25,59 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from ..Utils import Injector
 
 
-class PostFilter:
+class SubmissionFilter:
 
     def __init__(self):
         self.settings_manager = Injector.get_settings_manager()
 
-    def filter_post(self, post, reddit_object):
+    def filter_submission(self, submission, reddit_object):
         """
-        Filters a post by calling various methods to see if the post meets the methods criteria based on global and
-        reddit object settings and returns True of False depending on if the post passed all criteria.
-        :param post: A praw submission item that is tested to see if it will be extracted.
-        :param reddit_object: The reddit object to which the post belongs.
-        :return: True or False depending on if the post passed the filter criteria.
+        Filters a submission by calling various methods to see if the submission meets the methods criteria based on
+        global and reddit object settings and returns True of False depending on if the submission passed all criteria.
+        :param submission: A praw submission item that is tested to see if it will be extracted.
+        :param reddit_object: The reddit object to which the submission belongs.
+        :return: True or False depending on if the submission passed the filter criteria.
         """
-        return self.score_filter(post) and self.nsfw_filter(post, reddit_object) and \
-               self.date_filter(post, reddit_object)
+        return self.score_filter(submission) and self.nsfw_filter(submission, reddit_object) and \
+               self.date_filter(submission, reddit_object)
 
-    def score_filter(self, post):
+    def score_filter(self, submission):
         """
-        Test the post to see if it is greater or less than the global settings post score limit.
-        :param post: A praw submission item to be tested.
-        :return: True if the posts score limit is meets the global settings criteria, False if it does not.
+        Test the submission to see if it is greater or less than the global settings submission score limit.
+        :param submission: A praw submission item to be tested.
+        :return: True if the submissions score limit is meets the global settings criteria, False if it does not.
         """
         if self.settings_manager.restrict_by_score:
             if self.settings_manager.score_limit_operator == 'GREATER':
-                return post.score >= self.settings_manager.post_score_limit
+                return submission.score >= self.settings_manager.submission_score_limit
             else:
-                return post.score <= self.settings_manager.post_score_limit
+                return submission.score <= self.settings_manager.submission_score_limit
         else:
             return True
 
-    def nsfw_filter(self, post, reddit_object):
+    def nsfw_filter(self, submission, reddit_object):
         """
-        Tests the post to see if it meets the nsfw criteria set by the supplied reddit object.
-        :param post: A praw submission item to be tested.
+        Tests the submission to see if it meets the nsfw criteria set by the supplied reddit object.
+        :param submission: A praw submission item to be tested.
         :param reddit_object: The reddit object who's nsfw filter is to be tested against.
         :return: True if the meets the reddit objects nsfw settings criteria, False if it does not.
         """
         if reddit_object.nsfw_filter == 'EXCLUDE':
-            return not post.over_18
+            return not submission.over_18
         elif reddit_object.nsfw_filter == 'ONLY':
-            return post.over_18
+            return submission.over_18
         else:
             return True
 
-    def date_filter(self, post, reddit_object):
+    def date_filter(self, submission, reddit_object):
         """
-        Tests the post date to see if it was posted after the reddit objects individual date limit setting.
-        :param post: A praw submission item to be tested.
+        Tests the submission date to see if it was submissioned after the reddit objects individual date limit setting.
+        :param submission: A praw submission item to be tested.
         :param reddit_object: A reddit object (User or Subreddit) which holds the date limit criteria to be tested.
-        :return: True if the post meets the reddit objects date criteria, False if it does not.
+        :return: True if the submission meets the reddit objects date criteria, False if it does not.
         """
         date_limit = self.get_date_limit(reddit_object)
-        return post.created > date_limit
+        return submission.created > date_limit
 
     @staticmethod
     def get_date_limit(reddit_object):
