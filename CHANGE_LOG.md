@@ -27,7 +27,7 @@ information about obtaining the commercial api credentials.
 ### Bug Fixes
 * Restore copy and paste functionality to add reddit object dialog input line.
 * Fix error message when trying to add a subreddit without an existing subreddit list.
-* Fix imgur url formatting that happened in some circumstances
+* Fix imgur url formatting issues that happened in some circumstances
 * Fix occasional crashing due to posts removed by reddit
 * Fix crashing when trying to download from private subreddits
 
