@@ -2,6 +2,9 @@
 
 # Unreleased
 
+
+# Released
+
 ## v2.3.3
 
 ### Major Changes
@@ -17,7 +20,7 @@ reddit object (except for previously downloaded urls).  By doing this, reddit ob
 to json or xml file types can then be imported at a later date retaining the reddit objects user set attributes (ie: 
 last downloaded post date, post limit, media filters, date added, etc.) 
 
-* Sopping downloader now stops in progress downloads when the stop button is pressed.
+* Stopping downloader now stops in progress downloads when the stop button is pressed.
 * Add support for Imgur's commercial API endpoint.  See https://rapidapi.com/imgur/api/imgur-9/pricing for more 
 information about obtaining the commercial api credentials.
 * Add ability to download a user or subreddit as a single download from the main GUI lists context menus
@@ -32,10 +35,6 @@ information about obtaining the commercial api credentials.
 * Fix crashing when trying to download from private subreddits
 
 
-
-
-
-# Released
 
 ## v2.3.2
 
