@@ -2,9 +2,9 @@
 Downloader for Reddit is a GUI application for downloading content submitted to reddit.  It has many advanced features and customizable settings to extract only content that you want and avoid duplicate downloads (if you so choose).  
 The main GUI window is based on a similar project, The reddit Data Extractor by NSchrading.
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/MalloyDelacroix)
-
-Usage
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/MalloyDelacroix) 
+![BuildStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Build/badge.svg)
+![TestStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Test/badge.svg)
 ------------
 ![Main Window](http://i.imgur.com/vmK8Su8.png)
 
