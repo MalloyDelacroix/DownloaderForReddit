@@ -80,7 +80,7 @@ def get_mock_post_gfycat_direct():
 
 def get_mock_post_gfycat_tagged():
     post = get_generic_mock_post()
-    post.url = 'https://gfycat.com/KeenGargantuanDoe-horses'
+    post.url = 'https://gfycat.com/anchoredenchantedamericanriverotter-saturday-exhausted-weekend-kitten-pissed'
     return post
 
 def get_mock_post_vidble():

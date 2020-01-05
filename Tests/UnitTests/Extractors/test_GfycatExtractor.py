@@ -23,11 +23,11 @@ class TestGfycatExtractor(unittest.TestCase):
 
     @patch('DownloaderForReddit.Extractors.GfycatExtractor.get_json')
     def test_extract_single_tagged(self, j_mock):
-        dir_url = 'https://giant.gfycat.com/KeenGargantuanDoe.webm'
+        dir_url = 'https://giant.gfycat.com/anchoredenchantedamericanriverotter.webm'
         j_mock.return_value = {'gfyItem': {'webmUrl': dir_url}}
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat_tagged(), MockObjects.get_blank_user())
         ge.extract_single()
-        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/KeenGargantuanDoe')
+        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/anchoredenchantedamericanriverotter')
         self.check_output_tagged(ge, dir_url)
 
     def test_direct_extraction(self):
@@ -74,6 +74,6 @@ class TestGfycatExtractor(unittest.TestCase):
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/KeenGargantuanDoe.webm', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/anchoredenchantedamericanriverotter.webm', content.filename)
         self.assertTrue(len(ge.failed_extract_posts) == 0)
 
