@@ -141,40 +141,44 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
             else:
                 self.close()
 
+    def get_selected_rows(self):
+        return [self.table_model.data_list[x.row()] for x in self.table_view.selectionModel().selectedRows()]
+
     def export_url_list(self):
         url_list = [post.url for post in self.table_model.data_list]
         file_path = self.get_file_path('failed_urls.txt', 'Text Files (*.txt)')
-        TextExporter.export_url_list(url_list, file_path)
+        if file_path:
+            TextExporter.export_url_list(url_list, file_path)
 
     def export_selected_to_text(self):
         file_path = self.get_file_path('failed_urls.txt', 'Text Files (*.txt)')
-        TextExporter.export_url_list([self.table_model.data_list[x.row()] for x in
-                                      self.table_view.selectionModel().selectedRows()],
-                                     file_path)
+        if file_path:
+            TextExporter.export_url_list(self.get_selected_rows(),file_path)
 
     def export_list_to_text(self):
         file_path = self.get_file_path('failed_downloads.txt', 'Text Files (*.txt)')
-        TextExporter.export_posts_to_text(self.table_model.data_list, file_path)
+        if file_path:
+            TextExporter.export_posts_to_text(self.table_model.data_list, file_path)
 
     def export_selected_to_json(self):
         file_path = self.get_file_path('failed_downloads.json', 'Json Files (*.json)')
-        JsonExporter.export_posts_to_json([self.table_model.data_list[x.row()] for x in
-                                           self.table_view.selectionModel().selectedRows()],
-                                          file_path)
+        if file_path:
+            JsonExporter.export_posts_to_json(self.get_selected_rows(),file_path)
 
     def export_list_to_json(self):
         file_path = self.get_file_path('failed_downloads.json', 'Json Files (*.json)')
-        JsonExporter.export_posts_to_json(self.table_model.data_list, file_path)
+        if file_path:
+            JsonExporter.export_posts_to_json(self.table_model.data_list, file_path)
 
     def export_selected_to_xml(self):
         file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*.xml)')
-        XMLExporter.export_posts_to_xml([self.table_model.data_list[x.row()] for x in
-                                         self.table_view.selectionModel().selectedRows()],
-                                        file_path)
+        if file_path:
+            XMLExporter.export_posts_to_xml(self.get_selected_rows(),file_path)
 
     def export_list_to_xml(self):
         file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*.xml)')
-        XMLExporter.export_posts_to_xml(self.table_model.data_list, file_path)
+        if file_path:
+            XMLExporter.export_posts_to_xml(self.table_model.data_list, file_path)
 
     def get_file_path(self, suggested_name, extension):
         suggested_path = path.join(self.settings_manager.save_directory, suggested_name)
