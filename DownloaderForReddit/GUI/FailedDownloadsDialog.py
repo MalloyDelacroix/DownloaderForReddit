@@ -72,33 +72,38 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
 
     def display_context_menu(self):
         menu = QtWidgets.QMenu()
-        index = self.table_view.selectedIndexes()[0].row()
-        post = self.table_model.data_list[index]
-        visit_author_reddit = menu.addAction('Visit Author Page')
-        visit_subreddit = menu.addAction('Visit Subreddit')
-        visit_post_page = menu.addAction('Visit Post')
-        menu.addSeparator()
+        selected_indexes = self.table_view.selectedIndexes()
+        if len(selected_indexes) > 0:            
+            index = selected_indexes[0].row()
+            post = self.table_model.data_list[index]
+            
+            visit_author_reddit = menu.addAction('Visit Author Page')
+            visit_subreddit = menu.addAction('Visit Subreddit')
+            visit_post_page = menu.addAction('Visit Post')
+
+            visit_author_reddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/u/%s' % post.author))
+            visit_subreddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/r/%s' % post.subreddit))
+            visit_post_page.triggered.connect(lambda: SystemUtil.open_in_system(post.url))
+            menu.addSeparator()
+
         export_url_list = menu.addAction('Export Url List')
+        export_url_list.triggered.connect(self.export_url_list)
         menu.addSeparator()
-        export_selected_menu = menu.addMenu('Export Selected')
-        export_selected_as_text = export_selected_menu.addAction('Export As Text')
-        export_selected_as_json = export_selected_menu.addAction('Export As Json')
-        export_selected_as_xml = export_selected_menu.addAction('Export As Xml')
+
+        if len(selected_indexes) > 0: 
+            export_selected_menu = menu.addMenu('Export Selected')
+            export_selected_as_text = export_selected_menu.addAction('Export As Text')
+            export_selected_as_json = export_selected_menu.addAction('Export As Json')
+            export_selected_as_xml = export_selected_menu.addAction('Export As Xml')
+
+            export_selected_as_text.triggered.connect(self.export_selected_to_text)
+            export_selected_as_json.triggered.connect(self.export_selected_to_json)
+            export_selected_as_xml.triggered.connect(self.export_selected_to_xml)
 
         export_all_menu = menu.addMenu('Export All')
         export_list_as_text = export_all_menu.addAction('Export As Text')
         export_list_as_json = export_all_menu.addAction('Export As Json')
-        export_list_as_xml = export_all_menu.addAction('Export As Xml')
-
-        visit_author_reddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/u/%s' % post.author))
-        visit_subreddit.triggered.connect(lambda: SystemUtil.open_in_system('www.reddit.com/r/%s' % post.subreddit))
-        visit_post_page.triggered.connect(lambda: SystemUtil.open_in_system(post.url))
-
-        export_url_list.triggered.connect(self.export_url_list)
-
-        export_selected_as_text.triggered.connect(self.export_selected_to_text)
-        export_selected_as_json.triggered.connect(self.export_selected_to_json)
-        export_selected_as_xml.triggered.connect(self.export_selected_to_xml)
+        export_list_as_xml = export_all_menu.addAction('Export As Xml')    
 
         export_list_as_text.triggered.connect(self.export_list_to_text)
         export_list_as_json.triggered.connect(self.export_list_to_json)
