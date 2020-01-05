@@ -22,6 +22,7 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from os import path
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QCursor
@@ -176,7 +177,8 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         XMLExporter.export_posts_to_xml(self.table_model.data_list, file_path)
 
     def get_file_path(self, suggested_name, extension):
+        suggested_path = path.join(self.settings_manager.save_directory, suggested_name)
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Select Save Path',
-                                                             self.settings_manager.save_directory + suggested_name,
+                                                             suggested_path,
                                                              extension)
         return file_path
