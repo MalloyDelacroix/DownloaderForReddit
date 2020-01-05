@@ -73,6 +73,15 @@ def get_mock_post_gfycat():
     post.url = 'https://gfycat.com/KindlyElderlyCony'
     return post
 
+def get_mock_post_gfycat_direct():
+    post = get_generic_mock_post()
+    post.url = 'https://giant.gfycat.com/KindlyElderlyCony.webm'
+    return post
+
+def get_mock_post_gfycat_tagged():
+    post = get_generic_mock_post()
+    post.url = 'https://gfycat.com/anchoredenchantedamericanriverotter-saturday-exhausted-weekend-kitten-pissed'
+    return post
 
 def get_mock_post_vidble():
     post = get_generic_mock_post()

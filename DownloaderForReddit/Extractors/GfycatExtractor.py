@@ -52,6 +52,7 @@ class GfycatExtractor(BaseExtractor):
 
     def extract_single(self):
         domain, gif_id = self.url.rsplit('/', 1)
+        gif_id = gif_id.split('-',1)[0]
         gfy_json = self.get_json(self.api_caller + gif_id)
         gfy_url = gfy_json.get('gfyItem').get('webmUrl')
         file_name = self.get_filename(gif_id)
