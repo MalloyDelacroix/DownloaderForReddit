@@ -59,7 +59,7 @@ def make_post_element(parent, post):
     et.SubElement(post_element, 'author').text = post.author
     et.SubElement(post_element, 'subreddit').text = post.subreddit
     et.SubElement(post_element, 'title').text = post.title
-    et.SubElement(post_element, 'created', epoch=post.created, timestamp=post.date_posted)
+    et.SubElement(post_element, 'created', epoch=str(int(post.created)), timestamp=post.date_posted)
     et.SubElement(post_element, 'url').text = post.url
     et.SubElement(post_element, 'status').text = post.status
     et.SubElement(post_element, 'save_status').text = post.save_status
