@@ -1,11 +1,13 @@
 import unittest
+from os import path
 from unittest.mock import patch
+
 from bs4 import BeautifulSoup
 
 from DownloaderForReddit.Extractors.VidbleExtractor import VidbleExtractor
 from DownloaderForReddit.Utils import Injector
-from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
+from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 
 
 class TestVidbleExtractor(unittest.TestCase):
@@ -78,12 +80,16 @@ class TestVidbleExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/toqeUzXBIl.jpg', content.filename)
 
     def get_single_soup_show(self):
-        with open('Tests/UnitTests/Extractors/Resources/vidble_single_test_show.html', 'r') as file:
+        current_file_path = path.dirname(path.abspath(__file__))
+        current_file_path = path.join(current_file_path,'Resources/vidble_single_test_show.html')
+        with open(current_file_path, 'r') as file:
             soup = BeautifulSoup(file, 'html.parser')
         return soup.find_all('img')
 
     def get_single_soup_explore(self):
-        with open('Tests/UnitTests/Extractors/Resources/vidble_single_test_explore.html', 'r') as file:
+        current_file_path = path.dirname(path.abspath(__file__))
+        current_file_path = path.join(current_file_path, 'Resources/vidble_single_test_explore.html')
+        with open(current_file_path, 'r') as file:
             soup = BeautifulSoup(file, 'html.parser')
         return soup.find_all('img')
 
