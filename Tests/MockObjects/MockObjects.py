@@ -83,10 +83,16 @@ def get_mock_post_gfycat_tagged():
     post.url = 'https://gfycat.com/anchoredenchantedamericanriverotter-saturday-exhausted-weekend-kitten-pissed'
     return post
 
+def get_mock_post_vidble_direct():
+    post = get_generic_mock_post()
+    post.url = 'https://vidble.com/XOwqxH6Xz9.jpg'
+    return post
+
 def get_mock_post_vidble():
     post = get_generic_mock_post()
-    post.url = 'https://vidble.com/OwqxH6Xz9'
+    post.url = 'https://vidble.com/XOwqxH6Xz9'
     return post
+
 
 def get_mock_post_vidible_album():
     post = get_generic_mock_post()
