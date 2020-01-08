@@ -101,6 +101,7 @@ class TestVidbleExtractor(unittest.TestCase):
             self.assertEqual('Pics', content.subreddit)
             self.assertEqual(1521473630, content.date_created)
             expected_filename = 'C:/Users/Gorgoth/Downloads/JohnEveryman/' + file
+            expected_url = 'https://www.vidble.com/' + file
             self.assertEqual(expected_filename, content.filename)
 
     def check_output(self, content):

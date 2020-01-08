@@ -79,5 +79,5 @@ class VidbleExtractor(BaseExtractor):
             domain, file_name = raw_pic.rsplit('/', 1)
             file_name = file_name.replace('_med', '')
             base, extension = file_name.rsplit('.', 1)
-            url = "https{}/{}".format(domain, file_name)
+            url = "https:{}/{}".format(domain, file_name)
             self.make_content(url, base, extension)
