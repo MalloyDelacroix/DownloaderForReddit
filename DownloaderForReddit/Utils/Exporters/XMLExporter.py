@@ -44,7 +44,7 @@ def export_posts_to_xml(post_list, file_path):
     for post in post_list:
         make_post_element(root, post)
     xml = minidom.parseString(et.tostring(root)).toprettyxml(indent='    ')
-    with open(file_path, 'a') as file:
+    with open(file_path, 'a', encoding='utf-8') as file:
         file.write(xml)
     logger.info('Exported post list to xml file', extra={'export_count': len(post_list)})
 
@@ -82,7 +82,7 @@ def export_reddit_objects_to_xml(object_list, file_path):
         else:
             make_reddit_object_element(subreddit_root, ro)
     xml = minidom.parseString(et.tostring(root)).toprettyxml(indent='    ')
-    with open(file_path, 'a') as file:
+    with open(file_path, mode='a', encoding='utf-8') as file:
         file.write(xml)
     logger.info('Exported reddit object list to xml file', extra={'export_count': len(object_list)})
 

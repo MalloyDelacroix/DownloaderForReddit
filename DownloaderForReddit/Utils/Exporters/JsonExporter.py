@@ -96,7 +96,7 @@ def export_posts_to_json(post_list, file_path):
     :param post_list: A list of posts which are to be exported to a json file.
     :param file_path: The path at which the json file will be created.
     """
-    with open(file_path, 'a') as file:
+    with open(file_path, mode='a', encoding='utf-8') as file:
         json.dump(PostCollection(post_list).__dict__, file, cls=JSONPostEncoder, indent=4, ensure_ascii=False)
     logger.info('Exported post list to json file', extra={'export_count': len(post_list)})
 
@@ -107,7 +107,7 @@ def export_reddit_objects_to_json(object_list, file_path):
     :param object_list: A list of RedditObjects which are to be exported to a json file.
     :param file_path: The path at which the json file will be created.
     """
-    with open(file_path, 'a') as file:
+    with open(file_path, 'a', encoding='utf-8') as file:
         json.dump(RedditObjectCollection(object_list).__dict__, file, cls=JSONRedditObjectEncoder, indent=4,
                   ensure_ascii=False)
     logger.info('Exported reddit object list to json file', extra={'export_count': len(object_list)})

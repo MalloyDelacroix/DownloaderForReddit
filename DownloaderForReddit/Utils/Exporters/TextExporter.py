@@ -34,9 +34,10 @@ def export_posts_to_text(post_list, file_path):
     :param post_list: A list of posts that are to be exported to a text file.
     :param file_path: The path at which the text file will be created.
     """
-    with open(file_path, 'a') as file:
+    with open(file_path, mode='a', encoding='utf-8') as file:
         for post in post_list:
-            file.write(format_post_output(post) + '\n\n')
+            post_serial = format_post_output(post)
+            file.write(post_serial + '\n\n')
     logger.info('Exported posts to text file', extra={'export_count': len(post_list)})
 
 
@@ -68,7 +69,7 @@ def export_reddit_objects_to_text(object_list, file_path):
     :param object_list: A list of reddit objects who's names are to be exported to a text file.
     :param file_path: The path at which the text file will be created.
     """
-    with open(file_path, 'a') as file:
+    with open(file_path, mode='a', encoding='utf-8') as file:
         for ro in object_list:
             file.write(ro.name + '\n')
     logger.info('Exported reddit objects to text file', extra={'export_count': len(object_list)})
