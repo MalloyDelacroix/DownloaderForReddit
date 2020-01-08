@@ -85,7 +85,12 @@ def get_mock_post_gfycat_tagged():
 
 def get_mock_post_vidble():
     post = get_generic_mock_post()
-    post.url = 'https://vidble.com/show/toqeUzXBIl'
+    post.url = 'https://vidble.com/OwqxH6Xz9'
+    return post
+
+def get_mock_post_vidible_album():
+    post = get_generic_mock_post()
+    post.url = 'https://vidble.com/album/3qY9KtlA'
     return post
 
 

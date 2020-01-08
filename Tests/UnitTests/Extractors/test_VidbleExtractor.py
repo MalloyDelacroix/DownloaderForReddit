@@ -40,7 +40,18 @@ class TestVidbleExtractor(unittest.TestCase):
         self.check_output(content)
         self.assertTrue(len(ve.failed_extract_posts) == 0)
 
-    def test_extract_album(self):
+    @patch('DownloaderForReddit.Extractors.VidbleExtractor.get_json')
+    def test_extract_album(self,j_mock):
+        post = MockObjects.get_mock_post_vidible_album()
+        j_mock.return_value = {"pics":
+                                   ["//www.vidble.com/lkPvqs0yh5_med.png",
+                                    "//www.vidble.com/F5DgE2O64b.gif",
+                                    "//www.vidble.com/XOwqxH6Xz9_med.jpg",
+                                    "//www.vidble.com/3a4xNLuO9M_med.png"]}
+        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve.extract_album()
+        contents = ve.extracted_content
+        self.check_output_album(contents)
         pass  # TODO: Find album to make test html page from
 
     @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_single')
@@ -59,8 +70,6 @@ class TestVidbleExtractor(unittest.TestCase):
 
         es_mock.assert_called()
 
-    def test_extract_content_assignment_album(self):
-        pass  # TODO: Test this method after an album html file is made
 
     @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_direct_link')
     def test_extract_content_assignment_direct(self, es_mock):
@@ -70,6 +79,19 @@ class TestVidbleExtractor(unittest.TestCase):
         ve.extract_content()
 
         es_mock.assert_called()
+
+    def check_output_album(self,contents):
+        filenames = ["lkPvqs0yh5.png",
+             "F5DgE2O64b.gif",
+             "XOwqxH6Xz9.jpg",
+             "3a4xNLuO9M.png"
+        ]
+        for content, file in zip(contents,filenames):
+            self.assertEqual('Picture(s)', content.post_title)
+            self.assertEqual('Pics', content.subreddit)
+            self.assertEqual(1521473630, content.date_created)
+            expected_filename = 'C:/Users/Gorgoth/Downloads/JohnEveryman/' + file
+            self.assertEqual(expected_filename, content.filename)
 
     def check_output(self, content):
         self.assertEqual('Picture(s)', content.post_title)
@@ -86,6 +108,3 @@ class TestVidbleExtractor(unittest.TestCase):
         with open('Tests/UnitTests/Extractors/Resources/vidble_single_test_explore.html', 'r') as file:
             soup = BeautifulSoup(file, 'html.parser')
         return soup.find_all('img')
-
-    def get_album_soup(self):
-        pass

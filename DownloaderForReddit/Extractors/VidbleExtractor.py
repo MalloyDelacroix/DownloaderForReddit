@@ -73,14 +73,13 @@ class VidbleExtractor(BaseExtractor):
                     self.make_content(self.vidble_base + link, file_name, extension)
 
     def extract_album(self):
-        count = 1
-        domain, vidble_id = self.url.rsplit('/', 1)
-        for img in self.get_imgs():
-            img_class = img.get('class')
-            if img_class is not None and img_class[0] == 'img2':
-                link = img.get('src')
-                if link is not None:
-                    base, extension = link.rsplit('.', 1)
-                    file_name = self.get_filename(vidble_id)
-                    self.make_content(self.vidble_base + link, file_name, extension, count)
-                    count += 1
+        # We will use the undocumented API specified here:
+        # https://www.reddit.com/r/Enhancement/comments/29nik6/feature_request_inline_image_expandos_for_vidible/cinha50/
+        json = self.get_json(self.url + "?json=1")
+        pics = json['pics']
+        for raw_pic in pics:
+            domain, pic_id = raw_pic.rsplit('/', 1)
+            pic_id = pic_id.replace('_med', '')
+            base, extension = pic_id.rsplit('.', 1)
+            url = "https{}/{}".format(domain, pic_id)
+            self.make_content(url, base, extension)
