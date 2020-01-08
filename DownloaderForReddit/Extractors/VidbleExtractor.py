@@ -22,7 +22,6 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 from bs4 import BeautifulSoup
 
 from ..Extractors.BaseExtractor import BaseExtractor
@@ -30,7 +29,6 @@ from ..Core import Const
 
 
 class VidbleExtractor(BaseExtractor):
-
     url_key = ['vidble']
 
     def __init__(self, post, reddit_object, content_display_only=False):
@@ -43,15 +41,16 @@ class VidbleExtractor(BaseExtractor):
 
     def extract_content(self):
         try:
-            if '/show/' in self.url or '/explore/' in self.url:
-                self.extract_single()
-            elif '/album/' in self.url:
+            if '/album/' in self.url:
                 self.extract_album()
-            elif self.url.lower().endswith(Const.ALL_EXT):
-                self.extract_direct_link()
             else:
-                self.extract_album()  # If it hasn't found a match by here, try for album and hope it works
-        except:
+                # We can convert show and explore links to single links by removing the show/explore from the url
+                self.url = self.url.replace('/show/', '/').replace('/explore/', '/')
+                if self.url.lower().endswith(Const.ALL_EXT):
+                    self.extract_direct_link()
+                else:
+                    self.extract_single()
+        except Exception:
             message = 'Failed to locate content'
             self.handle_failed_extract(message=message, extractor_error_message=message)
 
@@ -61,26 +60,24 @@ class VidbleExtractor(BaseExtractor):
 
     def extract_single(self):
         domain, vidble_id = self.url.rsplit('/', 1)
-        if '.' in vidble_id:
-            vidble_id = vidble_id[:vidble_id.rfind('.')]
-        for img in self.get_imgs():
-            img_class = img.get('class')
-            if img_class is not None and img_class[0] == 'img2':
-                link = img.get('src')
-                if link is not None:
-                    base, extension = link.rsplit('.', 1)
-                    file_name = self.get_filename(vidble_id)
-                    self.make_content(self.vidble_base + link, file_name, extension)
+        # There should only be one image
+        img = self.get_imgs()[0]
+        # We only need to get the filename from the image
+        link = img.get('src')
+        if link is not None:
+            base, extension = link.rsplit('.', 1)
+            file_name = "{}.{}".format(vidble_id, extension)
+            url = self.vidble_base + '/' + file_name
+            self.make_content(url, vidble_id, extension)
 
     def extract_album(self):
-        count = 1
-        domain, vidble_id = self.url.rsplit('/', 1)
-        for img in self.get_imgs():
-            img_class = img.get('class')
-            if img_class is not None and img_class[0] == 'img2':
-                link = img.get('src')
-                if link is not None:
-                    base, extension = link.rsplit('.', 1)
-                    file_name = self.get_filename(vidble_id)
-                    self.make_content(self.vidble_base + link, file_name, extension, count)
-                    count += 1
+        # We will use the undocumented API specified here:
+        # https://www.reddit.com/r/Enhancement/comments/29nik6/feature_request_inline_image_expandos_for_vidible/cinha50/
+        json = self.get_json(self.url + "?json=1")
+        pics = json['pics']
+        for raw_pic in pics:
+            domain, file_name = raw_pic.rsplit('/', 1)
+            file_name = file_name.replace('_med', '')
+            base, extension = file_name.rsplit('.', 1)
+            url = "https:{}/{}".format(domain, file_name)
+            self.make_content(url, base, extension)
