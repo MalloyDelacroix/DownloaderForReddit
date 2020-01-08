@@ -79,7 +79,7 @@ class TestVidbleExtractor(unittest.TestCase):
         ve = VidbleExtractor(post, MockObjects.get_blank_user())
         ve.extract_content()
 
-        self.assertEqual('https://vidble.com/XOwqxH6Xz9.jpg',ve.url)
+        self.assertEqual('https://vidble.com/XOwqxH6Xz9.jpg', ve.url)
         es_mock.assert_called()
 
     @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_direct_link')

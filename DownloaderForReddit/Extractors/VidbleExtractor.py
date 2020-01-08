@@ -22,7 +22,6 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 from bs4 import BeautifulSoup
 
 from ..Extractors.BaseExtractor import BaseExtractor
@@ -30,7 +29,6 @@ from ..Core import Const
 
 
 class VidbleExtractor(BaseExtractor):
-
     url_key = ['vidble']
 
     def __init__(self, post, reddit_object, content_display_only=False):
@@ -68,7 +66,7 @@ class VidbleExtractor(BaseExtractor):
         link = img.get('src')
         if link is not None:
             base, extension = link.rsplit('.', 1)
-            file_name = "{}.{}".format(vidble_id,extension)
+            file_name = "{}.{}".format(vidble_id, extension)
             url = self.vidble_base + '/' + file_name
             self.make_content(url, vidble_id, extension)
 
