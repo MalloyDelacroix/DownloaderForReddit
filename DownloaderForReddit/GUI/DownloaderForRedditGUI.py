@@ -238,6 +238,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             user_menu.addSeparator()
             download_single = user_menu.addAction('Download %s' % user.name)
             download_single.triggered.connect(lambda: self.run_single_user((user, None)))
+            if self.running:
+                download_single.setEnabled(False)
 
         add_user.triggered.connect(self.add_user_dialog)
         remove_user.triggered.connect(self.remove_user)
@@ -284,6 +286,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             subreddit_menu.addSeparator()
             download_single = subreddit_menu.addAction('Download %s' % subreddit.name)
             download_single.triggered.connect(lambda: self.run_single_subreddit((subreddit, None)))
+            if self.running:
+                download_single.setEnabled(False)
 
         add_subreddit.triggered.connect(self.add_subreddit_dialog)
         remove_subreddit.triggered.connect(self.remove_subreddit)
