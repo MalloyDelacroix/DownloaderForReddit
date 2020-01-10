@@ -124,3 +124,10 @@ class MockPrawPost:
 
         self.id = 'abcde'
         self.domain = 'reddit'
+
+
+class MockPrawSubreddit:
+
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name', None)
+        self.display_name = self.name

@@ -156,7 +156,7 @@ class DownloadRunner(QObject):
                 try:
                     test = redditor.fullname
                     self.queue.put('%s is valid' % user.name)
-                    user.new_submissions = self.get_user_submissions_from_subreddits(redditor, user)
+                    user.new_submissions = self.get_submissions(redditor, user, subreddit_filter=True)
                     self.validated_objects.put(user)
                     user.check_save_directory()
                     self.update_progress_bar()
@@ -316,11 +316,14 @@ class DownloadRunner(QObject):
         self.downloader_thread.finished.connect(self.downloads_finished)
         self.downloader_thread.start()
 
-    def get_submissions(self, praw_object, reddit_object):
+    def get_submissions(self, praw_object, reddit_object, subreddit_filter=False):
         """
         Extracts posts from a praw object submission generator if the post passes the PostFilter.
         :param praw_object: A praw object that contains the submission generator.
         :param reddit_object: The User object that holds certain filter settings needed for extracting the posts.
+        :param subreddit_filter: Indicates if the submission needs to be filtered based on if its subreddit is in the
+                                 validated subreddits list.  Should be set to True when downloading posts from users
+                                 made to specific subreddits.  Defaults to False.
         :return: A list of submissions that have been filtered based on the overall settings and the supplied users
                  individual settings.
         """
@@ -332,7 +335,8 @@ class DownloadRunner(QObject):
             # before more recent posts are allowed through
             if post.stickied or passes_date_limit:
                 if passes_date_limit:
-                    if self.post_filter.filter_post(post, reddit_object):
+                    if (not subreddit_filter or post.subreddit.display_name in self.validated_subreddits) and \
+                            self.post_filter.filter_post(post, reddit_object):
                         posts.append(post)
             else:
                 break
@@ -372,18 +376,6 @@ class DownloadRunner(QObject):
             return self.single_subreddit_run_method
         else:
             return self.settings_manager.subreddit_sort_method, self.settings_manager.subreddit_sort_top_method
-
-    def get_user_submissions_from_subreddits(self, redditor, user):
-        """
-        Returns a list of redditor submissions that are only from subreddits that are in the validated subreddit list.
-        All other user filters still apply.
-        :param redditor: The praw redditor object from which the posts will be extracted.
-        :param user: The RedditObject that holds some filtering information needed.
-        :return: A list of submissions that are from the validated subreddits and that pass the users filtering
-                 requirements
-        """
-        return [post for post in redditor.submissions.new(limit=user.post_limit) if post.subreddit.display_name in
-                self.validated_subreddits and self.post_filter.filter_post(post, user)]
 
     def add_downloaded_object(self, obj_tuple):
         """
