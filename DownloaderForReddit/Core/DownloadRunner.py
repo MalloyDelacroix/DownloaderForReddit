@@ -318,14 +318,25 @@ class DownloadRunner(QObject):
 
     def get_submissions(self, praw_object, reddit_object):
         """
-        Extracts posts from a redditor object if the post makes it through the PostFilter
-        :param praw_object: A praw redditor object that contains the submission list.
-        :param reddit_object: The User object that holds certain filter settings needed for gathering the posts.
+        Extracts posts from a praw object submission generator if the post passes the PostFilter.
+        :param praw_object: A praw object that contains the submission generator.
+        :param reddit_object: The User object that holds certain filter settings needed for extracting the posts.
         :return: A list of submissions that have been filtered based on the overall settings and the supplied users
                  individual settings.
         """
-        return [post for post in self.get_raw_submissions(praw_object, reddit_object.post_limit) if
-                self.post_filter.filter_post(post, reddit_object)]
+        posts = []
+        for post in self.get_raw_submissions(praw_object, reddit_object.post_limit):
+            passes_date_limit = self.post_filter.date_filter(post, reddit_object)
+            # stickied posts are taken first when getting submissions by new, even when they are not the newest
+            # submissions.  So the first filter pass allows stickied posts through so they do not trip the date filter
+            # before more recent posts are allowed through
+            if post.stickied or passes_date_limit:
+                if passes_date_limit:
+                    if self.post_filter.filter_post(post, reddit_object):
+                        posts.append(post)
+            else:
+                break
+        return posts
 
     def get_raw_submissions(self, praw_object, post_limit):
         """

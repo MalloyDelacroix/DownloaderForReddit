@@ -109,7 +109,7 @@ def get_mock_post_reddit_video():
 class MockPrawPost:
 
     def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None,
-                 is_video=False, crosspost_parent=None, media=None):
+                 is_video=False, crosspost_parent=None, media=None, stickied=False):
         self.url = url
         self.author = author
         self.title = title
@@ -120,6 +120,7 @@ class MockPrawPost:
         self.is_video = is_video
         self.crosspost_parent = crosspost_parent
         self.media = media
+        self.stickied = stickied
 
         self.id = 'abcde'
         self.domain = 'reddit'

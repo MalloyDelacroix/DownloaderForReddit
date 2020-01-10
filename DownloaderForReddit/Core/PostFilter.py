@@ -38,8 +38,7 @@ class PostFilter:
         :param reddit_object: The reddit object to which the post belongs.
         :return: True or False depending on if the post passed the filter criteria.
         """
-        return self.score_filter(post) and self.nsfw_filter(post, reddit_object) and \
-               self.date_filter(post, reddit_object)
+        return self.score_filter(post) and self.nsfw_filter(post, reddit_object)
 
     def score_filter(self, post):
         """
