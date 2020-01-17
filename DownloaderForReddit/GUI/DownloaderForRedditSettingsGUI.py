@@ -155,7 +155,8 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.name_downloads_by_combo.setCurrentText(self.settings_manager.name_downloads_by)
 
         self.thread_limit_spinbox.setValue(self.settings_manager.max_download_thread_count)
-        self.thread_limit_spinbox.setMaximum(QtCore.QThread.idealThreadCount())
+        self.thread_limit_spinbox.setMaximum(64)
+        self.thread_limit_spinbox.setMinimum(1)
 
         self.save_undownloaded_content_checkbox.setChecked(self.settings_manager.save_undownloaded_content)
 
