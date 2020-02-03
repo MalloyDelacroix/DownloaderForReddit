@@ -128,7 +128,7 @@ class Content(QRunnable):
         deleting the unfinished file depending on whether or not the download was stopped.
         """
         if Const.RUN:
-            self.set_file_modified_date()
+            SystemUtil.set_file_modify_time(self.filename, self.date_created)
             self.queue.put('Saved: %s' % self.filename)
             self.downloaded = True
         else:
@@ -179,20 +179,6 @@ class Content(QRunnable):
         except PermissionError:
             self.logger.error('Could not create directory path for subreddit object',
                               extra={'path': self.check_path, 'subreddit': self.subreddit})
-
-    def set_file_modified_date(self):
-        """
-        Sets the date modified of the created file to be the date the post was made on reddit.  First checks the
-        settings manager to see if the user has this feature enabled.
-        """
-        if self.settings_manager.set_file_modified_date:
-            try:
-                SystemUtil.set_file_modify_time(self.filename, self.date_created)
-            except Exception:
-                if LogUtils.modified_date_log_count < 3:
-                    self.settings_manager.modify_date_count += 1
-                    self.queue.put('Could not set date modified for file: %s' % self.filename)
-                    self.logger.error('Failed to set date modified for file', exc_info=True)
 
     def install_queue(self, queue):
         """

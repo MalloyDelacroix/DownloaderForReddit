@@ -27,6 +27,13 @@ import sys
 import subprocess
 import shutil
 import datetime
+import logging
+
+from . import Injector
+from ..Logging import LogUtils
+
+
+logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
 
 
 def open_in_system(item):
@@ -76,17 +83,27 @@ def rename_directory_deleted(path):
         return False
 
 
-def set_file_modify_time(file, epoch):
+def set_file_modify_time(file_path, epoch):
     """
     Sets a files date modified metadata to the time in the supplied epoch time.
-    :param file: The file who's date modified time is to be changed.
+    :param file_path: The path to the file who's date modified time is to be changed.
     :param epoch: The datetime in seconds of the new modified date.
-    :type file: str
+    :type file_path: str
     :type epoch: int
     :return: True if the modification was successful, False if it was not.
     :rtype: bool
     """
-    os.utime(file, times=(epoch, epoch))
+    settings_manager = Injector.get_settings_manager()
+    if settings_manager.set_file_modified_date:
+        try:
+            os.utime(file_path, times=(epoch, epoch))
+            return True
+        except:
+            if LogUtils.modified_date_log_count < 3:
+                LogUtils.modified_date_log_count += 1
+                logger.error('Failed to set date modified for file', extra={'file': file_path, 'date_modified': epoch},
+                             exc_info=True)
+            return False
 
 
 def get_data_directory():

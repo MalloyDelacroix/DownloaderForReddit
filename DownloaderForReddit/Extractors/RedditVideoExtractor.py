@@ -53,8 +53,13 @@ class RedditVideoExtractor(BaseExtractor):
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
                             VideoMerger.videos_to_merge.append(
-                                VideoMerger.MergeSet(video_content.filename, audio_content.filename,
-                                                     video_content.filename.replace('(video)', '')))
+                                VideoMerger.MergeSet(
+                                    video_path=video_content.filename,
+                                    audio_path=audio_content.filename,
+                                    output_path=video_content.filename.replace('(video)', ''),
+                                    date_modified=self.post.created
+                                )
+                            )
                 except:
                     message = 'Failed to located content'
                     self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
