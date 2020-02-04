@@ -70,7 +70,8 @@ def merge_videos():
                 cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
                       (ms.video_path, ms.audio_path, ms.output_path)
                 subprocess.call(cmd)
-                SystemUtil.set_file_modify_time(ms.output_path, ms.date_modified)
+                if Injector.get_settings_manager().set_file_modified_date:
+                    SystemUtil.set_file_modify_time(ms.output_path, ms.date_modified)
                 logger.info('Successfully merged %s videos' % len(videos_to_merge))
             except:
                 logger.error('Failed to merge videos', extra={'video_path': ms.video_path, 'audio_path': ms.audio_path,

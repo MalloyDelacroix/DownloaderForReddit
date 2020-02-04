@@ -128,7 +128,8 @@ class Content(QRunnable):
         deleting the unfinished file depending on whether or not the download was stopped.
         """
         if Const.RUN:
-            SystemUtil.set_file_modify_time(self.filename, self.date_created)
+            if self.settings_manager.set_file_modified_date:
+                SystemUtil.set_file_modify_time(self.filename, self.date_created)
             self.queue.put('Saved: %s' % self.filename)
             self.downloaded = True
         else:
