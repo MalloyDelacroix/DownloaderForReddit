@@ -72,7 +72,11 @@ def clean_up():
     queue = Injector.get_queue()
     for ms in videos_to_merge:
         if os.path.exists(ms.output_path):
-            os.remove(ms.video_path)
-            os.remove(ms.audio_path)
+            try:
+                os.remove(ms.video_path)
+                os.remove(ms.audio_path)
+            except FileNotFoundError:
+                logger.error('Failed to delete reddit video part files', extra={'merged_video_path': ms.output_path},
+                             exc_info=True)
             queue.put('Merged reddit video: %s' % ms.output_path)
     videos_to_merge.clear()
