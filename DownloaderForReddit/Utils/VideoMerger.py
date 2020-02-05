@@ -28,8 +28,7 @@ import os
 import logging
 from distutils.spawn import find_executable
 
-from ..Utils import Injector
-from ..Utils import SystemUtil
+from ..Utils import Injector, SystemUtil
 
 
 logger = logging.getLogger(__name__)
@@ -65,6 +64,7 @@ def merge_videos():
     MergeSet if the user settings dictate to do so.
     """
     if ffmpeg_valid:
+        failed_count = 0
         for ms in videos_to_merge:
             try:
                 cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
@@ -72,10 +72,12 @@ def merge_videos():
                 subprocess.call(cmd)
                 if Injector.get_settings_manager().set_file_modified_date:
                     SystemUtil.set_file_modify_time(ms.output_path, ms.date_modified)
-                logger.info('Successfully merged %s videos' % len(videos_to_merge))
             except:
-                logger.error('Failed to merge videos', extra={'video_path': ms.video_path, 'audio_path': ms.audio_path,
-                                                              'output_path': ms.output_path}, exc_info=True)
+                failed_count += 1
+                logger.error('Failed to merge video', extra={'video_path': ms.video_path, 'audio_path': ms.audio_path,
+                                                             'output_path': ms.output_path}, exc_info=True)
+        logger.info('Video merger complete', extra={'videos_successfully_merged': len(videos_to_merge) - failed_count,
+                                                    'videos_unsuccessfully_merged': failed_count})
         clean_up()
     else:
         logger.warning('Ffmpeg is not installed: unable to merge video and audio files',
@@ -90,7 +92,11 @@ def clean_up():
     queue = Injector.get_queue()
     for ms in videos_to_merge:
         if os.path.exists(ms.output_path):
-            os.remove(ms.video_path)
-            os.remove(ms.audio_path)
+            try:
+                os.remove(ms.video_path)
+                os.remove(ms.audio_path)
+            except FileNotFoundError:
+                logger.error('Failed to delete reddit video part files', extra={'merged_video_path': ms.output_path},
+                             exc_info=True)
             queue.put('Merged reddit video: %s' % ms.output_path)
     videos_to_merge.clear()
