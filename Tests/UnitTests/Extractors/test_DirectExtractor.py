@@ -23,4 +23,4 @@ class TestDirectExtractor(unittest.TestCase):
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/3jfd9nlksd.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/3jfd9nlksd.jpg', content.make_filename())

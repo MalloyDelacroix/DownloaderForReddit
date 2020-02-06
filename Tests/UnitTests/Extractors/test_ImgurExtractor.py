@@ -48,7 +48,7 @@ class TestImgurExtractor(unittest.TestCase):
         for con in content_list:
             if con.url not in self.url_extract_dict['ALBUM']:
                 return False
-            if not con.filename.startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.jpg' or \
+            if not con.make_filename().startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.jpg' or \
                     int(con.number_in_seq) != count:
                 return False
             count += 1
@@ -69,7 +69,7 @@ class TestImgurExtractor(unittest.TestCase):
         for con in content_list:
             if con.url not in self.make_gif_list(self.url_extract_dict['ALBUM']):
                 return False
-            if not con.filename.startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.mp4' or \
+            if not con.make_filename().startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.mp4' or \
                     int(con.number_in_seq) != count:
                 return False
             count += 1
@@ -86,7 +86,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -101,7 +101,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -116,7 +116,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.jpg', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -131,7 +131,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -153,7 +153,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.jpg', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -168,7 +168,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')

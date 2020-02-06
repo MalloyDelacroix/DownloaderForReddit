@@ -1,3 +1,4 @@
+from uuid import uuid4
 
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Utils import RedditUtils, VideoMerger
@@ -14,6 +15,7 @@ class RedditVideoExtractor(BaseExtractor):
         self.url = None
         self.contains_audio = False
         self.get_vid_url()
+        self.merge_id = uuid4().hex
 
     @staticmethod
     def get_host_vid(post):
@@ -52,14 +54,13 @@ class RedditVideoExtractor(BaseExtractor):
                     if self.contains_audio:
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
-                            VideoMerger.videos_to_merge.append(
-                                VideoMerger.MergeSet(
-                                    video_path=video_content.filename,
-                                    audio_path=audio_content.filename,
-                                    output_path=video_content.filename.replace('(video)', ''),
-                                    date_modified=self.post.created
-                                )
+                            merge_set = VideoMerger.MergeSet(
+                                merge_id=self.merge_id,
+                                video_path=video_content.submission_name,
+                                audio_path=audio_content.submission_name,
+                                date_modified=self.post.created
                             )
+                            VideoMerger.videos_to_merge[self.merge_id] = merge_set
                 except:
                     message = 'Failed to located content'
                     self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
@@ -69,13 +70,17 @@ class RedditVideoExtractor(BaseExtractor):
 
     def get_video_content(self):
         ext = 'mp4'
-        return self.make_content(self.url, self.make_name(True), ext)
+        content = self.make_content(self.url, self.make_name(True), ext)
+        content.video_merge_id = self.merge_id
+        return content
 
     def get_audio_content(self):
         ext = 'mp3'
         index = self.url.rfind('/')
         url = self.url[:index] + '/audio'  # replace end of fallback url to target audio file
-        return self.make_content(url, self.make_name(False), ext)
+        content = self.make_content(url, self.make_name(False), ext)
+        content.video_merge_id = self.merge_id
+        return content
 
     def make_name(self, video_url):
         """

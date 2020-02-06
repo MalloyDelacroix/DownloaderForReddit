@@ -27,7 +27,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         self.assertEqual(fallback_url, content.url)
         self.assertEqual('PublicFreakout', content.subreddit)
         self.assertEqual('Reddit Video Broh', content.post_title)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde.mp4', content.make_filename())
 
         self.assertEqual(0, len(re.failed_extract_posts))
         self.assertEqual(0, len(VideoMerger.videos_to_merge))
@@ -46,12 +46,12 @@ class TestRedditVideoExtractor(unittest.TestCase):
         vid_content = re.extracted_content[0]
         self.assertEqual(fallback_url, vid_content.url)
         self.assertEqual('PublicFreakout', vid_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
 
         audio_content = re.extracted_content[1]
         self.assertEqual(post.url + '/audio', audio_content.url)
         self.assertEqual('PublicFreakout', audio_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.make_filename())
 
         self.assertEqual(0, len(re.failed_extract_posts))
         self.assertEqual(1, len(VideoMerger.videos_to_merge))
@@ -82,12 +82,12 @@ class TestRedditVideoExtractor(unittest.TestCase):
         vid_content = re.extracted_content[0]
         self.assertEqual(fallback_url, vid_content.url)
         self.assertEqual('PublicFreakout', vid_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
 
         audio_content = re.extracted_content[1]
         self.assertEqual(parent_post.url + '/audio', audio_content.url)
         self.assertEqual('PublicFreakout', audio_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.make_filename())
 
         self.assertEqual(0, len(re.failed_extract_posts))
         self.assertEqual(1, len(VideoMerger.videos_to_merge))
@@ -108,7 +108,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         vid_content = re.extracted_content[0]
         self.assertEqual(fallback_url, vid_content.url)
         self.assertEqual('PublicFreakout', vid_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
 
         self.assertEqual(1, len(re.failed_extract_posts))
         self.assertEqual(0, len(VideoMerger.videos_to_merge))
