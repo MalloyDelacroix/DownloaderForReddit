@@ -6,12 +6,15 @@
 * Optimize post extraction from reddit which results in much faster extraction times.
   * Up to 85% faster extraction time in some use cases.
 * Add extractor for Erome.com
+* Allow the user to select to use more download threads to dramatically speed up downloads
 
 ### Bug Fixes
 * Fix post extraction from gfycat urls that contained tags
 * Fix various bugs in failed downloads dialog and exporters
 * Fix Vidble link extraction
 * Fix crashing when running single download while a download is currently running
+* Fix date modified not being set for reddit videos that are downloaded in parts and merged
+* Fix files being overwritten when a file with the same name is downloaded 
 
 
 
