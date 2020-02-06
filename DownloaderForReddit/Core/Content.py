@@ -29,7 +29,7 @@ from PyQt5.QtCore import QRunnable
 import logging
 
 from ..Core import Const
-from ..Utils import Injector, SystemUtil
+from ..Utils import Injector, SystemUtil, VideoMerger
 
 
 class Content(QRunnable):
@@ -68,6 +68,7 @@ class Content(QRunnable):
         self.downloaded = False
         self.dir_path = self.make_dir_path()
         self.filename = None
+        self.video_merge_id = None
 
         self.queue = None
 
@@ -88,10 +89,9 @@ class Content(QRunnable):
 
     def make_filename(self):
         unique_count = 1
-        path = os.path.join(self.dir_path, f'{self.submission_name}{self.number_in_seq}{self.file_ext}')
+        path = f'{self.dir_path}/{self.submission_name}{self.number_in_seq}{self.file_ext}'
         while os.path.exists(path):
-            path = os.path.join(self.dir_path,
-                                f'{self.submission_name}{self.number_in_seq}({unique_count}){self.file_ext}')
+            path = f'{self.dir_path}/{self.submission_name}{self.number_in_seq}({unique_count}){self.file_ext}'
             unique_count += 1
         return path
 
@@ -126,11 +126,29 @@ class Content(QRunnable):
         if Const.RUN:
             if self.settings_manager.set_file_modified_date:
                 SystemUtil.set_file_modify_time(self.filename, self.date_created)
+            self.check_video_merger()
             self.queue.put('Saved: %s' % self.filename)
             self.downloaded = True
         else:
             SystemUtil.delete_file(self.filename)
             self.queue.put('Stopped: %s' % self.filename)
+
+    def check_video_merger(self):
+        """
+        Checks to see if this content item has a video merge id and if so, selects the merge set with the corresponding
+        id and updates the video or audio path (depending on the contents extension) to the new path set when the
+        content item was downloaded.
+        """
+        if self.video_merge_id is not None:
+            try:
+                ms = VideoMerger.videos_to_merge[self.video_merge_id]
+                if self.file_ext == '.mp4':
+                    ms.video_path = self.filename
+                else:
+                    ms.audio_path = self.filename
+            except KeyError:
+                self.logger.error('Failed to add file to video merge list.  A merge set with this id does not exist',
+                                  extra={'merge_id': self.video_merge_id, 'filename': self.filename})
 
     def handle_unsuccessful_response(self, status_code):
         """Handles logging and output in case of a failed response from the server."""

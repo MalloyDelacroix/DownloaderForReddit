@@ -65,7 +65,7 @@ class TestGfycatExtractor(unittest.TestCase):
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/KindlyElderlyCony.webm', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/KindlyElderlyCony.webm', content.make_filename())
         self.assertTrue(len(ge.failed_extract_posts) == 0)
 
     def check_output_tagged(self, ge, url):
@@ -74,6 +74,7 @@ class TestGfycatExtractor(unittest.TestCase):
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/anchoredenchantedamericanriverotter.webm', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/anchoredenchantedamericanriverotter.webm',
+                         content.make_filename())
         self.assertTrue(len(ge.failed_extract_posts) == 0)
 

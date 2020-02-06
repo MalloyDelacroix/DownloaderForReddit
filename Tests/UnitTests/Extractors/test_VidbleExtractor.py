@@ -102,14 +102,14 @@ class TestVidbleExtractor(unittest.TestCase):
             self.assertEqual(1521473630, content.date_created)
             expected_filename = 'C:/Users/Gorgoth/Downloads/JohnEveryman/' + file
             expected_url = 'https://www.vidble.com/' + file
-            self.assertEqual(expected_filename, content.filename)
+            self.assertEqual(expected_filename, content.make_filename())
 
     def check_output(self, content):
         self.assertEqual('https://vidble.com/XOwqxH6Xz9.jpg', content.url)
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/XOwqxH6Xz9.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/XOwqxH6Xz9.jpg', content.make_filename())
 
     def get_single_soup(self):
         current_file_path = path.dirname(path.abspath(__file__))

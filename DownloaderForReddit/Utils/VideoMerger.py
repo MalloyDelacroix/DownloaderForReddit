@@ -36,25 +36,30 @@ logger = logging.getLogger(__name__)
 ffmpeg_valid = find_executable('ffmpeg') is not None
 
 
-# A list of MergeSet's containing the path of the video and audio files that are to be merged.
-videos_to_merge = []
+# A dict of MergeSet's containing the path of the video and audio files that are to be merged.
+videos_to_merge = {}
 
 
 class MergeSet:
 
-    def __init__(self, video_path, audio_path, output_path, date_modified=None):
+    def __init__(self, merge_id, video_path, audio_path, date_modified=None):
         """
         Holds data about the parts of a reddit video that are to be merged.
+        :param merge_id: The id that was assigned to the merge set and corresponding content items when the video and
+                         audio files were extracted.
         :param video_path: The path that the file containing only the video is located at.
         :param audio_path: The path that the file containing only the audio is located at.
-        :param output_path: The final file path that the video and audio files will be combined into.
         :param date_modified: The date that the post containing the video was created.  If set in the settings manager,
                               this will be used to set the files date modified time.
         """
+        self.merge_id = merge_id
         self.video_path = video_path
         self.audio_path = audio_path
-        self.output_path = output_path
         self.date_modified = date_modified
+
+    @property
+    def output_path(self):
+        return self.video_path.replace('(video)', '')
 
 
 def merge_videos():
@@ -65,13 +70,14 @@ def merge_videos():
     """
     if ffmpeg_valid:
         failed_count = 0
-        for ms in videos_to_merge:
+        for ms in videos_to_merge.values():
             try:
+                output_path = get_output_path(ms.output_path)
                 cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
-                      (ms.video_path, ms.audio_path, ms.output_path)
+                      (ms.video_path, ms.audio_path, output_path)
                 subprocess.call(cmd)
                 if Injector.get_settings_manager().set_file_modified_date:
-                    SystemUtil.set_file_modify_time(ms.output_path, ms.date_modified)
+                    SystemUtil.set_file_modify_time(output_path, ms.date_modified)
             except:
                 failed_count += 1
                 logger.error('Failed to merge video', extra={'video_path': ms.video_path, 'audio_path': ms.audio_path,
@@ -84,13 +90,28 @@ def merge_videos():
                        extra={'videos_to_merge': len(videos_to_merge)})
 
 
+def get_output_path(output_path):
+    """
+    Checks the output path against paths that already exist and adds a number that increments as necessary to get a
+    file name that does not exist.
+    :param output_path: The output path that should be used if it does not already exist.
+    :return: A unique output path that can be used to merge the files.
+    """
+    unique_count = 1
+    while os.path.exists(output_path):
+        path, ext = output_path.rsplit('.')
+        output_path = f'{path}({unique_count}).{ext}'
+        unique_count += 1
+    return output_path
+
+
 def clean_up():
     """
     Updates the GUI output to show which video files have been created and deletes the temporary video and audio files
     that were combined to produce the output file.
     """
     queue = Injector.get_queue()
-    for ms in videos_to_merge:
+    for ms in videos_to_merge.values():
         if os.path.exists(ms.output_path):
             try:
                 os.remove(ms.video_path)
