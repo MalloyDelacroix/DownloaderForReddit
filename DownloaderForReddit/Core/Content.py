@@ -23,13 +23,13 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import os
 import requests
 from PyQt5.QtCore import QRunnable
 import logging
 
 from ..Core import Const
 from ..Utils import Injector, SystemUtil
-from ..Logging import LogUtils
 
 
 class Content(QRunnable):
@@ -56,57 +56,53 @@ class Content(QRunnable):
         self.post_title = post_title
         self.subreddit = subreddit
         self.submission_id = submission_id
+        self.submission_name = self.clean_filename(self.submission_id)
         self.number_in_seq = number_in_seq
         self.file_ext = file_ext
-        self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
+        self.save_path = save_path.strip('/')
         self.subreddit_save_method = subreddit_save_method
         self.date_created = date_created
         self.display_only = display_only
         self.output = ''
         self.setAutoDelete(False)
         self.downloaded = False
-        self.check_path = None
+        self.dir_path = self.make_dir_path()
+        self.filename = None
 
         self.queue = None
 
-        if not self.display_only:
-            if self.subreddit_save_method is None:
-                self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id),
-                                              self.number_in_seq, self.file_ext)
-                self.check_path = self.save_path
+    def make_dir_path(self):
+        if self.subreddit_save_method is None:
+            path = self.save_path
+        elif self.subreddit_save_method == 'User Name':
+            path = os.path.join(self.save_path, self.user)
+        elif self.subreddit_save_method == 'Subreddit Name':
+            path = os.path.join(self.save_path, self.subreddit)
+        elif self.subreddit_save_method == 'Subreddit Name/User Name':
+            path = os.path.join(self.save_path, self.subreddit, self.user)
+        elif self.subreddit_save_method == 'User Name/Subreddit Name':
+            path = os.path.join(self.save_path, self.user, self.subreddit)
+        else:
+            path = self.save_path
+        return path
 
-            elif self.subreddit_save_method == 'User Name':
-                self.filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
-                                                 self.number_in_seq, self.file_ext)
-                self.check_path = '%s%s/' % (self.save_path, self.user)
-
-            elif self.subreddit_save_method == 'Subreddit Name':
-                self.filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit,
-                                                 self.clean_filename(self.submission_id), self.number_in_seq,
-                                                 self.file_ext)
-                self.check_path = '%s%s' % (self.save_path, self.subreddit)
-
-            elif self.subreddit_save_method == 'Subreddit Name/User Name':
-                self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
-                                                    self.clean_filename(self.submission_id), self.number_in_seq,
-                                                    self.file_ext)
-                self.check_path = '%s%s/%s/' % (self.save_path, self.subreddit, self.user)
-
-            elif self.subreddit_save_method == 'User Name/Subreddit Name':
-                self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
-                                                    self.clean_filename(self.submission_id), self.number_in_seq,
-                                                    self.file_ext)
-                self.check_path = '%s%s/%s' % (self.save_path, self.user, self.subreddit)
-            else:
-                self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id),
-                                              self.number_in_seq, self.file_ext)
-                self.check_path = self.save_path
+    def make_filename(self):
+        unique_count = 1
+        path = os.path.join(self.dir_path, f'{self.submission_name}{self.number_in_seq}{self.file_ext}')
+        while os.path.exists(path):
+            path = os.path.join(self.dir_path,
+                                f'{self.submission_name}{self.number_in_seq}({unique_count}){self.file_ext}')
+            unique_count += 1
+        return path
 
     def run(self):
         self.check_save_path_subreddit()
         try:
             response = requests.get(self.url, stream=True)
             if response.status_code == 200:
+                # defer filename creation to last possible second so any duplicate file names should have already been
+                # written and can thus be avoided
+                self.filename = self.make_filename()
                 with open(self.filename, 'wb') as file:
                     for chunk in response.iter_content(1024):
                         if Const.RUN:
@@ -176,10 +172,10 @@ class Content(QRunnable):
         Checks the supplied subreddit's check path and if it does not exist, creates the directory.
         """
         try:
-            SystemUtil.create_directory(self.check_path)
+            SystemUtil.create_directory(self.dir_path)
         except PermissionError:
             self.logger.error('Could not create directory path for subreddit object',
-                              extra={'path': self.check_path, 'subreddit': self.subreddit})
+                              extra={'path': self.dir_path, 'subreddit': self.subreddit})
 
     def install_queue(self, queue):
         """
