@@ -1229,6 +1229,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_count = 0
         self.output_box.clear()
         self.download_button.setText('Downloading...Click to Stop Download')
+        self.statusbar.clearMessage()
         self.add_user_button.setDisabled(True)
         self.remove_user_button.setDisabled(True)
         self.add_subreddit_button.setDisabled(True)
