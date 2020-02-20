@@ -581,7 +581,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         elif text.startswith('Saved'):
             self.update_status_bar_download_count()
             self.output_box.append(text)
-        elif text.startswith('Count'):
+        elif text.startswith('$$Count'):
             t, count = text.rsplit(' ', 1)
             self.download_count += int(count)
         else:
