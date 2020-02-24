@@ -23,8 +23,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 from queue import Queue
 
-from ..Persistence.SettingsManager import SettingsManager
-
 
 settings_manager = None
 queue = None
@@ -33,6 +31,7 @@ queue = None
 def get_settings_manager():
     global settings_manager
     if settings_manager is None:
+        from ..Persistence.SettingsManager import SettingsManager
         settings_manager = SettingsManager()
     return settings_manager
 

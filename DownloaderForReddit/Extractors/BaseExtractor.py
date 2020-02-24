@@ -27,8 +27,8 @@ import requests
 import logging
 
 from ..Core.Content import Content
-from ..Utils import Injector
 from ..Core.Post import Post
+from ..Utils import Injector
 
 
 class BaseExtractor:
