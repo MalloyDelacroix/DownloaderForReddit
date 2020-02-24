@@ -581,7 +581,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         elif text.startswith('Saved'):
             self.update_status_bar_download_count()
             self.output_box.append(text)
-        elif text.startswith('Count'):
+        elif text.startswith('$$Count'):
             t, count = text.rsplit(' ', 1)
             self.download_count += int(count)
         else:
@@ -1229,6 +1229,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_count = 0
         self.output_box.clear()
         self.download_button.setText('Downloading...Click to Stop Download')
+        self.statusbar.clearMessage()
         self.add_user_button.setDisabled(True)
         self.remove_user_button.setDisabled(True)
         self.add_subreddit_button.setDisabled(True)

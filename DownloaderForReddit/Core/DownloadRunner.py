@@ -480,7 +480,7 @@ class ExtractionRunner(QObject):
                         self.send_failed_extract.emit(entry)
                         self.queue.put(entry.format_failed_text())
                 if len(working_object.content) > 0:
-                    self.queue.put('Count %s' % len(working_object.content))
+                    self.queue.put('$$Count %s' % len(working_object.content))
                     self.send_object.emit((working_object.name, [x.filename for x in working_object.content]))
                 for post in working_object.content:
                     self.extract_count += 1
