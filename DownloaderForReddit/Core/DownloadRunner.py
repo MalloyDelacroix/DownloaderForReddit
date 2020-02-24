@@ -291,7 +291,6 @@ class DownloadRunner(QObject):
         self.extraction_runner.moveToThread(self.extraction_thread)
         self.extraction_thread.started.connect(self.extraction_runner.run_extraction)
         self.extraction_runner.update_progress_bar.connect(self.update_progress_bar)
-        self.extraction_runner.send_object.connect(self.add_downloaded_object)
         self.extraction_runner.send_failed_extract.connect(self.send_failed_extract)
         self.extraction_runner.finished.connect(self.extraction_thread.quit)
         self.extraction_runner.finished.connect(self.extraction_runner.deleteLater)
@@ -310,6 +309,7 @@ class DownloadRunner(QObject):
         self.downloader.moveToThread(self.downloader_thread)
         self.downloader_thread.started.connect(self.downloader.download)
         self.downloader.download_count_signal.connect(self.set_final_download_count)
+        self.downloader.send_downloaded.connect(self.add_downloaded_object)
         self.downloader.finished.connect(self.downloader_thread.quit)
         self.downloader.finished.connect(self.downloader.deleteLater)
         self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
@@ -377,18 +377,20 @@ class DownloadRunner(QObject):
         else:
             return self.settings_manager.subreddit_sort_method, self.settings_manager.subreddit_sort_top_method
 
-    def add_downloaded_object(self, obj_tuple):
+    def add_downloaded_object(self, obj_dict):
         """
-        Adds downloaded users to the downloaded users dict so that they may be displayed in the 'last downlaoded users'
-        dialog after the download is complete.
-        :param obj_tuple: A tuple containing the name of the user, and a list of the content that was downloaded during
-                           session
-        :type obj_tuple: tuple
+        Adds a new downloaded file path to the downloaded_objects dict under the key of the reddit_object that the file
+        was downloaded for.
+        :param obj_dict: A dictionary in which the value is a file path of a newly downloaded item and the key is the
+                         name of the reddit object for which it was downloaded.
+        :type obj_dict: dict
         """
-        if obj_tuple[0] in self.downloaded_objects:
-            self.downloaded_objects[obj_tuple[0]].extend(obj_tuple[1])
-        else:
-            self.downloaded_objects[obj_tuple[0]] = obj_tuple[1]
+        ro = obj_dict['reddit_object']
+        try:
+            obj_list = self.downloaded_objects[ro]
+            obj_list.append(obj_dict['filename'])
+        except KeyError:
+            self.downloaded_objects[ro] = [obj_dict['filename']]
 
     def send_downloaded_objects(self):
         """Emits a signal containing a dictionary of the last downloaded objects."""
@@ -443,7 +445,6 @@ class ExtractionRunner(QObject):
 
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
-    send_object = pyqtSignal(tuple)
     send_failed_extract = pyqtSignal(object)
 
     def __init__(self, queue, valid_objects, post_queue, user_extract):
@@ -481,7 +482,6 @@ class ExtractionRunner(QObject):
                         self.queue.put(entry.format_failed_text())
                 if len(working_object.content) > 0:
                     self.queue.put('$$Count %s' % len(working_object.content))
-                    self.send_object.emit((working_object.name, [x.filename for x in working_object.content]))
                 for post in working_object.content:
                     self.extract_count += 1
                     post.queue = self.queue
@@ -516,6 +516,7 @@ class Downloader(QObject):
 
     finished = pyqtSignal()
     download_count_signal = pyqtSignal(int)
+    send_downloaded = pyqtSignal(dict)
 
     def __init__(self, queue, thread_limit):
         """
@@ -539,6 +540,7 @@ class Downloader(QObject):
         while self.run:
             post = self.queue.get()
             if post is not None:
+                post.download_complete_signal.complete.connect(self.send_download_dict)
                 self.download_pool.start(post)
                 self.download_count += 1
             else:
@@ -547,6 +549,9 @@ class Downloader(QObject):
         self.logger.info('Downloader finished', extra={'download_count': self.download_count})
         self.download_count_signal.emit(self.download_count)
         self.finished.emit()
+
+    def send_download_dict(self, download_dict):
+        self.send_downloaded.emit(download_dict)
 
     def stop(self):
         self.run = False
