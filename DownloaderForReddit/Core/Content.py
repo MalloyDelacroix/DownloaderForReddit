@@ -83,13 +83,13 @@ class Content(QRunnable, QObject):
         if self.subreddit_save_method is None:
             path = self.save_path
         elif self.subreddit_save_method == 'User Name':
-            path = os.path.join(self.save_path, self.user)
+            path = SystemUtil.join_path(self.save_path, self.user)
         elif self.subreddit_save_method == 'Subreddit Name':
-            path = os.path.join(self.save_path, self.subreddit)
+            path = SystemUtil.join_path(self.save_path, self.subreddit)
         elif self.subreddit_save_method == 'Subreddit Name/User Name':
-            path = os.path.join(self.save_path, self.subreddit, self.user)
+            path = SystemUtil.join_path(self.save_path, self.subreddit, self.user)
         elif self.subreddit_save_method == 'User Name/Subreddit Name':
-            path = os.path.join(self.save_path, self.user, self.subreddit)
+            path = SystemUtil.join_path(self.save_path, self.user, self.subreddit)
         else:
             path = self.save_path
         return path
