@@ -23,42 +23,47 @@ class TestContent(unittest.TestCase):
 
     def test_file_name_subreddit_save_method_none(self):
         self.make_content(None)
-        self.assertEqual(self.content.filename, '%s%s%s%s' % (self.save_path,
-                                                               self.content.clean_filename(self.submission_id),
-                                                               self.number_in_seq, self.file_ext))
+        filename = self.content.make_filename()
+        self.assertEqual(filename, '%s%s%s%s' % (self.save_path, self.content.clean_filename(self.submission_id),
+                                                 self.number_in_seq, self.file_ext))
 
     def test_file_name_subreddit_save_method_user_name(self):
         self.make_content('User Name')
+        filename = self.content.make_filename()
         correct_file_name = '%s%s/%s%s%s' % (self.save_path, self.user, self.content.clean_filename(self.submission_id),
                                              self.number_in_seq, self.file_ext)
-        self.assertEqual(self.content.filename, correct_file_name)
+        self.assertEqual(filename, correct_file_name)
 
     def test_file_name_subreddit_save_method_subreddit_name(self):
         self.make_content('Subreddit Name')
+        filename = self.content.make_filename()
         correct_file_name = '%s%s/%s%s%s' % (self.save_path, self.subreddit,
                                              self.content.clean_filename(self.submission_id), self.number_in_seq,
                                              self.file_ext)
-        self.assertEqual(self.content.filename, correct_file_name)
+        self.assertEqual(filename, correct_file_name)
 
     def test_file_name_subreddit_save_method_subreddit_name_user_name(self):
         self.make_content('Subreddit Name/User Name')
+        filename = self.content.make_filename()
         correct_file_name = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
                                                 self.content.clean_filename(self.submission_id), self.number_in_seq,
                                                 self.file_ext)
-        self.assertEqual(self.content.filename, correct_file_name)
+        self.assertEqual(filename, correct_file_name)
 
     def test_file_name_subreddit_save_method_user_name_subreddit_name(self):
         self.make_content('User Name/Subreddit Name')
+        filename = self.content.make_filename()
         correct_file_name = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
                                                 self.content.clean_filename(self.submission_id), self.number_in_seq,
                                                 self.file_ext)
-        self.assertEqual(self.content.filename, correct_file_name)
+        self.assertEqual(filename, correct_file_name)
 
     def test_file_name_default(self):
         self.make_content('Something Else')
+        filename = self.content.make_filename()
         correct_file_name = '%s%s%s%s' % (self.save_path, self.content.clean_filename(self.submission_id),
                                           self.number_in_seq, self.file_ext)
-        self.assertEqual(self.content.filename, correct_file_name)
+        self.assertEqual(filename, correct_file_name)
 
     def test_clean_file_name(self):
         name_one = 'this is a test of a name that has more than two hundred and thirty characters to see if the clean '\

@@ -27,8 +27,8 @@ import requests
 import logging
 
 from ..Core.Content import Content
-from ..Utils import Injector
 from ..Core.Post import Post
+from ..Utils import Injector
 
 
 class BaseExtractor:
@@ -55,7 +55,7 @@ class BaseExtractor:
         self.settings_manager = Injector.get_settings_manager()
         self.url = post.url
         self.domain = post.domain
-        self.user = post.author
+        self.user = reddit_object if reddit_object.object_type == 'USER' else post.author
         self.post_title = post.title
         self.subreddit = post.subreddit if not reddit_object.object_type == 'SUBREDDIT' else reddit_object.name
         self.creation_date = post.created
@@ -190,8 +190,8 @@ class BaseExtractor:
         :rtype: Content
         """
         count = ' %s' % count if count else ''
-        x = Content(url, self.user, self.post_title, self.subreddit, file_name, count, '.' + extension, self.save_path,
-                    self.subreddit_save_method, self.creation_date, self.content_display_only)
+        x = Content(url, self.user_name, self.post_title, self.subreddit, file_name, count, '.' + extension,
+                    self.save_path, self.subreddit_save_method, self.creation_date, self.content_display_only)
         self.extracted_content.append(x)
         return x
 

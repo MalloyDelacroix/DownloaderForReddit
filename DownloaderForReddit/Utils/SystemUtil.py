@@ -156,3 +156,15 @@ def delete_file(file_path):
     """
     if os.path.exists(file_path):
         os.remove(file_path)
+
+
+def join_path(*args):
+    """
+    Used in place of os.path.join in order to give uniform path separators that display nicely to the user and work in
+    the system for designating file paths.  The default separator on windows is '\' which must be escaped, and does not
+    display well when joined.  However, Windows also accepts '/' as a file path separator, which is what allows this
+    method to work.
+    :param args:
+    :return:
+    """
+    return '/'.join(args)

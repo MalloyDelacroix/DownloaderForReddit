@@ -25,14 +25,18 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import requests
-from PyQt5.QtCore import QRunnable
+from PyQt5.QtCore import QRunnable, QObject, pyqtSignal
 import logging
 
 from ..Core import Const
 from ..Utils import Injector, SystemUtil, VideoMerger
 
 
-class Content(QRunnable):
+class DownloadSignal(QObject):
+    complete = pyqtSignal(dict)
+
+
+class Content(QRunnable, QObject):
 
     def __init__(self, url, user, post_title, subreddit, submission_id, number_in_seq, file_ext, save_path,
                  subreddit_save_method, date_created, display_only):
@@ -49,6 +53,7 @@ class Content(QRunnable):
         :param file_ext:  The extension of the file, used to save the file with the correct extension
         """
         super().__init__()
+        self.download_complete_signal = DownloadSignal()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Injector.get_settings_manager()
         self.url = url
@@ -61,6 +66,8 @@ class Content(QRunnable):
         self.file_ext = file_ext
         self.save_path = save_path.strip('/')
         self.subreddit_save_method = subreddit_save_method
+        # str name of the application stored reddit object for which this content item was created
+        self.significant_reddit_object = self.user if self.subreddit_save_method is None else self.subreddit
         self.date_created = date_created
         self.display_only = display_only
         self.output = ''
@@ -76,13 +83,13 @@ class Content(QRunnable):
         if self.subreddit_save_method is None:
             path = self.save_path
         elif self.subreddit_save_method == 'User Name':
-            path = os.path.join(self.save_path, self.user)
+            path = SystemUtil.join_path(self.save_path, self.user)
         elif self.subreddit_save_method == 'Subreddit Name':
-            path = os.path.join(self.save_path, self.subreddit)
+            path = SystemUtil.join_path(self.save_path, self.subreddit)
         elif self.subreddit_save_method == 'Subreddit Name/User Name':
-            path = os.path.join(self.save_path, self.subreddit, self.user)
+            path = SystemUtil.join_path(self.save_path, self.subreddit, self.user)
         elif self.subreddit_save_method == 'User Name/Subreddit Name':
-            path = os.path.join(self.save_path, self.user, self.subreddit)
+            path = SystemUtil.join_path(self.save_path, self.user, self.subreddit)
         else:
             path = self.save_path
         return path
@@ -127,6 +134,8 @@ class Content(QRunnable):
             if self.settings_manager.set_file_modified_date:
                 SystemUtil.set_file_modify_time(self.filename, self.date_created)
             self.check_video_merger()
+            self.download_complete_signal.complete.emit({'reddit_object': self.significant_reddit_object,
+                                                                  'filename': self.filename})
             self.queue.put('Saved: %s' % self.filename)
             self.downloaded = True
         else:
