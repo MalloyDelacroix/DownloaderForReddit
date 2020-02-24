@@ -14,7 +14,8 @@
 * Fix Vidble link extraction
 * Fix crashing when running single download while a download is currently running
 * Fix date modified not being set for reddit videos that are downloaded in parts and merged
-* Fix files being overwritten when a file with the same name is downloaded 
+* Fix files being overwritten when a file with the same name is downloaded
+* Fix crashing due to certain application key words being used in user/subreddit names
 
 
 
