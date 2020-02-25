@@ -27,6 +27,12 @@ import sys
 import subprocess
 import shutil
 import datetime
+import logging
+
+from ..Logging import LogUtils
+
+
+logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
 
 
 def open_in_system(item):
@@ -76,17 +82,25 @@ def rename_directory_deleted(path):
         return False
 
 
-def set_file_modify_time(file, epoch):
+def set_file_modify_time(file_path, epoch):
     """
     Sets a files date modified metadata to the time in the supplied epoch time.
-    :param file: The file who's date modified time is to be changed.
+    :param file_path: The path to the file who's date modified time is to be changed.
     :param epoch: The datetime in seconds of the new modified date.
-    :type file: str
+    :type file_path: str
     :type epoch: int
     :return: True if the modification was successful, False if it was not.
     :rtype: bool
     """
-    os.utime(file, times=(epoch, epoch))
+    try:
+        os.utime(file_path, times=(epoch, epoch))
+        return True
+    except:
+        if LogUtils.modified_date_log_count < 3:
+            LogUtils.modified_date_log_count += 1
+            logger.error('Failed to set date modified for file', extra={'file': file_path, 'date_modified': epoch},
+                         exc_info=True)
+        return False
 
 
 def get_data_directory():
@@ -146,3 +160,15 @@ def delete_file(file_path):
     """
     if os.path.exists(file_path):
         os.remove(file_path)
+
+
+def join_path(*args):
+    """
+    Used in place of os.path.join in order to give uniform path separators that display nicely to the user and work in
+    the system for designating file paths.  The default separator on windows is '\' which must be escaped, and does not
+    display well when joined.  However, Windows also accepts '/' as a file path separator, which is what allows this
+    method to work.
+    :param args:
+    :return:
+    """
+    return '/'.join(args)

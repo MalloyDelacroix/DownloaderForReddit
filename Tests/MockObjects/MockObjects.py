@@ -1,6 +1,6 @@
-from DownloaderForReddit.Core.RedditObjects import User, Subreddit
 from DownloaderForReddit.Core.Content import Content
 from DownloaderForReddit.Core.Post import Post
+from DownloaderForReddit.Core.RedditObjects import User, Subreddit
 
 
 def get_blank_user():
@@ -73,10 +73,30 @@ def get_mock_post_gfycat():
     post.url = 'https://gfycat.com/KindlyElderlyCony'
     return post
 
+def get_mock_post_gfycat_direct():
+    post = get_generic_mock_post()
+    post.url = 'https://giant.gfycat.com/KindlyElderlyCony.webm'
+    return post
+
+def get_mock_post_gfycat_tagged():
+    post = get_generic_mock_post()
+    post.url = 'https://gfycat.com/anchoredenchantedamericanriverotter-saturday-exhausted-weekend-kitten-pissed'
+    return post
+
+def get_mock_post_vidble_direct():
+    post = get_generic_mock_post()
+    post.url = 'https://vidble.com/XOwqxH6Xz9.jpg'
+    return post
 
 def get_mock_post_vidble():
     post = get_generic_mock_post()
-    post.url = 'https://vidble.com/show/toqeUzXBIl'
+    post.url = 'https://vidble.com/XOwqxH6Xz9'
+    return post
+
+
+def get_mock_post_vidible_album():
+    post = get_generic_mock_post()
+    post.url = 'https://vidble.com/album/3qY9KtlA'
     return post
 
 
@@ -89,7 +109,7 @@ def get_mock_post_reddit_video():
 class MockPrawPost:
 
     def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None,
-                 is_video=False, crosspost_parent=None, media=None):
+                 is_video=False, crosspost_parent=None, media=None, stickied=False):
         self.url = url
         self.author = author
         self.title = title
@@ -100,6 +120,14 @@ class MockPrawPost:
         self.is_video = is_video
         self.crosspost_parent = crosspost_parent
         self.media = media
+        self.stickied = stickied
 
         self.id = 'abcde'
         self.domain = 'reddit'
+
+
+class MockPrawSubreddit:
+
+    def __init__(self, **kwargs):
+        self.name = kwargs.get('name', None)
+        self.display_name = self.name

@@ -28,8 +28,24 @@ from ..Extractors.BaseExtractor import BaseExtractor
 from ..Core import Const
 
 
-class VidbleExtractor(BaseExtractor):
-    url_key = ['vidble']
+def class_filter(target):
+    def do_match(tag):
+        classes = tag.get('class', [])
+        return target in classes
+    return do_match
+
+
+def get_content(tag):
+    video_tags = tag.find_all(class_filter('video'))
+    if video_tags:
+        return video_tags[0].find_all('source')[0].get('src')
+    else:
+        img_tags = tag.find_all(class_filter('img'))
+        return img_tags[0].get("data-src")
+
+
+class EromeExtractor(BaseExtractor):
+    url_key = ['erome']
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
@@ -37,47 +53,30 @@ class VidbleExtractor(BaseExtractor):
         BeautifulSoup4.
         """
         super().__init__(post, reddit_object, content_display_only)
-        self.vidble_base = "https://vidble.com"
 
     def extract_content(self):
         try:
-            if '/album/' in self.url:
-                self.extract_album()
+            if self.url.lower().endswith(Const.ALL_EXT):
+                self.extract_direct_link()
             else:
-                # We can convert show and explore links to single links by removing the show/explore from the url
-                self.url = self.url.replace('/show/', '/').replace('/explore/', '/')
-                if self.url.lower().endswith(Const.ALL_EXT):
-                    self.extract_direct_link()
-                else:
-                    self.extract_single()
+                self.extract_album()
         except Exception:
             message = 'Failed to locate content'
             self.handle_failed_extract(message=message, extractor_error_message=message)
 
-    def get_imgs(self):
+    def get_soup(self):
         soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
-        return soup.find_all('img')
+        return soup
 
     def extract_single(self):
-        domain, vidble_id = self.url.rsplit('/', 1)
-        # There should only be one image
-        img = self.get_imgs()[0]
-        # We only need to get the filename from the image
-        link = img.get('src')
-        if link is not None:
-            base, extension = link.rsplit('.', 1)
-            file_name = "{}.{}".format(vidble_id, extension)
-            url = self.vidble_base + '/' + file_name
-            self.make_content(url, vidble_id, extension)
+        # Singles are just ablums containing 1 item
+        pass
 
     def extract_album(self):
-        # We will use the undocumented API specified here:
-        # https://www.reddit.com/r/Enhancement/comments/29nik6/feature_request_inline_image_expandos_for_vidible/cinha50/
-        json = self.get_json(self.url + "?json=1")
-        pics = json['pics']
-        for raw_pic in pics:
-            domain, file_name = raw_pic.rsplit('/', 1)
-            file_name = file_name.replace('_med', '')
+        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
+        album = soup.find_all(class_filter('media-group'))
+        urls = [get_content(x) for x in album]
+        for url in urls:
+            _, file_name = url.rsplit('/', 1)
             base, extension = file_name.rsplit('.', 1)
-            url = "https:{}/{}".format(domain, file_name)
             self.make_content(url, base, extension)

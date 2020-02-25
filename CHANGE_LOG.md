@@ -2,6 +2,25 @@
 
 # Unreleased
 
+### Major Changes
+* Optimize post extraction from reddit which results in much faster extraction times.
+  * Up to 85% faster extraction time in some use cases.
+* Add extractor for Erome.com
+* Allow the user to select to use more download threads to dramatically speed up downloads
+
+### Bug Fixes
+* Fix post extraction from gfycat urls that contained tags
+* Fix various bugs in failed downloads dialog and exporters
+* Fix Vidble link extraction
+* Fix crashing when running single download while a download is currently running
+* Fix date modified not being set for reddit videos that are downloaded in parts and merged
+* Fix files being overwritten when a file with the same name is downloaded
+* Fix crashing due to certain application key words being used in user/subreddit names
+
+
+
+# Released
+
 ## v2.3.3
 
 ### Major Changes
@@ -17,7 +36,7 @@ reddit object (except for previously downloaded urls).  By doing this, reddit ob
 to json or xml file types can then be imported at a later date retaining the reddit objects user set attributes (ie: 
 last downloaded post date, post limit, media filters, date added, etc.) 
 
-* Sopping downloader now stops in progress downloads when the stop button is pressed.
+* Stopping downloader now stops in progress downloads when the stop button is pressed.
 * Add support for Imgur's commercial API endpoint.  See https://rapidapi.com/imgur/api/imgur-9/pricing for more 
 information about obtaining the commercial api credentials.
 * Add ability to download a user or subreddit as a single download from the main GUI lists context menus
@@ -27,15 +46,11 @@ information about obtaining the commercial api credentials.
 ### Bug Fixes
 * Restore copy and paste functionality to add reddit object dialog input line.
 * Fix error message when trying to add a subreddit without an existing subreddit list.
-* Fix imgur url formatting that happened in some circumstances
+* Fix imgur url formatting issues that happened in some circumstances
 * Fix occasional crashing due to posts removed by reddit
 * Fix crashing when trying to download from private subreddits
 
 
-
-
-
-# Released
 
 ## v2.3.2
 

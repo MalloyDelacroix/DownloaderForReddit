@@ -1,7 +1,7 @@
 beautifulsoup4==4.6.3
 imgurpython==1.1.7
 praw==6.0.0
-pyqt5==5.11.2
+pyqt5==5.14.1
 python-json-logger==0.1.9
 requests==2.20.0
 youtube-dl==2018.8.28

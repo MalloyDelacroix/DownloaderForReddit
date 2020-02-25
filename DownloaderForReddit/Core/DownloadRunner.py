@@ -172,7 +172,7 @@ class DownloadRunner(QObject):
                 try:
                     test = redditor.fullname
                     self.queue.put('%s is valid' % user.name)
-                    user.new_submissions = self.get_user_submissions_from_subreddits(redditor, user)
+                    user.new_submissions = self.get_submissions(redditor, user, subreddit_filter=True)
                     self.validated_objects.put(user)
                     user.check_save_directory()
                     self.update_progress_bar()
@@ -307,7 +307,6 @@ class DownloadRunner(QObject):
         self.extraction_runner.moveToThread(self.extraction_thread)
         self.extraction_thread.started.connect(self.extraction_runner.run_extraction)
         self.extraction_runner.update_progress_bar.connect(self.update_progress_bar)
-        self.extraction_runner.send_object.connect(self.add_downloaded_object)
         self.extraction_runner.send_failed_extract.connect(self.send_failed_extract)
         self.extraction_runner.finished.connect(self.extraction_thread.quit)
         self.extraction_runner.finished.connect(self.extraction_runner.deleteLater)
@@ -326,22 +325,38 @@ class DownloadRunner(QObject):
         self.downloader.moveToThread(self.downloader_thread)
         self.downloader_thread.started.connect(self.downloader.download)
         self.downloader.download_count_signal.connect(self.set_final_download_count)
+        self.downloader.send_downloaded.connect(self.add_downloaded_object)
         self.downloader.finished.connect(self.downloader_thread.quit)
         self.downloader.finished.connect(self.downloader.deleteLater)
         self.downloader_thread.finished.connect(self.downloader_thread.deleteLater)
         self.downloader_thread.finished.connect(self.downloads_finished)
         self.downloader_thread.start()
 
-    def get_submissions(self, praw_object, reddit_object):
+    def get_submissions(self, praw_object, reddit_object, subreddit_filter=False):
         """
-        Extracts posts from a redditor object if the post makes it through the PostFilter
-        :param praw_object: A praw redditor object that contains the submission list.
-        :param reddit_object: The User object that holds certain filter settings needed for gathering the posts.
+        Extracts posts from a praw object submission generator if the post passes the PostFilter.
+        :param praw_object: A praw object that contains the submission generator.
+        :param reddit_object: The User object that holds certain filter settings needed for extracting the posts.
+        :param subreddit_filter: Indicates if the submission needs to be filtered based on if its subreddit is in the
+                                 validated subreddits list.  Should be set to True when downloading posts from users
+                                 made to specific subreddits.  Defaults to False.
         :return: A list of submissions that have been filtered based on the overall settings and the supplied users
                  individual settings.
         """
-        return [post for post in self.get_raw_submissions(praw_object, reddit_object.post_limit) if
-                self.post_filter.filter_post(post, reddit_object)]
+        posts = []
+        for post in self.get_raw_submissions(praw_object, reddit_object.post_limit):
+            passes_date_limit = self.post_filter.date_filter(post, reddit_object)
+            # stickied posts are taken first when getting submissions by new, even when they are not the newest
+            # submissions.  So the first filter pass allows stickied posts through so they do not trip the date filter
+            # before more recent posts are allowed through
+            if post.stickied or passes_date_limit:
+                if passes_date_limit:
+                    if (not subreddit_filter or post.subreddit.display_name in self.validated_subreddits) and \
+                            self.post_filter.filter_post(post, reddit_object):
+                        posts.append(post)
+            else:
+                break
+        return posts
 
     def get_raw_submissions(self, praw_object, post_limit):
         """
@@ -378,30 +393,20 @@ class DownloadRunner(QObject):
         else:
             return self.settings_manager.subreddit_sort_method, self.settings_manager.subreddit_sort_top_method
 
-    def get_user_submissions_from_subreddits(self, redditor, user):
+    def add_downloaded_object(self, obj_dict):
         """
-        Returns a list of redditor submissions that are only from subreddits that are in the validated subreddit list.
-        All other user filters still apply.
-        :param redditor: The praw redditor object from which the posts will be extracted.
-        :param user: The RedditObject that holds some filtering information needed.
-        :return: A list of submissions that are from the validated subreddits and that pass the users filtering
-                 requirements
+        Adds a new downloaded file path to the downloaded_objects dict under the key of the reddit_object that the file
+        was downloaded for.
+        :param obj_dict: A dictionary in which the value is a file path of a newly downloaded item and the key is the
+                         name of the reddit object for which it was downloaded.
+        :type obj_dict: dict
         """
-        return [post for post in redditor.submissions.new(limit=user.post_limit) if post.subreddit.display_name in
-                self.validated_subreddits and self.post_filter.filter_post(post, user)]
-
-    def add_downloaded_object(self, obj_tuple):
-        """
-        Adds downloaded users to the downloaded users dict so that they may be displayed in the 'last downlaoded users'
-        dialog after the download is complete.
-        :param obj_tuple: A tuple containing the name of the user, and a list of the content that was downloaded during
-                           session
-        :type obj_tuple: tuple
-        """
-        if obj_tuple[0] in self.downloaded_objects:
-            self.downloaded_objects[obj_tuple[0]].extend(obj_tuple[1])
-        else:
-            self.downloaded_objects[obj_tuple[0]] = obj_tuple[1]
+        ro = obj_dict['reddit_object']
+        try:
+            obj_list = self.downloaded_objects[ro]
+            obj_list.append(obj_dict['filename'])
+        except KeyError:
+            self.downloaded_objects[ro] = [obj_dict['filename']]
 
     def send_downloaded_objects(self):
         """Emits a signal containing a dictionary of the last downloaded objects."""
@@ -456,7 +461,6 @@ class ExtractionRunner(QObject):
 
     finished = pyqtSignal()
     update_progress_bar = pyqtSignal()
-    send_object = pyqtSignal(tuple)
     send_failed_extract = pyqtSignal(object)
 
     def __init__(self, queue, valid_objects, post_queue, user_extract):
@@ -493,8 +497,7 @@ class ExtractionRunner(QObject):
                         self.send_failed_extract.emit(entry)
                         self.queue.put(entry.format_failed_text())
                 if len(working_object.content) > 0:
-                    self.queue.put('Count %s' % len(working_object.content))
-                    self.send_object.emit((working_object.name, [x.filename for x in working_object.content]))
+                    self.queue.put('$$Count %s' % len(working_object.content))
                 for post in working_object.content:
                     self.extract_count += 1
                     post.queue = self.queue
@@ -529,6 +532,7 @@ class Downloader(QObject):
 
     finished = pyqtSignal()
     download_count_signal = pyqtSignal(int)
+    send_downloaded = pyqtSignal(dict)
 
     def __init__(self, queue, thread_limit):
         """
@@ -552,6 +556,7 @@ class Downloader(QObject):
         while self.run:
             post = self.queue.get()
             if post is not None:
+                post.download_complete_signal.complete.connect(self.send_download_dict)
                 self.download_pool.start(post)
                 self.download_count += 1
             else:
@@ -560,6 +565,9 @@ class Downloader(QObject):
         self.logger.info('Downloader finished', extra={'download_count': self.download_count})
         self.download_count_signal.emit(self.download_count)
         self.finished.emit()
+
+    def send_download_dict(self, download_dict):
+        self.send_downloaded.emit(download_dict)
 
     def stop(self):
         self.run = False

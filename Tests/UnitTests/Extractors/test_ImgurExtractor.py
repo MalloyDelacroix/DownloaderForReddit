@@ -48,7 +48,7 @@ class TestImgurExtractor(unittest.TestCase):
         for con in content_list:
             if con.url not in self.url_extract_dict['ALBUM']:
                 return False
-            if not con.filename.startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.jpg' or \
+            if not con.make_filename().startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.jpg' or \
                     int(con.number_in_seq) != count:
                 return False
             count += 1
@@ -69,7 +69,7 @@ class TestImgurExtractor(unittest.TestCase):
         for con in content_list:
             if con.url not in self.make_gif_list(self.url_extract_dict['ALBUM']):
                 return False
-            if not con.filename.startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.mp4' or \
+            if not con.make_filename().startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.mp4' or \
                     int(con.number_in_seq) != count:
                 return False
             count += 1
@@ -86,7 +86,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -101,7 +101,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -116,7 +116,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.jpg', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -131,7 +131,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -153,7 +153,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.jpg', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -168,7 +168,7 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.filename)
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
@@ -241,54 +241,59 @@ class TestImgurExtractor(unittest.TestCase):
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
     def test_imgur_rate_limit_exceeded_error_with_remaining_credits(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-        img_mock.credits = {'UserRemaining': 400}
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('rate limit exceeded' in failed_post.status)
-        self.assertTrue(len(ie.failed_extracts_to_save) > 0)
+        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
+            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
+            img_mock.credits = {'UserRemaining': 400}
+            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+            ie.extract_content()
+            failed_post = ie.failed_extract_posts[0]
+            self.assertTrue('rate limit exceeded' in failed_post.status)
+            self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
     def test_imgur_rate_limit_exceeded_error_no_remaining_credits(self, img_mock):
-        TIME = 600000
-        img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-        img_mock.credits = {'UserRemaining': 0, 'UserReset': TIME}
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Out of user credits' in failed_post.status)
-        self.assertTrue(len(ie.failed_extracts_to_save) > 0)
-        self.assertTrue(ImgurUtils.credit_time_limit == TIME)
+        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
+            TIME = 600000
+            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
+            img_mock.credits = {'UserRemaining': 0, 'UserReset': TIME}
+            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+            ie.extract_content()
+            failed_post = ie.failed_extract_posts[0]
+            self.assertTrue('Out of user credits' in failed_post.status)
+            self.assertTrue(len(ie.failed_extracts_to_save) > 0)
+            self.assertTrue(ImgurUtils.credit_time_limit == TIME)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
     def test_imgur_rate_limit_exceeded_credit_dict_is_null(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-        img_mock.credits = {'UserRemaining': None}
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('rate limit exceeded' in failed_post.status)
-        self.assertTrue(len(ie.failed_extracts_to_save) > 0)
+        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
+            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
+            img_mock.credits = {'UserRemaining': None}
+            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+            ie.extract_content()
+            failed_post = ie.failed_extract_posts[0]
+            self.assertTrue('rate limit exceeded' in failed_post.status)
+            self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
+    #@patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client',lambda *args: DownloaderForReddit.Utils.ImgurUtils.imgur_client)
     def test_multiple_imgur_rate_limit_exceeded_with_timeout_dict(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-        img_mock.credits = {'UserRemaining': None}
-        increment = Const.TIMEOUT_INCREMENT
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
-        increment += Const.TIMEOUT_INCREMENT
+        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
+            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
+            img_mock.credits = {'UserRemaining': None}
+            increment = Const.TIMEOUT_INCREMENT
+            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+            ie.extract_content()
+            self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
+            increment += Const.TIMEOUT_INCREMENT
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
-        increment += Const.TIMEOUT_INCREMENT
+            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+            ie.extract_content()
+            self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
+            increment += Const.TIMEOUT_INCREMENT
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
+            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+            ie.extract_content()
+            self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
 
 
     @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')

@@ -10,7 +10,7 @@ if distutils.distutils_path.endswith('__init__.py'):
 block_cipher = None
 
 dir_path = os.path.abspath(SPECPATH)
-venv_path = '<path-to-virtual-env>'
+venv_path = os.environ['VIRTUAL_ENV']
 
 
 added_files = [(dir_path + '/Resources/Images/*', 'Resources/Images'),

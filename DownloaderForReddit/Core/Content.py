@@ -23,16 +23,20 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+import os
 import requests
-from PyQt5.QtCore import QRunnable
+from PyQt5.QtCore import QRunnable, QObject, pyqtSignal
 import logging
 
 from ..Core import Const
-from ..Utils import Injector, SystemUtil
-from ..Logging import LogUtils
+from ..Utils import Injector, SystemUtil, VideoMerger
 
 
-class Content(QRunnable):
+class DownloadSignal(QObject):
+    complete = pyqtSignal(dict)
+
+
+class Content(QRunnable, QObject):
 
     def __init__(self, url, user, post_title, subreddit, submission_id, number_in_seq, file_ext, save_path,
                  subreddit_save_method, date_created, display_only):
@@ -49,6 +53,7 @@ class Content(QRunnable):
         :param file_ext:  The extension of the file, used to save the file with the correct extension
         """
         super().__init__()
+        self.download_complete_signal = DownloadSignal()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings_manager = Injector.get_settings_manager()
         self.url = url
@@ -56,57 +61,55 @@ class Content(QRunnable):
         self.post_title = post_title
         self.subreddit = subreddit
         self.submission_id = submission_id
+        self.submission_name = self.clean_filename(self.submission_id)
         self.number_in_seq = number_in_seq
         self.file_ext = file_ext
-        self.save_path = '%s%s' % (save_path, '/' if not save_path.endswith('/') else '')
+        self.save_path = save_path.strip('/')
         self.subreddit_save_method = subreddit_save_method
+        # str name of the application stored reddit object for which this content item was created
+        self.significant_reddit_object = self.user if self.subreddit_save_method is None else self.subreddit
         self.date_created = date_created
         self.display_only = display_only
         self.output = ''
         self.setAutoDelete(False)
         self.downloaded = False
-        self.check_path = None
+        self.dir_path = self.make_dir_path()
+        self.filename = None
+        self.video_merge_id = None
 
         self.queue = None
 
-        if not self.display_only:
-            if self.subreddit_save_method is None:
-                self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id),
-                                              self.number_in_seq, self.file_ext)
-                self.check_path = self.save_path
+    def make_dir_path(self):
+        if self.subreddit_save_method is None:
+            path = self.save_path
+        elif self.subreddit_save_method == 'User Name':
+            path = SystemUtil.join_path(self.save_path, self.user)
+        elif self.subreddit_save_method == 'Subreddit Name':
+            path = SystemUtil.join_path(self.save_path, self.subreddit)
+        elif self.subreddit_save_method == 'Subreddit Name/User Name':
+            path = SystemUtil.join_path(self.save_path, self.subreddit, self.user)
+        elif self.subreddit_save_method == 'User Name/Subreddit Name':
+            path = SystemUtil.join_path(self.save_path, self.user, self.subreddit)
+        else:
+            path = self.save_path
+        return path
 
-            elif self.subreddit_save_method == 'User Name':
-                self.filename = '%s%s/%s%s%s' % (self.save_path, self.user, self.clean_filename(self.submission_id),
-                                                 self.number_in_seq, self.file_ext)
-                self.check_path = '%s%s/' % (self.save_path, self.user)
-
-            elif self.subreddit_save_method == 'Subreddit Name':
-                self.filename = '%s%s/%s%s%s' % (self.save_path, self.subreddit,
-                                                 self.clean_filename(self.submission_id), self.number_in_seq,
-                                                 self.file_ext)
-                self.check_path = '%s%s' % (self.save_path, self.subreddit)
-
-            elif self.subreddit_save_method == 'Subreddit Name/User Name':
-                self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.subreddit, self.user,
-                                                    self.clean_filename(self.submission_id), self.number_in_seq,
-                                                    self.file_ext)
-                self.check_path = '%s%s/%s/' % (self.save_path, self.subreddit, self.user)
-
-            elif self.subreddit_save_method == 'User Name/Subreddit Name':
-                self.filename = '%s%s/%s/%s%s%s' % (self.save_path, self.user, self.subreddit,
-                                                    self.clean_filename(self.submission_id), self.number_in_seq,
-                                                    self.file_ext)
-                self.check_path = '%s%s/%s' % (self.save_path, self.user, self.subreddit)
-            else:
-                self.filename = '%s%s%s%s' % (self.save_path, self.clean_filename(self.submission_id),
-                                              self.number_in_seq, self.file_ext)
-                self.check_path = self.save_path
+    def make_filename(self):
+        unique_count = 1
+        path = f'{self.dir_path}/{self.submission_name}{self.number_in_seq}{self.file_ext}'
+        while os.path.exists(path):
+            path = f'{self.dir_path}/{self.submission_name}{self.number_in_seq}({unique_count}){self.file_ext}'
+            unique_count += 1
+        return path
 
     def run(self):
         self.check_save_path_subreddit()
         try:
             response = requests.get(self.url, stream=True)
             if response.status_code == 200:
+                # defer filename creation to last possible second so any duplicate file names should have already been
+                # written and can thus be avoided
+                self.filename = self.make_filename()
                 with open(self.filename, 'wb') as file:
                     for chunk in response.iter_content(1024):
                         if Const.RUN:
@@ -128,12 +131,33 @@ class Content(QRunnable):
         deleting the unfinished file depending on whether or not the download was stopped.
         """
         if Const.RUN:
-            self.set_file_modified_date()
+            if self.settings_manager.set_file_modified_date:
+                SystemUtil.set_file_modify_time(self.filename, self.date_created)
+            self.check_video_merger()
+            self.download_complete_signal.complete.emit({'reddit_object': self.significant_reddit_object,
+                                                                  'filename': self.filename})
             self.queue.put('Saved: %s' % self.filename)
             self.downloaded = True
         else:
             SystemUtil.delete_file(self.filename)
             self.queue.put('Stopped: %s' % self.filename)
+
+    def check_video_merger(self):
+        """
+        Checks to see if this content item has a video merge id and if so, selects the merge set with the corresponding
+        id and updates the video or audio path (depending on the contents extension) to the new path set when the
+        content item was downloaded.
+        """
+        if self.video_merge_id is not None:
+            try:
+                ms = VideoMerger.videos_to_merge[self.video_merge_id]
+                if self.file_ext == '.mp4':
+                    ms.video_path = self.filename
+                else:
+                    ms.audio_path = self.filename
+            except KeyError:
+                self.logger.error('Failed to add file to video merge list.  A merge set with this id does not exist',
+                                  extra={'merge_id': self.video_merge_id, 'filename': self.filename})
 
     def handle_unsuccessful_response(self, status_code):
         """Handles logging and output in case of a failed response from the server."""
@@ -175,24 +199,10 @@ class Content(QRunnable):
         Checks the supplied subreddit's check path and if it does not exist, creates the directory.
         """
         try:
-            SystemUtil.create_directory(self.check_path)
+            SystemUtil.create_directory(self.dir_path)
         except PermissionError:
             self.logger.error('Could not create directory path for subreddit object',
-                              extra={'path': self.check_path, 'subreddit': self.subreddit})
-
-    def set_file_modified_date(self):
-        """
-        Sets the date modified of the created file to be the date the post was made on reddit.  First checks the
-        settings manager to see if the user has this feature enabled.
-        """
-        if self.settings_manager.set_file_modified_date:
-            try:
-                SystemUtil.set_file_modify_time(self.filename, self.date_created)
-            except Exception:
-                if LogUtils.modified_date_log_count < 3:
-                    self.settings_manager.modify_date_count += 1
-                    self.queue.put('Could not set date modified for file: %s' % self.filename)
-                    self.logger.error('Failed to set date modified for file', exc_info=True)
+                              extra={'path': self.dir_path, 'subreddit': self.subreddit})
 
     def install_queue(self, queue):
         """
