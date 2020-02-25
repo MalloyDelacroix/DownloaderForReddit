@@ -318,7 +318,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             else:
                 position = 0
             user_settings_dialog = RedditObjectSettingsDialog(self.user_list_model,
-                                                              self.user_list_model.list[position],
+                                                              self.user_list_model.reddit_objects[position],
                                                               self.running)
             user_settings_dialog.single_download.connect(self.run_single_user)
             self.open_object_dialogs.append(user_settings_dialog)
@@ -1401,6 +1401,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def close(self):
         self.receiver.stop_run()
         self.save_main_window_settings()
+        self.settings_manager.save_all()
         super().close()
 
     def save_main_window_settings(self):
@@ -1411,7 +1412,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager.list_order_method = self.list_order_method
         self.settings_manager.download_users = self.download_users_checkbox.isChecked()
         self.settings_manager.download_subreddits = self.download_subreddit_checkbox.isChecked()
-        self.settings_manager.save_main_window()
+        self.settings_manager.current_user_list = self.user_lists_combo.currentText()
+        self.settings_manager.current_subreddit_list = self.subreddit_list_combo.currentText()
 
     def load_state(self):
         """
