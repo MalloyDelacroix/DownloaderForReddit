@@ -259,35 +259,6 @@ class SettingsManager:
         self.settings.setValue('current_reddit_object_settings_item_display_list',
                                self.current_reddit_object_settings_item_display_list)
 
-    def save_user_finder(self):
-        self.settings.setValue('user_finder_show_users_reddit_page', self.user_finder_show_users_reddit_page)
-        self.settings.setValue('user_finder_sample_size', self.user_finder_sample_size)
-        self.settings.setValue('user_finder_sample_type_method', self.user_finder_sample_type_method)
-        self.settings.setValue('user_finder_run_with_main', self.user_finder_run_with_main)
-        self.settings.setValue('user_finder_auto_add_found', self.user_finder_auto_add_found)
-        self.settings.setValue('user_finder_auto_add_user_list', self.user_finder_auto_add_user_list)
-        self.settings.setValue('user_finder_auto_run_silent', self.user_finder_auto_run_silent)
-        self.settings.setValue('user_finder_preview_size', self.user_finder_preview_size)
-        self.settings.setValue('user_finder_double_click_operation', self.user_finder_double_click_operation)
-
-    def save_user_finder_dialog(self):
-        self.settings.setValue('user_finder_GUI_geometry', self.user_finder_GUI_geom)
-        self.settings.setValue('user_finder_splitter_one_state', self.user_finder_splitter_one_state)
-        self.settings.setValue('user_finder_splitter_two_state', self.user_finder_splitter_two_state)
-        self.settings.setValue('user_finder_splitter_three_state', self.user_finder_splitter_three_state)
-        self.settings.setValue('user_finder_top_sort_method', self.user_finder_top_sort_method)
-        self.settings.setValue('user_finder_filter_by_score', self.user_finder_filter_by_score)
-        self.settings.setValue('user_finder_score_limit', self.user_finder_score_limit)
-        self.settings.setValue('user_finder_post_limit', self.user_finder_post_limit)
-        self.settings.setValue('user_finder_subreddit_list', self.user_finder_subreddit_list)
-        self.settings.setValue('user_finder_blacklist', self.user_finder_user_blacklist)
-        self.settings.setValue('user_finder_preview_size', self.user_finder_preview_size)
-        self.settings.setValue('user_finder_user_list_sort_method', self.user_finder_user_list_sort_method)
-        self.settings.setValue('user_finder_user_list_sort_order', self.user_finder_user_list_sort_order)
-
-    def save_user_finder_settings_dialog(self):
-        self.settings.setValue('user_finder_settings_gui_geom', self.user_finder_settings_gui_geom)
-
     def save_settings_dialog(self):
         self.settings.setValue('settings_dialog_geom', self.settings_dialog_geom)
 
