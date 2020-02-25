@@ -116,14 +116,14 @@ class Comment(Base):
     date_added = Column(DateTime, default=datetime.now())
     date_posted = Column(DateTime)
 
-    author_id = ForeignKey('users.id')
+    author_id = Column(ForeignKey('users.id'))
     author = relationship('User', backref='comments')
-    subreddit_id = ForeignKey('subreddits.id')
+    subreddit_id = Column(ForeignKey('subreddits.id'))
     subreddit = relationship('Subreddit', backref='comments')
-    post_id = ForeignKey('posts.id')
-    post = ForeignKey('Post', backref='comments')
-    parent_id = ForeignKey('comments.id', nullable=True)
-    parent = relationship('Comment', remote_side=[id], backref='children', nullable=True)
+    post_id = Column(ForeignKey('posts.id'))
+    post = relationship('Post', backref='comments')
+    parent_id = Column(ForeignKey('comments.id'), nullable=True)
+    parent = relationship('Comment', remote_side=[id], backref='children')
 
 
 class Content(Base):
