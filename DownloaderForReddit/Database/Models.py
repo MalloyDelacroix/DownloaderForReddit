@@ -105,6 +105,27 @@ class Post(Base):
     subreddit = relationship('Subreddit', backref='posts')
 
 
+class Comment(Base):
+
+    __tablename__ = 'comments'
+
+    id = Column(Integer, primary_key=True)
+    body = Column(String)
+    body_html = Column(String)
+    score = Column(Integer)
+    date_added = Column(DateTime, default=datetime.now())
+    date_posted = Column(DateTime)
+
+    author_id = ForeignKey('users.id')
+    author = relationship('User', backref='comments')
+    subreddit_id = ForeignKey('subreddits.id')
+    subreddit = relationship('Subreddit', backref='comments')
+    post_id = ForeignKey('posts.id')
+    post = ForeignKey('Post', backref='comments')
+    parent_id = ForeignKey('comments.id', nullable=True)
+    parent = relationship('Comment', remote_side=[id], backref='children', nullable=True)
+
+
 class Content(Base):
 
     __tablename__ = 'content'
