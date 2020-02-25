@@ -14,3 +14,10 @@ class SubredditSaveStructure(Enum):
     author_name = 2
     sub_name_author_name = 3
     author_name_sub_name = 4
+
+
+class CommentDownload(Enum):
+
+    download = 1
+    do_not_download = 2
+    download_only_author = 3

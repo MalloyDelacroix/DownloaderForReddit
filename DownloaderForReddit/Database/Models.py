@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
-from .ModelEnums import DownloadNameMethod, SubredditSaveStructure
+from .ModelEnums import DownloadNameMethod, SubredditSaveStructure, CommentDownload
 from ..Core import Const
 
 
@@ -38,6 +38,8 @@ class RedditObject(Base):
     avoid_duplicates = Column(Boolean, default=True)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
+    download_comments = Column(Enum(CommentDownload), default=CommentDownload.do_not_download)
+    download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.do_not_download)
     download_nsfw = Column(Integer, default=0)  # -1 = exclude | 0 = include | 1 = only include
     date_added = Column(DateTime, default=datetime.now())
     lock_settings = Column(Boolean, default=False)
