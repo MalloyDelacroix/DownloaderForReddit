@@ -39,26 +39,7 @@ class SettingsManager:
     def __init__(self):
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
-        self.load_settings()
-        if self.check_first_run():
-            ObjectUpdater.check_settings_manager(self)
 
-        self.nsfw_filter_dict = {
-            0: 'Include',
-            -1: 'Do Not Include',
-            1: 'Include Only NSFW'
-        }
-
-    def check_first_run(self):
-        cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
-        if cached_version != __version__:
-            self.logger.info('First run of new version',
-                             extra={'new_version': __version__, 'old_version': cached_version})
-            return True
-        else:
-            return False
-
-    def load_settings(self):
         # region Core Settings
         self.do_not_notify_update = self.settings.value("do_not_notify_update", "v0.0.0", type=str)
         self.last_update = self.settings.value('last_update', None, type=str)
@@ -100,14 +81,20 @@ class SettingsManager:
         self.save_subreddits_by = self.settings.value('save_subreddits_by', 'Subreddit Name', type=str)
         self.name_downloads_by = self.settings.value('name_downloads_by', 'Image/Album Id', type=str)
 
-        default_folder = os.path.join(os.path.expanduser("~"), "Downloads")
-        self.save_directory = self.settings.value("save_directory", default_folder, type=str)
         self.max_download_thread_count = self.settings.value('max_download_thread_count', 4, type=int)
         self.save_undownloaded_content = self.settings.value("save_undownloaded_content", True, type=bool)
         self.save_failed_extracts = self.settings.value('save_failed_extracts', True, type=bool)
         self.set_file_modified_date = self.settings.value('set_file_modified_date', False, type=bool)
         self.current_user_list = self.settings.value('current_user_list', None, type=str)
         self.current_subreddit_list = self.settings.value('current_subreddit_list', None, type=str)
+
+        default_folder = os.path.join(os.path.expanduser("~"), 'Downloads', 'RedditDownloads')
+        self.user_save_directory = self.settings.value(
+            'user_save_directory', os.path.join(default_folder, 'Users'), type=str
+        )
+        self.subreddit_save_directory = self.settings.value(
+            'subreddit_save_directory', os.path.join(default_folder, 'Subreddits'), type=str
+        )
         # endregion
 
         # region Display Settings
@@ -163,6 +150,24 @@ class SettingsManager:
         self.download_subreddits_on_add = self.settings.value('download_subreddits_on_add', False, type=bool)
         # endregion
 
+        if self.check_first_run():
+            ObjectUpdater.check_settings_manager(self)
+
+        self.nsfw_filter_dict = {
+            0: 'Include',
+            -1: 'Do Not Include',
+            1: 'Include Only NSFW'
+        }
+
+    def check_first_run(self):
+        cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
+        if cached_version != __version__:
+            self.logger.info('First run of new version',
+                             extra={'new_version': __version__, 'old_version': cached_version})
+            return True
+        else:
+            return False
+
     @property
     def date_limit(self):
         return SystemUtil.epoch_to_datetime(self.date_limit_epoch)
@@ -214,13 +219,14 @@ class SettingsManager:
         self.settings.setValue('display_ffmpeg_warning_dialog', self.display_ffmpeg_warning_dialog)
         self.settings.setValue("save_subreddits_by", self.save_subreddits_by)
         self.settings.setValue("name_downloads_by", self.name_downloads_by)
-        self.settings.setValue("save_directory", self.save_directory)
         self.settings.setValue("max_download_thread_count", self.max_download_thread_count)
         self.settings.setValue("save_undownloaded_content", self.save_undownloaded_content)
         self.settings.setValue('save_failed_extracts', self.save_failed_extracts)
         self.settings.setValue('set_file_modified_date', self.set_file_modified_date)
         self.settings.setValue('current_user_list', self.current_user_list)
         self.settings.setValue('current_subreddit_list', self.current_subreddit_list)
+        self.settings.setValue('user_save_directory', self.user_save_directory)
+        self.settings.setValue('subreddit_save_directory', self.subreddit_save_directory)
 
     def save_display_settings(self):
         self.settings.setValue('tooltip_name', self.tooltip_display_dict['name'])
@@ -298,9 +304,10 @@ class SettingsManager:
             'nsfw_filter': self.nsfw_filter,
             'save_subreddits_by': self.save_subreddits_by,
             'name_downloads_by': self.name_downloads_by,
-            'save_directory': self.save_directory,
             'max_download_thread_count': self.max_download_thread_count,
-            'save_undownloaded_content': self.save_undownloaded_content
+            'save_undownloaded_content': self.save_undownloaded_content,
+            'user_save_directory': self.user_save_directory,
+            'subreddit_save_directory': self.subreddit_save_directory,
         }
 
     def check_imgur_client(self):
