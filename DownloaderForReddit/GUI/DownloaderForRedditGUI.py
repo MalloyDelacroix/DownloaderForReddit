@@ -444,7 +444,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.finished_download_gui_shift()
 
     def run_user(self):
-        user_list = self.user_list_model.list
+        user_list = self.user_list_model.reddit_objects
         self.logger.info('User download initiated', extra={'list_size': len(user_list),
                                                            'settings': self.settings_manager.json})
         self.download_runner = DownloadRunner(user_list, None, self.queue, None)
