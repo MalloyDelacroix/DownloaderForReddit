@@ -71,7 +71,7 @@ class SubmissionFilter:
 
     def date_filter(self, submission, reddit_object):
         """
-        Tests the submission date to see if it was submissioned after the reddit objects individual date limit setting.
+        Tests the submission date to see if it was submitted after the reddit objects individual date limit setting.
         :param submission: A praw submission item to be tested.
         :param reddit_object: A reddit object (User or Subreddit) which holds the date limit criteria to be tested.
         :return: True if the submission meets the reddit objects date criteria, False if it does not.
