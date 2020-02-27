@@ -25,7 +25,7 @@ from queue import Queue
 
 settings_manager = None
 database_handler = None
-queue = None
+output_queue = None
 
 
 def get_settings_manager():
@@ -44,8 +44,8 @@ def get_database_handler():
     return database_handler
 
 
-def get_queue():
-    global queue
-    if queue is None:
-        queue = Queue()
-    return queue
+def get_output_queue():
+    global output_queue
+    if output_queue is None:
+        output_queue = Queue()
+    return output_queue
