@@ -93,7 +93,7 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    queue = Injector.get_queue()
+    queue = Injector.get_output_queue()
     thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
 
