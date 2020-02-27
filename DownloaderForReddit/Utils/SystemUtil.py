@@ -88,7 +88,7 @@ def set_file_modify_time(file_path, epoch):
     :param file_path: The path to the file who's date modified time is to be changed.
     :param epoch: The datetime in seconds of the new modified date.
     :type file_path: str
-    :type epoch: int
+    :type epoch: int, float
     :return: True if the modification was successful, False if it was not.
     :rtype: bool
     """
