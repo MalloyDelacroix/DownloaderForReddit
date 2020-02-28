@@ -154,7 +154,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.name_downloads_by_combo.addItems(('Image/Album Id', 'Post Title'))
         self.name_downloads_by_combo.setCurrentText(self.settings_manager.name_downloads_by)
 
-        self.thread_limit_spinbox.setValue(self.settings_manager.max_download_thread_count)
+        self.thread_limit_spinbox.setValue(self.settings_manager.download_thread_count)
         self.thread_limit_spinbox.setMaximum(64)
         self.thread_limit_spinbox.setMinimum(1)
 
@@ -310,7 +310,7 @@ class RedditDownloaderSettingsGUI(QtWidgets.QDialog, Ui_SettingsGUI):
         self.settings_manager.name_downloads_by = self.name_downloads_by_combo.currentText()
 
         self.settings_manager.save_directory = self.save_directory_line_edit.text()
-        self.settings_manager.max_download_thread_count = self.thread_limit_spinbox.value()
+        self.settings_manager.download_thread_count = self.thread_limit_spinbox.value()
         self.settings_manager.save_undownloaded_content = self.save_undownloaded_content_checkbox.isChecked()
         self.settings_manager.set_file_modified_date = self.set_date_modified_checkbox.isChecked()
         self.logger.info('Settings saved', extra={'settings': self.settings_manager.json})
