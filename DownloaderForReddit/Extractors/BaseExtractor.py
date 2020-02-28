@@ -22,81 +22,41 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 import requests
 import logging
 
-from ..Core.Content import Content
-from ..Core.Post import Post
+from ..Database.Models import Content, Post
 from ..Utils import Injector
+from ..Database.ModelEnums import DownloadNameMethod, SubredditSaveStructure
 
 
 class BaseExtractor:
 
     url_key = (None, )
 
-    def __init__(self, post, reddit_object, content_display_only=False):
+    def __init__(self, post):
         """
         A base class for extracting downloadable urls from container websites.  This class should be overridden and any
         necessary methods overridden by subclasses to perform link extraction from the target website.  Each subclass
         must also include the url_key parameter which is used for matching the website url to the extractor to be used.
 
-        :param post: The praw post object which is a post taken from reddit.  This is used to supply specific post
-                     related information to the content items that are created.
-        :param reddit_object: The reddit object for which content is being extracted.  This is used to supply reddit
-                              object specific information to the content items that are created
-        :param content_display_only: Bool value that tells whether the content created will be for display purposes
-                                     only.  This is used by the UserFinder module and defaults to False.
-        :type post: Praw.Post
-        :type reddit_object: RedditObject
-        :type content_display_only: bool
+        :param post: The post object created from the submission extracted from reddit.
+        :type post: Post
         """
-        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
+        self.post = post
+        self.post_title = post.title
         self.url = post.url
         self.domain = post.domain
-        self.user = reddit_object if reddit_object.object_type == 'USER' else post.author
-        self.post_title = post.title
-        self.subreddit = post.subreddit if not reddit_object.object_type == 'SUBREDDIT' else reddit_object.name
-        self.creation_date = post.created
-        self.save_path = reddit_object.save_directory
-        self.content_display_only = content_display_only
-        self.subreddit_save_method = reddit_object.subreddit_save_method
-        self.name_downloads_by = reddit_object.name_downloads_by
+        self.user = post.author
+        self.subreddit = post.subreddit
+        self.creation_date = post.date_posted
         self.extracted_content = []
-        self.failed_extract_posts = []
-        self.failed_extracts_to_save = []
+        self.failed_extraction = False
 
     def __str__(self):
         return __name__
-
-    @property
-    def user_name(self):
-        """
-        A helper property to get the str name of the user associated with the supplied post.  Depending on if the post
-        is fresh from reddit or a cached post object, the value for 'self.user' may be a praw object or a string.  This
-        property is used when only the string name is needed in either case.
-        :return: The name of the user associated with the class supplied post.
-        :rtype: str
-        """
-        try:
-            return self.user.name
-        except AttributeError:
-            return self.user
-
-    @property
-    def subreddit_name(self):
-        """
-        A helper property to get the str name of the subreddit associated with the supplied post. Depending on if the
-        post is fresh from reddit or a cached post object, the value for 'self.subreddit' may be a praw object or a
-        string.  This property is used when only the string name is needed in either case.
-        :return: The name of the subreddit associated with the class supplied post.
-        :rtype: str
-        """
-        try:
-            return self.subreddit.display_name
-        except AttributeError:
-            return self.subreddit
 
     @classmethod
     def get_url_key(cls):
@@ -108,6 +68,18 @@ class BaseExtractor:
         :rtype: str
         """
         return cls.url_key
+
+    @property
+    def significant_reddit_object(self):
+        """
+        Returns the reddit object for which the extraction is being performed.  This is calculated by checking which of
+        the posts reddit objects is significant and returning that reddit object. Defaults to the posts author.
+        """
+        if self.user.significant:
+            return self.user
+        elif self.subreddit.significant:
+            return self.subreddit
+        return self.user
 
     def extract_content(self):
         """
@@ -171,7 +143,14 @@ class BaseExtractor:
         :return: The file name that should be used when creating the Content object from the extracted url.
         :rtype: str
         """
-        return self.post_title if self.name_downloads_by == 'Post Title' else media_id
+        reddit_object = self.significant_reddit_object
+        method = reddit_object.download_naming_method
+        if method == DownloadNameMethod.id:
+            return media_id
+        elif method == DownloadNameMethod.title:
+            return self.post_title
+        else:
+            return f'{reddit_object.name} {reddit_object.get_post_count()}'
 
     def make_content(self, url, file_name, extension, count=None):
         """
@@ -190,68 +169,69 @@ class BaseExtractor:
         :rtype: Content
         """
         count = ' %s' % count if count else ''
-        x = Content(url, self.user_name, self.post_title, self.subreddit, file_name, count, '.' + extension,
-                    self.save_path, self.subreddit_save_method, self.creation_date, self.content_display_only)
-        self.extracted_content.append(x)
-        return x
+        title = file_name + count
+        content = Content(
+            title=title,
+            extension=extension,
+            url=url,
+            user=self.user,
+            subreddit=self.subreddit,
+            post=self.post
+        )
+        self.extracted_content.append(content)
+        return content
+
+    def get_save_path(self):
+        """
+        Returns the save path specified in the settings manager based on the type of the significant reddit object.
+        """
+        if self.significant_reddit_object.object_type == 'USER':
+            return self.settings_manager.user_save_directory
+        else:
+            return self.settings_manager.subreddit_save_directory
 
     def handle_failed_extract(self, message=None, save=False, log=True, log_exception=False, **kwargs):
         """
         Handles the logging and output of error messages encountered while extracting content and saves posts if
         instructed to do so.
-        :param message: Supplied text to describe the error that occurred if necessary.  Will only be added to the end of
-                        the main window output.
+        :param message: Supplied text to describe the error that occurred if necessary.  Will only be added to the end
+                        of the main window output.
         :param save: Indicates whether the post should be saved or not.  Posts should only be saved for error such as
                      connection errors that are not likely to be repeated on subsequent runs.
         :param log: Indicates whether this failed extract should be logged or not.  This should be used to prevent
                     log spamming for extraction errors that are likely to happen very frequently (such as imgur rate
                     limit error)
         :param log_exception: If True and log is True, the current exception will be logged if there is one.
+        :param kwargs: These are keyword arguments that are put into the 'extra' dictionary in the log.  These should be
+                       any other parameters that will be helpful in diagnosing problems from the log if an error is
+                       encountered.
         :type message: str
         :type save: bool
         :type log: bool
         :type log_exception: bool
-        :param kwargs: These are keyword arguments that are put into the 'extra' dictionary in the log.  These should be
-                       any other parameters that will be helpful in diagnosing problems from the log if an error is
-                       encountered.
         """
         message_text = ': %s' % message if message else ''
-        failed_post = Post(self.url, self.user_name, self.post_title, self.subreddit_name, self.creation_date,
-                           status=message if message_text else 'Failed')
+        self.failed_extraction = True
+        self.post.set_extraction_failed(message)
         extra = {'extractor_data': self.get_log_data()}
         if save and self.settings_manager.save_failed_extracts:
-            self.save_failed_extract()
             message_text += ': This post has been saved and will be downloaded during the next run'
             extra['post_saved'] = True
-            failed_post.save_status = 'Saved'
-
-        self.failed_extract_posts.append(failed_post)
         for key, value in kwargs.items():
             extra[key] = value
         if log:
             self.logger.error('Failed to extract content', extra=extra, exc_info=log_exception)
 
-    def save_failed_extract(self):
-        """
-        Saves a failed extract as a Post object to be retried upon future runs.  This should only be done for certain
-        errors, such as an over capacity error, that are very likely to not be encountered again on future runs.
-        """
-        self.failed_extracts_to_save.append(Post(self.url, self.user_name, self.post_title, self.subreddit_name,
-                                                 self.creation_date))
-
     def get_log_data(self):
         """
         Returns a loggable dictionary of the extractors current variables to be put into the log.
         """
-        return {'url': self.url,
-                'user': self.user_name,
-                'subreddit': self.subreddit_name,
-                'post_title': self.post_title,
-                'creation_date': self.creation_date,
-                'save_path': self.save_path,
-                'content_display_only': self.content_display_only,
-                'subreddit_save_method': self.subreddit_save_method,
-                'name_downloads_by': self.name_downloads_by,
-                'extracted_content_count': len(self.extracted_content),
-                'failed_extract_message_count': len(self.failed_extract_posts),
-                'failed_extracts_to_save_count': len(self.failed_extracts_to_save)}
+        return {
+            'url': self.url,
+            'user': self.user.name,
+            'subreddit': self.subreddit.name,
+            'post_title': self.post_title,
+            'creation_date': self.creation_date,
+            'extracted_content_count': len(self.extracted_content),
+            'extraction_failed': self.failed_extraction,
+        }
