@@ -54,7 +54,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
         self.running = downloader_running
         try:
-            self.object_list = list_model.reddit_object_list
+            self.object_list = list_model.reddit_objects
         except AttributeError:
             self.object_list = list_model
         self.display_list = [x.name for x in self.object_list]
@@ -94,7 +94,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
                  'Top - Month', 'Top - Year', 'Top - All'))
             self.set_subreddit_sort_combo()
 
-        self.nsfw_filter_combo.addItems(self.settings_manager.nsfw_filter_dict.keys())
+        self.nsfw_filter_combo.addItems(self.settings_manager.nsfw_filter_dict.values())
 
         self.total_downloads_title_label.setText('Total %s Downloads:' % self.object_type_str)
 
