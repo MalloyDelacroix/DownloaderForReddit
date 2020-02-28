@@ -86,7 +86,7 @@ def handle_invalid_client():
     message = 'No valid Imgur client detected.  In order to download content from imgur.com, you must ' \
               'have a valid imgur client id and client secret.  Please see the imgur client information' \
               'dialog in the settings menu.'
-    Injector.get_queue().put(message)
+    Injector.get_output_queue().put(message)
     logger.warning('Invalid imgur client id or secret')
 
 

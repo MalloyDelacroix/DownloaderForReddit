@@ -110,7 +110,7 @@ def clean_up():
     Updates the GUI output to show which video files have been created and deletes the temporary video and audio files
     that were combined to produce the output file.
     """
-    queue = Injector.get_queue()
+    queue = Injector.get_output_queue()
     for ms in videos_to_merge.values():
         if os.path.exists(ms.output_path):
             try:
