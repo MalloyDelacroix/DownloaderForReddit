@@ -81,8 +81,8 @@ class SettingsManager:
         self.save_subreddits_by = self.settings.value('save_subreddits_by', 'Subreddit Name', type=str)
         self.name_downloads_by = self.settings.value('name_downloads_by', 'Image/Album Id', type=str)
 
-        self.max_download_thread_count = self.settings.value('max_download_thread_count', 4, type=int)
-        self.save_undownloaded_content = self.settings.value("save_undownloaded_content", True, type=bool)
+        self.extraction_thread_count = self.settings.value('extraction_thread_count', 4, type=int)
+        self.download_thread_count = self.settings.value('download_thread_count', 4, type=int)
         self.save_failed_extracts = self.settings.value('save_failed_extracts', True, type=bool)
         self.set_file_modified_date = self.settings.value('set_file_modified_date', False, type=bool)
         self.current_user_list = self.settings.value('current_user_list', None, type=str)
@@ -219,8 +219,8 @@ class SettingsManager:
         self.settings.setValue('display_ffmpeg_warning_dialog', self.display_ffmpeg_warning_dialog)
         self.settings.setValue("save_subreddits_by", self.save_subreddits_by)
         self.settings.setValue("name_downloads_by", self.name_downloads_by)
-        self.settings.setValue("max_download_thread_count", self.max_download_thread_count)
-        self.settings.setValue("save_undownloaded_content", self.save_undownloaded_content)
+        self.settings.setValue('extraction_thread_count', self.extraction_thread_count)
+        self.settings.setValue("download_thread_count", self.download_thread_count)
         self.settings.setValue('save_failed_extracts', self.save_failed_extracts)
         self.settings.setValue('set_file_modified_date', self.set_file_modified_date)
         self.settings.setValue('current_user_list', self.current_user_list)
@@ -304,8 +304,8 @@ class SettingsManager:
             'nsfw_filter': self.nsfw_filter,
             'save_subreddits_by': self.save_subreddits_by,
             'name_downloads_by': self.name_downloads_by,
-            'max_download_thread_count': self.max_download_thread_count,
-            'save_undownloaded_content': self.save_undownloaded_content,
+            'extraction_thread_count': self.extraction_thread_count,
+            'download_thread_count': self.download_thread_count,
             'user_save_directory': self.user_save_directory,
             'subreddit_save_directory': self.subreddit_save_directory,
         }
