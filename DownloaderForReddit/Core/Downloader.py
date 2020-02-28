@@ -25,7 +25,8 @@ class Downloader:
         self.db = Injector.get_database_handler()
         self.settings_manager = Injector.get_settings_manager()
 
-        self.executor = ThreadPoolExecutor(self.settings_manager.max_download_thread_count)
+        self.thread_count = self.settings_manager.download_thread_count
+        self.executor = ThreadPoolExecutor(self.thread_count)
         self.continue_run = True
         self.download_count = 0
 
@@ -49,6 +50,7 @@ class Downloader:
         try:
             response = requests.get(content.url, stream=True)
             if response.status_code == 200:
+                content.make_download_title()
                 file_path = content.full_file_path
                 with open(file_path, 'wb') as file:
                     for chunk in response.iter_content(1024 * 1024):
