@@ -42,7 +42,7 @@ class DatabaseHandler:
             session.rollback()
             raise
         finally:
-            session.commit()
+            session.close()
 
     def commit_and_close(self, session):
         """Commit all uncommitted changes to the database."""
