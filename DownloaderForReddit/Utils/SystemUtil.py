@@ -153,6 +153,30 @@ def epoch_to_str(epoch_time):
     return epoch_to_datetime(epoch_time).strftime('%m/%d/%Y %I:%M %p')
 
 
+def get_duration_str(start, end):
+    """
+    Calculates the duration of seconds between the supplied end and start times and returns the value in a human
+    readable format with hour, min, second representation.
+    """
+    seconds = end - start
+    min_, sec = divmod(seconds, 60)
+    hour, min_ = divmod(min_, 60)
+
+    time_string = ''
+    if hour > 0:
+        if hour > 1:
+            time_string += f'{hour} hours, '
+        else:
+            time_string += f'{hour} hour, '
+    if min_ > 0:
+        if min_ > 1:
+            time_string += f'{min_} mins, '
+        else:
+            time_string += f'{min_} min, '
+    time_string += f'{sec} secs'
+    return time_string
+
+
 def delete_file(file_path):
     """
     Deletes the file at the supplied file path.
