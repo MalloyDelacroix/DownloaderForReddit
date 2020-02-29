@@ -29,14 +29,14 @@ from ..Core import Const
 
 class GfycatExtractor(BaseExtractor):
 
-    url_key = ['gfycat','redgifs']
+    url_key = ['gfycat', 'redgifs']
 
-    def __init__(self, post, reddit_object, content_display_only=False):
+    def __init__(self, post):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the gfycat website through their
-        api
+        api.
         """
-        super().__init__(post, reddit_object, content_display_only)
+        super().__init__(post)
         self.api_caller = "https://api.gfycat.com/v1/gfycats/"
 
     def extract_content(self):
