@@ -27,7 +27,7 @@ import logging
 
 from ..Database.Models import Content, Post
 from ..Utils import Injector
-from ..Database.ModelEnums import DownloadNameMethod, SubredditSaveStructure
+from ..Database.ModelEnums import DownloadNameMethod
 
 
 class BaseExtractor:
@@ -168,7 +168,7 @@ class BaseExtractor:
         :type count: int
         :rtype: Content
         """
-        count = ' %s' % count if count else ''
+        count = f' {count}' if count else ''
         title = file_name + count
         content = Content(
             title=title,
@@ -190,14 +190,12 @@ class BaseExtractor:
         else:
             return self.settings_manager.subreddit_save_directory
 
-    def handle_failed_extract(self, message=None, save=False, log=True, log_exception=False, **kwargs):
+    def handle_failed_extract(self, message=None, log=True, log_exception=False, **kwargs):
         """
         Handles the logging and output of error messages encountered while extracting content and saves posts if
         instructed to do so.
         :param message: Supplied text to describe the error that occurred if necessary.  Will only be added to the end
                         of the main window output.
-        :param save: Indicates whether the post should be saved or not.  Posts should only be saved for error such as
-                     connection errors that are not likely to be repeated on subsequent runs.
         :param log: Indicates whether this failed extract should be logged or not.  This should be used to prevent
                     log spamming for extraction errors that are likely to happen very frequently (such as imgur rate
                     limit error)
@@ -206,21 +204,15 @@ class BaseExtractor:
                        any other parameters that will be helpful in diagnosing problems from the log if an error is
                        encountered.
         :type message: str
-        :type save: bool
         :type log: bool
         :type log_exception: bool
         """
-        message_text = ': %s' % message if message else ''
         self.failed_extraction = True
         self.post.set_extraction_failed(message)
         extra = {'extractor_data': self.get_log_data()}
-        if save and self.settings_manager.save_failed_extracts:
-            message_text += ': This post has been saved and will be downloaded during the next run'
-            extra['post_saved'] = True
-        for key, value in kwargs.items():
-            extra[key] = value
+        extra.update(kwargs)
         if log:
-            self.logger.error('Failed to extract content', extra=extra, exc_info=log_exception)
+            self.logger.error(f'Failed to extract content: {message}', extra=extra, exc_info=log_exception)
 
     def get_log_data(self):
         """
