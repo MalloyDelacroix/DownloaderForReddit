@@ -28,19 +28,19 @@ from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitErro
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Utils import ImgurUtils
 from ..Core import Const
-from ..Utils import ExtractorUtils, Injector
+from ..Utils import Injector
 
 
 class ImgurExtractor(BaseExtractor):
 
     url_key = ['imgur']
 
-    def __init__(self, post, reddit_object, content_display_only=False):
+    def __init__(self, post):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the imgur website through the
         imgur api via ImgurPython
         """
-        super().__init__(post, reddit_object, content_display_only)
+        super().__init__(post)
         self.connected = False
         try:
             self.client = ImgurUtils.get_client()
@@ -52,12 +52,12 @@ class ImgurExtractor(BaseExtractor):
                 self.unknown_connection_error(e.status_code)
         except:
             message = 'Failed to connect to imgur.com'
-            self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
+            self.handle_failed_extract(message=message, extractor_error_message=message)
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
         if self.connected:
-            if ImgurUtils.check_credit_time_limit():
+            if self.check_imgur_credits():
                 try:
                     if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
                         self.extract_album()
@@ -75,7 +75,13 @@ class ImgurExtractor(BaseExtractor):
                     self.failed_to_locate_error()
             else:
                 message = 'Out of imgur credits'
-                self.handle_failed_extract(message=message, save=True, log=False)
+                self.handle_failed_extract(message=message, log=False)
+                Injector.get_output_queue().put(message)
+
+    def check_imgur_credits(self):
+        user_credits = self.client.credits['UserRemaining'] or 0
+        app_credits = self.client.credits['ClientRemaining'] or 0
+        return int(user_credits) > 0 and int(app_credits) > 0
 
     def handle_client_error(self, status_code):
         """
@@ -105,38 +111,24 @@ class ImgurExtractor(BaseExtractor):
         called in too short of a window (attempts are made to mitigate this by the application) or that the user is out
         of imgur user credits.
         """
-        self.client = ImgurUtils.get_new_client() #We need to get a new client to refresh our credit count
+        self.client = ImgurUtils.get_new_client()  # We need to get a new client to refresh our credit count
         user_credits = self.client.credits['UserRemaining']
         if user_credits is not None and int(user_credits) <= 0:
             message = 'Out of user credits'
             ImgurUtils.set_credit_time_limit(refresh_time=int(self.client.credits['UserReset']))
         else:
-            self.set_timeout()
-            message = 'Imgur rate limit exceeded.  Setting time out limit of %s seconds' % \
-                      (ExtractorUtils.time_limit_dict[type(self).__name__])
-            Injector.get_queue().put('\n%s\n' % message)  # inform user of rate limit
-        self.handle_failed_extract(message=message, save=True, imgur_error_message='rate limit exceeded')
-
-    def set_timeout(self):
-        """
-        Sets the timeout limit and last extracted time for this extractor in the event of a rate limit exception.  This
-        is used in the Extractor class to limit api call frequency.
-        """
-        try:
-            ExtractorUtils.time_limit_dict[type(self).__name__] += Const.TIMEOUT_INCREMENT
-        except (KeyError, TypeError):
-            ExtractorUtils.time_limit_dict[type(self).__name__] = Const.TIMEOUT_INCREMENT
-        finally:
-            ExtractorUtils.set_timeout(self)
+            message = 'Imgur rate limit exceeded'
+            Injector.get_output_queue().put('\n%s\n' % message)  # inform user of rate limit
+        self.handle_failed_extract(message=message, imgur_error_message='rate limit exceeded')
 
     def no_credit_error(self):
         ImgurUtils.set_credit_time_limit()
         message = 'Not enough imgur credits to extract post'
-        self.handle_failed_extract(message=message, save=True, imgur_error_message='not enough credits')
+        self.handle_failed_extract(message=message, imgur_error_message='not enough credits', log_exception=True)
 
     def over_capacity_error(self):
         message = 'Imgur is currently over capacity'
-        self.handle_failed_extract(message=message, save=True, imgur_error_message='over capacity')
+        self.handle_failed_extract(message=message, imgur_error_message='over capacity')
 
     def does_not_exist_error(self):
         message = 'Content does not exist.  This most likely means that the content has been deleted on Imgur but ' \
@@ -145,11 +137,11 @@ class ImgurExtractor(BaseExtractor):
 
     def failed_to_locate_error(self):
         message = 'Failed to locate content'
-        self.handle_failed_extract(message=message, extractor_error_message=message)
+        self.handle_failed_extract(message=message, extractor_error_message=message, log_exception=True)
 
     def unknown_connection_error(self, status_code):
         message = 'Unknown imgur connection error'
-        self.handle_failed_extract(message=message, save=True, status_code=status_code)
+        self.handle_failed_extract(message=message, status_code=status_code, log_exception=True)
 
     def extract_album(self):
         count = 1
