@@ -30,8 +30,8 @@ class DirectExtractor(BaseExtractor):
 
     url_key = None
 
-    def __init__(self, post, reddit_object, content_display_only=False):
-        super().__init__(post, reddit_object, content_display_only)
+    def __init__(self, post):
+        super().__init__(post)
 
     def extract_content(self):
         self.extract_direct_link()
