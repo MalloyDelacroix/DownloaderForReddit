@@ -31,7 +31,7 @@ from ..GUI_Resources.AddRedditObjectDialog_auto import Ui_add_reddit_object_dial
 from ..ViewModels.AddRedditObjectListModel import AddRedditObjectListModel
 from ..Utils import Injector
 from ..Utils.Importers import TextImporter, JsonImporter, XMLImporter
-from ..Core.Messages import Message
+from DownloaderForReddit.GUI.Messages import Message
 
 
 class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):

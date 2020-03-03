@@ -13,7 +13,7 @@ class Downloader:
     Class that is responsible for the actual downloading of content.
     """
 
-    def __init__(self, download_queue):
+    def __init__(self, download_queue, download_session_id):
         """
         Initializes the Downloader class.
         :param download_queue: A queue of Content items that are to be downloaded.
@@ -21,6 +21,7 @@ class Downloader:
         """
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.download_queue = download_queue
+        self.download_session_id = download_session_id
         self.output_queue = Injector.get_output_queue()
         self.db = Injector.get_database_handler()
         self.settings_manager = Injector.get_settings_manager()
@@ -85,7 +86,7 @@ class Downloader:
         if self.settings_manager.set_file_modified_date:
             SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
         self.check_video_merger(content)
-        content.set_downloaded()
+        content.set_downloaded(self.download_session_id)
         self.output_queue.put(f'Saved: {content.full_file_path}')
 
     def check_video_merger(self, content: Content):

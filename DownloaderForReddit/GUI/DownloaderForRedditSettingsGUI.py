@@ -25,12 +25,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
 import os
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 import logging
 
 from ..GUI_Resources.DownloaderForRedditSettingsGUI_auto import Ui_SettingsGUI
 from ..Utils import Injector
-from ..Core.Messages import Message
+from DownloaderForReddit.GUI.Messages import Message
 from ..GUI.ImgurClientDialog import ImgurClientDialog
 
 

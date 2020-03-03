@@ -33,13 +33,13 @@ from ..GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from ..GUI.AboutDialog import AboutDialog
 from ..GUI.DownloadedObjectsDialog import DownloadedObjectsDialog
 from ..GUI.FailedDownloadsDialog import FailedDownloadsDialog
-from ..Core.Messages import Message, UnfinishedDownloadsWarning
+from DownloaderForReddit.GUI.Messages import Message
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from ..Core.DownloadRunner import DownloadRunner
 from ..Database.Models import User, Subreddit, RedditObjectList
 from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
-from ..Core.UpdaterChecker import UpdateChecker
+from DownloaderForReddit.Utils.UpdaterChecker import UpdateChecker
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter

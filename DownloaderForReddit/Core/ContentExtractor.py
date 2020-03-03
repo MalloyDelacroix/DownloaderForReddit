@@ -58,12 +58,10 @@ class ContentExtractor:
                     extraction_date=datetime.now(),
                     url=submission.url,
                     author=author,
-                    subreddit=subreddit
+                    subreddit=subreddit,
+                    download_session_id=self.download_session_id
                 )
                 session.add(post)
-                download_session = session.query(DownloadSession)\
-                    .filter(DownloadSession.id == self.download_session_id).first()
-                download_session.posts.append(post)
                 session.commit()
         return post
 
@@ -130,9 +128,6 @@ class ContentExtractor:
                     session.add(content)
                     self.content_count += 1
                     self.download_queue.put(content)
-                    download_session = session.query(DownloadSession)\
-                        .filter(DownloadSession.id == self.download_session_id).first()
-                    download_session.content.append(content)
             session.commit()
 
     def check_duplicate_content(self, content: Content, session) -> bool:

@@ -29,7 +29,7 @@ import os
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
-from ..Core.Messages import Message
+from DownloaderForReddit.GUI.Messages import Message
 from ..Utils.AlphanumKey import ALPHANUM_KEY
 from ..ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
 from ..Core.RedditObjects import *

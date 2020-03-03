@@ -34,7 +34,7 @@ from ..Core.DownloadRunner import DownloadRunner
 from ..GUI.AddRedditObjectDialog import AddUserDialog
 from ..GUI_Resources.UserFinderGUI_auto import Ui_user_finder_widget
 from ..UserFinder import UserFinder_Obsolete
-from ..Core.Messages import Message
+from DownloaderForReddit.GUI.Messages import Message
 
 
 class UserFinderGUI(QtWidgets.QDialog, Ui_user_finder_widget):

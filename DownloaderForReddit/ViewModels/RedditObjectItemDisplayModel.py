@@ -42,15 +42,18 @@ class RedditObjectItemDisplayModel(QAbstractListModel):
         super().__init__()
 
         self.reddit_object = None
-        self.content_display = None
+        self.downloaded_content = None
+        self.downloaded_posts = None
+        self.non_downloaded_posts = None
         self.display_list = display_list
 
         self.set_reddit_object(selected_object)
 
     def set_reddit_object(self, reddit_object):
         self.reddit_object = reddit_object
-        self.content_display = sorted([(value[1], key) for key, value in self.reddit_object.saved_content.items()],
-                                      key=itemgetter(0))
+
+        # self.content_display = sorted([(value[1], key) for key, value in self.reddit_object.saved_content.items()],
+        #                               key=itemgetter(0))
 
     def rowCount(self, parent=None, *args, **kwargs):
         """Returns the len of the content list which is used to determine the number of rows displayed in the list."""

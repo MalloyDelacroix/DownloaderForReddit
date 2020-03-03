@@ -39,6 +39,7 @@ class RedditObjectListModel(QAbstractListModel):
         try:
             self.list = self.session.query(RedditObjectList).filter(RedditObjectList.name == list_name).one()
             self.reddit_objects = self.list.reddit_objects
+            # TODO: sort list here
         except NoResultFound:
             print('No reddit object list found')
             pass  # TODO: to log or not to log...

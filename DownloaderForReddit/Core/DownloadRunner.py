@@ -147,7 +147,7 @@ class DownloadRunner(QObject):
         self.extraction_thread.start()
 
     def start_downloader(self):
-        self.downloader = Downloader(self.download_queue)
+        self.downloader = Downloader(self.download_queue, self.download_session_id)
         self.download_thread = Thread(target=self.downloader.run)
         self.download_thread.start()
 

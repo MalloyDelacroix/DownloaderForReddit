@@ -26,7 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 from PyQt5.QtWidgets import QMessageBox as message
 
-from ..GUI_Resources.UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
+from DownloaderForReddit.GUI_Resources.UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
 
 
 class Message(object):
