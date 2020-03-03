@@ -213,7 +213,7 @@ class Comment(BaseModel):
     subreddit = relationship('Subreddit', backref='comments')
     post_id = Column(ForeignKey('post.id'))
     post = relationship('Post', backref='comments')
-    parent_id = Column(ForeignKey('comments.id'), nullable=True)
+    parent_id = Column(ForeignKey('comment.id'), nullable=True)
     parent = relationship('Comment', remote_side=[id], backref='children')
     download_session_id = Column(ForeignKey('download_session.id'))
     download_session = relationship('DownloadSession', backref='comments')  # session where the comment was extracted
