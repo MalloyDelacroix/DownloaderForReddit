@@ -40,8 +40,8 @@ class GenericVideoExtractor(BaseExtractor):
         url_key = None
         LogUtils.log_proxy(__name__, 'WARNING', message='Failed to load supported video sites')
 
-    def __init__(self, post, reddit_object, content_display_only=False):
-        super().__init__(post, reddit_object, content_display_only)
+    def __init__(self, post):
+        super().__init__(post)
 
     def extract_content(self):
         try:
