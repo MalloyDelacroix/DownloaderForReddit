@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import logging
 
-from ...Core.Post import Post
+from ...Database.Models import Post
 from ...Core.RedditObjects import RedditObject
 from ...Utils.SystemUtil import epoch_to_str
 
@@ -47,10 +47,14 @@ class JSONPostEncoder(json.JSONEncoder):
                 'author': o.author,
                 'subreddit': o.subreddit,
                 'title': o.title,
+                'score': o.score,
+                'reddit_id': o.reddit_id,
                 'created': o.date_posted,
                 'url': o.url,
-                'status': o.status,
-                'save_status': o.save_status
+                'extracted': o.extracted,
+                'extraction_date': o.extraction_date,
+                'extraction_error': o.extraction_error,
+                'download_session_id': o.download_session_id
             }
         return json.JSONEncoder.default(self, o)
 
