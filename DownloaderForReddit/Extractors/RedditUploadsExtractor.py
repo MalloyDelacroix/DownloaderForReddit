@@ -33,8 +33,8 @@ class RedditUploadsExtractor(BaseExtractor):
 
     url_key = ['reddituploads', 'i.redd.it']
 
-    def __init__(self, post, reddit_object, content_display_only=False):
-        super().__init__(post, reddit_object, content_display_only)
+    def __init__(self, post):
+        super().__init__(post)
 
     def extract_content(self):
         try:
