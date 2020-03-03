@@ -29,14 +29,15 @@ from ..Core import Const
 
 
 class VidbleExtractor(BaseExtractor):
+
     url_key = ['vidble']
 
-    def __init__(self, post, reddit_object, content_display_only=False):
+    def __init__(self, post):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via
         BeautifulSoup4.
         """
-        super().__init__(post, reddit_object, content_display_only)
+        super().__init__(post)
         self.vidble_base = "https://vidble.com"
 
     def extract_content(self):
@@ -68,16 +69,19 @@ class VidbleExtractor(BaseExtractor):
             base, extension = link.rsplit('.', 1)
             file_name = "{}.{}".format(vidble_id, extension)
             url = self.vidble_base + '/' + file_name
-            self.make_content(url, vidble_id, extension)
+            name = self.get_filename(vidble_id)
+            self.make_content(url, name, extension)
 
     def extract_album(self):
         # We will use the undocumented API specified here:
         # https://www.reddit.com/r/Enhancement/comments/29nik6/feature_request_inline_image_expandos_for_vidible/cinha50/
         json = self.get_json(self.url + "?json=1")
         pics = json['pics']
+        count = 1
         for raw_pic in pics:
             domain, file_name = raw_pic.rsplit('/', 1)
             file_name = file_name.replace('_med', '')
             base, extension = file_name.rsplit('.', 1)
             url = "https:{}/{}".format(domain, file_name)
-            self.make_content(url, base, extension)
+            self.make_content(url, base, extension, count=count)
+            count += 1
