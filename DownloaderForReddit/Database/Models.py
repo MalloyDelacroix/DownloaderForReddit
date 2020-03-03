@@ -116,7 +116,7 @@ class RedditObject(BaseModel):
 
 class User(RedditObject):
 
-    __tablename__ = 'users'
+    __tablename__ = 'user'
 
     id = Column(ForeignKey('reddit_object.id'), primary_key=True)
 
@@ -127,13 +127,35 @@ class User(RedditObject):
 
 class Subreddit(RedditObject):
 
-    __tablename__ = 'subreddits'
+    __tablename__ = 'subreddit'
 
     id = Column(ForeignKey('reddit_object.id'), primary_key=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'SUBREDDIT',
     }
+
+
+class DownloadSession(BaseModel):
+
+    __tablename__ = 'download_session'
+
+    id = Column(Integer, primary_key=True)
+    start_time = Column(DateTime, nullable=True)
+    end_time = Column(DateTime, nullable=True)
+    extraction_thread_count = Column(Integer, nullable=True)
+    download_thread_count = Column(Integer, nullable=True)
+
+    def __str__(self):
+        return f'DownloadSession: {self.id}'
+
+    @property
+    def duration(self):
+        return SystemUtil.get_duration_str(self.start_time.timestamp(), self.end_time.timestamp())
+
+    @property
+    def duration_epoch(self):
+        return self.start_time.timestamp() - self.end_time.timestamp()
 
 
 class Post(BaseModel):
@@ -153,10 +175,12 @@ class Post(BaseModel):
     extraction_date = Column(DateTime, nullable=True)
     extraction_error = Column(String, nullable=True)
 
-    author_id = Column(ForeignKey('users.id'))
+    author_id = Column(ForeignKey('user.id'))
     author = relationship('User', backref='posts')
-    subreddit_id = Column(ForeignKey('subreddits.id'))
+    subreddit_id = Column(ForeignKey('subreddit.id'))
     subreddit = relationship('Subreddit', backref='posts')
+    download_session_id = Column(ForeignKey('download_session.id'))
+    download_session = relationship('DownloadSession', backref='posts')  # session where the post was extracted
 
     def __str__(self):
         return f'Post: {self.title}'
@@ -183,14 +207,16 @@ class Comment(BaseModel):
     date_added = Column(DateTime, default=datetime.now())
     date_posted = Column(DateTime)
 
-    author_id = Column(ForeignKey('users.id'))
+    author_id = Column(ForeignKey('user.id'))
     author = relationship('User', backref='comments')
-    subreddit_id = Column(ForeignKey('subreddits.id'))
+    subreddit_id = Column(ForeignKey('subreddit.id'))
     subreddit = relationship('Subreddit', backref='comments')
     post_id = Column(ForeignKey('post.id'))
     post = relationship('Post', backref='comments')
     parent_id = Column(ForeignKey('comments.id'), nullable=True)
     parent = relationship('Comment', remote_side=[id], backref='children')
+    download_session_id = Column(ForeignKey('download_session.id'))
+    download_session = relationship('DownloadSession', backref='comments')  # session where the comment was extracted
 
     def __str__(self):
         return f'Comment: {self.id}'
@@ -211,12 +237,17 @@ class Content(BaseModel):
     download_date = Column(DateTime, nullable=True)
     download_error = Column(String, nullable=True)
 
-    user_id = Column(ForeignKey('users.id'))
+    user_id = Column(ForeignKey('user.id'))
     user = relationship('User', backref='content')
-    subreddit_id = Column(ForeignKey('subreddits.id'))
+    subreddit_id = Column(ForeignKey('subreddit.id'))
     subreddit = relationship('Subreddit', backref='content')
     post_id = Column(ForeignKey('post.id'))
     post = relationship('Post', backref='content')
+    download_session_id = Column(ForeignKey('download_session.id'), nullable=True)
+    # The session in which this content was actually downloaded.  May differ from the parent post/comment
+    # download_session if the content was unable to be downloaded during the same session, and was downloaded at a
+    # later date.
+    download_session = relationship('DownloadSession', backref='content')
 
     video_merge_id = None
 
@@ -239,7 +270,8 @@ class Content(BaseModel):
         self.download_title = filename
         self.get_session().commit()
 
-    def set_downloaded(self):
+    def set_downloaded(self, download_session_id):
+        self.download_session_id = download_session_id
         self.downloaded = True
         self.download_date = datetime.now()
         self.get_session().commit()
@@ -248,55 +280,3 @@ class Content(BaseModel):
         self.downloaded = False
         self.download_error = message
         self.get_session().commit()
-
-
-download_session_reddit_object_association = Table(
-    'download_session_reddit_object_assoc', Base.metadata,
-    Column('download_session_id', Integer, ForeignKey('download_session.id')),
-    Column('reddit_object_id', Integer, ForeignKey('reddit_object.id'))
-)
-
-download_session_post_association = Table(
-    'download_session_post_assoc', Base.metadata,
-    Column('download_session_id', Integer, ForeignKey('download_session.id')),
-    Column('post_id', Integer, ForeignKey('post.id'))
-)
-
-download_session_content_association = Table(
-    'download_session_content_assoc', Base.metadata,
-    Column('download_session_id', Integer, ForeignKey('download_session.id')),
-    Column('content_id', Integer, ForeignKey('content.id'))
-)
-
-download_session_comment_association = Table(
-    'download_session_comment_assoc', Base.metadata,
-    Column('download_session_id', Integer, ForeignKey('download_session.id')),
-    Column('comment_id', Integer, ForeignKey('comment.id'))
-)
-
-
-class DownloadSession(BaseModel):
-
-    __tablename__ = 'download_session'
-
-    id = Column(Integer, primary_key=True)
-    start_time = Column(DateTime, nullable=True)
-    end_time = Column(DateTime, nullable=True)
-    extraction_thread_count = Column(Integer, nullable=True)
-    download_thread_count = Column(Integer, nullable=True)
-
-    reddit_objects = relationship(RedditObject, secondary=download_session_reddit_object_association,
-                                  backref='download_sessions', lazy='dynamic', nullable=True)
-    posts = relationship(Post, secondary=download_session_post_association, backref='download_sessions', lazy='dynamic',
-                         nullable=True)
-    content = relationship(Content, secondary=download_session_content_association, backref='download_sessions',
-                           lazy='dynamic', nullable=True)
-    comments = relationship(Comment, secondary=download_session_comment_association, backref='download_sessions',
-                            lazy='dynamic', nullable=True)
-
-    def __str__(self):
-        return f'DownloadSession: {self.id}'
-
-    @property
-    def duration(self):
-        return SystemUtil.get_duration_str(self.start_time.timestamp(), self.end_time.timestamp())
