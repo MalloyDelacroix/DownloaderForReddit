@@ -45,14 +45,15 @@ def get_content(tag):
 
 
 class EromeExtractor(BaseExtractor):
+
     url_key = ['erome']
 
-    def __init__(self, post, reddit_object, content_display_only=False):
+    def __init__(self, post):
         """
-        A subclass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via
+        A subclass of the BaseExtractor class.  This class interacts exclusively with the Erome website via
         BeautifulSoup4.
         """
-        super().__init__(post, reddit_object, content_display_only)
+        super().__init__(post)
 
     def extract_content(self):
         try:
@@ -76,7 +77,12 @@ class EromeExtractor(BaseExtractor):
         soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
         album = soup.find_all(class_filter('media-group'))
         urls = [get_content(x) for x in album]
+        count = 0
+        if len(urls) > 1:
+            count = 1
         for url in urls:
-            _, file_name = url.rsplit('/', 1)
-            base, extension = file_name.rsplit('.', 1)
-            self.make_content(url, base, extension)
+            _, hosted_id = url.rsplit('/', 1)
+            base, extension = hosted_id.rsplit('.', 1)
+            file_name = self.get_filename(base)
+            self.make_content(url, file_name, extension, count=count if count > 0 else None)
+            count += 1
