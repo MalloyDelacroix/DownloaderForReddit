@@ -54,6 +54,7 @@ class BaseExtractor:
         self.creation_date = post.date_posted
         self.extracted_content = []
         self.failed_extraction = False
+        self.use_count = True
 
     def __str__(self):
         return __name__
@@ -150,6 +151,7 @@ class BaseExtractor:
         elif method == DownloadNameMethod.title:
             return self.post_title
         else:
+            self.use_count = False  # specify not to use album item count when incrementing by number of downloads
             return f'{reddit_object.name} {reddit_object.get_post_count()}'
 
     def make_content(self, url, file_name, extension, count=None):
@@ -168,7 +170,7 @@ class BaseExtractor:
         :type count: int
         :rtype: Content
         """
-        count = f' {count}' if count else ''
+        count = f' {count}' if count and self.use_count else ''
         title = file_name + count
         content = Content(
             title=title,
