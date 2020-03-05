@@ -22,18 +22,18 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
+import os
 import datetime
 import copy
-import os
+import logging
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from DownloaderForReddit.GUI.Messages import Message
 from ..Utils.AlphanumKey import ALPHANUM_KEY
 from ..ViewModels.RedditObjectItemDisplayModel import RedditObjectItemDisplayModel
-from ..Core.RedditObjects import *
 from ..CustomWidgets.CustomListWidgetItem import CustomListItem
+from ..Utils import Injector, SystemUtil
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):

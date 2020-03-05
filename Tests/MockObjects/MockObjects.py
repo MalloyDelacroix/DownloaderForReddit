@@ -1,6 +1,4 @@
-from DownloaderForReddit.Core.Content import Content
-from DownloaderForReddit.Core.Post import Post
-from DownloaderForReddit.Core.RedditObjects import User, Subreddit
+
 
 
 def get_blank_user():

@@ -30,7 +30,6 @@ import datetime
 import logging
 
 from ..Utils import Injector
-from ..Core.RedditObjects import RedditObject
 
 
 class ListModel(QAbstractListModel):

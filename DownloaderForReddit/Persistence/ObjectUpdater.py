@@ -22,7 +22,6 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..Core.RedditObjects import User, Subreddit
 from ..Utils import Injector
 from ..version import __version__
 

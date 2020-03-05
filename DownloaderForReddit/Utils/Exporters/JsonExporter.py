@@ -25,8 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import logging
 
-from ...Database.Models import Post
-from ...Core.RedditObjects import RedditObject
+from ...Database.Models import Post, RedditObject
 from ...Utils.SystemUtil import epoch_to_str
 
 
@@ -72,25 +71,28 @@ class JSONRedditObjectEncoder(json.JSONEncoder):
             return {
                 'name': o.name,
                 'object_type': o.object_type,
-                'version': o.version,
-                'save_path': o.save_path,
                 'post_limit': o.post_limit,
                 'avoid_duplicates': o.avoid_duplicates,
                 'download_videos': o.download_videos,
                 'download_images': o.download_images,
-                'nsfw_filter': o.nsfw_filter,
-                'name_downloads_by': o.name_downloads_by,
-                'subreddit_save_method': o.subreddit_save_method,
+                'download_comments': o.download_comments,
+                'download_comment_content': o.download_comment_content,
+                'download_nsfw': o.download_nsfw,
+                'download_naming_method': o.download_naming_method,
+                'subreddit_save_structure': o.subreddit_save_structure,
+                'absolute_date_limit_epoch': o.absolute_date_limit,
+                'absolute_date_limit_readable': epoch_to_str(o.absolute_date_limit),
                 'date_limit_epoch': o.date_limit,
-                'date_limit_readable': epoch_to_str(o.date_limit),
-                'custom_date_limit_epoch': o.custom_date_limit,
-                'custom_date_limit_readable': epoch_to_str(o.custom_date_limit) if o.custom_date_limit is not None else
-                None,
-                'added_on_epoch': o.user_added,
-                'added_on_readable': epoch_to_str(o.user_added),
-                'do_not_edit': o.do_not_edit,
-                'save_undownloaded_content': o.save_undownloaded_content,
-                'download_enabled': o.enable_download
+                'date_limit_readable': epoch_to_str(o.date_limit) if o.date_limit is not None else None,
+                'date_added_epoch': o.date_added,
+                'date_added_readable': epoch_to_str(o.date_added),
+                'lock_settings': o.lock_settings,
+                'download_enabled': o.download_enabled,
+                'post_sort_method': o.post_sort_method,
+                'new': o.new,
+                'significant': o.significant,
+                'active': o.active,
+                'inactive_date': o.inactive_date
             }
 
 

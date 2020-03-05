@@ -25,12 +25,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import logging
 
-from ...Core.RedditObjects import User, Subreddit
-
+from ...Database.Models import User, Subreddit
 
 logger = logging.getLogger(__name__)
 
 
+# TODO: re work this module
 def import_list_from_json(file_path):
     """
     Imports a list of reddit objects from the json file at the supplied file path.
@@ -42,14 +42,22 @@ def import_list_from_json(file_path):
 
     reddit_objects = []
     for ro in objects:
-        reddit_object = make_reddit_object(ro)
+        try:
+            version = ro['version']
+            reddit_object = import_from_old_reddit_object(ro)
+        except KeyError:
+            reddit_object = import_from_new_reddit_object(ro)
         if reddit_object is not None:
             reddit_objects.append(reddit_object)
     logger.info('Imported from file', extra={'import_count': len(reddit_objects)})
     return reddit_objects if len(reddit_objects) > 0 else None
 
 
-def make_reddit_object(element):
+def import_from_new_reddit_object(element):
+    pass
+
+
+def import_from_old_reddit_object(element):
     """
     Creates a User or Subreddit object, depending on the object type of the supplied element, with the attributes
     imported from the supplied json element.
