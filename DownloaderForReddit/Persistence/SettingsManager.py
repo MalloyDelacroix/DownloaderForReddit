@@ -31,6 +31,7 @@ from .ObjectStateHandler import ObjectStateHandler
 from .ObjectUpdater import ObjectUpdater
 from ..Database import ModelEnums
 from ..Utils import SystemUtil
+from ..Core import Const
 from ..version import __version__
 
 
@@ -54,20 +55,23 @@ class SettingsManager:
         self.score_limit_operator = self.settings.value('score_limit_operator', 'GREATER', type=str)
         self.post_score_limit = self.settings.value("post_score_limit", 3000, type=int)
 
+        self.user_sort_method = self.settings.value('user_sort_method', 'NEW', type=str)
         self.subreddit_sort_method = self.settings.value('subreddit_sort_method', 'HOT', type=str)
-        self.subreddit_sort_top_method = self.settings.value('subreddit_sort_top_method', 'DAY', type=str)
 
         self.post_limit = self.settings.value('post_limit', 25, type=int)
 
         self.restrict_by_date = self.settings.value('restrict_by_date', False, type=bool)
         self.restrict_by_custom_date = self.settings.value("restrict_by_custom_date", False, type=bool)
-        self.custom_date = self.settings.value('settings_custom_date', 86400, type=int)
-        if self.custom_date < 86400:
-            self.custom_date = 86400
-        self.date_limit_epoch = self.settings.value('date_limit_epoch', 86400, type=int)
+        self.custom_date = self.settings.value('custom_date_limit', None, type=int)
+        if self.custom_date < Const.FIRST_POST_EPOCH:
+            self.custom_date = Const.FIRST_POST_EPOCH
+        self.date_limit_epoch = self.settings.value('date_limit_epoch', Const.FIRST_POST_EPOCH, type=int)
 
         self.download_videos = self.settings.value('download_video', True, type=bool)
         self.download_images = self.settings.value('download_images', True, type=bool)
+        self.download_comments = self.settings.value('download_comments', False, type=bool)
+        self.download_comment_content = self.settings.value('download_comment_content', False, type=bool)
+        self.download_nsfw = self.settings.value('download_nsfw', 0, type=int)
         self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
 
         try:
@@ -204,8 +208,8 @@ class SettingsManager:
         self.settings.setValue("restrict_by_score", self.restrict_by_score)
         self.settings.setValue("score_limit_operator", self.score_limit_operator)
         self.settings.setValue("post_score_limit", self.post_score_limit)
-        self.settings.setValue("subreddit_sort_method", self.subreddit_sort_method)
-        self.settings.setValue("subreddit_sort_top_method", self.subreddit_sort_top_method)
+        self.settings.setValue('user_sort_method', self.user_sort_method)
+        self.settings.setValue('subreddit_sort_method', self.subreddit_sort_method)
         self.settings.setValue("post_limit", self.post_limit)
         self.settings.setValue("restrict_by_date", self.restrict_by_date)
         self.settings.setValue("restrict_by_custom_date", self.restrict_by_custom_date)
@@ -213,6 +217,9 @@ class SettingsManager:
         self.settings.setValue('date_limit_epoch', self.date_limit_epoch)
         self.settings.setValue("download_video", self.download_videos)
         self.settings.setValue("download_images", self.download_images)
+        self.settings.setValue('download_comments', self.download_comments)
+        self.settings.setValue('download_comment_content', self.download_comment_content)
+        self.settings.setValue('download_nsfw', self.download_nsfw)
         self.settings.setValue("avoid_duplicates", self.avoid_duplicates)
         self.settings.setValue('nsfw_filter', self.nsfw_filter)
         self.settings.setValue('download_reddit_hosted_videos', self.download_reddit_hosted_videos)
@@ -292,14 +299,17 @@ class SettingsManager:
             'restrict_by_score': self.restrict_by_score,
             'score_limit_operator': self.score_limit_operator,
             'score_limit': self.post_score_limit,
+            'user_sort_method': self.user_sort_method,
             'subreddit_sort_method': self.subreddit_sort_method,
-            'subreddit_sort_top_method': self.subreddit_sort_top_method,
             'post_limit': self.post_limit,
             'restrict_by_date': self.restrict_by_date,
             'restrict_by_custom_date': self.restrict_by_custom_date,
             'custom_date': self.custom_date,
             'download_videos': self.download_videos,
             'download_images': self.download_images,
+            'download_comments': self.download_comments,
+            'download_comment_content': self.download_comment_content,
+            'download_nsfw': self.download_nsfw,
             'avoid_duplicates': self.avoid_duplicates,
             'nsfw_filter': self.nsfw_filter,
             'save_subreddits_by': self.save_subreddits_by,

@@ -74,8 +74,8 @@ class NameChecker(QObject):
         Initializes the NameChecker and establishes its operation setup regarding whether to target users or subreddits.
         :param object_type: The type of reddit object (USER or SUBREDDIT) that the supplied names will be.
         :param queue: The queue established by the caller in which names to be checked will be deposited.
-        :type object_type: str
-        :type queue: Queue
+        :type object_type: str, None
+        :type queue: Queue, None
         """
         super().__init__()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
@@ -105,26 +105,31 @@ class NameChecker(QObject):
 
     def check_name(self, name):
         if self.object_type == 'USER':
-            self.check_user_name(name)
+            valid_tup = self.check_user_name(name)
         else:
-            self.check_subreddit_name(name)
+            valid_tup = self.check_subreddit_name(name)
+        self.name_validation.emit(valid_tup)
 
     def check_user_name(self, name):
         user = self.r.redditor(name)
         try:
-            test = user.fullname
-            self.name_validation.emit((name, True))
+            # actual name pulled from reddit because capitalization differences may cause problems throughout the app
+            actual_name = user.fullname
+            return actual_name, True
         except (prawcore.exceptions.NotFound, prawcore.exceptions.Redirect, AttributeError):
-            self.name_validation.emit((name, False))
+            return name, False
         except:
             self.logger.error('Unable to validate user name', extra={'user_name': name}, exc_info=True)
+            return name, False
 
     def check_subreddit_name(self, name):
         sub = self.r.subreddit(name)
         try:
-            test = sub.fullname
-            self.name_validation.emit((name, True))
+            # actual name pulled from reddit because capitalization differences may cause problems throughout the app
+            actual_name = sub.display_name
+            return actual_name, True
         except (prawcore.exceptions.NotFound, prawcore.exceptions.Redirect, AttributeError):
-            self.name_validation.emit((name, False))
+            return name, False
         except:
             self.logger.error('Unable to validate subreddit name', extra={'subreddit_name': name}, exc_info=True)
+            return name, False

@@ -2,7 +2,7 @@ import logging
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
 from PyQt5.QtGui import QColor
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy import desc
+from sqlalchemy import func
 
 from ..Utils import Injector
 from ..Database.Models import RedditObject, RedditObjectList
@@ -22,6 +22,13 @@ class RedditObjectListModel(QAbstractListModel):
         self.session = self.db.get_session()
         self.list = None
         self.reddit_objects = None
+
+    @property
+    def list_type(self):
+        try:
+            return self.reddit_objects[0].object_type
+        except IndexError:
+            return 'REDDIT_OBJECT'
 
     def commit_changes(self):
         self.session.commit()
@@ -59,7 +66,8 @@ class RedditObjectListModel(QAbstractListModel):
         :type name: str
         :rtype: bool
         """
-        return self.session.query(RedditObject).filter(RedditObject.name == name).scalar() is not None
+        return self.session.query(RedditObject.id).filter(func.lower(RedditObject.name) == func.lower(name)).scalar() \
+               is not None
 
     def delete_reddit_object(self, reddit_object):
         self.list.reddit_objects.remove(reddit_object)

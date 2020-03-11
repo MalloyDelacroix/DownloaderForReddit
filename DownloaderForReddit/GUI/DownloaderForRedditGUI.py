@@ -36,13 +36,14 @@ from ..GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from DownloaderForReddit.GUI.Messages import Message
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from ..Core.DownloadRunner import DownloadRunner
+from ..Core.RedditObjectCreator import RedditObjectCreator
 from ..Database.Models import User, Subreddit, RedditObjectList
 from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
 from DownloaderForReddit.Utils.UpdaterChecker import UpdateChecker
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
-from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
+from ..Utils.Exporters import TextExporter, JsonExporter
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..GUI.AddRedditObjectDialog import AddUserDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
@@ -632,12 +633,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.user_list_model.list, file_path)
 
-    def export_user_list_to_xml(self):
-        current_list = self.user_lists_combo.currentText()
-        file_path = self.get_file_path(current_list, 'Xml Files (*.xml)')
-        if file_path is not None:
-            XMLExporter.export_reddit_objects_to_xml(self.user_list_model.list, file_path)
-
     def add_subreddit_list(self):
         new_subreddit_list, ok = QtWidgets.QInputDialog.getText(self, "New Subreddit List Dialog",
                                                                 "Enter the new subreddit list:")
@@ -688,12 +683,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.subreddit_list_model.list, file_path)
 
-    def export_subreddit_list_to_xml(self):
-        current_list = self.subreddit_list_combo.currentText()
-        file_path = self.get_file_path(current_list, 'Xml Files (*.xml)')
-        if file_path is not None:
-            XMLExporter.export_reddit_objects_to_xml(self.subreddit_list_model.list, file_path)
-
     def get_file_path(self, suggested_name, ext):
         file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Export Path',
                                                              self.settings_manager.save_directory +
@@ -709,24 +698,23 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if add_user_dialog.layout_style == 'SINGLE':
                     self.add_single_user(add_user_dialog.name)
                 else:
-                    self.add_complete_users(add_user_dialog.object_name_list_model.complete_reddit_object_list)
+                    # TODO: rework this
+                    # self.add_complete_users(add_user_dialog.object_name_list_model.complete_reddit_object_list)
                     self.add_multiple_users(add_user_dialog.object_name_list_model.name_list)
         else:
             Message.no_user_list(self)
 
-    def add_single_user(self, new_user):
-        try:
-            user = self.make_user(new_user)
-            reply = self.add_reddit_object_to_list(user, self.user_list_model)
-            if reply == 'NAME_EXISTS':
-                self.handle_existing_user_name(new_user)
-            elif reply == 'INVALID_NAME':
-                Message.not_valid_name(self, new_user)
-            else:
+    def add_single_user(self, user_name):
+        if not self.user_list_model.check_name(user_name):  # checked before name is validated which requires api call
+            user = RedditObjectCreator().create_user(user_name)
+            if user is not None:
+                self.user_list_model.add_reddit_object(user)
                 self.refresh_user_count()
                 self.check_user_download_on_add(user)
-        except KeyError:
-            Message.no_user_list(self)
+            else:
+                Message.not_valid_name(self, user_name)
+        else:
+            self.handle_existing_user_name(user_name)
 
     def handle_existing_user_name(self, user_name):
         """
@@ -735,6 +723,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         user they are attempting to add.
         :param user_name: The name of the existing user.
         """
+        # TODO: rework this to add the user name to the ongoing download session if the user selects
         if not self.running and self.settings_manager.download_users_on_add:
             existing_user_dialog = ExistingRedditObjectAddDialog(user_name, 'USER')
             dialog = existing_user_dialog.exec_()
@@ -766,22 +755,26 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if not self.running and self.settings_manager.download_users_on_add:
             self.run_single_user((user, None))
 
-    def add_multiple_users(self, user_list):
+    def add_multiple_users(self, user_list, validate=True):
         """
         Makes and adds multiple users to the current user list from multiple names supplied by the
         AddRedditObjectDialog.
         :param user_list: A list of names to be made into users and added to the current user list
+        :param validate: Indicates whether hte names in the supplied user_list should be validated with reddit prior to
+                         being added.
         """
         try:
             existing_names = []
             invalid_names = []
             for name in user_list:
-                user = self.make_user(name)
-                reply = self.add_reddit_object_to_list(user, self.user_list_model)
-                if reply == 'NAME_EXISTS':
+                if not self.user_list_model.check_name(name):
+                    user = RedditObjectCreator().create_user(name, validate=validate)  # names already validated
+                    if user is not None:
+                        self.user_list_model.add_reddit_object(user)
+                    else:
+                        invalid_names.append(user)
+                else:
                     existing_names.append(name)
-                elif reply == 'INVALID_NAME':
-                    invalid_names.append(name)
             self.refresh_user_count()
             if len(existing_names) > 0:
                 Message.names_in_list(self, existing_names)
@@ -789,80 +782,14 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 Message.invalid_names(self, invalid_names)
         except KeyError:
             Message.no_user_list(self)
-
-    def add_complete_users(self, user_list):
-        """
-        Adds a complete User object to the current user list which is supplied from the AddRedditObjectDialog.  The only
-        way this method should be used is when a complete user is imported from a method that allows for complete object
-        import (ie: json or xml import).
-        :param user_list: The list of complete Users to be added to the current list.
-        """
-        try:
-            existing_names = []
-            invalid_names = []
-            for user in user_list:
-                reply = self.add_reddit_object_to_list(user, self.user_list_model)
-                if reply == 'NAME_EXISTS':
-                    existing_names.append(user.name)
-                elif reply == 'INVALID_NAME':
-                    invalid_names.append(user.name)
-            self.refresh_user_count()
-            if len(existing_names) > 0:
-                Message.names_in_list(self, existing_names)
-            if len(invalid_names) > 0:
-                Message.invalid_names(self, invalid_names)
-        except KeyError:
-            Message.no_user_list(self)
-
-    def add_reddit_object_to_list(self, reddit_object, list_model):
-        """
-        Adds the supplied reddit_object to the supplied list model.
-        :param reddit_object: The reddit object that is to be added to the list.
-        :param list_model: The list model that the reddit object is to be added to.
-        :type reddit_object: RedditObject
-        :type list_model: ListModel
-        """
-        if reddit_object.name != '' and ' ' not in reddit_object.name:
-            if not list_model.check_name(reddit_object.name):
-                list_model.add_reddit_object(reddit_object)
-                list_model.sort_list(self.list_sort_method, self.list_order_method)
-                return 'ADDED'
-            else:
-                return 'NAME_EXISTS'
-        else:
-            return 'INVALID_NAME'
-
-    def make_user(self, name):
-        """
-        Makes a new User object
-        :param name: The name of the user object
-        :return: A new user object with the supplied name
-        """
-        # TODO: Should user creation be moved out of GUI?  Yes, but when?
-        new_user = User(
-            name=name,
-            post_limit=self.settings_manager.post_limit,
-            avoid_duplicates=self.settings_manager.avoid_duplicates,
-            download_videos=self.settings_manager.avoid_duplicates,
-            download_images=self.settings_manager.download_images,
-            download_nsfw=self.settings_manager.nsfw_filter,
-            date_limit=self.settings_manager.date_limit,
-            significant=True,
-            download_naming_method=self.settings_manager.download_name_method,
-            subreddit_save_structure=self.settings_manager.subreddit_save_structure
-        )
-        return new_user
 
     def remove_user(self):
         """
         Gets the currently selected index from the user list and the current user list model and calls a method to
         remove the object at the current index
         """
-        try:
-            index = self.get_selected_view_index(self.user_list_view).row()
-            self.remove_reddit_object(index, self.user_list_model)
-        except AttributeError:
-            pass
+        index = self.get_selected_view_index(self.user_list_view).row()
+        self.remove_reddit_object(index, self.user_list_model)
 
     def remove_reddit_object(self, index, list_model):
         """
@@ -875,7 +802,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             reddit_object = list_model.reddit_objects[index]
             if Message.remove_reddit_object(self, reddit_object.name):
-                list_model.removeRows(index, 1)
+                list_model.remove_reddit_object(reddit_object)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             Message.no_reddit_object_selected(self, list_model.list_type)
@@ -888,7 +815,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :type reddit_object: RedditObject
         """
         if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
-            self.remove_object(reddit_object, True, 'Invalid')
+            self.remove_problem_reddit_object(reddit_object, True, 'Invalid')
 
     def remove_forbidden_reddit_object(self, reddit_object):
         """
@@ -897,11 +824,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :param reddit_object: The reddit object to which access if forbidden.
         :type reddit_object: RedditObject
         """
-        name = reddit_object.name
-        if Message.reddit_object_forbidden(self, name, reddit_object.object_type):
-            self.remove_object(reddit_object, False, 'Forbidden')
+        if Message.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
+            self.remove_problem_reddit_object(reddit_object, False, 'Forbidden')
 
-    def remove_object(self, reddit_object, rename, reason):
+    def remove_problem_reddit_object(self, reddit_object, rename, reason):
         """
         Handles the actual removal of the supplied reddit object from the list that it is found in.
         :param reddit_object: The reddit object that is to be removed.
@@ -912,7 +838,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         :type reason: str
         """
         working_list = self.get_working_list(reddit_object.object_type)
-        working_list.remove_reddit_object(reddit_object)
+        working_list.delete_reddit_object(reddit_object)
         rename_message = 'Not Attempted'
         if rename:
             if not SystemUtil.rename_directory_deleted(reddit_object.save_directory):
@@ -947,24 +873,23 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                 if add_sub_dialog.layout_style == 'SINGLE':
                     self.add_single_subreddit(add_sub_dialog.name)
                 else:
-                    self.add_complete_subreddits(add_sub_dialog.object_name_list_model.complete_reddit_object_list)
+                    # TODO: rework this
+                    # self.add_complete_subreddits(add_sub_dialog.object_name_list_model.complete_reddit_object_list)
                     self.add_multiple_subreddits(add_sub_dialog.object_name_list_model.name_list)
         else:
             Message.no_subreddit_list(self)
 
-    def add_single_subreddit(self, new_sub):
-        try:
-            subreddit = self.make_subreddit(new_sub)
-            reply = self.add_reddit_object_to_list(subreddit, self.subreddit_list_model)
-            if reply == 'NAME_EXISTS':
-                Message.name_in_list(self, new_sub)
-            elif reply == 'INVALID_NAME':
-                Message.not_valid_name(self, new_sub)
-            else:
-                self.refresh_user_count()
+    def add_single_subreddit(self, sub_name):
+        if not self.subreddit_list_model.check_name(sub_name):
+            subreddit = RedditObjectCreator().create_subreddit(sub_name)
+            if subreddit is not None:
+                self.subreddit_list_model.add_reddit_object(subreddit)
+                self.refresh_subreddit_count()
                 self.check_subreddit_download_on_add(subreddit)
-        except KeyError:
-            Message.no_user_list(self)
+            else:
+                Message.not_valid_name(self, sub_name)
+        else:
+            self.handle_existing_subreddit_name(sub_name)
 
     def handle_existing_subreddit_name(self, sub_name):
         """
@@ -973,6 +898,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         the subreddit they are attempting to add.
         :param sub_name: The name of the existing subreddit.
         """
+        # TODO: rework this to add sub name to ongoing download session if user selects
         if not self.running and self.settings_manager.download_subreddits_on_add:
             existing_sub_dialog = ExistingRedditObjectAddDialog(sub_name, 'SUBREDDIT')
             dialog = existing_sub_dialog.exec_()
@@ -1004,108 +930,44 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if not self.running and self.settings_manager.download_subreddits_on_add:
             self.run_single_subreddit((subreddit, None))
 
-    def add_multiple_subreddits(self, sub_list):
+    def add_multiple_subreddits(self, sub_list, validate=True):
         """
         Makes and adds multiple subreddits to the current subreddit list from multiple names supplied by the
         AddRedditObjectDialog.
         :param sub_list: A list of names to be made into subreddits and added to the current subreddit list.
+        :param validate: Indicates whether the names in the supplied sub_list should be validated with reddit prior to
+                         being added.  In some circumstances the names have already been validated before reaching this
+                         point, in which case they would not need to be re-validated.  Defaults to True.
+        :type sub_list: list
+        :type validate: bool
         """
         try:
             existing_names = []
             invalid_names = []
             for name in sub_list:
-                sub = self.make_subreddit(name)
-                reply = self.add_reddit_object_to_list(sub, self.subreddit_list_model)
-                if reply == 'NAME_EXISTS':
-                    existing_names.append(name)
-                elif reply == 'INVALID_NAME':
-                    invalid_names.append(name)
-            self.refresh_subreddit_count()
-            if len(existing_names) > 0:
-                Message.names_in_list(self, existing_names)
-            if len(invalid_names) > 0:
-                Message.invalid_names(self, invalid_names)
-        except KeyError:
-            Message.no_user_list(self)
-
-    def add_complete_subreddits(self, sub_list):
-        """
-        Adds a complete Subreddit object to the current subreddit list which is supplied from the AddRedditObjectDialog.
-        The only way this method should be used is when a complete subreddit is imported from a method that allows for
-        complete import (ie: json or xml import).
-        :param sub_list: The list of complete Subreddits to be added to the current list.
-        """
-        try:
-            existing_names = []
-            invalid_names = []
-            for sub in sub_list:
-                reply = self.add_reddit_object_to_list(sub, self.subreddit_list_model)
-                if reply == 'NAME_EXISTS':
-                    existing_names.append(sub.name)
-                elif reply == 'INVALID_NAME':
-                    invalid_names.append(sub.name)
-            self.refresh_subreddit_count()
-            if len(existing_names) > 0:
-                Message.names_in_list(self, existing_names)
-            if len(invalid_names) > 0:
-                Message.invalid_names(self, invalid_names)
-        except KeyError:
-            Message.no_user_list(self)
-
-    def add_subreddit_to_list(self, new_sub):
-        """
-        Creates a new Subreddit object from the supplied subreddit name and adds the Subreddit to the current list
-        model.
-        :param new_sub: The name of the new sub which is to be added to the list_model.
-        :type new_sub: str
-        """
-        try:
-            if new_sub != '' and new_sub != ' ':
-                if self.subreddit_list_model.check_name(new_sub):
-                    self.logger.info('Unable to add subreddit: Name already in list', extra={'name': new_sub})
-                    Message.name_in_list(self, new_sub)
+                if not self.subreddit_list_model.check_name(name):
+                    subreddit = RedditObjectCreator().create_subreddit(name, validate=validate)
+                    if subreddit is not None:
+                        self.subreddit_list_model.add_reddit_object(subreddit)
+                    else:
+                        invalid_names.append(name)
                 else:
-                    sub = self.make_subreddit(new_sub)
-                    self.add_reddit_object_to_list(sub, self.subreddit_list_model)
-                    self.refresh_subreddit_count()
-            else:
-                self.logger.warning('Unable to add subreddit: Invalid name', extra={'name': new_sub})
-                Message.not_valid_name(self, new_sub)
+                    existing_names.append(name)
+            self.refresh_subreddit_count()
+            if len(existing_names) > 0:
+                Message.names_in_list(self, existing_names)
+            if len(invalid_names) > 0:
+                Message.invalid_names(self, invalid_names)
         except KeyError:
-            self.logger.warning('Unable to add subreddit: No subreddit list available', exc_info=True)
-            Message.no_subreddit_list(self)
-
-    def make_subreddit(self, name):
-        """
-        Makes a new subreddit object
-        :param name: The name of the subreddit
-        :return: A new subreddit object with the supplied name
-        :rtype: Subreddit
-        """
-        new_sub = Subreddit(
-            name=name,
-            post_limit=self.settings_manager.post_limit,
-            avoid_duplicates=self.settings_manager.avoid_duplicates,
-            download_videos=self.settings_manager.download_videos,
-            download_images=self.settings_manager.download_images,
-            download_nsfw=self.settings_manager.nsfw_filter,
-            date_limit=self.settings_manager.date_limit,
-            significant=True,
-            download_naming_method=self.settings_manager.download_name_method,
-            subreddit_save_structure=self.settings_manager.subreddit_save_structure
-        )
-        return new_sub
+            Message.no_user_list(self)
 
     def remove_subreddit(self):
         """
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
         method to remove the object at the current index
         """
-        try:
-            index = self.get_selected_view_index(self.subreddit_list_view).row()
-            self.remove_reddit_object(index, self.subreddit_list_model)
-        except AttributeError:
-            pass
+        index = self.get_selected_view_index(self.subreddit_list_view).row()
+        self.remove_reddit_object(index, self.subreddit_list_model)
 
     def select_directory(self):
         """
