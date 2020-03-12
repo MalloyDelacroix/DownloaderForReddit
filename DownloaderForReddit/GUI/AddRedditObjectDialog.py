@@ -30,7 +30,7 @@ import logging
 from ..GUI_Resources.AddRedditObjectDialog_auto import Ui_add_reddit_object_dialog
 from ..ViewModels.AddRedditObjectListModel import AddRedditObjectListModel
 from ..Utils import Injector
-from ..Utils.Importers import TextImporter, JsonImporter, XMLImporter
+from ..Utils.Importers import TextImporter, JsonImporter
 from DownloaderForReddit.GUI.Messages import Message
 
 
@@ -106,7 +106,6 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         toggle_layout = menu.addAction(toggle_text)
         import_text_file = menu.addAction('Import From Text File')
         import_json_file = menu.addAction('Import From Json File')
-        import_xml_file = menu.addAction('Import From Xml File')
         import_from_directory = menu.addAction('Import From Directory')
 
         if self.layout_style == 'MULTIPLE':
@@ -117,7 +116,6 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
         toggle_layout.triggered.connect(self.toggle_layout)
         import_text_file.triggered.connect(self.import_from_text_file)
         import_json_file.triggered.connect(self.import_from_json_file)
-        import_xml_file.triggered.connect(self.import_from_xml_file)
         import_from_directory.triggered.connect(self.import_from_directory)
 
         menu.exec(QCursor.pos())
@@ -215,15 +213,6 @@ class AddUserDialog(QtWidgets.QDialog, Ui_add_reddit_object_dialog):
                 count += 1
         self.setup_list_view()
         self.logger.info('Imported %s complete reddit objects from json file' % count)
-
-    def import_from_xml_file(self):
-        file_path = self.select_file(('Select Xml File', 'Xml File (*.xml)'))
-        count = 0
-        if file_path is not None and file_path.endswith('xml'):
-            for ro in XMLImporter.import_list_from_xml(file_path):
-                self.add_complete_object_to_list(ro)
-        self.setup_list_view()
-        self.logger.info('Imported %s complete reddit objects from xml file' % count)
 
     def select_file(self, var):
         """
