@@ -31,7 +31,7 @@ from ..GUI_Resources.FailedDownloadsDialog_auto import Ui_failed_downloads_dialo
 from ..ViewModels.FailedDownloadsDialogModels import FailedDownloadsTableModel, FailedDownloadsDetailTableModel
 from ..Utils import Injector
 from ..Utils import SystemUtil
-from ..Utils.Exporters import TextExporter, JsonExporter, XMLExporter
+from ..Utils.Exporters import TextExporter, JsonExporter
 
 
 class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
@@ -95,20 +95,16 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
             export_selected_menu = menu.addMenu('Export Selected')
             export_selected_as_text = export_selected_menu.addAction('Export As Text')
             export_selected_as_json = export_selected_menu.addAction('Export As Json')
-            export_selected_as_xml = export_selected_menu.addAction('Export As Xml')
 
             export_selected_as_text.triggered.connect(self.export_selected_to_text)
             export_selected_as_json.triggered.connect(self.export_selected_to_json)
-            export_selected_as_xml.triggered.connect(self.export_selected_to_xml)
 
         export_all_menu = menu.addMenu('Export All')
         export_list_as_text = export_all_menu.addAction('Export As Text')
         export_list_as_json = export_all_menu.addAction('Export As Json')
-        export_list_as_xml = export_all_menu.addAction('Export As Xml')    
 
         export_list_as_text.triggered.connect(self.export_list_to_text)
         export_list_as_json.triggered.connect(self.export_list_to_json)
-        export_list_as_xml.triggered.connect(self.export_list_to_xml)
 
         menu.exec_(QCursor.pos())
 
@@ -169,16 +165,6 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         file_path = self.get_file_path('failed_downloads.json', 'Json Files (*.json)')
         if file_path:
             JsonExporter.export_posts_to_json(self.table_model.data_list, file_path)
-
-    def export_selected_to_xml(self):
-        file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*.xml)')
-        if file_path:
-            XMLExporter.export_posts_to_xml(self.get_selected_rows(),file_path)
-
-    def export_list_to_xml(self):
-        file_path = self.get_file_path('failed_downloads.xml', 'Xml Files (*.xml)')
-        if file_path:
-            XMLExporter.export_posts_to_xml(self.table_model.data_list, file_path)
 
     def get_file_path(self, suggested_name, extension):
         suggested_path = path.join(self.settings_manager.save_directory, suggested_name)
