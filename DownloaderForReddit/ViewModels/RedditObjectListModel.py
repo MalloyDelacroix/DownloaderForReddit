@@ -10,7 +10,7 @@ from ..Database.Models import RedditObject, RedditObjectList
 
 class RedditObjectListModel(QAbstractListModel):
 
-    def __init__(self):
+    def __init__(self, list_type):
         """
         A list model that holds a list of reddit objects to display.  Handles calls to the database made through the
         GUI.
@@ -20,36 +20,41 @@ class RedditObjectListModel(QAbstractListModel):
         self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
         self.session = self.db.get_session()
+        self.list_type = list_type
         self.list = None
         self.reddit_objects = None
-
-    @property
-    def list_type(self):
-        try:
-            return self.reddit_objects[0].object_type
-        except IndexError:
-            return 'REDDIT_OBJECT'
 
     def commit_changes(self):
         self.session.commit()
 
+    def get_id_list(self):
+        return [x.id for x in self.reddit_objects]
+
     def add_new_list(self, list_name, list_type):
-        new_list = RedditObjectList(name=list_name, list_type=list_type)
-        self.session.add(new_list)
-        self.session.commit()
-        self.list = new_list
+        exists = self.session.query(RedditObjectList.id).filter(RedditObjectList.name == list_name).scalar() is not None
+        if exists:
+            return False
+        else:
+            new_list = RedditObjectList(name=list_name, list_type=list_type)
+            self.session.add(new_list)
+            self.session.commit()
+            self.list = new_list
+            self.reddit_objects = self.list.reddit_objects
+            return True
 
     def delete_current_list(self):
         pass
 
     def set_list(self, list_name):
         try:
-            self.list = self.session.query(RedditObjectList).filter(RedditObjectList.name == list_name).one()
+            self.list = self.session.query(RedditObjectList)\
+                .filter(RedditObjectList.name == list_name)\
+                .filter(RedditObjectList.list_type == self.list_type)\
+                .one()
             self.reddit_objects = self.list.reddit_objects
             # TODO: sort list here
         except NoResultFound:
-            print('No reddit object list found')
-            pass  # TODO: to log or not to log...
+            pass
 
     def sort_list(self, method, order):
         try:
@@ -66,11 +71,14 @@ class RedditObjectListModel(QAbstractListModel):
         :type name: str
         :rtype: bool
         """
-        return self.session.query(RedditObject.id).filter(func.lower(RedditObject.name) == func.lower(name)).scalar() \
-               is not None
+        ro = self.session.query(RedditObject.id).filter(func.lower(RedditObject.name) == func.lower(name)).scalar()
+        return ro in self.reddit_objects
 
     def delete_reddit_object(self, reddit_object):
         self.list.reddit_objects.remove(reddit_object)
+        self.session.commit()
+        # TODO: decide whether or not to delete the reddit object completely, or leave it in the database but removed
+        #       from the list
 
     def add_reddit_object(self, reddit_object):
         self.insertRow(reddit_object)
@@ -166,4 +174,3 @@ class RedditObjectListModel(QAbstractListModel):
         first = self.createIndex(0, 0)
         second = self.createIndex(0, self.rowCount())
         self.dataChanged.emit(first, second)
-

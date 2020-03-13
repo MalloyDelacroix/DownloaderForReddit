@@ -170,18 +170,30 @@ class BaseExtractor:
         :type count: int
         :rtype: Content
         """
-        count = f' {count}' if count and self.use_count else ''
-        title = file_name + count
-        content = Content(
-            title=title,
-            extension=extension,
-            url=url,
-            user=self.user,
-            subreddit=self.subreddit,
-            post=self.post
-        )
-        self.extracted_content.append(content)
-        return content
+        if self.check_duplicate_content(url):
+            count = f' {count}' if count and self.use_count else ''
+            title = file_name + count
+            content = Content(
+                title=title,
+                extension=extension,
+                url=url,
+                user=self.user,
+                subreddit=self.subreddit,
+                post=self.post
+            )
+            self.extracted_content.append(content)
+            # TODO: need to figure out best way to set directory_path before content is saved
+            return content
+        return None
+
+    def check_duplicate_content(self, url: str) -> bool:
+        """
+        Checks the supplied contents url to see if content with the same url already exists in the database.
+        :param url: The url that will be searched for in the database to see if it already exists.
+        :return: True if the content DOES NOT exist in the database, False if the content DOES exist.
+        """
+        session = self.post.get_session()
+        return session.query(Content.id).filter(Content.url == url).scalar() is None
 
     def get_save_path(self):
         """

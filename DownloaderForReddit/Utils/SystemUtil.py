@@ -173,7 +173,7 @@ def get_duration_str(start, end):
             time_string += f'{min_} mins, '
         else:
             time_string += f'{min_} min, '
-    time_string += f'{sec} secs'
+    time_string += f'{round(sec, 2)} secs'
     return time_string
 
 

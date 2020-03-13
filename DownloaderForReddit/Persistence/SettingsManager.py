@@ -69,21 +69,24 @@ class SettingsManager:
 
         self.download_videos = self.settings.value('download_video', True, type=bool)
         self.download_images = self.settings.value('download_images', True, type=bool)
-        self.download_comments = self.settings.value('download_comments', False, type=bool)
-        self.download_comment_content = self.settings.value('download_comment_content', False, type=bool)
-        self.download_nsfw = self.settings.value('download_nsfw', 0, type=int)
-        self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
+        self.download_comments = ModelEnums.CommentDownload(self.settings.value('download_comments', 2, type=int))
+        self.download_comment_content = ModelEnums.CommentDownload(
+            self.settings.value('download_comment_content', 2, type=int)
+        )
 
-        try:
-            self.nsfw_filter = self.settings.value('nsfw_filter', 0, type=int)
-        except TypeError:
-            self.nsfw_filter = 0
+        # self.download_nsfw = ModelEnums.NsfwFilter(self.settings.value('download_nsfw', 2, type=int))
+        self.download_nsfw = ModelEnums.NsfwFilter(2)
+        self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
 
         self.download_reddit_hosted_videos = self.settings.value('download_reddit_hosted_videos', True, type=bool)
         self.display_ffmpeg_warning_dialog = self.settings.value('display_ffmpeg_warning_dialog', True, type=bool)
 
-        self.save_subreddits_by = self.settings.value('save_subreddits_by', 'Subreddit Name', type=str)
-        self.name_downloads_by = self.settings.value('name_downloads_by', 'Image/Album Id', type=str)
+        self.download_name_method = ModelEnums.DownloadNameMethod(
+            self.settings.value('download_name_method', 2, type=int)
+        )
+        self.subreddit_save_structure = ModelEnums.SubredditSaveStructure(
+            self.settings.value('subreddit_save_structure', 1, type=int)
+        )
 
         self.extraction_thread_count = self.settings.value('extraction_thread_count', 4, type=int)
         self.download_thread_count = self.settings.value('download_thread_count', 4, type=int)
@@ -157,12 +160,6 @@ class SettingsManager:
         if self.check_first_run():
             ObjectUpdater.check_settings_manager(self)
 
-        self.nsfw_filter_dict = {
-            0: 'Include',
-            -1: 'Do Not Include',
-            1: 'Include Only NSFW'
-        }
-
     def check_first_run(self):
         cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
         if cached_version != __version__:
@@ -175,14 +172,6 @@ class SettingsManager:
     @property
     def date_limit(self):
         return SystemUtil.epoch_to_datetime(self.date_limit_epoch)
-
-    @property
-    def download_name_method(self):
-        return ModelEnums.DownloadNameMethod[self.name_downloads_by]
-
-    @property
-    def subreddit_save_structure(self):
-        return ModelEnums.SubredditSaveStructure[self.save_subreddits_by]
 
     def load_picked_objects(self):
         return ObjectStateHandler.load_pickled_state()
@@ -217,15 +206,14 @@ class SettingsManager:
         self.settings.setValue('date_limit_epoch', self.date_limit_epoch)
         self.settings.setValue("download_video", self.download_videos)
         self.settings.setValue("download_images", self.download_images)
-        self.settings.setValue('download_comments', self.download_comments)
-        self.settings.setValue('download_comment_content', self.download_comment_content)
-        self.settings.setValue('download_nsfw', self.download_nsfw)
+        self.settings.setValue('download_comments', self.download_comments.value)
+        self.settings.setValue('download_comment_content', self.download_comment_content.value)
+        self.settings.setValue('download_nsfw', self.download_nsfw.value)
         self.settings.setValue("avoid_duplicates", self.avoid_duplicates)
-        self.settings.setValue('nsfw_filter', self.nsfw_filter)
         self.settings.setValue('download_reddit_hosted_videos', self.download_reddit_hosted_videos)
         self.settings.setValue('display_ffmpeg_warning_dialog', self.display_ffmpeg_warning_dialog)
-        self.settings.setValue("save_subreddits_by", self.save_subreddits_by)
-        self.settings.setValue("name_downloads_by", self.name_downloads_by)
+        self.settings.setValue('subreddit_save_structure', self.subreddit_save_structure.value)
+        self.settings.setValue('download_name_method', self.download_name_method.value)
         self.settings.setValue('extraction_thread_count', self.extraction_thread_count)
         self.settings.setValue("download_thread_count", self.download_thread_count)
         self.settings.setValue('save_failed_extracts', self.save_failed_extracts)
@@ -311,9 +299,8 @@ class SettingsManager:
             'download_comment_content': self.download_comment_content,
             'download_nsfw': self.download_nsfw,
             'avoid_duplicates': self.avoid_duplicates,
-            'nsfw_filter': self.nsfw_filter,
-            'save_subreddits_by': self.save_subreddits_by,
-            'name_downloads_by': self.name_downloads_by,
+            'subreddit_save_structure': self.subreddit_save_structure,
+            'download_name_method': self.download_name_method,
             'extraction_thread_count': self.extraction_thread_count,
             'download_thread_count': self.download_thread_count,
             'user_save_directory': self.user_save_directory,

@@ -113,8 +113,12 @@ class NameChecker(QObject):
     def check_user_name(self, name):
         user = self.r.redditor(name)
         try:
-            # actual name pulled from reddit because capitalization differences may cause problems throughout the app
-            actual_name = user.fullname
+            # actual name pulled from reddit because capitalization differences may cause problems throughout the app.
+            # Test name is checked first because praw objects are evaluated lazily, and calling user.name first will
+            # not send anything to the server and will only return the name as it was supplied.  By getting the fullname
+            # first the redditor object is updated with information supplied by reddit's server.
+            test_name = user.fullname
+            actual_name = user.name
             return actual_name, True
         except (prawcore.exceptions.NotFound, prawcore.exceptions.Redirect, AttributeError):
             return name, False

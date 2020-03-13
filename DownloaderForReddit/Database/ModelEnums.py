@@ -21,3 +21,10 @@ class CommentDownload(Enum):
     download = 1
     do_not_download = 2
     download_only_author = 3
+
+
+class NsfwFilter(Enum):
+
+    exclude = 1
+    include = 2
+    only = 3

@@ -5,9 +5,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
-from .ModelEnums import DownloadNameMethod, SubredditSaveStructure, CommentDownload
+from .ModelEnums import DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter
 from ..Core import Const
-from ..Utils import SystemUtil
+from ..Utils import SystemUtil, Injector
 
 
 Base = DatabaseHandler.base
@@ -23,17 +23,17 @@ class BaseModel(Base):
 
 list_association = Table(
     'reddit_object_list_assoc', Base.metadata,
-    Column('list_id', Integer, ForeignKey('reddit_object_lists.id')),
+    Column('list_id', Integer, ForeignKey('reddit_object_list.id')),
     Column('reddit_object_id', Integer, ForeignKey('reddit_object.id'))
 )
 
 
 class RedditObjectList(BaseModel):
 
-    __tablename__ = 'reddit_object_lists'
+    __tablename__ = 'reddit_object_list'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     date_created = Column(DateTime, default=datetime.now())
     list_type = Column(String, nullable=False)
     reddit_objects = relationship('RedditObject', secondary=list_association, backref='lists', lazy='dynamic')
@@ -54,7 +54,7 @@ class RedditObject(BaseModel):
     download_images = Column(Boolean, default=True)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.do_not_download)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.do_not_download)
-    download_nsfw = Column(Integer, default=0)  # -1 = exclude | 0 = include | 1 = only include
+    download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.include)
     date_added = Column(DateTime, default=datetime.now())
     lock_settings = Column(Boolean, default=False)
     absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
@@ -89,6 +89,11 @@ class RedditObject(BaseModel):
         if epoch > date_limit_epoch:
             self.absolute_date_limit = datetime.fromtimestamp(epoch)
             self.get_session().commit()
+
+    def set_inactive(self):
+        self.active = False
+        self.inactive_date = datetime.now()
+        self.get_session().commit()
 
     def toggle_enable_download(self):
         self.download_enabled = not self.download_enabled
@@ -156,6 +161,16 @@ class DownloadSession(BaseModel):
     @property
     def duration_epoch(self):
         return self.start_time.timestamp() - self.end_time.timestamp()
+
+    def get_session_users(self):
+        pass
+
+    def get_session_subreddits(self):
+        pass
+
+    def get_session_reddit_objects(self):
+        session = self.get_session()
+        return session.query(RedditObject).filter(RedditObject in self.posts).distinct().count()
 
 
 class Post(BaseModel):

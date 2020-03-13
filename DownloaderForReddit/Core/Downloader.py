@@ -20,7 +20,7 @@ class Downloader:
         :type download_queue: Queue
         """
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
-        self.download_queue = download_queue
+        self.download_queue = download_queue  # contains the id of content created elsewhere that is to be downloaded
         self.download_session_id = download_session_id
         self.output_queue = Injector.get_output_queue()
         self.db = Injector.get_database_handler()
@@ -35,30 +35,35 @@ class Downloader:
         """
         Removes content from the queue and sends it to the thread pool executor for download until it is told to stop.
         """
+        self.logger.debug('Downloader running')
         while self.continue_run:
-            content = self.download_queue.get()
-            if content is not None:
-                self.executor.submit(self.download, content=content)
+            content_id = self.download_queue.get()
+            if content_id is not None:
+                self.executor.submit(self.download, content_id=content_id)
             else:
                 self.continue_run = False
         self.executor.shutdown(wait=True)
+        self.logger.debug('Downloader exiting')
 
-    def download(self, content: Content):
+    def download(self, content_id: int):
         """
         Connects to the content url and downloads the content item to the file path specified by the content item.
-        :param content: The content item which is to be downloaded.
+        :param content_id: The id of the content item which is to be queried from the database, then downloaded.
         """
         try:
-            response = requests.get(content.url, stream=True)
-            if response.status_code == 200:
-                content.make_download_title()
-                file_path = content.full_file_path
-                with open(file_path, 'wb') as file:
-                    for chunk in response.iter_content(1024 * 1024):
-                        file.write(chunk)
-                self.finish_download(content)
-            else:
-                self.handle_unsuccessful_response(content, response.status_code)
+            with self.db.get_scoped_session() as session:
+                content = session.query(Content).get(content_id)
+                print(f'\n\nContent Title: {content.title}\n\n')
+                response = requests.get(content.url, stream=True)
+                if response.status_code == 200:
+                    content.make_download_title()
+                    file_path = content.full_file_path
+                    with open(file_path, 'wb') as file:
+                        for chunk in response.iter_content(1024 * 1024):
+                            file.write(chunk)
+                    self.finish_download(content)
+                else:
+                    self.handle_unsuccessful_response(content, response.status_code)
         except ConnectionError:
             self.handle_connection_error(content)
         except:

@@ -28,41 +28,43 @@ class ContentExtractor:
         self.content_count = 0
 
     def run(self):
+        self.logger.debug('Content extractor running')
         while self.continue_run:
             submission = self.submission_queue.get()
             if submission is not None:
-                self.handle_submission(submission)
+                self.executor.submit(self.handle_submission, submission=submission)
             else:
                 self.continue_run = False
-                self.download_queue.put(None)
         self.executor.shutdown(wait=True)
+        self.download_queue.put(None)
+        self.logger.debug('Content extractor exiting')
 
     def handle_submission(self, submission):
-        post = self.create_post(submission)
-        if post is not None:
-            self.extract(post)
-
-    def create_post(self, submission: Submission) -> Optional[Post]:
-        post = None
         with self.db.get_scoped_session() as session:
-            if self.check_duplicate_post_url(submission.url, session):
-                author = self.db.get_or_create(User, name=submission.author.name)[0]
-                subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name)[0]
-                post = Post(
-                    title=submission.title,
-                    date_posted=datetime.fromtimestamp(submission.created),
-                    domain=submission.domain,
-                    score=submission.score,
-                    nsfw=submission.over_18,
-                    reddit_id=submission.id,
-                    extraction_date=datetime.now(),
-                    url=submission.url,
-                    author=author,
-                    subreddit=subreddit,
-                    download_session_id=self.download_session_id
-                )
-                session.add(post)
-                session.commit()
+            post = self.create_post(submission, session)
+            if post is not None:
+                self.extract(post)
+
+    def create_post(self, submission: Submission, session) -> Optional[Post]:
+        post = None
+        if self.check_duplicate_post_url(submission.url, session):
+            author = self.db.get_or_create(User, name=submission.author.name)[0]
+            subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name)[0]
+            post = Post(
+                title=submission.title,
+                date_posted=datetime.fromtimestamp(submission.created),
+                domain=submission.domain,
+                score=submission.score,
+                nsfw=submission.over_18,
+                reddit_id=submission.id,
+                extraction_date=datetime.now(),
+                url=submission.url,
+                author=author,
+                subreddit=subreddit,
+                download_session_id=self.download_session_id
+            )
+            session.add(post)
+            session.commit()
         return post
 
     def check_duplicate_post_url(self, url, session):
@@ -75,7 +77,9 @@ class ContentExtractor:
                 extractor.extract_content()
                 if not extractor.failed_extraction:
                     post.set_extracted()
-                self.handle_content(extractor)
+                for content in extractor.extracted_content:
+                    self.content_count += 1
+                    self.download_queue.put(content.id)
             else:
                 self.handle_unsupported_domain(post)
         except ConnectionError:
@@ -120,21 +124,3 @@ class ContentExtractor:
         message_extra = f'\nTitle: {post.title}\nUser: {post.author.name}\nSubreddit: {post.subreddit.name}\n' \
                         f'Url: {post.url}\n'
         self.output_queue.put(message + message_extra)
-
-    def handle_content(self, extractor):
-        with self.db.get_scoped_session() as session:
-            for content in extractor.extracted_content:
-                if self.check_duplicate_content(content, session):
-                    session.add(content)
-                    self.content_count += 1
-                    self.download_queue.put(content)
-            session.commit()
-
-    def check_duplicate_content(self, content: Content, session) -> bool:
-        """
-        Checks the supplied contents url to see if content with the same url already exists in the database.
-        :param content: The content item that is to be checked for duplicate url.
-        :param session: The database session used to query for a duplicate url entry.
-        :return: True if the content DOES NOT exist in the database, False if the content DOES exist.
-        """
-        return session.query(Content.id).filter(Content.url == content.url).scalar() is None

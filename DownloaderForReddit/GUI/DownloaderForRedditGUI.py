@@ -53,7 +53,7 @@ from ..version import __version__
 
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
-    stop_download = QtCore.pyqtSignal()
+    stop_download_signal = QtCore.pyqtSignal()
 
     def __init__(self, queue, receiver):
         """
@@ -73,7 +73,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_count = 0
         self.downloaded = 0
         self.running = False
-        self.saved = True
         self.db_handler = Injector.get_database_handler()
 
         # region Settings
@@ -96,9 +95,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.queue = queue
         self.receiver = receiver
 
-        self.user_list_model = RedditObjectListModel()
+        self.user_list_model = RedditObjectListModel('USER')
         self.user_list_view.setModel(self.user_list_model)
-        self.subreddit_list_model = RedditObjectListModel()
+        self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
         self.subreddit_list_view.setModel(self.subreddit_list_model)
 
         self.load_state()
@@ -110,11 +109,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.export_user_list_as_text_menu_item.triggered.connect(self.export_user_list_to_text)
         self.export_user_list_as_json_menu_item.triggered.connect(self.export_user_list_to_json)
-        self.export_user_list_as_xml_menu_item.triggered.connect(self.export_user_list_to_xml)
 
         self.export_sub_list_as_text_menu_item.triggered.connect(self.export_subreddit_list_to_text)
         self.export_sub_list_as_json_menu_item.triggered.connect(self.export_subreddit_list_to_json)
-        self.export_sub_list_as_xml_menu_item.triggered.connect(self.export_subreddit_list_to_xml)
 
         self.file_failed_download_list.triggered.connect(self.display_failed_downloads)
         self.file_last_downloaded_list.triggered.connect(self.open_last_downloaded_list)
@@ -422,27 +419,30 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if not self.running:
             self.run()
         else:
-            self.stop_download.emit()
+            self.stop_download_signal.emit()
 
     def run(self):
-        """Runs the extractor with the intended settings"""
-        try:
-            self.failed_list.clear()
-            if self.download_users_checkbox.isChecked() and not self.download_subreddit_checkbox.isChecked():
-                self.run_user()
-            elif not self.download_users_checkbox.isChecked() and self.download_subreddit_checkbox.isChecked():
-                self.run_subreddit()
-            elif self.download_users_checkbox.isChecked() and self.download_subreddit_checkbox.isChecked():
-                self.run_user_and_subreddit()
-            else:
-                self.finished_download_gui_shift()
-                self.update_output("You must check either the download user checkbox, the download subreddit checkbox, "
-                                   "or both checkboxes.  Checking both checkboxes will constrain the user download to "
-                                   "only the subreddits in the current list")
-        except KeyError:
-            self.logger.error('Run called with no items available to download', exc_info=True)
-            Message.nothing_to_download(self)
-            self.finished_download_gui_shift()
+        self.started_download_gui_shift()
+        user_id_list = self.user_list_model.get_id_list() if self.download_users_checkbox.isChecked() else None
+        sub_id_list = self.subreddit_list_model.get_id_list() if self.download_subreddit_checkbox.isChecked() else None
+
+        self.download_runner = DownloadRunner(user_id_list, sub_id_list)
+        self.stop_download_signal.connect(self.download_runner.stop_download)
+        self.thread = QtCore.QThread()
+        self.download_runner.moveToThread(self.thread)
+        self.thread.started.connect(self.download_runner.run)
+
+        self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
+        self.download_runner.remove_forbidden_object.connect(self.remove_forbidden_reddit_object)
+        # TODO: get the download session id at start of download for monitoring?
+        self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
+        self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
+        self.download_runner.finished.connect(self.thread.quit)
+        self.download_runner.finished.connect(self.download_runner.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(self.finished_download_gui_shift)
+        self.thread.start()
+        self.logger.info('Download thread started')
 
     def run_user(self):
         user_list = self.user_list_model.reddit_objects
@@ -506,7 +506,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def start_reddit_extractor_thread(self, download_type):
         """Moves the extractor to a different thread and calls the appropriate function for the type of download"""
-        self.stop_download.connect(self.download_runner.stop_download)
+        self.stop_download_signal.connect(self.download_runner.stop_download)
         self.thread = QtCore.QThread()
         self.download_runner.moveToThread(self.thread)
         if download_type == 'USER':
@@ -587,10 +587,14 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         new_user_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog", "Enter the new user list:")
         if ok:
             if new_user_list != '':
-                self.user_list_model.add_new_list(new_user_list, 'USER')
-                self.user_lists_combo.addItem(new_user_list)
-                self.user_lists_combo.setCurrentText(new_user_list)
-                self.refresh_user_count()
+                added = self.user_list_model.add_new_list(new_user_list, 'USER')
+                if added:
+                    self.user_lists_combo.addItem(new_user_list)
+                    self.user_lists_combo.setCurrentText(new_user_list)
+                    self.refresh_user_count()
+                else:
+                    text = f'A user list already exists with the name "{new_user_list}"'
+                    Message.generic_message(self, title='List Name Exists', text=text)
             else:
                 self.logger.warning('Unable to add user list', extra={'invalid_name': new_user_list}, exc_info=True)
                 Message.not_valid_name(self)
@@ -638,10 +642,14 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                 "Enter the new subreddit list:")
         if ok:
             if new_subreddit_list != '':
-                self.subreddit_list_model.add_new_list(new_subreddit_list, 'SUBREDDIT')
-                self.subreddit_list_combo.addItem(new_subreddit_list)
-                self.subreddit_list_combo.setCurrentText(new_subreddit_list)
-                self.refresh_subreddit_count()
+                added = self.subreddit_list_model.add_new_list(new_subreddit_list, 'SUBREDDIT')
+                if added:
+                    self.subreddit_list_combo.addItem(new_subreddit_list)
+                    self.subreddit_list_combo.setCurrentText(new_subreddit_list)
+                    self.refresh_subreddit_count()
+                else:
+                    text = f'A subreddit list already exists with the name "{new_subreddit_list}"'
+                    Message.generic_message(self, title='List Name Exists', text=text)
             else:
                 self.logger.warning('Unable to add subreddit list', extra={'invalid_name': new_subreddit_list},
                                     exc_info=True)
@@ -802,7 +810,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             reddit_object = list_model.reddit_objects[index]
             if Message.remove_reddit_object(self, reddit_object.name):
-                list_model.remove_reddit_object(reddit_object)
+                list_model.delete_reddit_object(reddit_object)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             Message.no_reddit_object_selected(self, list_model.list_type)

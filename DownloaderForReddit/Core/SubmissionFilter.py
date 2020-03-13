@@ -23,6 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..Utils import Injector
+from ..Database.ModelEnums import NsfwFilter
 
 
 class SubmissionFilter:
@@ -62,9 +63,9 @@ class SubmissionFilter:
         :param reddit_object: The reddit object who's nsfw filter is to be tested against.
         :return: True if the meets the reddit objects nsfw settings criteria, False if it does not.
         """
-        if reddit_object.nsfw_filter == 'EXCLUDE':
+        if reddit_object.download_nsfw == NsfwFilter.exclude:
             return not submission.over_18
-        elif reddit_object.nsfw_filter == 'ONLY':
+        elif reddit_object.download_nsfw == NsfwFilter.only:
             return submission.over_18
         else:
             return True
@@ -77,7 +78,7 @@ class SubmissionFilter:
         :return: True if the submission meets the reddit objects date criteria, False if it does not.
         """
         date_limit = self.get_date_limit(reddit_object)
-        return submission.created > date_limit
+        return submission.created > date_limit.timestamp()
 
     @staticmethod
     def get_date_limit(reddit_object):
@@ -85,7 +86,7 @@ class SubmissionFilter:
         Returns the reddit objects date_limit or custom_date_limit attribute depending on the what the custom date
         limit is.
         """
-        if reddit_object.custom_date_limit is None:
-            return reddit_object.date_limit
+        if reddit_object.date_limit is None:
+            return reddit_object.absolute_date_limit
         else:
-            return reddit_object.custom_date_limit
+            return reddit_object.date_limit

@@ -38,6 +38,10 @@ class Message(object):
     def __init__(self):
         pass
 
+    def generic_message(self, title='', text=''):
+        reply = message.information(self, title, text)
+        return reply == message.Ok
+
     def no_user_list(self):
         text = 'There are no user lists available. To add a user, please add a user list'
         reply = message.warning(self, 'No User List', text, message.Ok)
