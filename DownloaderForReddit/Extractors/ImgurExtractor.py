@@ -206,23 +206,8 @@ class ImgurExtractor(BaseExtractor):
         for ext in Const.ALL_EXT:
             if ext in self.url:
                 index = self.url.find(ext)
-                url = '%s%s' % (self.url[:index], ext)
-                return self.check_mislinked(url)
+                url = self.url[:index] + ext
+                return url
         return None
 
-    def check_mislinked(self, url):
-        """
-        Each direct link hosted on imgur.com must start with https://i.imgur.  Sometimes for an as of yet unknown
-        reason, the "i." is left off the beginning of the url.  This will prevent the url from being downloaded if not
-        fixed.  This method detects this and corrects the url.
-        :param url: The possibly mislinked url that is to be checked.
-        :type url: str
-        :return: The url with the proper beginning if it is mislinked, the supplied url if not.
-        :rtype: str
-        """
-        if 'i.imgur' not in url:
-            domain, id_with_ext = url.rsplit('/', 1)
-            domain = 'https://i.imgur.com/'
-            return '%s%s' % (domain, id_with_ext)
-        else:
-            return url
+
