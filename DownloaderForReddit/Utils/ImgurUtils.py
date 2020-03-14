@@ -45,7 +45,9 @@ class ImgurError(Exception):
     def __init__(self, status_code):
         self.status_code = status_code
 
+
 def _send_request(url_extension, retries = 1):
+    global num_credits
     if retries < 0:
         return
     headers = {
