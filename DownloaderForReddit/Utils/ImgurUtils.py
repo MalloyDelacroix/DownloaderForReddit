@@ -23,15 +23,13 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
-
 from time import time
-
-from ..Utils import Injector
 
 import requests
 
-logger = logging.getLogger(__name__)
+from ..Utils import Injector
 
+logger = logging.getLogger(__name__)
 
 _FREE_ENDPOINT = 'https://api.imgur.com/3/'
 _RAPID_API_ENDPOINT = 'https://imgur-apiv3.p.rapidapi.com/3/'
@@ -46,7 +44,7 @@ class ImgurError(Exception):
         self.status_code = status_code
 
 
-def _send_request(url_extension, retries = 1):
+def _send_request(url_extension, retries=1):
     global num_credits
     if retries < 0:
         return
@@ -92,8 +90,7 @@ def check_credits():
 def get_link(json):
     if json['animated']:
         return json['mp4']
-    else:
-        return json['link']
+    return json['link']
 
 
 def get_album_images(album_id):

@@ -59,19 +59,19 @@ class ImgurExtractor(BaseExtractor):
 
     def extract_album(self):
         count = 1
-        domain, album_id = self.url.rsplit('/', 1)
+        _, album_id = self.url.rsplit('/', 1)
         for url in ImgurUtils.get_album_images(album_id):
             if '?' in url:
                 url = url[:url.find('?')]
-            address, extension = url.rsplit('.', 1)
+            _, extension = url.rsplit('.', 1)
             file_name = self.get_filename(album_id)
             self.make_content(url, file_name, extension, count)
             count += 1
 
     def extract_single(self):
-        domain, image_id = self.url.rsplit('/', 1)
+        _, image_id = self.url.rsplit('/', 1)
         url = ImgurUtils.get_single_image(image_id)
-        address, extension = url.rsplit('.', 1)
+        _, extension = url.rsplit('.', 1)
         file_name = self.get_filename(image_id)
         self.make_content(url, file_name, extension)
 
@@ -174,5 +174,3 @@ class ImgurExtractor(BaseExtractor):
                 url = self.url[:index] + ext
                 return url
         return None
-
-
