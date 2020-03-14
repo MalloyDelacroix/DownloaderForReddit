@@ -29,11 +29,68 @@ from time import time
 
 from ..Utils import Injector
 
+import requests
+
 logger = logging.getLogger(__name__)
 imgur_client = None
 connection_attempts = 0
 credit_time_limit = 1
 
+_FREE_ENDPOINT = 'https://api.imgur.com/3/'
+_RAPID_API_ENDPOINT = 'https://imgur-apiv3.p.rapidapi.com/3/'
+
+credit_reset_time = 0
+num_credits = 0
+
+
+class ImgurError(Exception):
+
+    def __init__(self, status_code):
+        self.status_code = status_code
+
+
+def _send_request(url_extension, retries = 1):
+    if retries < 0:
+        return
+    headers = {
+        'Authorization': 'Client-ID {}'.format(Injector.settings_manager.imgur_client_id)
+    }
+    if time() > credit_reset_time:
+        check_credits()
+    if num_credits > 0:
+        url = _FREE_ENDPOINT + url_extension
+    elif Injector.settings_manager.imgur_mashape_key is not None:
+        url = _RAPID_API_ENDPOINT + url_extension
+        headers['X-Mashape-Key'] = Injector.settings_manager.imgur_mashape_key
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    if response.status_code == 429:
+        # Rate limiting.
+        check_credits()
+        _send_request(url_extension, retries - 1)
+    raise ImgurError(response.status_code)
+
+
+def check_credits():
+    global num_credits, credit_reset_time
+    url = _FREE_ENDPOINT + "credits"
+    headers = {
+        'Authorization': 'Client-ID {}'.format(Injector.settings_manager.imgur_client_id)
+    }
+    response = requests.get(url, headers=headers)
+    result = response.json()
+    credits_data = result['data']
+    num_credits = min(credits_data['UserRemaining'], credits_data['ClientRemaining'])
+    credit_reset_time = credits_data['UserReset']
+    return num_credits
+
+
+def get_album_images(album_id):
+    json = _send_request('album/{}/images'.format(album_id))
+    data = json['data']
+    urls = [x['link'] for x in data]
+    return urls
 
 def get_client():
     """
