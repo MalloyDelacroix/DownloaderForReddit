@@ -22,3 +22,6 @@ class MockSettingsManager:
         self.avoid_duplicates = True
 
         self.download_reddit_hosted_videos = True
+
+        self.imgur_client_id = "{{CLIENT ID}}"
+        self.imgur_mashape_key = '{{RAPID API KEY}}'

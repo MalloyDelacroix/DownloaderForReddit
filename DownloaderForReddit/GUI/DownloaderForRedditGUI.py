@@ -1397,29 +1397,15 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
-        imgur_client = self.get_imgur_client()
-        if imgur_client is not None:
-            if not hasattr(imgur_client, 'mashape_key') or imgur_client.mashape_key is None:
-                credits_dict = imgur_client.credits
-                dialog_text = 'Application credit limit: %s\nApplication credits remaining: %s\n\nUser credit limit: %s' \
-                            '\nUser credits remaining: %s\nTime user credits reset: %s' %\
-                            (credits_dict['ClientLimit'], credits_dict['ClientRemaining'], credits_dict['UserLimit'],
-                            credits_dict['UserRemaining'],
-                            datetime.strftime(datetime.fromtimestamp(int(credits_dict['UserReset'])),
-                                                '%m-%d-%Y at %I:%M %p'))
-                self.logger.info('Imgur client info calculated',
-                                extra={'remaining_app_credits': credits_dict['ClientRemaining'],
-                                        'remaining_user_credits': credits_dict['UserRemaining']})
-            else:
-                dialog_text = 'You are using the commercial Imgur API!'
-            QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
+        ImgurUtils.check_credits()
+        reset_time = datetime.strftime(datetime.fromtimestamp(ImgurUtils.credit_reset_time),'%m-%d-%Y at %I:%M %p')
+        dialog_text = "Remaining Credits: {}\n" \
+                      "Reset Time: {}\n".format(ImgurUtils.num_credits, reset_time)
+        if Injector.get_settings_manager().imgur_mashape_key:
+            dialog_text += "\nFallback to the commercial API enabled!"
+        QtWidgets.QMessageBox.information(self, 'Imgur Credits', dialog_text, QtWidgets.QMessageBox.Ok)
 
-    def get_imgur_client(self):
-        try:
-            return ImgurUtils.get_new_client()
-        except:
-            self.logger.error('Failed to display imgur client information', exc_info=True)
-            return None
+
 
     def display_about_dialog(self):
         about_dialog = AboutDialog()

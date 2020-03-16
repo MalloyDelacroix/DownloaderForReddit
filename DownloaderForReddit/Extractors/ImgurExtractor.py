@@ -22,11 +22,9 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
-from imgurpython.helpers.error import ImgurClientError, ImgurClientRateLimitError
-
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Utils import ImgurUtils
+from ..Utils.ImgurUtils import  ImgurError
 from ..Core import Const
 from ..Utils import ExtractorUtils, Injector
 
@@ -41,63 +39,77 @@ class ImgurExtractor(BaseExtractor):
         imgur api via ImgurPython
         """
         super().__init__(post, reddit_object, content_display_only)
-        self.connected = False
-        try:
-            self.client = ImgurUtils.get_client()
-            self.connected = True
-        except ImgurClientError as e:
-            if e.status_code == 500:
-                self.over_capacity_error()
-            else:
-                self.unknown_connection_error(e.status_code)
-        except:
-            message = 'Failed to connect to imgur.com'
-            self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
-        if self.connected:
-            if ImgurUtils.check_credit_time_limit():
-                try:
-                    if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
-                        self.extract_album()
-                    elif self.url.lower().endswith(Const.ALL_EXT):
-                        self.extract_direct_link()
-                    elif '/gallery/' in self.url:
-                        self.extract_album()
-                    else:
-                        self.extract_single()
-                except ImgurClientError as e:
-                    self.handle_client_error(e.status_code)
-                except ImgurClientRateLimitError:
-                    self.rate_limit_exceeded_error()
-                except:
-                    self.failed_to_locate_error()
+        try:
+            if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
+                self.extract_album()
+            elif self.url.lower().endswith(Const.ALL_EXT):
+                self.extract_direct_link()
+            elif '/gallery/' in self.url:
+                self.extract_album()
             else:
-                message = 'Out of imgur credits'
-                self.handle_failed_extract(message=message, save=True, log=False)
+                self.extract_single()
+        except ImgurError as e:
+            self.handle_client_error(e.status_code)
+        except Exception:
+            message = 'Failed to extract content'
+            self.handle_failed_extract(message=message, save=True, extractor_error_message=message)
+
+    def extract_album(self):
+        count = 1
+        _, album_id = self.url.rsplit('/', 1)
+        for url in ImgurUtils.get_album_images(album_id):
+            if '?' in url:
+                url = url[:url.find('?')]
+            _, extension = url.rsplit('.', 1)
+            file_name = self.get_filename(album_id)
+            self.make_content(url, file_name, extension, count)
+            count += 1
+
+    def extract_single(self):
+        _, image_id = self.url.rsplit('/', 1)
+        url = ImgurUtils.get_single_image(image_id)
+        _, extension = url.rsplit('.', 1)
+        file_name = self.get_filename(image_id)
+        self.make_content(url, file_name, extension)
+
+    def extract_direct_link(self):
+        try:
+            url = self.get_direct_url()
+            if '?' in url:
+                url = url[:url.find('?')]
+            domain, id_with_ext = url.rsplit('/', 1)
+            image_id, extension = id_with_ext.rsplit('.', 1)
+            file_name = self.get_filename(image_id)
+            if extension == 'gif':
+                extension = 'mp4'
+            url = "{}/{}.{}".format(domain, image_id, extension)
+            self.make_content(url, file_name, extension)
+        except (AttributeError, NameError, TypeError):
+            message = 'Unrecognized extension'
+            self.handle_failed_extract(message=message, extractor_error_message=message)
+
 
     def handle_client_error(self, status_code):
         """
         Handles logging and reporting of errors that are reported by the imgur client.  These errors are handled
-        separately from other errors because they contain more meaningful information because imgur provides the status
+        separately from other errors because they contain more meaningful information because Imgur provides the status
         code of the error and the meaning of the status code.
         :param status_code: The error status code as reported by imgur.
         :type status_code: int
         """
         if status_code == 403:
-            if self.client.credits['ClientRemaining'] is None:
-                self.failed_to_locate_error()
-            elif int(self.client.credits['ClientRemaining']) <= 0:
-                self.no_credit_error()
-            else:
-                self.failed_to_locate_error()
-        if status_code == 429:
+            self.forbidden_error()
+        elif status_code == 429:
             self.rate_limit_exceeded_error()
-        if status_code == 500:
+        elif status_code == 500:
             self.over_capacity_error()
-        if status_code == 404:
+        elif status_code == 404:
             self.does_not_exist_error()
+        else:
+            self.unknown_connection_error(status_code)
 
     def rate_limit_exceeded_error(self):
         """
@@ -105,11 +117,8 @@ class ImgurExtractor(BaseExtractor):
         called in too short of a window (attempts are made to mitigate this by the application) or that the user is out
         of imgur user credits.
         """
-        self.client = ImgurUtils.get_new_client() #We need to get a new client to refresh our credit count
-        user_credits = self.client.credits['UserRemaining']
-        if user_credits is not None and int(user_credits) <= 0:
+        if ImgurUtils.check_credits() <= 0:
             message = 'Out of user credits'
-            ImgurUtils.set_credit_time_limit(refresh_time=int(self.client.credits['UserReset']))
         else:
             self.set_timeout()
             message = 'Imgur rate limit exceeded.  Setting time out limit of %s seconds' % \
@@ -130,72 +139,28 @@ class ImgurExtractor(BaseExtractor):
             ExtractorUtils.set_timeout(self)
 
     def no_credit_error(self):
-        ImgurUtils.set_credit_time_limit()
         message = 'Not enough imgur credits to extract post'
         self.handle_failed_extract(message=message, save=True, imgur_error_message='not enough credits')
 
     def over_capacity_error(self):
-        message = 'Imgur is currently over capacity'
+        message = 'Imgur is currently down'
         self.handle_failed_extract(message=message, save=True, imgur_error_message='over capacity')
 
     def does_not_exist_error(self):
-        message = 'Content does not exist.  This most likely means that the content has been deleted on Imgur but ' \
-                  'the post still remains on reddit'
-        self.handle_failed_extract(message=message, imgur_error_message='Content does not exist')
+        message = 'Content does not exist.'
+        self.handle_failed_extract(message=message, save=False, imgur_error_message='Content does not exist')
+
+    def forbidden_error(self):
+        message = 'Forbidden'
+        self.handle_failed_extract(message=message, save=False, extractor_error_message=message)
 
     def failed_to_locate_error(self):
         message = 'Failed to locate content'
         self.handle_failed_extract(message=message, extractor_error_message=message)
 
     def unknown_connection_error(self, status_code):
-        message = 'Unknown imgur connection error'
+        message = 'Unknown Imgur connection error'
         self.handle_failed_extract(message=message, save=True, status_code=status_code)
-
-    def extract_album(self):
-        count = 1
-        domain, album_id = self.url.rsplit('/', 1)
-        for pic in self.client.get_album_images(album_id):
-            url = pic.link
-            if '?' in url:
-                url = url[:url.find('?')]
-            address, extension = url.rsplit('.', 1)
-            file_name = self.get_filename(album_id)
-            if pic.animated:
-                extension = 'mp4'
-                url = pic.mp4
-            self.make_content(url, file_name, extension, count)
-            count += 1
-
-    def extract_single(self):
-        domain, image_id = self.url.rsplit('/', 1)
-        pic = self.client.get_image(image_id)
-        url = pic.link
-        if '?' in url:
-            url = url[:url.find('?')]
-        address, extension = url.rsplit('.', 1)
-        file_name = self.get_filename(image_id)
-        if pic.animated:
-            extension = 'mp4'
-            url = pic.mp4
-        self.make_content(url, file_name, extension)
-
-    def extract_direct_link(self):
-        try:
-            url = self.get_direct_url()
-            if '?' in url:
-                url = url[:url.find('?')]
-            domain, id_with_ext = url.rsplit('/', 1)
-            image_id, extension = id_with_ext.rsplit('.', 1)
-            file_name = self.get_filename(image_id)
-            if Const.GIF_EXT or Const.VID_EXT:
-                picture = self.client.get_image(image_id)
-                if picture.animated:
-                    url = picture.mp4
-                    extension = 'mp4'
-            self.make_content(url, file_name, extension)
-        except (AttributeError, NameError, TypeError):
-            message = 'Unrecognized extension'
-            self.handle_failed_extract(message=message, extractor_error_message=message)
 
     def get_direct_url(self):
         """
@@ -206,23 +171,6 @@ class ImgurExtractor(BaseExtractor):
         for ext in Const.ALL_EXT:
             if ext in self.url:
                 index = self.url.find(ext)
-                url = '%s%s' % (self.url[:index], ext)
-                return self.check_mislinked(url)
+                url = self.url[:index] + ext
+                return url
         return None
-
-    def check_mislinked(self, url):
-        """
-        Each direct link hosted on imgur.com must start with https://i.imgur.  Sometimes for an as of yet unknown
-        reason, the "i." is left off the beginning of the url.  This will prevent the url from being downloaded if not
-        fixed.  This method detects this and corrects the url.
-        :param url: The possibly mislinked url that is to be checked.
-        :type url: str
-        :return: The url with the proper beginning if it is mislinked, the supplied url if not.
-        :rtype: str
-        """
-        if 'i.imgur' not in url:
-            domain, id_with_ext = url.rsplit('/', 1)
-            domain = 'https://i.imgur.com/'
-            return '%s%s' % (domain, id_with_ext)
-        else:
-            return url

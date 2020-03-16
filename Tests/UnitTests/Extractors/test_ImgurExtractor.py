@@ -1,23 +1,25 @@
 import unittest
 from unittest.mock import patch
-import logging
-from imgurpython.helpers.error import ImgurClientError
 
+
+from DownloaderForReddit.Utils.ImgurUtils import ImgurError
 from DownloaderForReddit.Extractors.ImgurExtractor import ImgurExtractor
 from DownloaderForReddit.Utils import Injector, ImgurUtils, ExtractorUtils
-from DownloaderForReddit.Core import Const
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
 
 class TestImgurExtractor(unittest.TestCase):
-
     url_host_dict = {
+        'DIRECT': 'https://imgur.com/fb2yRj0.jpg',
+        'DIRECT_GIF': 'https://i.imgur.com/mOlfhY3.gif',
         'SINGLE': 'https://imgur.com/fb2yRj0',
         'ALBUM': 'https://imgur.com/a/Bi63r'
     }
 
     url_extract_dict = {
+        'DIRECT': 'https://imgur.com/fb2yRj0.jpg',
+        'DIRECT_GIF': 'https://i.imgur.com/mOlfhY3.mp4',
         'SINGLE': 'https://i.imgur.com/fb2yRj0.jpg',
         'ALBUM': ['https://i.imgur.com/Zjn7rJ0.jpg',
                   'https://i.imgur.com/2de2HlU.jpg',
@@ -34,12 +36,37 @@ class TestImgurExtractor(unittest.TestCase):
         ExtractorUtils.timeout_dict.clear()
         ExtractorUtils.time_limit_dict.clear()
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
+    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_album')
+    def test_extract_content_assignment_album(self, ex_mock):
+        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+
+        ex_mock.assert_called()
+
+    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_single')
+    def test_extract_content_assignment_single(self, ex_mock):
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+
+        ex_mock.assert_called()
+
+    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_direct_link')
+    def test_extract_content_assignment_direct(self, ex_mock):
+        post = MockObjects.get_generic_mock_post()
+        post.url = 'https://imgur.com/fb2yRj0.jpg'
+        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie.extract_content()
+
+        ex_mock.assert_called()
+
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_album_images')
     def test_extract_album(self, img_mock):
-        img_mock.get_album_images.return_value = [MockClientResponse(link=url) for url in self.url_extract_dict['ALBUM']]
+        print(img_mock)
+        img_mock.return_value = self.url_extract_dict['ALBUM']
         ie = ImgurExtractor(self.get_album_post(), MockObjects.get_blank_user())
         ie.extract_album()
 
+        img_mock.assert_called_with('Bi63r')
         self.assertTrue(self.check_img_album_output(ie.extracted_content))
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
@@ -48,40 +75,25 @@ class TestImgurExtractor(unittest.TestCase):
         for con in content_list:
             if con.url not in self.url_extract_dict['ALBUM']:
                 return False
-            if not con.make_filename().startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.jpg' or \
+            if not con.make_filename().startswith(
+                    'C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.jpg' or \
                     int(con.number_in_seq) != count:
                 return False
             count += 1
         return True
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_gif_album(self, img_mock):
-        img_mock.get_album_images.return_value = [MockClientResponse(link=url, animated=True)
-                                                  for url in self.url_extract_dict['ALBUM']]
-        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_blank_user())
-        ie.extract_album()
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
+    def test_extract_single(self, img_mock):
+        post = MockObjects.get_generic_mock_post()
+        post.url = 'https://imgur.com/fb2yRj0'
+        img_mock.return_value = 'https://i.imgur.com/fb2yRj0.jpg'
 
-        self.assertTrue(self.check_img_gif_album_output(ie.extracted_content))
-        self.assertTrue(len(ie.failed_extract_posts) == 0)
-
-    def check_img_gif_album_output(self, content_list):
-        count = 1
-        for con in content_list:
-            if con.url not in self.make_gif_list(self.url_extract_dict['ALBUM']):
-                return False
-            if not con.make_filename().startswith('C:/Users/Gorgoth/Downloads/JohnEveryman/') or con.file_ext != '.mp4' or \
-                    int(con.number_in_seq) != count:
-                return False
-            count += 1
-        return True
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_single_base(self, img_mock):
-        img_mock.get_image.return_value = MockClientResponse(link=self.url_extract_dict['SINGLE'])
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_blank_user())
         ie.extract_single()
 
         content = ie.extracted_content[0]
+
+        img_mock.assert_called_with('fb2yRj0')
         self.assertEqual(self.url_extract_dict['SINGLE'], content.url)
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
@@ -89,29 +101,15 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_single_gif(self, img_mock):
-        img_mock.get_image.return_value = MockClientResponse(link=self.url_extract_dict['SINGLE'], animated=True)
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_single()
-        content = ie.extracted_content[0]
+    def test_extract_direct(self):
+        post = MockObjects.get_generic_mock_post()
+        post.url = 'https://imgur.com/fb2yRj0.jpg'
 
-        self.assertEqual(content.url, self.make_gif_url(self.url_extract_dict['SINGLE']))
-        self.assertEqual('Picture(s)', content.post_title)
-        self.assertEqual('Pics', content.subreddit)
-        self.assertEqual('.mp4', content.file_ext)
-        self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.mp4', content.make_filename())
-        self.assertTrue(len(ie.failed_extract_posts) == 0)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_direct(self, img_mock):
-        img_mock.get_image.return_value = MockClientResponse(link=self.url_extract_dict['SINGLE'])
-        ie = ImgurExtractor(self.get_direct_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_blank_user())
         ie.extract_direct_link()
 
         content = ie.extracted_content[0]
-        self.assertEqual(self.url_extract_dict['SINGLE'], content.url)
+        self.assertEqual('https://imgur.com/fb2yRj0.jpg', content.url)
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.jpg', content.file_ext)
@@ -119,264 +117,116 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_direct_gif(self, img_mock):
-        img_mock.get_image.return_value = MockClientResponse(link=self.make_gif_url(self.url_extract_dict['SINGLE']),
-                                                             animated=True)
-        ie = ImgurExtractor(self.get_direct_post_gif(), MockObjects.get_blank_user())
+    def test_extract_direct_gif(self):
+        post = MockObjects.get_generic_mock_post()
+        post.url = 'https://i.imgur.com/mOlfhY3.gif'
+
+        ie = ImgurExtractor(post, MockObjects.get_blank_user())
         ie.extract_direct_link()
 
         content = ie.extracted_content[0]
+        self.assertEqual('https://i.imgur.com/mOlfhY3.mp4', content.url)
         self.assertEqual('Picture(s)', content.post_title)
         self.assertEqual('Pics', content.subreddit)
         self.assertEqual('.mp4', content.file_ext)
         self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.make_filename())
+        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/mOlfhY3.mp4', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_direct_unknown_ext(self, img_mock):
-        ie = ImgurExtractor(self.get_direct_post_unknown_ext(), MockObjects.get_blank_user())
+    def test_extract_direct_unknown_ext(self, ):
+        post = MockObjects.get_generic_mock_post()
+        post.url = 'https://i.imgur.com/fb2yRj0.foo'
+        ie = ImgurExtractor(post, MockObjects.get_blank_user())
         ie.extract_direct_link()
         failed_post = ie.failed_extract_posts[0]
         self.assertTrue('Unrecognized extension' in failed_post.status)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_direct_mislinked(self, img_mock):
-        img_mock.get_image.return_value = MockClientResponse(link=self.url_host_dict['SINGLE'] + '.jpg')
-        ie = ImgurExtractor(self.get_direct_post_mislinked(), MockObjects.get_blank_user())
-        ie.extract_direct_link()
-
-        content = ie.extracted_content[0]
-        self.assertEqual(self.url_extract_dict['SINGLE'], content.url)
-        self.assertEqual('Picture(s)', content.post_title)
-        self.assertEqual('Pics', content.subreddit)
-        self.assertEqual('.jpg', content.file_ext)
-        self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
-        self.assertTrue(len(ie.failed_extract_posts) == 0)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_direct_gif_mislinked(self, img_mock):
-        img_mock.get_image.return_value = MockClientResponse(link=self.make_gif_url(self.url_extract_dict['SINGLE']),
-                                                             animated=True)
-        ie = ImgurExtractor(self.get_direct_post_mislinked_gif(), MockObjects.get_blank_user())
-        ie.extract_direct_link()
-
-        content = ie.extracted_content[0]
-        self.assertEqual('Picture(s)', content.post_title)
-        self.assertEqual('Pics', content.subreddit)
-        self.assertEqual('.mp4', content.file_ext)
-        self.assertEqual(1521473630, content.date_created)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0gif.mp4', content.make_filename())
-        self.assertTrue(len(ie.failed_extract_posts) == 0)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_direct_mislinked_unknown_ext(self, img_mock):
-        ie = ImgurExtractor(self.get_direct_post_mislinked_unknown_ext(), MockObjects.get_blank_user())
-        ie.extract_direct_link()
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Unrecognized extension' in failed_post.status)
-
-    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_album')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_content_assignment_album(self, img_mock, ex_mock):
-        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-
-        ex_mock.assert_called()
-
-    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_single')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_content_assignment_single(self, img_mock, ex_mock):
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-
-        ex_mock.assert_called()
-
-    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_direct_link')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_content_assignment_direct(self, img_mock, ex_mock):
-        ie = ImgurExtractor(self.get_direct_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-
-        ex_mock.assert_called()
-
-    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_direct_link')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_extract_content_assignment_direct_mislinked(self, img_mock, ex_mock):
-        ie = ImgurExtractor(self.get_direct_post_mislinked(), MockObjects.get_blank_user())
-        ie.extract_content()
-
-        ex_mock.assert_called()
 
     # region Exception Tests
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.get_client')
-    def test_imgur_client_connection_over_cap_error(self, img_mock, util_mock):
-        img_mock.side_effect = ImgurClientError(status_code=500, error_message='Over capacity')
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
+    def test_imgur_down_error(self, img_mock):
+        img_mock.side_effect = ImgurError(status_code=500)
+
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+
         failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Imgur is currently over capacity' in failed_post.status)
+        self.assertTrue('Imgur is currently down' in failed_post.status)
         self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.get_client')
-    def test_imgur_client_connection_error_unknown(self, img_mock, util_mock):
-        img_mock.side_effect = ImgurClientError(status_code=900, error_message='Unknown')
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
+    def test_imgur_client_connection_error_unknown(self, img_mock):
+        img_mock.side_effect = ImgurError(status_code=900)
+
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie.extract_content()
+
         failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Unknown imgur connection error' in failed_post.status)
+        self.assertTrue('Unknown Imgur connection error' in failed_post.status)
         self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    @patch('DownloaderForReddit.Utils.ImgurUtils.get_client')
-    def test_imgur_client_unknown_error_on_setup(self, img_mock, util_mock):
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
+    def test_imgur_runtime_unknown_error(self, img_mock):
         img_mock.side_effect = RuntimeError()
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Failed to connect to imgur.com' in failed_post.status)
-        self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_imgur_rate_limit_exceeded_error_with_remaining_credits(self, img_mock):
-        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
-            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-            img_mock.credits = {'UserRemaining': 400}
-            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-            ie.extract_content()
-            failed_post = ie.failed_extract_posts[0]
-            self.assertTrue('rate limit exceeded' in failed_post.status)
-            self.assertTrue(len(ie.failed_extracts_to_save) > 0)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_imgur_rate_limit_exceeded_error_no_remaining_credits(self, img_mock):
-        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
-            TIME = 600000
-            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-            img_mock.credits = {'UserRemaining': 0, 'UserReset': TIME}
-            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-            ie.extract_content()
-            failed_post = ie.failed_extract_posts[0]
-            self.assertTrue('Out of user credits' in failed_post.status)
-            self.assertTrue(len(ie.failed_extracts_to_save) > 0)
-            self.assertTrue(ImgurUtils.credit_time_limit == TIME)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_imgur_rate_limit_exceeded_credit_dict_is_null(self, img_mock):
-        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
-            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-            img_mock.credits = {'UserRemaining': None}
-            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-            ie.extract_content()
-            failed_post = ie.failed_extract_posts[0]
-            self.assertTrue('rate limit exceeded' in failed_post.status)
-            self.assertTrue(len(ie.failed_extracts_to_save) > 0)
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    #@patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client',lambda *args: DownloaderForReddit.Utils.ImgurUtils.imgur_client)
-    def test_multiple_imgur_rate_limit_exceeded_with_timeout_dict(self, img_mock):
-        with unittest.mock.patch('DownloaderForReddit.Utils.ImgurUtils.get_new_client', return_value=img_mock):
-            img_mock.get_image.side_effect = ImgurClientError(status_code=429, error_message='error')
-            img_mock.credits = {'UserRemaining': None}
-            increment = Const.TIMEOUT_INCREMENT
-            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-            ie.extract_content()
-            self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
-            increment += Const.TIMEOUT_INCREMENT
-
-            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-            ie.extract_content()
-            self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
-            increment += Const.TIMEOUT_INCREMENT
-
-            ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-            ie.extract_content()
-            self.assertEqual(ExtractorUtils.time_limit_dict[type(ie).__name__], increment)
-
-
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_imgur_no_credit_error(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=403, error_message='error')
-        img_mock.credits = {'ClientRemaining': 0}
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
         ie.extract_content()
+
+        self.assertEqual(1, len(ie.failed_extract_posts))
         failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Not enough imgur credits to extract post' in failed_post.status)
+        print(failed_post.status)
+        self.assertEqual('Failed to extract content', failed_post.status)
         self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_imgur_over_capacity_error(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=500, error_message='Over capacity')
+    @patch('DownloaderForReddit.Utils.ImgurUtils.check_credits')
+    @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_single')
+    def test_imgur_rate_limit_exceeded_error(self, img_mock, credits_mock):
+        img_mock.side_effect = ImgurError(status_code=429)
+        credits_mock.return_value = 0
+
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
         ie.extract_content()
+
         failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('over capacity' in failed_post.status)
+
+        self.assertEqual('Out of user credits', failed_post.status)
         self.assertTrue(len(ie.failed_extracts_to_save) > 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
+    def test_imgur_down_error(self, img_mock):
+        img_mock.side_effect = ImgurError(status_code=500)
+
+        extractor = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        extractor.extract_content()
+
+        failed_post = extractor.failed_extract_posts[0]
+        print(failed_post.status)
+        self.assertEqual('Imgur is currently down', failed_post.status)
+        self.assertTrue(len(extractor.failed_extracts_to_save) > 0)
+
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
     def test_imgur_does_not_exist_error(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=404, error_message='error')
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Content does not exist' in failed_post.status)
-        self.assertFalse(len(ie.failed_extracts_to_save) > 0)
+        img_mock.side_effect = ImgurError(status_code=404)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
+        extractor = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        extractor.extract_content()
+
+        failed_post = extractor.failed_extract_posts[0]
+        self.assertEqual("Content does not exist.", failed_post.status)
+        self.assertFalse(len(extractor.failed_extracts_to_save) > 0)
+
+    @patch('DownloaderForReddit.Utils.ImgurUtils.get_single_image')
     def test_imgur_failed_to_locate_403_error(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=403, error_message='error')
-        img_mock.credits = {'ClientRemaining': None}
+        img_mock.side_effect = ImgurError(status_code=403)
+
         ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
         ie.extract_content()
-        failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Failed to locate content' in failed_post.status)
-        self.assertFalse(len(ie.failed_extracts_to_save) > 0)
 
-    @patch('DownloaderForReddit.Utils.ImgurUtils.imgur_client')
-    def test_imgur_failed_to_locate_general(self, img_mock):
-        img_mock.get_image.side_effect = ImgurClientError(status_code=403, error_message='error')
-        img_mock.credits = {'ClientRemaining': 900}
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
-        ie.extract_content()
         failed_post = ie.failed_extract_posts[0]
-        self.assertTrue('Failed to locate content' in failed_post.status)
-        self.assertFalse(len(ie.failed_extracts_to_save) > 0)
-
+        print(failed_post.status)
+        self.assertEqual('Forbidden', failed_post.status)
+        self.assertEqual(0, len(ie.failed_extracts_to_save))
     # endregion
-
-    def get_direct_post(self):
-        post = MockObjects.get_generic_mock_post()
-        post.url = self.url_extract_dict['SINGLE']
-        return post
-
-    def get_direct_post_gif(self):
-        post = MockObjects.get_generic_mock_post()
-        post.url = self.make_gif_url(self.url_extract_dict['SINGLE'])
-        return post
-
-    def get_direct_post_unknown_ext(self):
-        post = MockObjects.get_generic_mock_post()
-        url = self.url_extract_dict['SINGLE'].rsplit('.', 1)[0]
-        post.url = '%s.foo' % url
-        return post
-
-    def get_direct_post_mislinked(self):
-        post = MockObjects.get_generic_mock_post()
-        post.url = self.url_host_dict['SINGLE'] + '.jpg'
-        return post
-
-    def get_direct_post_mislinked_gif(self):
-        post = MockObjects.get_generic_mock_post()
-        post.url = self.url_host_dict['SINGLE'] + 'gif.gifv'
-        return post
-
-    def get_direct_post_mislinked_unknown_ext(self):
-        post = MockObjects.get_generic_mock_post()
-        url = self.url_host_dict['SINGLE']
-        post.url = url + '.foo'
-        return post
 
     def get_single_post(self):
         post = MockObjects.get_generic_mock_post()
@@ -388,16 +238,6 @@ class TestImgurExtractor(unittest.TestCase):
         post.url = self.url_host_dict['ALBUM']
         return post
 
-    def make_gif_url(self, img):
-        url = img.rsplit('.', 1)[0]
-        return '%sgif.mp4' % url
-
-    def make_gif_list(self, img_list):
-        gif_list = []
-        for img in img_list:
-            url = img.rsplit('.', 1)[0]
-            gif_list.append('%sgif.mp4' % url)
-        return gif_list
 
 
 class MockClientResponse:
