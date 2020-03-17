@@ -78,18 +78,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # region Settings
         self.settings_manager = Injector.get_settings_manager()
 
-        geom = self.settings_manager.main_window_geom
-        horz_splitter_state = self.settings_manager.horz_splitter_state
-        vert_splitter_state = self.settings_manager.vert_splitter_state
-        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
-        self.horz_splitter.restoreState(horz_splitter_state if horz_splitter_state is not None else
-                                        self.horz_splitter.saveState())
-        self.vert_splitter.restoreState(vert_splitter_state if vert_splitter_state is not None else
-                                        self.vert_splitter.saveState())
+        self.resize(
+            self.settings_manager.main_window_geom['width'], self.settings_manager.main_window_geom['height']
+        )
+        self.move(self.settings_manager.main_window_geom['x'], self.settings_manager.main_window_geom['y'])
+        self.horz_splitter.setSizes(self.settings_manager.horizontal_splitter_state)
+        self.vert_splitter.setSizes(self.settings_manager.vertical_splitter_state)
         self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method
-        self.download_users_checkbox.setChecked(self.settings_manager.download_users)
-        self.download_subreddit_checkbox.setChecked(self.settings_manager.download_subreddits)
+        self.download_users_checkbox.setChecked(self.settings_manager.download_users_state)
+        self.download_subreddit_checkbox.setChecked(self.settings_manager.download_subreddits_state)
         # endregion
 
         self.queue = queue
@@ -1254,13 +1252,15 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def set_view_menu_items_checked(self):
         """A dispatch table to set the correct view menu item checked"""
-        view_sort_dict = {0: self.view_sort_list_by_name,
-                          1: self.view_sort_list_by_date_added,
-                          2: self.view_sort_list_by_number_of_downloads}
-        view_order_dict = {0: self.view_order_by_ascending,
-                           1: self.view_order_by_descending}
-        view_sort_dict[self.list_sort_method].setChecked(True)
-        view_order_dict[self.list_order_method].setChecked(True)
+        pass
+        # TODO: fix sorting
+        # view_sort_dict = {0: self.view_sort_list_by_name,
+        #                   1: self.view_sort_list_by_date_added,
+        #                   2: self.view_sort_list_by_number_of_downloads}
+        # view_order_dict = {0: self.view_order_by_ascending,
+        #                    1: self.view_order_by_descending}
+        # view_sort_dict[self.list_sort_method].setChecked(True)
+        # view_order_dict[self.list_order_method].setChecked(True)
 
     def closeEvent(self, QCloseEvent):
         self.close()
@@ -1275,9 +1275,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         super().close()
 
     def save_main_window_settings(self):
-        self.settings_manager.main_window_geom = self.saveGeometry()
-        self.settings_manager.horz_splitter_state = self.horz_splitter.saveState()
-        self.settings_manager.vert_splitter_state = self.vert_splitter.saveState()
+        self.settings_manager.main_window_geom['width'] = self.width()
+        self.settings_manager.main_window_geom['height'] = self.height()
+        self.settings_manager.main_window_geom['x'] = self.x()
+        self.settings_manager.main_window_geom['y'] = self.y()
+        self.settings_manager.horizontal_splitter_state = self.horz_splitter.sizes()
+        self.settings_manager.vertical_splitter_state = self.vert_splitter.sizes()
         self.settings_manager.list_sort_method = self.list_sort_method
         self.settings_manager.list_order_method = self.list_order_method
         self.settings_manager.download_users = self.download_users_checkbox.isChecked()

@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
-from .ModelEnums import DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter
+from .ModelEnums import DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator
 from ..Core import Const
 from ..Utils import SystemUtil, Injector
 
@@ -49,6 +49,8 @@ class RedditObject(BaseModel):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     post_limit = Column(SmallInteger, default=25)
+    score_limit = Column(Integer, default=1000)
+    score_limit_operator = Column(Enum(LimitOperator), default=0)
     avoid_duplicates = Column(Boolean, default=True)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)

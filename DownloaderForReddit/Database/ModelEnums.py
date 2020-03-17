@@ -25,6 +25,26 @@ class CommentDownload(Enum):
 
 class NsfwFilter(Enum):
 
-    exclude = 1
-    include = 2
-    only = 3
+    exclude = -1
+    include = 0
+    only = 1
+
+
+class LimitOperator(Enum):
+
+    less_than = -1
+    no_limit = 0
+    greater_than = 1
+
+
+class RedditObjectSortMethod(Enum):
+
+    id = 1
+    name = 2
+    score = 3
+    post_count = 4
+    content_count = 5
+    date_added = 6
+    date_created = 7
+    last_download = 8
+    last_post = 9

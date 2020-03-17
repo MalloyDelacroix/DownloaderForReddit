@@ -1,311 +1,184 @@
-"""
-Downloader for Reddit takes a list of reddit users and subreddits and downloads content posted to reddit either by the
-users or on the subreddits.
-
-
-Copyright (C) 2017, Kyle Hickey
-
-
-This file is part of the Downloader for Reddit.
-
-Downloader for Reddit is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Downloader for Reddit is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
-"""
-
-
 import os
-from PyQt5.QtCore import QSettings
+import toml
 import logging
+from datetime import datetime
 
-from .ObjectStateHandler import ObjectStateHandler
-from .ObjectUpdater import ObjectUpdater
-from ..Database import ModelEnums
 from ..Utils import SystemUtil
 from ..Core import Const
-from ..version import __version__
+from ..Database.ModelEnums import *
 
 
 class SettingsManager:
 
     def __init__(self):
-        self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.settings = QSettings('SomeGuySoftware', 'RedditDownloader')
+        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+        self.config_file_path = os.path.join(SystemUtil.get_data_directory(), 'config.toml')
+        self.config = None
+        self.load_config_file()
+        self.section_dict = {}
+        self.conversion_list = []
 
-        # region Core Settings
-        self.do_not_notify_update = self.settings.value("do_not_notify_update", "v0.0.0", type=str)
-        self.last_update = self.settings.value('last_update', None, type=str)
-        self.total_files_downloaded = self.settings.value('total_files_downloaded', 0, type=int)
-        self.auto_save = self.settings.value('auto_save', False, type=bool)
-        self.imgur_client_id = self.settings.value('imgur_client_id', None, type=str)
-        self.imgur_client_secret = self.settings.value('imgur_client_secret', None, type=str)
-        self.imgur_mashape_key = self.settings.value('imgur_mashape_key', None, type=str)
-        self.auto_display_failed_list = self.settings.value("auto_display_failed_list", True, type=bool)
-
-        self.restrict_by_score = self.settings.value('restrict_by_score', False, type=bool)
-        self.score_limit_operator = self.settings.value('score_limit_operator', 'GREATER', type=str)
-        self.post_score_limit = self.settings.value("post_score_limit", 3000, type=int)
-
-        self.user_sort_method = self.settings.value('user_sort_method', 'NEW', type=str)
-        self.subreddit_sort_method = self.settings.value('subreddit_sort_method', 'HOT', type=str)
-
-        self.post_limit = self.settings.value('post_limit', 25, type=int)
-
-        self.restrict_by_date = self.settings.value('restrict_by_date', False, type=bool)
-        self.restrict_by_custom_date = self.settings.value("restrict_by_custom_date", False, type=bool)
-        self.custom_date = self.settings.value('custom_date_limit', None, type=int)
-        if self.custom_date < Const.FIRST_POST_EPOCH:
-            self.custom_date = Const.FIRST_POST_EPOCH
-        self.date_limit_epoch = self.settings.value('date_limit_epoch', Const.FIRST_POST_EPOCH, type=int)
-
-        self.download_videos = self.settings.value('download_video', True, type=bool)
-        self.download_images = self.settings.value('download_images', True, type=bool)
-        self.download_comments = ModelEnums.CommentDownload(self.settings.value('download_comments', 2, type=int))
-        self.download_comment_content = ModelEnums.CommentDownload(
-            self.settings.value('download_comment_content', 2, type=int)
-        )
-
-        # self.download_nsfw = ModelEnums.NsfwFilter(self.settings.value('download_nsfw', 2, type=int))
-        self.download_nsfw = ModelEnums.NsfwFilter(2)
-        self.avoid_duplicates = self.settings.value('avoid_duplicates', True, type=bool)
-
-        self.download_reddit_hosted_videos = self.settings.value('download_reddit_hosted_videos', True, type=bool)
-        self.display_ffmpeg_warning_dialog = self.settings.value('display_ffmpeg_warning_dialog', True, type=bool)
-
-        self.download_name_method = ModelEnums.DownloadNameMethod(
-            self.settings.value('download_name_method', 2, type=int)
-        )
-        self.subreddit_save_structure = ModelEnums.SubredditSaveStructure(
-            self.settings.value('subreddit_save_structure', 1, type=int)
-        )
-
-        self.extraction_thread_count = self.settings.value('extraction_thread_count', 4, type=int)
-        self.download_thread_count = self.settings.value('download_thread_count', 4, type=int)
-        self.save_failed_extracts = self.settings.value('save_failed_extracts', True, type=bool)
-        self.set_file_modified_date = self.settings.value('set_file_modified_date', False, type=bool)
-        self.current_user_list = self.settings.value('current_user_list', None, type=str)
-        self.current_subreddit_list = self.settings.value('current_subreddit_list', None, type=str)
-
-        default_folder = os.path.join(os.path.expanduser("~"), 'Downloads', 'RedditDownloads')
-        self.user_save_directory = self.settings.value(
-            'user_save_directory', os.path.join(default_folder, 'Users'), type=str
-        )
-        self.subreddit_save_directory = self.settings.value(
-            'subreddit_save_directory', os.path.join(default_folder, 'Subreddits'), type=str
-        )
+        # region Core
+        self.last_update = self.get('core', 'last_update', Const.FIRST_POST_EPOCH)
+        self.extraction_thread_count = self.get('core', 'extraction_thread_count', 4)
+        self.download_thread_count = self.get('core', 'download_thread_count', 4)
+        self.match_file_modified_to_post_date = self.get('core', 'match_file_modified_to_post_date', True)
+        default_save_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'RedditDownloads')
+        self.user_save_directory = self.get('core', 'user_save_directory', default_save_path)
+        self.subreddit_save_directory = self.get('core', 'subreddit_save_directory', default_save_path)
+        self.current_user_list = self.get('core', 'current_user_list', None)
+        self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
+        self.download_users_on_add = self.get('core', 'download_users_on_add', False)
+        self.download_subreddits_on_add = self.get('core', 'download_subreddits_on_add', False)
         # endregion
 
-        # region Display Settings
-        self.tooltip_display_dict = {
-            'name': self.settings.value('tooltip_name', True, type=bool),
-            'download_enabled': self.settings.value('enable_download', True, type=bool),
-            'lock_settings': self.settings.value('tooltip_do_not_edit', False, type=bool),
-            'last_download_date': self.settings.value('tooltip_last_download_date', True, type=bool),
-            'date_limit': self.settings.value('tooltip_date_limit', False, type=bool),
-            'absolute_date_limit': self.settings.value('tooltip_absolute_date_limit', False, type=bool),
-            'post_limit': self.settings.value('tooltip_post_limit', False, type=bool),
-            'download_naming_method': self.settings.value('tooltip_name_downloads_by', False, type=bool),
-            'subreddit_save_method': self.settings.value('tooltip_subreddit_save_method', False, type=bool),
-            'download_videos': self.settings.value('tooltip_download_videos', False, type=bool),
-            'download_images': self.settings.value('tooltip_download_images', False, type=bool),
-            'avoid_duplicates': self.settings.value('tooltip_avoid_duplicates', False, type=bool),
-            'nsfw_filter': self.settings.value('tooltip_nsfw_filter', False, type=bool),
-            'undownloaded_content_count': self.settings.value('tooltip_undownloaded_content_count', False, type=bool),
-            'unextracted_post_count': self.settings.value('tooltip_unextracted_post_count', False, type=bool),
-            'total_downloads': self.settings.value('tooltip_total_downloads', False, type=bool),
-            'date_added': self.settings.value('tooltip_date_added', False, type=bool)
-        }
-        self.gif_display_method = self.settings.value('gif_display_method', 'PLACEHOLDER', str)
+        # region Download Defaults
+        self.post_score_limit_operator = self.get('download_defaults', 'post_score_limit_operator', 0,
+                                                  container=LimitOperator)
+        self.post_score_limit = self.get('download_defaults', 'post_score_limit', 1000)
+        self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
+        self.download_videos = self.get('download_defaults', 'download_videos', True)
+        self.download_images = self.get('download_defaults', 'download_images', True)
+        self.download_comments = self.get('download_defaults', 'download_comments', False)
+        self.download_comment_content = self.get('download_defaults', 'download_comment_content', False)
+        self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
+        self.date_limit = self.get('download_defaults', 'date_limit', datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
+        self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 'NEW')
+        self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 'NEW')
+        self.user_download_naming_method = self.get('download_defaults', 'user_download_naming_method', 2,
+                                                    container=DownloadNameMethod)
+        self.subreddit_download_naming_method = self.get('download_defaults', 'subreddit_download_naming_method', 2,
+                                                         container=DownloadNameMethod)
+        self.subreddit_save_structure = self.get('download_defaults', 'subreddit_save_structure', 1,
+                                                 container=SubredditSaveStructure)
+        self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
+        # endregion
+
+        # region Notification Defaults
+        self.do_not_notify_update = self.get('notification_defaults', 'do_not_notify_update', True)
+        self.auto_display_failed_downloads = self.get('notification_defaults', 'auto_display_failed_downloads', True)
+        self.display_ffmpeg_warning = self.get('notification_defaults', 'display_ffmpeg_warning', True)
+        # endregion
+
+        # region Imgur
+        self.imgur_client_id = self.get('imgur', 'imgur_client_id')
+        self.imgur_client_secret = self.get('imgur', 'imgur_client_secret')
+        self.imgur_mashape_key = self.get('imgur', 'imgur_mashape_key')
         # endregion
 
         # region Main Window GUI
-        self.main_window_geom = self.settings.value('main_window_geometry', None)
-        self.horz_splitter_state = self.settings.value('horz_splitter_state', None)
-        self.vert_splitter_state = self.settings.value('vert_splitter_state', None)
-        self.list_sort_method = self.settings.value('list__sort_method', 0, type=int)
-        self.list_order_method = self.settings.value('list_order_method', 0, type=int)
-        self.download_users = self.settings.value("download_users", False, type=bool)
-        self.download_subreddits = self.settings.value("download_subreddits", False, type=bool)
+        # self.main_window_geom = self.get('main_window_gui', 'main_window_geom')
+        main_window_geom = {
+            'width': 1138,
+            'height': 570,
+            'x': 0,
+            'y': 0
+        }
+        self.main_window_geom = self.get('main_window_gui', 'main_window_geom', main_window_geom)
+        self.horizontal_splitter_state = self.get('main_window_gui', 'horizontal_splitter_state', [47, 47])
+        self.vertical_splitter_state = self.get('main_window_gui', 'vertical_splitter_state', [10, 10])
+        self.list_sort_method = self.get('main_window_gui', 'list_sort_method', 2)
+        self.list_order_method = self.get('main_window_gui', 'list_order_method', 2)
+        self.download_users_state = self.get('main_window_gui', 'download_users_state', False)
+        self.download_subreddits_state = self.get('main_window_gui', 'download_subreddits_state', False)
         # endregion
 
-        self.reddit_object_settings_dialog_geom = self.settings.value('reddit_object_settings_dialog_geom', None)
-        self.reddit_object_content_icons_full_width = self.settings.value('reddit_object_content_icons_full_width',
-                                                                          False, type=bool)
-        self.reddit_object_content_icon_size = self.settings.value('reddit_object_content_icon_size', 110, type=int)
-        self.current_reddit_object_settings_item_display_list = \
-            self.settings.value('current_reddit_object_settings_item_display_list', 'previous_downloads', type=str)
-        self.reddit_object_settings_dialog_splitter_state = self.settings.value(
-            'reddit_object_settings_dialog_splitter_state', None)
+        # region Reddit Object Settings Dialog
+        self.reddit_object_settings_dialog_geom = self.get('reddit_object_settings_dialog',
+                                                           'reddit_object_settings_dialog_geom')
+        self.reddit_object_content_icons_full_width = self.get('reddit_object_settings_dialog',
+                                                               'reddit_object_content_icons_full_width', False)
+        self.reddit_object_content_icon_size = self.get('reddit_object_settings_dialog',
+                                                        'reddit_object_content_icon_size', 110)
+        self.reddit_object_settings_dialog_splitter_state = self.get('reddit_object_settings_dialog',
+                                                                     'reddit_object_settings_dialog_splitter_state')
         # endregion
 
         # region Misc Dialogs
-        self.settings_dialog_geom = self.settings.value('settings_dialog_geom')
-        self.failed_downloads_dialog_geom = self.settings.value("failed_downloads_dialog_geom")
-        self.failed_downloads_dialog_splitter_state = self.settings.value("failed_downloads_dialog_splitter_state",
-                                                                          None)
-        self.update_dialog_geom = self.settings.value("update_dialog_geom")
-        self.download_users_on_add = self.settings.value('download_users_on_add', False, type=bool)
-        self.download_subreddits_on_add = self.settings.value('download_subreddits_on_add', False, type=bool)
+        self.settings_dialog_geom = self.get('misc_dialogs', 'settings_dialog_geom')
+        self.failed_downloads_dialog_geom = self.get('misc_dialogs', 'failed_downloads_dialog_geom')
+        self.failed_downloads_dialog_splitter_state = self.get('misc_dialogs', 'failed_downloads_dialog_splitter_state')
+        self.update_dialog_geom = self.get('misc_dialogs', 'update_dialog_geom')
         # endregion
 
-        if self.check_first_run():
-            ObjectUpdater.check_settings_manager(self)
+        default_tooltip_display_dict = {
+            'name': True,
+            'download_enabled': True,
+            'lock_settings': False,
+            'last_download_date': False,
+            'date_limit': True,
+            'absolute_date_limit': False,
+            'post_limit': False,
+            'download_naming_method': False,
+            'subreddit_save_method': False,
+            'download_videos': False,
+            'download_images': False,
+            'download_comments': False,
+            'download_comment_content': False,
+            'nsfw_filter': False,
+            'date_added': False
+        }
+        self.main_window_tooltip_display_dict = self.get('tooltip_display', 'main_window_tooltip_display_dict',
+                                                         default_tooltip_display_dict)
 
-    def check_first_run(self):
-        cached_version = self.settings.value("cached_version", "v0.0.0", type=str)
-        if cached_version != __version__:
-            self.logger.info('First run of new version',
-                             extra={'new_version': __version__, 'old_version': cached_version})
-            return True
-        else:
-            return False
-
-    @property
-    def date_limit(self):
-        return SystemUtil.epoch_to_datetime(self.date_limit_epoch)
-
-    def load_picked_objects(self):
-        return ObjectStateHandler.load_pickled_state()
-
-    def save_pickle_objects(self, object_dict):
-        object_handler = ObjectStateHandler()
-        return object_handler.save_pickled_state(object_dict)
+    def load_config_file(self):
+        try:
+            self.config = toml.load(self.config_file_path)
+        except:
+            self.config = {
+                'title': 'Downloader For Reddit configuration file',
+                'warning': 'Users are free to change these values directly, but do so carefully.  Values that are '
+                           'directly modified in this file and not through an application window may cause '
+                           'unpredictable behavior (but most likely crashing) if the values entered are not accounted '
+                           'for by the application.'
+            }
+            with open(self.config_file_path, 'w') as file:
+                toml.dump(self.config, file)
 
     def save_all(self):
-        self.save_core_settings()
-        self.save_main_window()
-        self.save_reddit_object_settings_dialog()
+        for section, key_list in self.section_dict.items():
+            for key in key_list:
+                value = self.get_save_value(key)
+                try:
+                    self.config[section][key] = value
+                except KeyError:
+                    self.config[section] = {key: value}
+        with open(self.config_file_path, 'w') as file:
+            toml.dump(self.config, file)
 
-    def save_core_settings(self):
-        self.settings.setValue('cached_version', __version__)
-        self.settings.setValue("last_update", self.last_update)
-        self.settings.setValue("total_files_downloaded", self.total_files_downloaded)
-        self.settings.setValue("auto_save", self.auto_save)
-        self.settings.setValue("imgur_client_id", self.imgur_client_id)
-        self.settings.setValue("imgur_client_secret", self.imgur_client_secret)
-        self.settings.setValue("imgur_mashape_key", self.imgur_mashape_key)
-        self.settings.setValue("auto_display_failed_list", self.auto_display_failed_list)
-        self.settings.setValue("restrict_by_score", self.restrict_by_score)
-        self.settings.setValue("score_limit_operator", self.score_limit_operator)
-        self.settings.setValue("post_score_limit", self.post_score_limit)
-        self.settings.setValue('user_sort_method', self.user_sort_method)
-        self.settings.setValue('subreddit_sort_method', self.subreddit_sort_method)
-        self.settings.setValue("post_limit", self.post_limit)
-        self.settings.setValue("restrict_by_date", self.restrict_by_date)
-        self.settings.setValue("restrict_by_custom_date", self.restrict_by_custom_date)
-        self.settings.setValue("settings_custom_date", self.custom_date)
-        self.settings.setValue('date_limit_epoch', self.date_limit_epoch)
-        self.settings.setValue("download_video", self.download_videos)
-        self.settings.setValue("download_images", self.download_images)
-        self.settings.setValue('download_comments', self.download_comments.value)
-        self.settings.setValue('download_comment_content', self.download_comment_content.value)
-        self.settings.setValue('download_nsfw', self.download_nsfw.value)
-        self.settings.setValue("avoid_duplicates", self.avoid_duplicates)
-        self.settings.setValue('download_reddit_hosted_videos', self.download_reddit_hosted_videos)
-        self.settings.setValue('display_ffmpeg_warning_dialog', self.display_ffmpeg_warning_dialog)
-        self.settings.setValue('subreddit_save_structure', self.subreddit_save_structure.value)
-        self.settings.setValue('download_name_method', self.download_name_method.value)
-        self.settings.setValue('extraction_thread_count', self.extraction_thread_count)
-        self.settings.setValue("download_thread_count", self.download_thread_count)
-        self.settings.setValue('save_failed_extracts', self.save_failed_extracts)
-        self.settings.setValue('set_file_modified_date', self.set_file_modified_date)
-        self.settings.setValue('current_user_list', self.current_user_list)
-        self.settings.setValue('current_subreddit_list', self.current_subreddit_list)
-        self.settings.setValue('user_save_directory', self.user_save_directory)
-        self.settings.setValue('subreddit_save_directory', self.subreddit_save_directory)
+    def get_save_value(self, key):
+        value = getattr(self, key)
+        if key in self.conversion_list:
+            return value.value
+        return value
 
-    def save_display_settings(self):
-        self.settings.setValue('tooltip_name', self.tooltip_display_dict['name'])
-        self.settings.setValue('tooltip_do_not_edit', self.tooltip_display_dict['do_not_edit'])
-        self.settings.setValue('tooltip_last_download_date', self.tooltip_display_dict['last_download_date'])
-        self.settings.setValue('tooltip_custom_date_limit', self.tooltip_display_dict['custom_date_limit'])
-        self.settings.setValue('tooltip_post_limit', self.tooltip_display_dict['post_limit'])
-        self.settings.setValue('tooltip_name_downloads_by', self.tooltip_display_dict['name_downloads_by'])
-        self.settings.setValue('tooltip_subreddit_save_method', self.tooltip_display_dict['subreddit_save_method'])
-        self.settings.setValue('tooltip_save_path', self.tooltip_display_dict['save_path'])
-        self.settings.setValue('tooltip_download_videos', self.tooltip_display_dict['download_videos'])
-        self.settings.setValue('tooltip_download_images', self.tooltip_display_dict['download_images'])
-        self.settings.setValue('tooltip_avoid_duplicates', self.tooltip_display_dict['avoid_duplicates'])
-        self.settings.setValue('tooltip_nsfw_filter', self.tooltip_display_dict['nsfw_filter'])
-        self.settings.setValue('tooltip_saved_content_count', self.tooltip_display_dict['saved_content_count'])
-        self.settings.setValue('tooltip_saved_submission_count', self.tooltip_display_dict['saved_submission_count'])
-        self.settings.setValue('tooltip_total_download_count', self.tooltip_display_dict['total_download_count'])
-        self.settings.setValue('tooltip_added_on_date', self.tooltip_display_dict['added_on_date'])
-        self.settings.setValue('gif_display_method', self.gif_display_method)
-
-    def save_main_window(self):
-        self.settings.setValue("main_window_geometry", self.main_window_geom)
-        self.settings.setValue('horz_splitter_state', self.horz_splitter_state)
-        self.settings.setValue('vert_splitter_state', self.vert_splitter_state)
-        self.settings.setValue("list__sort_method", self.list_sort_method)
-        self.settings.setValue("list_order_method", self.list_order_method)
-        self.settings.setValue("download_users", self.download_users)
-        self.settings.setValue("download_subreddits", self.download_subreddits)
-
-    def save_reddit_object_settings_dialog(self):
-        self.settings.setValue('reddit_object_settings_dialog_geom', self.reddit_object_settings_dialog_geom)
-        self.settings.setValue('reddit_object_settings_dialog_splitter_state',
-                               self.reddit_object_settings_dialog_splitter_state)
-        self.settings.setValue('reddit_object_content_icons_full_width', self.reddit_object_content_icons_full_width)
-        self.settings.setValue('reddit_object_content_icon_size', self.reddit_object_content_icon_size)
-        self.settings.setValue('current_reddit_object_settings_item_display_list',
-                               self.current_reddit_object_settings_item_display_list)
-
-    def save_settings_dialog(self):
-        self.settings.setValue('settings_dialog_geom', self.settings_dialog_geom)
-
-    def save_failed_downloads_dialog(self):
-        self.settings.setValue("failed_downloads_dialog_geom", self.failed_downloads_dialog_geom)
-        self.settings.setValue("failed_downloads_dialog_splitter_state", self.failed_downloads_dialog_splitter_state)
-
-    def save_update_dialog(self):
-        self.settings.setValue("do_not_notify_update", self.do_not_notify_update)
-        self.settings.setValue("update_dialog_geom", self.update_dialog_geom)
-
-    def save_add_dialog(self):
-        self.settings.setValue('download_users_on_add', self.download_users_on_add)
-        self.settings.setValue('download_subreddits_on_add', self.download_subreddits_on_add)
-
-    @property
-    def json(self):
+    def get(self, section, key, default_value=None, container=None):
         """
-        Makes and returns a json dict of all of the download relevant settings to be logged.
-        :return: A dict of download relevant settings.
-        :rtype: dict
+        Attempts to extract the value from the config object that is loaded from a config file.  The default value is
+        returned if the key is not found in the config.
+        :param section: The section that the key is located in.
+        :param key: The key to the value that is needed.
+        :param default_value: The value that will be returned if the key is not found in the config object.
+        :param container: Optional.  Object that should wrap the value loaded from the config file.  Since objects such
+                          as ModelEnums are not able to be stored in the config file, a storable value is used instead.
+                          When a container is supplied the supplied container object will be initialized with the value
+                          loaded from the config file.
+        :return: The value as stored in the configuration.
         """
-        return {
-            'imgur_client_valid': self.check_imgur_client(),
-            'restrict_by_score': self.restrict_by_score,
-            'score_limit_operator': self.score_limit_operator,
-            'score_limit': self.post_score_limit,
-            'user_sort_method': self.user_sort_method,
-            'subreddit_sort_method': self.subreddit_sort_method,
-            'post_limit': self.post_limit,
-            'restrict_by_date': self.restrict_by_date,
-            'restrict_by_custom_date': self.restrict_by_custom_date,
-            'custom_date': self.custom_date,
-            'download_videos': self.download_videos,
-            'download_images': self.download_images,
-            'download_comments': self.download_comments,
-            'download_comment_content': self.download_comment_content,
-            'download_nsfw': self.download_nsfw,
-            'avoid_duplicates': self.avoid_duplicates,
-            'subreddit_save_structure': self.subreddit_save_structure,
-            'download_name_method': self.download_name_method,
-            'extraction_thread_count': self.extraction_thread_count,
-            'download_thread_count': self.download_thread_count,
-            'user_save_directory': self.user_save_directory,
-            'subreddit_save_directory': self.subreddit_save_directory,
-        }
+        self.map_section(section, key)
+        try:
+            value = self.config[section][key]
+        except KeyError:
+            value = default_value
+        if container is None:
+            return value
+        else:
+            self.conversion_list.append(key)
+            return container(value)
 
-    def check_imgur_client(self):
-        return self.imgur_client_id is not None and self.imgur_client_secret is not None
+    def map_section(self, section, key):
+        try:
+            key_list = self.section_dict[section]
+            key_list.append(key)
+        except KeyError:
+            self.section_dict[section] = [key]
