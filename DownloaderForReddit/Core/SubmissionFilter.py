@@ -23,7 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from ..Utils import Injector
-from ..Database.ModelEnums import NsfwFilter
+from ..Database.ModelEnums import NsfwFilter, LimitOperator
 
 
 class SubmissionFilter:
@@ -39,22 +39,22 @@ class SubmissionFilter:
         :param reddit_object: The reddit object to which the submission belongs.
         :return: True or False depending on if the submission passed the filter criteria.
         """
-        return self.score_filter(submission) and self.nsfw_filter(submission, reddit_object) and \
+        return self.score_filter(submission, reddit_object) and self.nsfw_filter(submission, reddit_object) and \
                self.date_filter(submission, reddit_object)
 
-    def score_filter(self, submission):
+    def score_filter(self, submission, reddit_object):
         """
         Test the submission to see if it is greater or less than the global settings submission score limit.
         :param submission: A praw submission item to be tested.
+        :param reddit_object: The reddit object which the post is being extracted for.
         :return: True if the submissions score limit is meets the global settings criteria, False if it does not.
         """
-        if self.settings_manager.restrict_by_score:
-            if self.settings_manager.score_limit_operator == 'GREATER':
-                return submission.score >= self.settings_manager.submission_score_limit
-            else:
-                return submission.score <= self.settings_manager.submission_score_limit
-        else:
+        if reddit_object.score_limit_operator == LimitOperator.no_limit:
             return True
+        elif reddit_object.score_limit_operator == LimitOperator.less_than:
+            return submission.score <= reddit_object.score_limit
+        else:
+            return submission.score >= reddit_object.score_limit
 
     def nsfw_filter(self, submission, reddit_object):
         """
