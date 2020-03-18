@@ -33,16 +33,21 @@ class SettingsManager:
         # endregion
 
         # region Download Defaults
+        self.post_limit = self.get('download_defaults', 'post_limit', 1000)
         self.post_score_limit_operator = self.get('download_defaults', 'post_score_limit_operator', 0,
                                                   container=LimitOperator)
         self.post_score_limit = self.get('download_defaults', 'post_score_limit', 1000)
         self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
         self.download_videos = self.get('download_defaults', 'download_videos', True)
         self.download_images = self.get('download_defaults', 'download_images', True)
-        self.download_comments = self.get('download_defaults', 'download_comments', False)
-        self.download_comment_content = self.get('download_defaults', 'download_comment_content', False)
+        self.download_comments = self.get('download_defaults', 'download_comments', 2,
+                                          container=CommentDownload)
+        self.download_comment_content = self.get('download_defaults', 'download_comment_content', 2,
+                                                 container=CommentDownload)
         self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
-        self.date_limit = self.get('download_defaults', 'date_limit', datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
+        self.date_limit = self.get('download_defaults', 'date_limit', None)
+        self.absolute_date_limit = self.get('download_defaults', 'absolute_date_limit',
+                                            datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
         self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 'NEW')
         self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 'NEW')
         self.user_download_naming_method = self.get('download_defaults', 'user_download_naming_method', 2,
