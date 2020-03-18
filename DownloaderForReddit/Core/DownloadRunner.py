@@ -9,17 +9,17 @@ from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core.ContentExtractor import ContentExtractor
 from ..Core.Downloader import Downloader
-from ..Database.Models import DownloadSession, User, Subreddit, RedditObject
+from ..Database.Models import DownloadSession, RedditObject, User, Subreddit, Post, Content
 
 
 class DownloadRunner(QObject):
-
     remove_invalid_object = pyqtSignal(object)
     remove_forbidden_object = pyqtSignal(object)
     finished = pyqtSignal()
     download_session_signal = pyqtSignal(int)  # emits the id of the DownloadSession created at the start of the run
     setup_progress_bar = pyqtSignal(int)
     update_progress_bar_signal = pyqtSignal()
+    update_download_potential = pyqtSignal(int)
     stop = pyqtSignal()
 
     def __init__(self, user_id_list=None, subreddit_id_list=None, perpetual=False):
@@ -181,12 +181,14 @@ class DownloadRunner(QObject):
             if redditor is not None:
                 submissions = self.get_submissions(redditor, user)
                 date_limit = 0
+                potential_downloads = 0
                 for submission in submissions:
                     if submission.created > date_limit:
                         date_limit = submission.created
-
-                    self.submission_queue.put(submission)
+                    self.submission_queue.put((submission, user_id))
+                    potential_downloads += 1
                 user.set_date_limit(date_limit)  # date limit modified after submissions are extracted
+                self.update_download_potential.emit(potential_downloads)
             else:
                 user.set_inactive()
 
@@ -195,11 +197,16 @@ class DownloadRunner(QObject):
             subreddit = session.query(Subreddit).get(subreddit_id)
             sub = self.validate_subreddit(subreddit)
             if sub is not None:
-                self.downloaded_object_count += 1
                 submissions = self.get_submissions(sub, subreddit)
+                date_limit = 0
+                potential_downloads = 0
                 for submission in submissions:
-                    subreddit.set_date_limit(submission.created)  # date limit modified after submissions are extracted
-                    self.submission_queue.put(submission)
+                    if submission.created > date_limit:
+                        date_limit = submission.created
+                    self.submission_queue.put((submission, subreddit_id))
+                    potential_downloads += 1
+                subreddit.set_date_limit(date_limit)
+                self.update_download_potential.emit(potential_downloads)
             else:
                 subreddit.set_inactive()
 
@@ -258,28 +265,31 @@ class DownloadRunner(QObject):
         VideoMerger.merge_videos()
         with self.db.get_scoped_session() as session:
             dl_session = self.finish_download_session(session)
-            self.finish_messages(dl_session)
+            self.finish_messages(dl_session, session)
         self.download_session_signal.emit(self.download_session_id)
 
     def finish_download_session(self, session):
         download_session = session.query(DownloadSession).get(self.download_session_id)
         download_session.end_time = datetime.now()
-
         session.commit()
         return download_session
 
-    def finish_messages(self, dl_session):
-        downloaded_object_count = dl_session.get_session_reddit_objects()
+    def finish_messages(self, dl_session, session):
+        downloaded_post_count = session.query(Post.id).filter(Post.download_session == dl_session).count()
+        downloaded_content_count = session.query(Content.id).filter(Content.download_session == dl_session).count()
+        downloaded_object_count = \
+            session.query(Post.significant_reddit_object_id).filter(Post.download_session == dl_session) \
+            .distinct().count()
         self.logger.info('Download complete', extra={
             'download_time': dl_session.duration,
             'downloaded_reddit_object_count': downloaded_object_count,
-            'extraction_count': self.extractor.content_count,
-            'download_count': self.downloader.download_count,
+            'extraction_count': downloaded_post_count,
+            'download_count': downloaded_content_count,
         })
         message = f'\nFinished\nRun Time: {dl_session.duration}\n' \
                   f'Downloaded {self.download_type.lower()}s: {downloaded_object_count}\n' \
-                  f'Extraction Count: {self.extractor.content_count}\n' \
-                  f'Download Count: {self.downloader.download_count}'
+                  f'Extraction Count: {downloaded_post_count}\n' \
+                  f'Download Count: {downloaded_content_count}'
         self.message_queue.put(message)
 
     def stop_download(self):

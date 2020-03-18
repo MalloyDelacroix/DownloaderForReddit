@@ -50,7 +50,7 @@ class RedditObject(BaseModel):
     name = Column(String, unique=True)
     post_limit = Column(SmallInteger, default=25)
     score_limit = Column(Integer, default=1000)
-    score_limit_operator = Column(Enum(LimitOperator), default=0)
+    score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.no_limit)
     avoid_duplicates = Column(Boolean, default=True)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
@@ -193,9 +193,12 @@ class Post(BaseModel):
     extraction_error = Column(String, nullable=True)
 
     author_id = Column(ForeignKey('user.id'))
-    author = relationship('User', backref='posts')
+    author = relationship('User', foreign_keys=author_id, backref='posts')
     subreddit_id = Column(ForeignKey('subreddit.id'))
-    subreddit = relationship('Subreddit', backref='posts')
+    subreddit = relationship('Subreddit', foreign_keys=subreddit_id, backref='posts')
+    significant_reddit_object_id = Column(ForeignKey('reddit_object.id'))
+    significant_reddit_object = relationship('RedditObject', foreign_keys=significant_reddit_object_id,
+                                             backref='significant_posts')
     download_session_id = Column(ForeignKey('download_session.id'))
     download_session = relationship('DownloadSession', backref='posts')  # session where the post was extracted
 
@@ -285,7 +288,6 @@ class Content(BaseModel):
         if len(filename) >= 176:
             filename = filename[:170] + '...'
         self.download_title = filename
-        self.get_session().commit()
 
     def set_downloaded(self, download_session_id):
         self.download_session_id = download_session_id

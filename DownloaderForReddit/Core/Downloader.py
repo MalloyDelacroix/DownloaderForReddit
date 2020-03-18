@@ -1,6 +1,7 @@
 import os
 import requests
 import logging
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
 from ..Utils import Injector, SystemUtil, VideoMerger
@@ -53,9 +54,9 @@ class Downloader:
         try:
             with self.db.get_scoped_session() as session:
                 content = session.query(Content).get(content_id)
-                print(f'\n\nContent Title: {content.title}\n\n')
                 response = requests.get(content.url, stream=True)
                 if response.status_code == 200:
+                    self.check_file_path(content)
                     content.make_download_title()
                     file_path = content.full_file_path
                     with open(file_path, 'wb') as file:
@@ -75,6 +76,11 @@ class Downloader:
         incremented and appended to the contents title until a naming conflict no longer exists.
         :param content: The Content item who's path is to be checked.
         """
+        try:
+            SystemUtil.create_directory(content.directory_path)
+        except PermissionError:
+            self.logger.error('Could not create directory path', extra={'directory_path': content.directory_path},
+                              exc_info=True)
         unique_count = 1
         path = content.full_file_path
         while os.path.exists(path):
@@ -88,11 +94,12 @@ class Downloader:
         setting the date modified for the file, and saving the content changes to the database.
         :param content: The content item that has been downloaded and needs to be finished.
         """
-        if self.settings_manager.set_file_modified_date:
+        if self.settings_manager.match_file_modified_to_post_date:
             SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
         self.check_video_merger(content)
         content.set_downloaded(self.download_session_id)
         self.output_queue.put(f'Saved: {content.full_file_path}')
+        self.download_count += 1
 
     def check_video_merger(self, content: Content):
         """

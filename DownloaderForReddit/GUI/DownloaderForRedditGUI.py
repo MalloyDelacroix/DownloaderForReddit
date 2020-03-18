@@ -435,103 +435,13 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # TODO: get the download session id at start of download for monitoring?
         self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
         self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
+        self.download_runner.update_download_potential.connect(self.update_status_bar_download_potential)
         self.download_runner.finished.connect(self.thread.quit)
         self.download_runner.finished.connect(self.download_runner.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.finished_download_gui_shift)
         self.thread.start()
         self.logger.info('Download thread started')
-
-    def run_user(self):
-        user_list = self.user_list_model.reddit_objects
-        self.logger.info('User download initiated', extra={'list_size': len(user_list),
-                                                           'settings': self.settings_manager.json})
-        self.download_runner = DownloadRunner(user_list, None, self.queue, None)
-        self.start_reddit_extractor_thread('USER')
-
-    def run_single_user(self, download_tuple):
-        """
-        Called from the user settings dialog and supplied the name of the selected user.  Downloads only the
-        selected user
-        """
-        user = download_tuple[0]
-        self.logger.info('Single user download initiated', extra={'user': user.name,
-                                                                  'settings': self.settings_manager.json})
-        user_list = [user]
-        self.download_runner = DownloadRunner(user_list, None, self.queue, None)
-        self.start_reddit_extractor_thread('USER')
-
-    def run_subreddit(self):
-        self.logger.info('Subreddit download initiated', extra={'list_size': self.subreddit_list_model.rowCount(),
-                                                                'settings': self.settings_manager.json})
-        self.download_runner = DownloadRunner(None, self.subreddit_list_model.list, self.queue, None)
-        self.start_reddit_extractor_thread('SUBREDDIT')
-
-    def run_single_subreddit(self, download_tuple):
-        """
-        Called from the subreddit settings dialog and supplied the name of the selected subreddit.  Downloads only the
-        selected subreddit
-        """
-        self.logger.info('Single subreddit download initiated', extra={'subreddit': download_tuple[0].name,
-                                                                       'settings': self.settings_manager.json})
-        subreddit_list = [download_tuple[0]]
-        self.download_runner = DownloadRunner(None, subreddit_list, self.queue, None)
-        self.download_runner.single_subreddit_run_method = download_tuple[1]
-        self.start_reddit_extractor_thread('SUBREDDIT')
-
-    def run_user_and_subreddit(self):
-        """
-        Downloads from the users in the user list only the content which has been posted to the subreddits in the
-        subreddit list.
-        """
-        self.logger.info('User and subreddit download initiated',
-                         extra={
-                             'user_list_size': self.user_list_model.rowCount(),
-                             'subreddit_list_size': self.subreddit_list_model.rowCount(),
-                             'settings': self.settings_manager.json
-                         })
-        self.download_runner = DownloadRunner(self.user_list_model.list, self.subreddit_list_model.list, self.queue,
-                                              None)
-        self.start_reddit_extractor_thread('USERS_AND_SUBREDDITS')
-
-    def run_unfinished_downloads(self):
-        """Downloads the content that was left during the last run if the user clicked the stop download button"""
-        self.logger.info('Unfinished downloads download initiated', extra={'list_size': len(self.unfinished_downloads),
-                                                                           'settings': self.settings_manager.json})
-        self.download_count = 0
-        self.download_runner = DownloadRunner(None, None, self.queue, self.unfinished_downloads)
-        self.start_reddit_extractor_thread('UNFINISHED')
-
-    def start_reddit_extractor_thread(self, download_type):
-        """Moves the extractor to a different thread and calls the appropriate function for the type of download"""
-        self.stop_download_signal.connect(self.download_runner.stop_download)
-        self.thread = QtCore.QThread()
-        self.download_runner.moveToThread(self.thread)
-        if download_type == 'USER':
-            self.thread.started.connect(self.download_runner.validate_users)
-        elif download_type == 'SUBREDDIT':
-            self.thread.started.connect(self.download_runner.validate_subreddits)
-        elif download_type == 'USERS_AND_SUBREDDITS':
-            self.thread.started.connect(self.download_runner.validate_users_and_subreddits)
-        elif download_type == 'UNFINISHED':
-            self.thread.started.connect(self.download_runner.finish_downloads)
-        self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
-        self.download_runner.remove_forbidden_object.connect(self.remove_forbidden_reddit_object)
-        self.download_runner.downloaded_objects_signal.connect(self.fill_downloaded_objects_list)
-        self.download_runner.failed_download_signal.connect(self.handle_failed_download_object)
-        self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
-        self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
-        self.download_runner.unfinished_downloads_signal.connect(self.set_unfinished_downloads)
-        self.download_runner.finished.connect(self.thread.quit)
-        self.download_runner.finished.connect(self.download_runner.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.thread.finished.connect(self.finished_download_gui_shift)
-        for dialog in self.open_object_dialogs:
-            dialog.started_download_gui_shift()
-            self.thread.finished.connect(dialog.finished_download_gui_shift)
-        self.started_download_gui_shift()
-        self.thread.start()
-        self.logger.info('Downloader thread started')
 
     def handle_failed_download_object(self, failed_post):
         """
@@ -552,16 +462,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         elif text.startswith('Saved'):
             self.update_status_bar_download_count()
             self.output_box.append(text)
-        elif text.startswith('$$Count'):
-            t, count = text.rsplit(' ', 1)
-            self.download_count += int(count)
         else:
             self.output_box.append(text)
 
+    def update_status_bar_download_potential(self, count):
+        self.download_count += count
+        self.statusbar.showMessage(f'Downloaded: {self.downloaded} of {self.download_count}', -1)
+
     def update_status_bar_download_count(self):
         self.downloaded += 1
-        self.settings_manager.total_files_downloaded += 1
-        self.statusbar.showMessage('Downloaded: %s  of  %s' % (self.downloaded, self.download_count), -1)
+        self.statusbar.showMessage(f'Downloaded: {self.downloaded} of {self.download_count}', -1)
 
     def setup_progress_bar(self, limit):
         self.progress_bar.setVisible(True)
@@ -1283,8 +1193,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager.vertical_splitter_state = self.vert_splitter.sizes()
         self.settings_manager.list_sort_method = self.list_sort_method
         self.settings_manager.list_order_method = self.list_order_method
-        self.settings_manager.download_users = self.download_users_checkbox.isChecked()
-        self.settings_manager.download_subreddits = self.download_subreddit_checkbox.isChecked()
+        self.settings_manager.download_users_state = self.download_users_checkbox.isChecked()
+        self.settings_manager.download_subreddits_state = self.download_subreddit_checkbox.isChecked()
         self.settings_manager.current_user_list = self.user_lists_combo.currentText()
         self.settings_manager.current_subreddit_list = self.subreddit_list_combo.currentText()
 

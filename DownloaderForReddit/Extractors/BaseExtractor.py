@@ -22,12 +22,13 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import requests
 import logging
 
 from ..Database.Models import Content, Post
 from ..Utils import Injector
-from ..Database.ModelEnums import DownloadNameMethod
+from ..Database.ModelEnums import DownloadNameMethod, SubredditSaveStructure
 
 
 class BaseExtractor:
@@ -173,18 +174,40 @@ class BaseExtractor:
         if self.check_duplicate_content(url):
             count = f' {count}' if count and self.use_count else ''
             title = file_name + count
+            dir_path = self.make_dir_path()
             content = Content(
                 title=title,
                 extension=extension,
                 url=url,
                 user=self.user,
                 subreddit=self.subreddit,
-                post=self.post
+                post=self.post,
+                directory_path=dir_path
             )
             self.extracted_content.append(content)
             # TODO: need to figure out best way to set directory_path before content is saved
             return content
         return None
+
+    def make_dir_path(self):
+        """
+        Creates and returns the path for the directory the content should be saved in based on the user set base save
+        directory and the content's significant reddit object type and subreddit save structure.
+        :return: The path to the directory in which the content item being created will be saved.
+        """
+        significant_ro = self.post.significant_reddit_object
+        if significant_ro.object_type == 'USER':
+            return os.path.join(self.settings_manager.user_save_directory, significant_ro.name)
+        else:
+            if significant_ro.subreddit_save_structure == SubredditSaveStructure.sub_name:
+                joiner = self.subreddit.name
+            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.author_name:
+                joiner = self.user.name
+            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.sub_name_author_name:
+                joiner = os.path.join(self.subreddit.name, self.user.name)
+            else:
+                joiner = os.path.join(self.user.name, self.subreddit.name)
+            return os.path.join(self.settings_manager.subreddit_save_directory, joiner)
 
     def check_duplicate_content(self, url: str) -> bool:
         """
