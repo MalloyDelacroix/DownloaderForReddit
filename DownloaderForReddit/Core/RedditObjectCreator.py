@@ -60,24 +60,28 @@ class RedditObjectCreator:
             return subreddit
 
     def get_default_setup(self, object_type):
-        return {
+        defaults = {
             'post_limit': self.settings_manager.post_limit,
+            'score_limit_operator': self.settings_manager.post_score_limit_operator,
+            'score_limit': self.settings_manager.post_score_limit,
             'avoid_duplicates': self.settings_manager.avoid_duplicates,
             'download_videos': self.settings_manager.download_videos,
             'download_images': self.settings_manager.download_images,
             'download_comments': self.settings_manager.download_comments,
             'download_comment_content': self.settings_manager.download_comment_content,
             'download_nsfw': self.settings_manager.download_nsfw,
-            'date_limit': self.get_date_limit(),
+            'date_limit': self.settings_manager.date_limit,
             'significant': True,
-            'post_sort_method': self.settings_manager.user_sort_method if object_type == 'USER' else
-            self.settings_manager.subreddit_sort_method,
-            'download_naming_method': self.settings_manager.download_name_method,
             'subreddit_save_structure': self.settings_manager.subreddit_save_structure
         }
+        self.get_specific_defaults(defaults, object_type)
+        return defaults
 
-    def get_date_limit(self):
-        if self.settings_manager.restrict_by_custom_date and self.settings_manager.custom_date is not None:
-            return datetime.fromtimestamp(self.settings_manager.custom_date)
+    def get_specific_defaults(self, defaults, object_type):
+        if object_type == 'USER':
+            post_sort_method = self.settings_manager.user_post_sort_method
+            download_naming_method = self.settings_manager.user_download_naming_method
         else:
-            return None
+            post_sort_method = self.settings_manager.subreddit_post_sort_method
+            download_naming_method = self.settings_manager.subreddit_download_naming_method
+        defaults.update({'post_sort_method': post_sort_method, 'download_naming_method': download_naming_method})
