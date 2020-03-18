@@ -49,12 +49,12 @@ class SubmissionFilter:
         :param reddit_object: The reddit object which the post is being extracted for.
         :return: True if the submissions score limit is meets the global settings criteria, False if it does not.
         """
-        if reddit_object.score_limit_operator == LimitOperator.no_limit:
+        if reddit_object.post_score_limit_operator == LimitOperator.no_limit:
             return True
         elif reddit_object.score_limit_operator == LimitOperator.less_than:
-            return submission.score <= reddit_object.score_limit
+            return submission.score <= reddit_object.post_score_limit
         else:
-            return submission.score >= reddit_object.score_limit
+            return submission.score >= reddit_object.post_score_limit
 
     def nsfw_filter(self, submission, reddit_object):
         """

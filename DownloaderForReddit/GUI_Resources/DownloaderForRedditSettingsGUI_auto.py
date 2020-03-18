@@ -2,18 +2,20 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditSettingsGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_SettingsGUI(object):
     def setupUi(self, SettingsGUI):
         SettingsGUI.setObjectName("SettingsGUI")
         SettingsGUI.resize(754, 889)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Resources/Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../../Resources/Images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         SettingsGUI.setWindowIcon(icon)
         self.gridLayout_8 = QtWidgets.QGridLayout(SettingsGUI)
         self.gridLayout_8.setObjectName("gridLayout_8")
@@ -25,7 +27,6 @@ class Ui_SettingsGUI(object):
         self.page = QtWidgets.QWidget()
         self.page.setObjectName("page")
         self.gridLayout_9 = QtWidgets.QGridLayout(self.page)
-        self.gridLayout_9.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_9.setObjectName("gridLayout_9")
         self.formLayout = QtWidgets.QFormLayout()
         self.formLayout.setObjectName("formLayout")
@@ -289,7 +290,6 @@ class Ui_SettingsGUI(object):
         self.page_2 = QtWidgets.QWidget()
         self.page_2.setObjectName("page_2")
         self.gridLayout_10 = QtWidgets.QGridLayout(self.page_2)
-        self.gridLayout_10.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_10.setObjectName("gridLayout_10")
         self.tooltip_group_box = QtWidgets.QGroupBox(self.page_2)
         font = QtGui.QFont()
@@ -452,4 +452,3 @@ class Ui_SettingsGUI(object):
         self.gif_do_not_display_radio.setText(_translate("SettingsGUI", "Do Not Display Gifs"))
         self.restore_defaults_button.setText(_translate("SettingsGUI", "Restore Defaults"))
         self.change_widget_button.setText(_translate("SettingsGUI", "Display Settings"))
-

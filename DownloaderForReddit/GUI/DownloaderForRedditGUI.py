@@ -301,43 +301,53 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         menu.exec(QtGui.QCursor.pos())
 
     def user_settings(self, page, from_menu):
-        # TODO: revisit this...something looks off here
-        """
-        Opens the user settings dialog.  A page is supplied because the right click menu option 'View User Downloads'
-        will open page two of the dialog which shows the user downloads.  From menu will almost always be false, except
-        when the dialog is opened from the file menu.  This is done so that a user does not have to be selected to open
-        the dialog from the file menu
-        """
-        try:
-            if not from_menu:
-                position = self.get_selected_view_index(self.user_list_view).row()
-            else:
-                position = 0
-            user_settings_dialog = RedditObjectSettingsDialog(self.user_list_model,
-                                                              self.user_list_model.reddit_objects[position],
-                                                              self.running)
-            user_settings_dialog.single_download.connect(self.run_single_user)
-            self.open_object_dialogs.append(user_settings_dialog)
-            user_settings_dialog.show()
-            if page == 1:
-                user_settings_dialog.change_to_downloads_view()
-            if not user_settings_dialog.closed:
-                dialog = user_settings_dialog.exec_()
-                self.open_object_dialogs.remove(user_settings_dialog)
-                if dialog == QtWidgets.QDialog.Accepted:
-                    if user_settings_dialog.restore_defaults:
-                        for user in self.user_list_model.list:
-                            user.custom_date_limit = None
-                            user.avoid_duplicates = self.avoid_duplicates
-                            user.download_videos = self.download_videos
-                            user.download_images = self.download_images
-                            user.do_not_edit = False
-                            user.save_path = '%s%s/' % (self.save_path, user.name)
-                            user.name_downloads_by = self.name_downloads_by
-                            user.post_limit = self.post_limit
-                    self.user_list_model.commit_changes()
-        except AttributeError:
-            self.logger.error('User settings unable to open', exc_info=True)
+        # try:
+        if not from_menu:
+            position = self.get_selected_view_index(self.user_list_view).row()
+        else:
+            position = 0
+        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name,
+                                            self.user_list_model.reddit_objects[position])
+        d = dialog.exec_()
+
+    # def user_settings(self, page, from_menu):
+    #     # TODO: revisit this...something looks off here
+    #     """
+    #     Opens the user settings dialog.  A page is supplied because the right click menu option 'View User Downloads'
+    #     will open page two of the dialog which shows the user downloads.  From menu will almost always be false, except
+    #     when the dialog is opened from the file menu.  This is done so that a user does not have to be selected to open
+    #     the dialog from the file menu
+    #     """
+    #     try:
+    #         if not from_menu:
+    #             position = self.get_selected_view_index(self.user_list_view).row()
+    #         else:
+    #             position = 0
+    #         user_settings_dialog = RedditObjectSettingsDialog(self.user_list_model,
+    #                                                           self.user_list_model.reddit_objects[position],
+    #                                                           self.running)
+    #         user_settings_dialog.single_download.connect(self.run_single_user)
+    #         self.open_object_dialogs.append(user_settings_dialog)
+    #         user_settings_dialog.show()
+    #         if page == 1:
+    #             user_settings_dialog.change_to_downloads_view()
+    #         if not user_settings_dialog.closed:
+    #             dialog = user_settings_dialog.exec_()
+    #             self.open_object_dialogs.remove(user_settings_dialog)
+    #             if dialog == QtWidgets.QDialog.Accepted:
+    #                 if user_settings_dialog.restore_defaults:
+    #                     for user in self.user_list_model.list:
+    #                         user.custom_date_limit = None
+    #                         user.avoid_duplicates = self.avoid_duplicates
+    #                         user.download_videos = self.download_videos
+    #                         user.download_images = self.download_images
+    #                         user.do_not_edit = False
+    #                         user.save_path = '%s%s/' % (self.save_path, user.name)
+    #                         user.name_downloads_by = self.name_downloads_by
+    #                         user.post_limit = self.post_limit
+    #                 self.user_list_model.commit_changes()
+    #     except AttributeError:
+    #         self.logger.error('User settings unable to open', exc_info=True)
 
     def subreddit_settings(self, page, from_menu):
         # TODO: revisit this...something looks off here

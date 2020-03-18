@@ -62,8 +62,8 @@ class RedditObjectCreator:
     def get_default_setup(self, object_type):
         defaults = {
             'post_limit': self.settings_manager.post_limit,
-            'score_limit_operator': self.settings_manager.post_score_limit_operator,
-            'score_limit': self.settings_manager.post_score_limit,
+            'post_score_limit_operator': self.settings_manager.post_score_limit_operator,
+            'post_score_limit': self.settings_manager.post_score_limit,
             'avoid_duplicates': self.settings_manager.avoid_duplicates,
             'download_videos': self.settings_manager.download_videos,
             'download_images': self.settings_manager.download_images,
