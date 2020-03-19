@@ -31,7 +31,10 @@ class RedditObjectListModel(QAbstractListModel):
         return [x.id for x in self.reddit_objects]
 
     def add_new_list(self, list_name, list_type):
-        exists = self.session.query(RedditObjectList.id).filter(RedditObjectList.name == list_name).scalar() is not None
+        exists = self.session.query(RedditObjectList.id)\
+                     .filter(RedditObjectList.name == list_name)\
+                     .filter(RedditObjectList.list_type == self.list_type)\
+                     .scalar() is not None
         if exists:
             return False
         else:
@@ -71,7 +74,7 @@ class RedditObjectListModel(QAbstractListModel):
         :type name: str
         :rtype: bool
         """
-        ro = self.session.query(RedditObject.id).filter(func.lower(RedditObject.name) == func.lower(name)).scalar()
+        ro = self.session.query(RedditObject).filter(func.lower(RedditObject.name) == func.lower(name)).scalar()
         return ro in self.reddit_objects
 
     def delete_reddit_object(self, reddit_object):
