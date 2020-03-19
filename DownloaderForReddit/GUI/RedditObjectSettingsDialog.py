@@ -8,10 +8,10 @@ from ..Database.Models import RedditObject, Post, Content, Comment
 from ..Utils import Injector
 
 
-class RedditObjectSettingsDialog(QtWidgets.QWidget, Ui_RedditObjectSettingsDialog):
+class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
 
     def __init__(self, list_type, list_name, selected_object: RedditObject):
-        QtWidgets.QWidget.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.db = Injector.get_database_handler()
@@ -22,6 +22,7 @@ class RedditObjectSettingsDialog(QtWidgets.QWidget, Ui_RedditObjectSettingsDialo
         self.list_model = RedditObjectListModel(self.list_type)
         self.list_model.set_list(self.list_name)
         self.reddit_objects_list_view.setModel(self.list_model)
+        self.setup_display()
 
     def setup_display(self):
         self.set_basic_info()
@@ -29,10 +30,10 @@ class RedditObjectSettingsDialog(QtWidgets.QWidget, Ui_RedditObjectSettingsDialo
 
     def set_basic_info(self):
         self.name_label.setText(self.r.name)
-        self.id_label.setText(self.r.id)
-        self.date_created_label.setText(self.r.date_created)
-        self.date_added_label.setText(self.r.date_added)
-        self.last_download_label.setText(self.r.last_download)
+        self.id_label.setText(str(self.r.id))
+        self.date_created_label.setText(self.r.date_created_display)
+        self.date_added_label.setText(self.r.date_added_display)
+        self.last_download_label.setText(self.r.last_download_display)
 
     def set_download_info(self):
         self.download_info_thread = Thread(target=self.set_download_info_labels)
