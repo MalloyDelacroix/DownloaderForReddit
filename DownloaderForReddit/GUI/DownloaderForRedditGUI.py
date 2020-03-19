@@ -241,7 +241,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         subreddit_menu = QtWidgets.QMenu()
         try:
             position = self.get_selected_view_index(self.subreddit_list_view).row()
-            subreddit = self.subreddit_list_model.list[position]
+            subreddit = self.subreddit_list_model.reddit_objects[position]
             valid = True
         except AttributeError:
             subreddit = None
@@ -257,7 +257,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if subreddit is not None:
             subreddit_menu.addSeparator()
-            download_enabled_text = 'Enable Download' if not subreddit.enable_download else 'Disable Download'
+            download_enabled_text = 'Enable Download' if not subreddit.download_enabled else 'Disable Download'
             toggle_download_enabled = subreddit_menu.addAction(download_enabled_text)
             toggle_download_enabled.triggered.connect(subreddit.toggle_enable_download)
             subreddit_menu.addSeparator()
@@ -268,7 +268,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         add_subreddit.triggered.connect(self.add_subreddit_dialog)
         remove_subreddit.triggered.connect(self.remove_subreddit)
-        subreddit_settings.triggered.connect(lambda: self.subreddit_settings(0, False))
+        subreddit_settings.triggered.connect(lambda: self.subreddit_settings(subreddit, False))
         subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
         open_subreddit_folder.triggered.connect(self.open_subreddit_download_folder)
 
@@ -349,43 +349,49 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     #     except AttributeError:
     #         self.logger.error('User settings unable to open', exc_info=True)
 
-    def subreddit_settings(self, page, from_menu):
+    def subreddit_settings(self, subreddit, from_menu):
         # TODO: revisit this...something looks off here
         """Operates the same as the user_settings function"""
-        try:
-            if not from_menu:
-                position = self.get_selected_view_index(self.subreddit_list_view).row()
-            else:
-                position = 0
-            subreddit_settings_dialog = RedditObjectSettingsDialog(self.subreddit_list_model,
-                                                                   self.subreddit_list_model.list[position],
-                                                                   self.running)
-            subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
-            self.open_object_dialogs.append(subreddit_settings_dialog)
-            subreddit_settings_dialog.show()
-            if page == 1:
-                subreddit_settings_dialog.change_to_downloads_view()
-            if not subreddit_settings_dialog.closed:
-                dialog = subreddit_settings_dialog.exec_()
-                self.open_object_dialogs.remove(subreddit_settings_dialog)
-                if dialog == QtWidgets.QDialog.Accepted:
-                    if not subreddit_settings_dialog.restore_defaults:
-                        self.subreddit_list_model.list = subreddit_settings_dialog.object_list
-                    else:
-                        for sub in self.subreddit_list_model.list:
-                            sub.date_limit = None
-                            sub.avoid_duplicates = self.settings_manager.avoid_duplicates
-                            sub.download_videos = self.settings_manager.download_videos
-                            sub.download_images = self.settings_manager.download_images
-                            sub.download_nsfw = self.settings_manager.nsfw_filter
-                            sub.lock_settings = False
-                            sub.download_naming_method = self.settings_manager.name_downloads_by
-                            sub.subreddit_save_method = self.settings_manager.save_subreddits_by
-                            sub.post_limit = self.post_limit
-                            sub.download_enabled = True
-                    self.subreddit_list_model.commit_changes()
-        except AttributeError:
-            self.logger.error('Subreddit settings unable to open', exc_info=True)
+        if from_menu:
+            subreddit = self.subreddit_list_model.reddit_objects[0]
+        ro_settings_dialog = RedditObjectSettingsDialog('SUBREDDIT', self.subreddit_list_model.list.name,
+                                                        selected_object=subreddit)
+        ro_settings_dialog.show()
+        dialog = ro_settings_dialog.exec_()
+        # try:
+        #     if not from_menu:
+        #         position = self.get_selected_view_index(self.subreddit_list_view).row()
+        #     else:
+        #         position = 0
+        #     subreddit_settings_dialog = RedditObjectSettingsDialog(self.subreddit_list_model,
+        #                                                            self.subreddit_list_model.list[position],
+        #                                                            self.running)
+        #     subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
+        #     self.open_object_dialogs.append(subreddit_settings_dialog)
+        #     subreddit_settings_dialog.show()
+        #     if page == 1:
+        #         subreddit_settings_dialog.change_to_downloads_view()
+        #     if not subreddit_settings_dialog.closed:
+        #         dialog = subreddit_settings_dialog.exec_()
+        #         self.open_object_dialogs.remove(subreddit_settings_dialog)
+        #         if dialog == QtWidgets.QDialog.Accepted:
+        #             if not subreddit_settings_dialog.restore_defaults:
+        #                 self.subreddit_list_model.list = subreddit_settings_dialog.object_list
+        #             else:
+        #                 for sub in self.subreddit_list_model.list:
+        #                     sub.date_limit = None
+        #                     sub.avoid_duplicates = self.settings_manager.avoid_duplicates
+        #                     sub.download_videos = self.settings_manager.download_videos
+        #                     sub.download_images = self.settings_manager.download_images
+        #                     sub.download_nsfw = self.settings_manager.nsfw_filter
+        #                     sub.lock_settings = False
+        #                     sub.download_naming_method = self.settings_manager.name_downloads_by
+        #                     sub.subreddit_save_method = self.settings_manager.save_subreddits_by
+        #                     sub.post_limit = self.post_limit
+        #                     sub.download_enabled = True
+        #             self.subreddit_list_model.commit_changes()
+        # except AttributeError:
+        #     self.logger.error('Subreddit settings unable to open', exc_info=True)
 
     def open_user_download_folder(self):
         """Opens the Folder where the users downloads are saved using the default file manager"""
