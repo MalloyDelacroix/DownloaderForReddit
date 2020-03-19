@@ -147,9 +147,9 @@ class BaseExtractor:
         """
         reddit_object = self.significant_reddit_object
         method = reddit_object.download_naming_method
-        if method == DownloadNameMethod.id:
+        if method == DownloadNameMethod.ID:
             return media_id
-        elif method == DownloadNameMethod.title:
+        elif method == DownloadNameMethod.TITLE:
             return self.post_title
         else:
             self.use_count = False  # specify not to use album item count when incrementing by number of downloads
@@ -199,11 +199,11 @@ class BaseExtractor:
         if significant_ro.object_type == 'USER':
             return os.path.join(self.settings_manager.user_save_directory, significant_ro.name)
         else:
-            if significant_ro.subreddit_save_structure == SubredditSaveStructure.sub_name:
+            if significant_ro.subreddit_save_structure == SubredditSaveStructure.SUB_NAME:
                 joiner = self.subreddit.name
-            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.author_name:
+            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.AUTHOR_NAME:
                 joiner = self.user.name
-            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.sub_name_author_name:
+            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.SUB_NAME_AUTHOR_NAME:
                 joiner = os.path.join(self.subreddit.name, self.user.name)
             else:
                 joiner = os.path.join(self.user.name, self.subreddit.name)

@@ -33,7 +33,7 @@ class SettingsManager:
         # endregion
 
         # region Download Defaults
-        self.post_limit = self.get('download_defaults', 'post_limit', 1000)
+        self.post_limit = self.get('download_defaults', 'post_limit', 25)
         self.post_score_limit_operator = self.get('download_defaults', 'post_score_limit_operator', 0,
                                                   container=LimitOperator)
         self.post_score_limit = self.get('download_defaults', 'post_score_limit', 1000)
@@ -52,8 +52,9 @@ class SettingsManager:
         self.date_limit = self.get('download_defaults', 'date_limit', None)
         self.absolute_date_limit = self.get('download_defaults', 'absolute_date_limit',
                                             datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
-        self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 'NEW')
-        self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 'NEW')
+        self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 1, container=PostSortMethod)
+        self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 1,
+                                                   container=PostSortMethod)
         self.user_download_naming_method = self.get('download_defaults', 'user_download_naming_method', 2,
                                                     container=DownloadNameMethod)
         self.subreddit_download_naming_method = self.get('download_defaults', 'subreddit_download_naming_method', 2,

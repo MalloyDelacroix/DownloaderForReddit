@@ -49,9 +49,9 @@ class SubmissionFilter:
         :param reddit_object: The reddit object which the post is being extracted for.
         :return: True if the submissions score limit is meets the global settings criteria, False if it does not.
         """
-        if reddit_object.post_score_limit_operator == LimitOperator.no_limit:
+        if reddit_object.post_score_limit_operator == LimitOperator.NO_LIMIT:
             return True
-        elif reddit_object.score_limit_operator == LimitOperator.less_than:
+        elif reddit_object.score_limit_operator == LimitOperator.LESS_THAN:
             return submission.score <= reddit_object.post_score_limit
         else:
             return submission.score >= reddit_object.post_score_limit
@@ -63,9 +63,9 @@ class SubmissionFilter:
         :param reddit_object: The reddit object who's nsfw filter is to be tested against.
         :return: True if the meets the reddit objects nsfw settings criteria, False if it does not.
         """
-        if reddit_object.download_nsfw == NsfwFilter.exclude:
+        if reddit_object.download_nsfw == NsfwFilter.EXCLUDE:
             return not submission.over_18
-        elif reddit_object.download_nsfw == NsfwFilter.only:
+        elif reddit_object.download_nsfw == NsfwFilter.ONLY:
             return submission.over_18
         else:
             return True
