@@ -44,6 +44,10 @@ class SettingsManager:
                                           container=CommentDownload)
         self.download_comment_content = self.get('download_defaults', 'download_comment_content', 2,
                                                  container=CommentDownload)
+        self.comment_limit = self.get('download_defaults', 'comment_limit', 100)
+        self.comment_score_limit = self.get('download_defaults', 'comment_score_limit', 1000)
+        self.comment_score_limit_operator = self.get('download_defaults', 'comment_score_limit_operator', 0,
+                                                     container=LimitOperator)
         self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
         self.date_limit = self.get('download_defaults', 'date_limit', None)
         self.absolute_date_limit = self.get('download_defaults', 'absolute_date_limit',
