@@ -3,48 +3,62 @@ from enum import Enum
 
 class DownloadNameMethod(Enum):
 
-    id = 1
-    title = 2
-    author_name = 3
+    ID = 1
+    TITLE = 2
+    AUTHOR_NAME = 3
 
 
 class SubredditSaveStructure(Enum):
 
-    sub_name = 1
-    author_name = 2
-    sub_name_author_name = 3
-    author_name_sub_name = 4
+    SUB_NAME = 1
+    AUTHOR_NAME = 2
+    SUB_NAME_AUTHOR_NAME = 3
+    AUTHOR_NAME_SUB_NAME = 4
 
 
 class CommentDownload(Enum):
 
-    download = 1
-    do_not_download = 2
-    download_only_author = 3
+    DOWNLOAD = 1
+    DO_NOT_DOWNLOAD = 2
+    DOWNLOAD_ONLY_AUTHOR = 3
 
 
 class NsfwFilter(Enum):
 
-    exclude = -1
-    include = 0
-    only = 1
+    EXCLUDE = -1
+    INCLUDE = 0
+    ONLY = 1
 
 
 class LimitOperator(Enum):
 
-    less_than = -1
-    no_limit = 0
-    greater_than = 1
+    LESS_THAN = -1
+    NO_LIMIT = 0
+    GREATER_THAN = 1
 
 
 class RedditObjectSortMethod(Enum):
 
-    id = 1
-    name = 2
-    score = 3
-    post_count = 4
-    content_count = 5
-    date_added = 6
-    date_created = 7
-    last_download = 8
-    last_post = 9
+    ID = 1
+    NAME = 2
+    SCORE = 3
+    POST_COUNT = 4
+    CONTENT_COUNT = 5
+    DATE_ADDED = 6
+    DATE_CREATED = 7
+    LAST_DOWNLOAD = 8
+    LAST_POST_DATE = 9
+
+
+class PostSortMethod(Enum):
+
+    NEW = 1
+    HOT = 2
+    RISING = 3
+    CONTROVERSIAL = 4
+    TOP_HOUR = 5
+    TOP_DAY = 6
+    TOP_WEEK = 7
+    TOP_MONTH = 8
+    TOP_YEAR = 9
+    TOP_ALL = 10

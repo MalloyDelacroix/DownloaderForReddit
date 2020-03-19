@@ -5,7 +5,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
-from .ModelEnums import DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator
+from .ModelEnums import (DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator,
+                         PostSortMethod)
 from ..Core import Const
 from ..Utils import SystemUtil, Injector
 
@@ -19,6 +20,12 @@ class BaseModel(Base):
 
     def get_session(self):
         return Session.object_session(self)
+
+    def get_display_date(self, date_time):
+        try:
+            return date_time.strftime('%m/%d/%Y %I:%M %p')
+        except AttributeError:
+            return None
 
 
 list_association = Table(
@@ -51,16 +58,16 @@ class RedditObject(BaseModel):
     date_created = Column(DateTime, nullable=True)
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
-    post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.no_limit)
+    post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
     avoid_duplicates = Column(Boolean, default=True)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
-    download_comments = Column(Enum(CommentDownload), default=CommentDownload.do_not_download)
-    download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.do_not_download)
+    download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
+    download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     comment_limit = Column(Integer, default=100)
     comment_score_limit = Column(Integer, default=1000)
-    comment_score_limit_operator = Column(Integer, default=LimitOperator.no_limit)
-    download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.include)
+    comment_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
+    download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
     date_added = Column(DateTime, default=datetime.now())
     lock_settings = Column(Boolean, default=False)
     absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
@@ -70,9 +77,9 @@ class RedditObject(BaseModel):
     significant = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     inactive_date = Column(DateTime, nullable=True)
-    post_sort_method = Column(String, default='NEW')
-    download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.title)
-    subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.sub_name)
+    post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
+    download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.TITLE)
+    subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.SUB_NAME)
     new = Column(Boolean, default=True)
 
     object_type = Column(String(15))
@@ -84,6 +91,30 @@ class RedditObject(BaseModel):
 
     def __str__(self):
         return f'{self.object_type}: {self.name}'
+
+    @property
+    def date_created_display(self):
+        return self.get_display_date(self.date_created)
+
+    @property
+    def date_added_display(self):
+        return self.get_display_date(self.date_added)
+
+    @property
+    def absolute_date_limit_display(self):
+        return self.get_display_date(self.absolute_date_limit)
+
+    @property
+    def date_limit_display(self):
+        return self.get_display_date(self.date_limit)
+
+    @property
+    def last_download_display(self):
+        return self.get_display_date(self.last_download)
+
+    @property
+    def inactive_date_display(self):
+        return self.get_display_date(self.inactive_date)
 
     def set_date_limit(self, epoch):
         """
