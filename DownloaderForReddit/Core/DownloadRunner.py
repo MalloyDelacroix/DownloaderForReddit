@@ -1,15 +1,16 @@
 import prawcore
-from PyQt5.QtCore import QObject, pyqtSignal
 import logging
+from PyQt5.QtCore import QObject, pyqtSignal
 from queue import Queue
 from threading import Thread
 from datetime import datetime
+from praw.models import Redditor
 
 from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core.ContentExtractor import ContentExtractor
 from ..Core.Downloader import Downloader
-from ..Database.Models import DownloadSession, RedditObject, User, Subreddit, Post, Content
+from ..Database.Models import DownloadSession, User, Subreddit, Post, Content
 
 
 class DownloadRunner(QObject):
@@ -160,8 +161,8 @@ class DownloadRunner(QObject):
             for user_id in self.user_id_list:
                 self.get_user_submissions(user_id)
         else:
-            for subreddit in self.subreddit_list:
-                self.get_subreddit_submissions(subreddit)
+            for subreddit_id in self.subreddit_id_list:
+                self.get_subreddit_submissions(subreddit_id)
 
     def validate_subreddit_list(self):
         with self.db.get_scoped_session() as session:
@@ -196,6 +197,7 @@ class DownloadRunner(QObject):
         with self.db.get_scoped_session() as session:
             subreddit = session.query(Subreddit).get(subreddit_id)
             sub = self.validate_subreddit(subreddit)
+
             if sub is not None:
                 submissions = self.get_submissions(sub, subreddit)
                 date_limit = 0
@@ -242,21 +244,27 @@ class DownloadRunner(QObject):
                               and limit the submission generator.
         :return: A submission generator for the supplied praw object.
         """
-        if reddit_object.object_type == 'USER':
-            posts = praw_object.submissions.new(limit=reddit_object.post_limit)
+        sort_method = reddit_object.post_sort_method
+        if sort_method.value <= 4:
+            submission_method = self.get_raw_submission_method(praw_object, sort_method.name.lower())
+            return submission_method(limit=reddit_object.post_limit)
         else:
-            sort = reddit_object.post_sort_method()
-            if sort[0] == 'NEW':
-                posts = praw_object.new(limit=reddit_object.post_limit)
-            elif sort[0] == 'HOT':
-                posts = praw_object.hot(limit=reddit_object.post_limit)
-            elif sort[0] == 'RISING':
-                posts = praw_object.rising(limit=reddit_object.post_limit)
-            elif sort[0] == 'CONTROVERSIAL':
-                posts = praw_object.controversial(limit=reddit_object.post_limit)
-            else:
-                posts = praw_object.top(sort[1].lower(), limit=reddit_object.post_limit)
-        return posts
+            sort, sort_period = sort_method.name.split('_')
+            submission_method = self.get_raw_submission_method(praw_object, sort.lower())
+            return submission_method(sort_period, limit=reddit_object.post_limit)
+
+    def get_raw_submission_method(self, praw_object, sort_type: str):
+        """
+        Creates and returns the method that should be used to retrieve the submissions for the praw_object.
+        :param praw_object: The praw object for which submissions will be retrieved.
+        :param sort_type: The sort method that should be used to retrieve these submissions.
+        :return: A method that can be called to retrieve submissions from the supplied praw object which will be sorted
+                 by the supplied sort method.
+        """
+        if type(praw_object) == Redditor:
+            return getattr(praw_object.submissions, sort_type)
+        else:
+            return getattr(praw_object, sort_type)
 
     def finish_download(self):
         self.submission_queue.put(None)
