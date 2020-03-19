@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>RedditObjectSettingsDialog</class>
- <widget class="QWidget" name="RedditObjectSettingsDialog">
+ <widget class="QDialog" name="RedditObjectSettingsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>695</width>
-    <height>999</height>
+    <width>727</width>
+    <height>1011</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,7 @@
         <enum>Qt::Horizontal</enum>
        </property>
        <widget class="QListView" name="reddit_objects_list_view"/>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget_2">
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <layout class="QFormLayout" name="info_form">
