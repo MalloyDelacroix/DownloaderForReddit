@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>727</width>
-    <height>1011</height>
+    <height>1159</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,6 +24,37 @@
        <widget class="QListView" name="reddit_objects_list_view"/>
        <widget class="QWidget" name="layoutWidget_2">
         <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="0">
+            <widget class="QCheckBox" name="lock_settings_checkbox">
+             <property name="toolTip">
+              <string>When checked, the settings in this window will not be overwritten due to changes in the main settings window</string>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="text">
+              <string>Lock Settings</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="download_button">
+             <property name="text">
+              <string>Download </string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QCheckBox" name="enable_download_checkbox">
+             <property name="text">
+              <string>Download Enabled</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
          <item>
           <layout class="QFormLayout" name="info_form">
            <item row="1" column="0">
@@ -186,117 +217,12 @@
          </item>
          <item>
           <layout class="QFormLayout" name="post_download_form">
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Post Limit:</string>
+           <item row="0" column="0">
+            <widget class="Line" name="line_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
              </property>
             </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Score Limit:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_11">
-             <property name="text">
-              <string>Score Limit Eval:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0">
-            <widget class="QLabel" name="label_12">
-             <property name="text">
-              <string>Avoid Duplicates:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="0">
-            <widget class="QLabel" name="label_13">
-             <property name="text">
-              <string>Download Videos:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="9" column="0">
-            <widget class="QLabel" name="label_14">
-             <property name="text">
-              <string>Download Images:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="11" column="0">
-            <widget class="QLabel" name="label_16">
-             <property name="text">
-              <string>Sort Posts By:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="12" column="0">
-            <widget class="QLabel" name="label_17">
-             <property name="text">
-              <string>Download Naming:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QCheckBox" name="lock_settings_checkbox">
-             <property name="layoutDirection">
-              <enum>Qt::LeftToRight</enum>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_15">
-             <property name="text">
-              <string>Lock Settings:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="post_limit_spinbox"/>
-           </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="score_limit_spinbox"/>
-           </item>
-           <item row="5" column="1">
-            <widget class="QComboBox" name="score_limit_operator_combo"/>
-           </item>
-           <item row="6" column="1">
-            <widget class="QDateTimeEdit" name="dateTimeEdit"/>
-           </item>
-           <item row="7" column="1">
-            <widget class="QCheckBox" name="avoid_duplicates_checkbox">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="8" column="1">
-            <widget class="QCheckBox" name="download_videos_checkbox">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="9" column="1">
-            <widget class="QCheckBox" name="download_images_checkbox">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="11" column="1">
-            <widget class="QComboBox" name="post_sort_combo"/>
-           </item>
-           <item row="12" column="1">
-            <widget class="QComboBox" name="download_naming_combo"/>
            </item>
            <item row="1" column="0" colspan="2">
             <widget class="QLabel" name="label_19">
@@ -314,22 +240,54 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="Line" name="line_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
-           <item row="10" column="0">
-            <widget class="QLabel" name="label_28">
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_7">
              <property name="text">
-              <string>NSFW Filter:</string>
+              <string>Post Limit:</string>
              </property>
             </widget>
            </item>
-           <item row="10" column="1">
-            <widget class="QComboBox" name="nsfw_filter_combo"/>
+           <item row="3" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QSpinBox" name="post_limit_spinbox">
+               <property name="maximum">
+                <number>1000</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="post_limit_max_button">
+               <property name="text">
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Score Limit:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="score_limit_spinbox">
+             <property name="maximum">
+              <number>10000000</number>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_11">
+             <property name="text">
+              <string>Score Limit Eval:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QComboBox" name="score_limit_operator_combo"/>
            </item>
            <item row="6" column="0">
             <widget class="QCheckBox" name="date_limit_checkbox">
@@ -341,6 +299,126 @@
              </property>
             </widget>
            </item>
+           <item row="6" column="1">
+            <widget class="QDateTimeEdit" name="date_limit_edit">
+             <property name="dateTime">
+              <datetime>
+               <hour>14</hour>
+               <minute>43</minute>
+               <second>53</second>
+               <year>2005</year>
+               <month>6</month>
+               <day>23</day>
+              </datetime>
+             </property>
+             <property name="minimumDateTime">
+              <datetime>
+               <hour>14</hour>
+               <minute>43</minute>
+               <second>53</second>
+               <year>2005</year>
+               <month>6</month>
+               <day>23</day>
+              </datetime>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Avoid Duplicates:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QCheckBox" name="avoid_duplicates_checkbox">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string>Download Videos:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QCheckBox" name="download_videos_checkbox">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Download Images:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QCheckBox" name="download_images_checkbox">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="0">
+            <widget class="QLabel" name="label_29">
+             <property name="text">
+              <string>Download Gifs:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
+            <widget class="QCheckBox" name="download_gifs_checkbox">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="0">
+            <widget class="QLabel" name="label_28">
+             <property name="text">
+              <string>NSFW Filter:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="11" column="1">
+            <widget class="QComboBox" name="nsfw_filter_combo"/>
+           </item>
+           <item row="12" column="0">
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>Sort Posts By:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="12" column="1">
+            <widget class="QComboBox" name="post_sort_combo"/>
+           </item>
+           <item row="13" column="0">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>Download Naming:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="13" column="1">
+            <widget class="QComboBox" name="download_naming_combo"/>
+           </item>
+           <item row="14" column="0">
+            <widget class="QLabel" name="subreddit_save_structure_label">
+             <property name="text">
+              <string>Subreddit Path Scheme:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="14" column="1">
+            <widget class="QComboBox" name="subreddit_save_structure_combo"/>
+           </item>
           </layout>
          </item>
          <item>
@@ -351,42 +429,7 @@
           </widget>
          </item>
          <item>
-          <layout class="QFormLayout" name="formLayout">
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_21">
-             <property name="text">
-              <string>Download Links</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_22">
-             <property name="text">
-              <string>Download:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_23">
-             <property name="text">
-              <string>Comment Limit:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_24">
-             <property name="text">
-              <string>Score Limit:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_25">
-             <property name="text">
-              <string>Score Limit Eval:</string>
-             </property>
-            </widget>
-           </item>
+          <layout class="QFormLayout" name="comment_download_form">
            <item row="0" column="0" colspan="2">
             <widget class="QLabel" name="label_20">
              <property name="font">
@@ -400,20 +443,84 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QComboBox" name="comment_download_combo"/>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_22">
+             <property name="text">
+              <string>Download:</string>
+             </property>
+            </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QComboBox" name="comment_content_download_combo"/>
+            <widget class="QComboBox" name="comment_download_combo"/>
            </item>
-           <item row="5" column="1">
-            <widget class="QComboBox" name="comment_score_operator_combo"/>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_21">
+             <property name="text">
+              <string>Download Links</string>
+             </property>
+            </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QSpinBox" name="comment_limit_spinbox"/>
+            <widget class="QComboBox" name="comment_content_download_combo"/>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_23">
+             <property name="text">
+              <string>Comment Limit:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string>Score Limit:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QSpinBox" name="comment_score_limit_spinbox">
+             <property name="maximum">
+              <number>10000000</number>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="label_25">
+             <property name="text">
+              <string>Score Limit Eval:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QComboBox" name="comment_score_operator_combo"/>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_18">
+             <property name="text">
+              <string>Sort Comments By:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QComboBox" name="comment_sort_combo"/>
            </item>
            <item row="4" column="1">
-            <widget class="QSpinBox" name="comment_score_limit_spinbox"/>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QSpinBox" name="comment_limit_spinbox">
+               <property name="maximum">
+                <number>10000</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="comment_limit_max_button">
+               <property name="text">
+                <string>Max</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>

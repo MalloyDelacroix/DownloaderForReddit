@@ -1,39 +1,140 @@
 import logging
-from PyQt5 import QtCore, QtGui, QtWidgets
+from datetime import datetime
 from threading import Thread
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal
 
 from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
-from ..Database.Models import RedditObject, Post, Content, Comment
+from ..Database.Models import Post, Content, Comment
+from ..Database.ModelEnums import *
 from ..Utils import Injector
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
 
-    def __init__(self, list_type, list_name, selected_object: RedditObject):
+    download_signal = pyqtSignal(int)
+
+    def __init__(self, list_type, list_name, selected_object_id: int):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.db = Injector.get_database_handler()
         self.list_type = list_type
         self.list_name = list_name
-        self.r = selected_object
+        self.selected_object = None
 
+        self.dialog_button_box.accepted.connect(self.save_and_close)
+        self.dialog_button_box.rejected.connect(self.close)
+        self.reset_button.clicked.connect(self.reset)
+
+        self.reddit_objects_list_view.clicked.connect(
+            lambda x: self.change_objects(self.list_model.data(x, 'RAW_DATA'))
+        )
         self.list_model = RedditObjectListModel(self.list_type)
         self.list_model.set_list(self.list_name)
         self.reddit_objects_list_view.setModel(self.list_model)
-        self.setup_display()
+        index = self.list_model.index(self.list_model.get_id_list().index(selected_object_id), 0)
+        self.selected_object = self.list_model.data(index, 'RAW_DATA')
+        self.reddit_objects_list_view.setCurrentIndex(index)
 
-    def setup_display(self):
+        self.setup_widgets()
+        self.connect_edit_widgets()
+        self.sync_all()
+
+    def change_objects(self, new_object):
+        self.selected_object = new_object
+        self.sync_all()
+
+    def setup_widgets(self):
+        for value in LimitOperator:
+            self.score_limit_operator_combo.addItem(value.display_name, value)
+            self.comment_score_operator_combo.addItem(value.display_name, value)
+        for value in NsfwFilter:
+            self.nsfw_filter_combo.addItem(value.display_name, value)
+        for value in PostSortMethod:
+            self.post_sort_combo.addItem(value.display_name, value)
+        for value in DownloadNameMethod:
+            self.download_naming_combo.addItem(value.display_name, value)
+        self.subreddit_save_structure_label.setVisible(self.list_type == 'SUBREDDIT')
+        self.subreddit_save_structure_combo.setVisible(self.list_type == 'SUBREDDIT')
+        if self.list_type == 'SUBREDDIT':
+            for value in SubredditSaveStructure:
+                self.subreddit_save_structure_combo.addItem(value.display_name, value)
+        for value in CommentDownload:
+            self.comment_download_combo.addItem(value.display_name, value)
+            self.comment_content_download_combo.addItem(value.display_name, value)
+        for value in CommentSortMethod:
+            self.comment_sort_combo.addItem(value.display_name, value)
+
+        self.post_limit_max_button.clicked.connect(
+            lambda: self.post_limit_spinbox.setValue(self.post_limit_spinbox.maximum()))
+        self.comment_limit_max_button.clicked.connect(
+            lambda: self.comment_limit_spinbox.setValue(self.comment_limit_spinbox.maximum()))
+
+    def connect_edit_widgets(self):
+        self.setup_checkbox(self.lock_settings_checkbox, 'lock_settings')
+        self.post_limit_spinbox.valueChanged.connect(lambda x: setattr(self.selected_object, 'post_limit', x))
+        self.score_limit_spinbox.valueChanged.connect(lambda x: setattr(self.selected_object, 'post_score_limit', x))
+        self.score_limit_operator_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'post_score_limit_operator',
+                              self.score_limit_operator_combo.itemData(x))
+        )
+        self.date_limit_checkbox.stateChanged.connect(
+            lambda: self.date_limit_edit.setDisabled(not self.date_limit_checkbox.isChecked()))
+        self.date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
+        self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
+        self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
+        self.setup_checkbox(self.download_images_checkbox, 'download_images')
+        self.nsfw_filter_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'download_nsfw', self.nsfw_filter_combo.itemData(x))
+        )
+        self.post_sort_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'post_sort_method', self.post_sort_combo.itemData(x))
+        )
+        self.download_naming_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'download_naming_method', self.download_naming_combo.itemData(x))
+        )
+        self.subreddit_save_structure_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'subreddit_save_structure',
+                              self.subreddit_save_structure_combo.itemData(x))
+        )
+        self.comment_download_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'download_comments', self.comment_download_combo.itemData(x))
+        )
+        self.comment_content_download_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'download_comment_content',
+                              self.comment_content_download_combo.itemData(x))
+        )
+        self.comment_limit_spinbox.valueChanged.connect(lambda x: setattr(self.selected_object, 'comment_limit', x))
+        self.comment_score_limit_spinbox.valueChanged.connect(lambda x: setattr(self.selected_object,
+                                                                                'comment_score_limit', x))
+        self.comment_score_operator_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'comment_score_limit_operator',
+                              self.comment_score_operator_combo.itemData(x))
+        )
+        self.comment_sort_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'comment_sort_method', self.comment_sort_combo.itemData(x))
+        )
+
+    def setup_checkbox(self, checkbox, attribute):
+        checkbox.stateChanged.connect(lambda: setattr(self.selected_object, attribute, checkbox.isChecked()))
+
+    def set_date_limit_from_edit(self):
+        epoch = self.date_limit_edit.dateTime().toSecsSinceEpoch()
+        self.selected_object.date_limit = datetime.fromtimestamp(epoch)
+
+    def sync_all(self):
         self.set_basic_info()
         self.set_download_info()
+        self.sync_widgets_to_reddit_object()
 
     def set_basic_info(self):
-        self.name_label.setText(self.r.name)
-        self.id_label.setText(str(self.r.id))
-        self.date_created_label.setText(self.r.date_created_display)
-        self.date_added_label.setText(self.r.date_added_display)
-        self.last_download_label.setText(self.r.last_download_display)
+        self.name_label.setText(self.selected_object.name)
+        self.id_label.setText(str(self.selected_object.id))
+        self.date_created_label.setText(self.selected_object.date_created_display)
+        self.date_added_label.setText(self.selected_object.date_added_display)
+        self.last_download_label.setText(self.selected_object.last_download_display)
 
     def set_download_info(self):
         self.download_info_thread = Thread(target=self.set_download_info_labels)
@@ -41,11 +142,57 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def set_download_info_labels(self):
         with self.db.get_scoped_session() as session:
-            post_count = session.query(Post.id).filter(Post.significant_reddit_object_id == self.r.id).count()
-            comment_count = session.query(Comment.id).filter(Comment.significant_reddit_object_id == self.r.id).count()
-            content_count = session.query(Content.id).filter(Content.post_id.in_(
-                session.query(Post.id).filter(Post.significant_reddit_object_id == self.r.id))
-            )
-            self.post_count_label.setText(post_count)
-            self.comment_count_label.setText(comment_count)
-            self.content_count_label.setText(content_count)
+            post_count = session.query(Post.id)\
+                .filter(Post.significant_reddit_object_id == self.selected_object.id).count()
+            comment_count = session.query(Comment.id)\
+                .filter(Comment.significant_reddit_object_id == self.selected_object.id).count()
+            content_count = session.query(Content.id)\
+                .filter(Content.post_id.in_(session.query(Post.id)
+                .filter(Post.significant_reddit_object_id == self.selected_object.id))).count()
+            self.post_count_label.setText(str(post_count))
+            self.comment_count_label.setText(str(comment_count))
+            self.content_count_label.setText(str(content_count))
+
+    def sync_widgets_to_reddit_object(self):
+        self.download_button.setText(f'Download {self.selected_object.name}')
+        self.lock_settings_checkbox.setChecked(self.selected_object.lock_settings)
+        self.enable_download_checkbox.setChecked(self.selected_object.download_enabled)
+        self.post_limit_spinbox.setValue(self.selected_object.post_limit)
+        self.score_limit_spinbox.setValue(self.selected_object.post_score_limit)
+        self.score_limit_operator_combo.setCurrentIndex(
+            self.score_limit_operator_combo.findData(self.selected_object.post_score_limit_operator))
+        self.date_limit_checkbox.setChecked(self.selected_object.date_limit is not None)
+        self.date_limit_edit.setDisabled(self.selected_object.date_limit is None)
+        if self.selected_object.date_limit is not None:
+            self.date_limit_edit.setDateTime(self.selected_object.date_limit)
+        self.avoid_duplicates_checkbox.setChecked(self.selected_object.avoid_duplicates)
+        self.download_videos_checkbox.setChecked(self.selected_object.download_videos)
+        self.download_images_checkbox.setChecked(self.selected_object.download_images)
+        self.download_gifs_checkbox.setChecked(self.selected_object.download_gifs)
+        self.nsfw_filter_combo.setCurrentIndex(self.nsfw_filter_combo.findData(self.selected_object.download_nsfw))
+        self.post_sort_combo.setCurrentIndex(self.post_sort_combo.findData(self.selected_object.post_sort_method))
+        self.download_naming_combo.setCurrentIndex(
+            self.download_naming_combo.findData(self.selected_object.download_naming_method))
+        self.subreddit_save_structure_combo.setCurrentIndex(
+            self.subreddit_save_structure_combo.findData(self.selected_object.subreddit_save_structure))
+        self.comment_download_combo.setCurrentIndex(
+            self.comment_download_combo.findData(self.selected_object.download_comments))
+        self.comment_content_download_combo.setCurrentIndex(
+            self.comment_content_download_combo.findData(self.selected_object.download_comment_content))
+        self.comment_limit_spinbox.setValue(self.selected_object.comment_limit)
+        self.comment_score_limit_spinbox.setValue(self.selected_object.comment_score_limit)
+        self.comment_score_operator_combo.setCurrentIndex(
+            self.comment_score_operator_combo.findData(self.selected_object.comment_score_limit_operator))
+        self.comment_sort_combo.setCurrentIndex(
+            self.comment_sort_combo.findData(self.selected_object.comment_sort_method))
+
+    def save_and_close(self):
+        self.list_model.session.commit()
+        self.close()
+
+    def reset(self):
+        self.list_model.session.rollback()
+        self.sync_all()
+
+    def download(self):
+        self.download_signal.emit(self.selected_object.id)

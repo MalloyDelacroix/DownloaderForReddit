@@ -24,11 +24,14 @@ class RedditObjectListModel(QAbstractListModel):
         self.list = None
         self.reddit_objects = None
 
-    def commit_changes(self):
-        self.session.commit()
-
     def get_id_list(self):
         return [x.id for x in self.reddit_objects]
+
+    def get_object(self, object_name):
+        for ro in self.reddit_objects:
+            if ro.name == object_name:
+                return ro
+        return None
 
     def add_new_list(self, list_name, list_type):
         exists = self.session.query(RedditObjectList.id)\
@@ -46,6 +49,7 @@ class RedditObjectListModel(QAbstractListModel):
             return True
 
     def delete_current_list(self):
+        # TODO: delete list and commit
         pass
 
     def set_list(self, list_name):
@@ -125,6 +129,8 @@ class RedditObjectListModel(QAbstractListModel):
                 return None
         elif role == Qt.ToolTipRole:
             return self.set_tooltips(self.reddit_objects[row])
+        elif role == 'RAW_DATA':
+            return self.reddit_objects[row]
         else:
             return None
 
@@ -148,16 +154,12 @@ class RedditObjectListModel(QAbstractListModel):
             'subreddit_save_method': f'Subreddit Save Method: {reddit_object.subreddit_save_structure}',
             'download_images': f'Download Images: {reddit_object.download_images}',
             'download_videos': f'Download Videos: {reddit_object.download_videos}',
-            'avoid_duplicates': f'Avoid Duplicates: {reddit_object.avoid_duplicates}',
-            'nsfw_filter': f'NSFW Filter: {self.nsfw_filter_display(reddit_object.download_nsfw)}',
-            'undownloaded_content_count': f'Undownloaded Content: {"TODO: add undownloaded count"}',
-            'unextracted_post_count': f'Unextracted Posts: {"TODO: add unextracted count"}',
-            'total_downloads': f'Total Downloads: {"TODO: add total download count"}',
+            'download_nsfw': f'NSFW Filter: {reddit_object.download_nsfw.display_name}',
             'date_added': f'Date Added: {reddit_object.date_added}'
         }
         tooltip = ''
         for key, value in tooltip_dict.items():
-            if self.settings_manager.tooltip_display_dict[key]:
+            if self.settings_manager.main_window_tooltip_display_dict[key]:
                 tooltip += '%s\n' % value
         return tooltip.strip()
 
