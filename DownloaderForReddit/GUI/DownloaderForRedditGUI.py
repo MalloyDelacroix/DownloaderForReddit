@@ -54,6 +54,7 @@ from ..version import __version__
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     stop_download_signal = QtCore.pyqtSignal()
+    add_to_download_signal = QtCore.pyqtSignal(id)
 
     def __init__(self, queue, receiver):
         """
@@ -119,8 +120,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_ffmpeg_requirement.triggered.connect(self.display_ffmpeg_info_dialog)
         self.file_check_for_updates.triggered.connect(lambda: self.check_for_updates(True))
         self.file_about.triggered.connect(self.display_about_dialog)
-        self.file_user_list_count.triggered.connect(lambda: self.user_settings(0, True))
-        self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(0, True))
+        self.file_user_list_count.triggered.connect(lambda: self.user_settings(None))
+        self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(None))
 
         self.list_view_group = QtWidgets.QActionGroup(self)
         self.list_view_group.addAction(self.view_sort_list_by_name)
@@ -161,7 +162,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.user_list_view.customContextMenuRequested.connect(self.user_list_right_click)
 
-        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(0, False))
+        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(self.get_selected_user()))
         self.user_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.user_lists_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -170,7 +171,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.subreddit_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_list_view.customContextMenuRequested.connect(self.subreddit_list_right_click)
 
-        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(0, False))
+        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(self.get_selected_subreddit()))
         self.subreddit_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.subreddit_list_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -190,11 +191,24 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
 
+    def get_selected_user(self):
+        indicies = self.user_list_view.selectedIndexes()
+        if len(indicies) <= 0:
+            return None
+        else:
+            return self.user_list_model.data(indicies[0], 'RAW_DATA')
+
+    def get_selected_subreddit(self):
+        indicies = self.subreddit_list_view.selectedIndexes()
+        if len(indicies) <= 0:
+            return None
+        else:
+            return self.subreddit_list_model.data(indicies[0], 'RAW_DATA')
+
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
         try:
-            position = self.get_selected_view_index(self.user_list_view).row()
-            user = self.user_list_model.reddit_objects[position]
+            user = self.get_selected_user()
             valid = True
         except AttributeError:
             user = None
@@ -221,7 +235,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         add_user.triggered.connect(self.add_user_dialog)
         remove_user.triggered.connect(self.remove_user)
-        user_settings.triggered.connect(lambda: self.user_settings(0, False))
+        user_settings.triggered.connect(lambda: self.user_settings(user))
         user_downloads.triggered.connect(lambda: self.user_settings(1, False))
         open_user_folder.triggered.connect(self.open_user_download_folder)
 
@@ -240,8 +254,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def subreddit_list_right_click(self):
         subreddit_menu = QtWidgets.QMenu()
         try:
-            position = self.get_selected_view_index(self.subreddit_list_view).row()
-            subreddit = self.subreddit_list_model.reddit_objects[position]
+            subreddit = self.get_selected_subreddit()
             valid = True
         except AttributeError:
             subreddit = None
@@ -268,7 +281,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         add_subreddit.triggered.connect(self.add_subreddit_dialog)
         remove_subreddit.triggered.connect(self.remove_subreddit)
-        subreddit_settings.triggered.connect(lambda: self.subreddit_settings(subreddit, False))
+        subreddit_settings.triggered.connect(lambda: self.subreddit_settings(subreddit))
         subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
         open_subreddit_folder.triggered.connect(self.open_subreddit_download_folder)
 
@@ -300,105 +313,28 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         remove_list.triggered.connect(self.remove_subreddit_list)
         menu.exec(QtGui.QCursor.pos())
 
-    def user_settings(self, page, from_menu):
-        # try:
-        if not from_menu:
-            position = self.get_selected_view_index(self.user_list_view).row()
-        else:
-            position = 0
-        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name,
-                                            self.user_list_model.reddit_objects[position])
-        d = dialog.exec_()
+    def user_settings(self, user):
+        if user is None:
+            user = self.user_list_model.reddit_objects[0]
+        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name, user.id)
+        dialog.show()
+        dialog.exec_()
 
-    # def user_settings(self, page, from_menu):
-    #     # TODO: revisit this...something looks off here
-    #     """
-    #     Opens the user settings dialog.  A page is supplied because the right click menu option 'View User Downloads'
-    #     will open page two of the dialog which shows the user downloads.  From menu will almost always be false, except
-    #     when the dialog is opened from the file menu.  This is done so that a user does not have to be selected to open
-    #     the dialog from the file menu
-    #     """
-    #     try:
-    #         if not from_menu:
-    #             position = self.get_selected_view_index(self.user_list_view).row()
-    #         else:
-    #             position = 0
-    #         user_settings_dialog = RedditObjectSettingsDialog(self.user_list_model,
-    #                                                           self.user_list_model.reddit_objects[position],
-    #                                                           self.running)
-    #         user_settings_dialog.single_download.connect(self.run_single_user)
-    #         self.open_object_dialogs.append(user_settings_dialog)
-    #         user_settings_dialog.show()
-    #         if page == 1:
-    #             user_settings_dialog.change_to_downloads_view()
-    #         if not user_settings_dialog.closed:
-    #             dialog = user_settings_dialog.exec_()
-    #             self.open_object_dialogs.remove(user_settings_dialog)
-    #             if dialog == QtWidgets.QDialog.Accepted:
-    #                 if user_settings_dialog.restore_defaults:
-    #                     for user in self.user_list_model.list:
-    #                         user.custom_date_limit = None
-    #                         user.avoid_duplicates = self.avoid_duplicates
-    #                         user.download_videos = self.download_videos
-    #                         user.download_images = self.download_images
-    #                         user.do_not_edit = False
-    #                         user.save_path = '%s%s/' % (self.save_path, user.name)
-    #                         user.name_downloads_by = self.name_downloads_by
-    #                         user.post_limit = self.post_limit
-    #                 self.user_list_model.commit_changes()
-    #     except AttributeError:
-    #         self.logger.error('User settings unable to open', exc_info=True)
-
-    def subreddit_settings(self, subreddit, from_menu):
+    def subreddit_settings(self, subreddit):
         # TODO: revisit this...something looks off here
         """Operates the same as the user_settings function"""
-        if from_menu:
+        if subreddit is None:
             subreddit = self.subreddit_list_model.reddit_objects[0]
         ro_settings_dialog = RedditObjectSettingsDialog('SUBREDDIT', self.subreddit_list_model.list.name,
-                                                        selected_object=subreddit)
+                                                        selected_object_id=subreddit.id)
         ro_settings_dialog.show()
-        dialog = ro_settings_dialog.exec_()
-        # try:
-        #     if not from_menu:
-        #         position = self.get_selected_view_index(self.subreddit_list_view).row()
-        #     else:
-        #         position = 0
-        #     subreddit_settings_dialog = RedditObjectSettingsDialog(self.subreddit_list_model,
-        #                                                            self.subreddit_list_model.list[position],
-        #                                                            self.running)
-        #     subreddit_settings_dialog.single_download.connect(self.run_single_subreddit)
-        #     self.open_object_dialogs.append(subreddit_settings_dialog)
-        #     subreddit_settings_dialog.show()
-        #     if page == 1:
-        #         subreddit_settings_dialog.change_to_downloads_view()
-        #     if not subreddit_settings_dialog.closed:
-        #         dialog = subreddit_settings_dialog.exec_()
-        #         self.open_object_dialogs.remove(subreddit_settings_dialog)
-        #         if dialog == QtWidgets.QDialog.Accepted:
-        #             if not subreddit_settings_dialog.restore_defaults:
-        #                 self.subreddit_list_model.list = subreddit_settings_dialog.object_list
-        #             else:
-        #                 for sub in self.subreddit_list_model.list:
-        #                     sub.date_limit = None
-        #                     sub.avoid_duplicates = self.settings_manager.avoid_duplicates
-        #                     sub.download_videos = self.settings_manager.download_videos
-        #                     sub.download_images = self.settings_manager.download_images
-        #                     sub.download_nsfw = self.settings_manager.nsfw_filter
-        #                     sub.lock_settings = False
-        #                     sub.download_naming_method = self.settings_manager.name_downloads_by
-        #                     sub.subreddit_save_method = self.settings_manager.save_subreddits_by
-        #                     sub.post_limit = self.post_limit
-        #                     sub.download_enabled = True
-        #             self.subreddit_list_model.commit_changes()
-        # except AttributeError:
-        #     self.logger.error('Subreddit settings unable to open', exc_info=True)
+        ro_settings_dialog.exec_()
 
     def open_user_download_folder(self):
         """Opens the Folder where the users downloads are saved using the default file manager"""
         selected_user = None
         try:
-            position = self.get_selected_view_index(self.user_list_view).row()
-            selected_user = self.user_list_model.reddit_objects[position]
+            selected_user = self.get_selected_user()
             SystemUtil.open_in_system(selected_user.save_directory)
             self.logger.info('User download folder opened', extra={'user': selected_user.name})
         except AttributeError:
@@ -414,8 +350,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
         selected_sub = None
         try:
-            position = self.get_selected_view_index(self.subreddit_list_view).row()
-            selected_sub = self.subreddit_list_model.reddit_objects[position]
+            selected_sub = self.get_selected_subreddit()
             path = os.path.join(selected_sub.save_directory, selected_sub.name) if \
                 selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
             SystemUtil.open_in_system(path)
@@ -534,7 +469,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.user_list_model.set_list(self.user_lists_combo.currentText())
                     self.user_list_model.sort_list(self.list_sort_method, self.list_order_method)
                 self.refresh_user_count()
-                self.user_list_model.commit_changes()
                 self.logger.info('User list removed', extra={'list_name': current_user_list,
                                                              'previous_list_size': list_size})
         except KeyError:
@@ -590,7 +524,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.subreddit_list_model.set_list(self.subreddit_list_combo.currentText())
                     self.subreddit_list_model.sort_list(self.list_sort_method, self.list_order_method)
                 self.refresh_subreddit_count()
-                self.subreddit_list_model.commit_changes()
                 self.logger.info('Subreddit list removed', extra={'list_name': current_sub_list,
                                                                   'previous_list_size': list_size})
         except KeyError:
@@ -720,19 +653,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the user list and the current user list model and calls a method to
         remove the object at the current index
         """
-        index = self.get_selected_view_index(self.user_list_view).row()
-        self.remove_reddit_object(index, self.user_list_model)
+        self.remove_reddit_object(self.get_selected_user(), self.user_list_model)
 
-    def remove_reddit_object(self, index, list_model):
+    def remove_reddit_object(self, reddit_object, list_model):
         """
         Removes the reddit object at the supplied index from the supplied list_model.
-        :param index: The index of the reddit object to be removed.
+        :param reddit_object: The index of the reddit object to be removed.
         :param list_model: The list model that the reddit object is to be removed from.
-        :type index: int
+        :type reddit_object: RedditObject
         :type list_model: ListModel
         """
         try:
-            reddit_object = list_model.reddit_objects[index]
             if Message.remove_reddit_object(self, reddit_object.name):
                 list_model.delete_reddit_object(reddit_object)
         except (KeyError, AttributeError):
@@ -898,8 +829,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
         method to remove the object at the current index
         """
-        index = self.get_selected_view_index(self.subreddit_list_view).row()
-        self.remove_reddit_object(index, self.subreddit_list_model)
+        self.remove_reddit_object(self.get_selected_subreddit(), self.subreddit_list_model)
 
     def select_directory(self):
         """
@@ -915,14 +845,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             Message.invalid_file_path(self)
             return None
-
-    def get_selected_view_index(self, list_view):
-        """Returns a single index if multiple are selected"""
-        indicies = list_view.selectedIndexes()
-        index = None
-        if len(indicies) > 0:
-            index = indicies[0]
-        return index
 
     def fill_downloaded_objects_list(self, downloaded_object_dict):
         """Adds a users name to a list if they had content downloaded while the program is open"""
