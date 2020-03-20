@@ -1,14 +1,21 @@
 from enum import Enum
 
 
-class DownloadNameMethod(Enum):
+class DisplayableEnum(Enum):
+
+    @property
+    def display_name(self):
+        return self.name.replace('_', ' ')
+
+
+class DownloadNameMethod(DisplayableEnum):
 
     ID = 1
     TITLE = 2
     AUTHOR_NAME = 3
 
 
-class SubredditSaveStructure(Enum):
+class SubredditSaveStructure(DisplayableEnum):
 
     SUB_NAME = 1
     AUTHOR_NAME = 2
@@ -16,28 +23,28 @@ class SubredditSaveStructure(Enum):
     AUTHOR_NAME_SUB_NAME = 4
 
 
-class CommentDownload(Enum):
+class CommentDownload(DisplayableEnum):
 
     DOWNLOAD = 1
     DO_NOT_DOWNLOAD = 2
     DOWNLOAD_ONLY_AUTHOR = 3
 
 
-class NsfwFilter(Enum):
+class NsfwFilter(DisplayableEnum):
 
     EXCLUDE = -1
     INCLUDE = 0
     ONLY = 1
 
 
-class LimitOperator(Enum):
+class LimitOperator(DisplayableEnum):
 
     LESS_THAN = -1
     NO_LIMIT = 0
     GREATER_THAN = 1
 
 
-class RedditObjectSortMethod(Enum):
+class RedditObjectSortMethod(DisplayableEnum):
 
     ID = 1
     NAME = 2
@@ -50,7 +57,7 @@ class RedditObjectSortMethod(Enum):
     LAST_POST_DATE = 9
 
 
-class PostSortMethod(Enum):
+class PostSortMethod(DisplayableEnum):
 
     NEW = 1
     HOT = 2
@@ -62,3 +69,12 @@ class PostSortMethod(Enum):
     TOP_MONTH = 8
     TOP_YEAR = 9
     TOP_ALL = 10
+
+
+class CommentSortMethod(DisplayableEnum):
+
+    NEW = 1
+    TOP = 2
+    BEST = 3
+    CONTROVERSIAL = 4
+    OLD = 5
