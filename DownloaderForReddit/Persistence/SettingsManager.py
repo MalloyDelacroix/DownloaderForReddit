@@ -128,7 +128,7 @@ class SettingsManager:
             'download_images': False,
             'download_comments': False,
             'download_comment_content': False,
-            'nsfw_filter': False,
+            'download_nsfw': False,
             'date_added': False
         }
         self.main_window_tooltip_display_dict = self.get('tooltip_display', 'main_window_tooltip_display_dict',
