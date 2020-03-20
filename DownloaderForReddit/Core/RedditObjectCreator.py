@@ -67,12 +67,17 @@ class RedditObjectCreator:
             'avoid_duplicates': self.settings_manager.avoid_duplicates,
             'download_videos': self.settings_manager.download_videos,
             'download_images': self.settings_manager.download_images,
+            'download_nsfw': self.settings_manager.download_nsfw,
             'download_comments': self.settings_manager.download_comments,
             'download_comment_content': self.settings_manager.download_comment_content,
-            'download_nsfw': self.settings_manager.download_nsfw,
+            'comment_limit': self.settings_manager.comment_limit,
+            'comment_score_limit': self.settings_manager.comment_score_limit,
+            'comment_score_limit_operator': self.settings_manager.comment_score_limit_operator,
+            'comment_sort_method': self.settings_manager.comment_sort_method,
             'date_limit': self.settings_manager.date_limit,
             'significant': True,
-            'subreddit_save_structure': self.settings_manager.subreddit_save_structure
+            'subreddit_save_structure': self.settings_manager.subreddit_save_structure,
+            'lock_settings': self.settings_manager.lock_reddit_object_settings
         }
         self.get_specific_defaults(defaults, object_type)
         return defaults
