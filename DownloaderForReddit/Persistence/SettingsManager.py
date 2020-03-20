@@ -30,6 +30,7 @@ class SettingsManager:
         self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
         self.download_users_on_add = self.get('core', 'download_users_on_add', False)
         self.download_subreddits_on_add = self.get('core', 'download_subreddits_on_add', False)
+        self.lock_reddit_object_settings = self.get('core', 'lock_reddit_object_settings', False)
         # endregion
 
         # region Download Defaults
@@ -40,6 +41,7 @@ class SettingsManager:
         self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
         self.download_videos = self.get('download_defaults', 'download_videos', True)
         self.download_images = self.get('download_defaults', 'download_images', True)
+        self.download_gifs = self.get('download_defaults', 'download_gifs', True)
         self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
         self.download_comments = self.get('download_defaults', 'download_comments', 2,
                                           container=CommentDownload)

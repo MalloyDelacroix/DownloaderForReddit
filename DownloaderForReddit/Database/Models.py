@@ -63,6 +63,7 @@ class RedditObject(BaseModel):
     avoid_duplicates = Column(Boolean, default=True)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
+    download_gifs = Column(Boolean, default=True)
     download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
