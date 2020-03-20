@@ -6,7 +6,7 @@ from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import (DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator,
-                         PostSortMethod)
+                         PostSortMethod, CommentSortMethod)
 from ..Core import Const
 from ..Utils import SystemUtil, Injector
 
@@ -59,15 +59,17 @@ class RedditObject(BaseModel):
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
     post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
+    post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
     avoid_duplicates = Column(Boolean, default=True)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
+    download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     comment_limit = Column(Integer, default=100)
     comment_score_limit = Column(Integer, default=1000)
     comment_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
-    download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
+    comment_sort_method = Column(Enum(CommentSortMethod), default=CommentSortMethod.NEW)
     date_added = Column(DateTime, default=datetime.now())
     lock_settings = Column(Boolean, default=False)
     absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
@@ -77,7 +79,6 @@ class RedditObject(BaseModel):
     significant = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     inactive_date = Column(DateTime, nullable=True)
-    post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
     download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.TITLE)
     subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.SUB_NAME)
     new = Column(Boolean, default=True)

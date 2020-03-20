@@ -40,6 +40,7 @@ class SettingsManager:
         self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
         self.download_videos = self.get('download_defaults', 'download_videos', True)
         self.download_images = self.get('download_defaults', 'download_images', True)
+        self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
         self.download_comments = self.get('download_defaults', 'download_comments', 2,
                                           container=CommentDownload)
         self.download_comment_content = self.get('download_defaults', 'download_comment_content', 2,
@@ -48,7 +49,7 @@ class SettingsManager:
         self.comment_score_limit = self.get('download_defaults', 'comment_score_limit', 1000)
         self.comment_score_limit_operator = self.get('download_defaults', 'comment_score_limit_operator', 0,
                                                      container=LimitOperator)
-        self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
+        self.comment_sort_method = self.get('download_defaults', 'comment_sort_method', 1, container=CommentSortMethod)
         self.date_limit = self.get('download_defaults', 'date_limit', None)
         self.absolute_date_limit = self.get('download_defaults', 'absolute_date_limit',
                                             datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
