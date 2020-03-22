@@ -8,10 +8,11 @@ from ..Utils import Injector, RedditUtils
 
 class RedditObjectCreator:
 
-    def __init__(self):
+    def __init__(self, list_type):
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
+        self.list_type = list_type
         self.name_checker = None
 
     def get_name_checker(self):
@@ -20,8 +21,15 @@ class RedditObjectCreator:
         the name checker does not always have to be initialized if it is not needed to create the reddit object.
         :return:
         """
-        self.name_checker = RedditUtils.NameChecker(None, None)
+        if self.name_checker is None:
+            self.name_checker = RedditUtils.NameChecker(self.list_type)
         return self.name_checker
+
+    def create_reddit_object(self, name, validate=True, **kwargs):
+        if self.list_type == 'USER':
+            return self.create_user(name, validate, **kwargs)
+        else:
+            return self.create_subreddit(name, validate, **kwargs)
 
     def create_user(self, user_name, validate=True, **kwargs):
         with self.db.get_scoped_session() as session:
@@ -39,7 +47,8 @@ class RedditObjectCreator:
                     user = User(name=actual_name, **defaults)
                     session.add(user)
                     session.commit()
-            return user
+                    return user.id
+        return None
 
     def create_subreddit(self, sub_name, validate=True, **kwargs):
         with self.db.get_scoped_session() as session:
@@ -57,7 +66,8 @@ class RedditObjectCreator:
                     subreddit = Subreddit(name=actual_name, **defaults)
                     session.add(subreddit)
                     session.commit()
-            return subreddit
+                    return subreddit.id
+            return None
 
     def get_default_setup(self, object_type):
         defaults = {

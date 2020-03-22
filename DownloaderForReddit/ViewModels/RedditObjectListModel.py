@@ -1,9 +1,10 @@
 import logging
-from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt
+from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QObject, pyqtSignal, QThread
 from PyQt5.QtGui import QColor
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy import func
 
+from ..Core.RedditObjectCreator import RedditObjectCreator
 from ..Utils import Injector
 from ..Database.Models import RedditObject, RedditObjectList
 
@@ -23,6 +24,12 @@ class RedditObjectListModel(QAbstractListModel):
         self.list_type = list_type
         self.list = None
         self.reddit_objects = None
+
+        self.validator = None
+        self.validation_thread = None
+        self.validating = False
+
+        # TODO: add waiting overlay to list while waiting on objects to validate
 
     def get_id_list(self):
         return [x.id for x in self.reddit_objects]
@@ -87,7 +94,31 @@ class RedditObjectListModel(QAbstractListModel):
         # TODO: decide whether or not to delete the reddit object completely, or leave it in the database but removed
         #       from the list
 
-    def add_reddit_object(self, reddit_object):
+    def add_reddit_object(self, name: str):
+        self.add_reddit_objects([name])
+
+    def add_reddit_objects(self, name_list: list):
+        """
+        A long and complicated method so that name validation can be done in a separate thread.  Sqllite objects can't
+        be modified from a different thread than the one that they were created in.  This necessitates using PyQt's
+        threading frame work, which is much more verbose than Python's standard, but which does support signaling.
+        :param name_list: A list of names to be validated, made into reddit objects, and added to the current reddit
+                          object list.
+        """
+        self.validating = True
+        self.validation_thread = QThread()
+        self.validator = ObjectValidator(name_list, self.list_type)
+        self.validation_thread.started.connect(self.validator.run)
+        self.validator.new_object_signal.connect(self.add_validated_reddit_object)
+        self.validator.invalid_name_signal.connect(lambda name: print(f'Invalid name: {name}'))
+        self.validator.finished.connect(self.validation_thread.quit)
+        self.validation_thread.finished.connect(self.validator.deleteLater)
+        self.validation_thread.finished.connect(self.validation_thread.deleteLater)
+        self.validator.moveToThread(self.validation_thread)
+        self.validation_thread.start()
+
+    def add_validated_reddit_object(self, ro_id):
+        reddit_object = self.session.query(RedditObject).get(ro_id)
         self.insertRow(reddit_object)
 
     def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
@@ -120,19 +151,22 @@ class RedditObjectListModel(QAbstractListModel):
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
-        if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self.reddit_objects[row].name
-        elif role == Qt.ForegroundRole:
-            if not self.reddit_objects[row].download_enabled:
-                return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
+        try:
+            if role == Qt.DisplayRole or role == Qt.EditRole:
+                return self.reddit_objects[row].name
+            elif role == Qt.ForegroundRole:
+                if not self.reddit_objects[row].download_enabled:
+                    return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
+                else:
+                    return None
+            elif role == Qt.ToolTipRole:
+                return self.set_tooltips(self.reddit_objects[row])
+            elif role == 'RAW_DATA':
+                return self.reddit_objects[row]
             else:
                 return None
-        elif role == Qt.ToolTipRole:
-            return self.set_tooltips(self.reddit_objects[row])
-        elif role == 'RAW_DATA':
-            return self.reddit_objects[row]
-        else:
-            return None
+        except IndexError:
+            pass
 
     def set_tooltips(self, reddit_object):
         """
@@ -179,3 +213,25 @@ class RedditObjectListModel(QAbstractListModel):
         first = self.createIndex(0, 0)
         second = self.createIndex(0, self.rowCount())
         self.dataChanged.emit(first, second)
+
+
+class ObjectValidator(QObject):
+
+    new_object_signal = pyqtSignal(int)
+    invalid_name_signal = pyqtSignal(str)
+    finished = pyqtSignal()
+
+    def __init__(self, name_list, list_type):
+        super().__init__()
+        self.name_list = name_list
+        self.list_type = list_type
+
+    def run(self):
+        object_creator = RedditObjectCreator(self.list_type)
+        for name in self.name_list:
+            reddit_object_id = object_creator.create_reddit_object(name)
+            if reddit_object_id is not None:
+                self.new_object_signal.emit(reddit_object_id)
+            else:
+                self.invalid_name_signal.emit(name)
+        self.finished.emit()

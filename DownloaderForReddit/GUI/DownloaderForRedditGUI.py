@@ -45,7 +45,7 @@ from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
-from ..GUI.AddRedditObjectDialog import AddUserDialog
+from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
 from ..version import __version__
@@ -54,7 +54,7 @@ from ..version import __version__
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     stop_download_signal = QtCore.pyqtSignal()
-    add_to_download_signal = QtCore.pyqtSignal(id)
+    add_to_download_signal = QtCore.pyqtSignal(int)
 
     def __init__(self, queue, receiver):
         """
@@ -726,49 +726,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             return self.subreddit_list_model
 
     def add_subreddit_dialog(self):
-        """See add_user_dialog"""
-        if self.subreddit_list_combo != '':
-            add_sub_dialog = AddUserDialog('SUBREDDIT', self)
-            add_sub_dialog.setWindowTitle('Add Subreddit Dialog')
-            add_sub_dialog.label.setText('Enter a new subreddit:')
-            dialog = add_sub_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                if add_sub_dialog.layout_style == 'SINGLE':
-                    self.add_single_subreddit(add_sub_dialog.name)
-                else:
-                    # TODO: rework this
-                    # self.add_complete_subreddits(add_sub_dialog.object_name_list_model.complete_reddit_object_list)
-                    self.add_multiple_subreddits(add_sub_dialog.object_name_list_model.name_list)
-        else:
-            Message.no_subreddit_list(self)
-
-    def add_single_subreddit(self, sub_name):
-        if not self.subreddit_list_model.check_name(sub_name):
-            subreddit = RedditObjectCreator().create_subreddit(sub_name)
-            if subreddit is not None:
-                self.subreddit_list_model.add_reddit_object(subreddit)
-                self.refresh_subreddit_count()
-                self.check_subreddit_download_on_add(subreddit)
-            else:
-                Message.not_valid_name(self, sub_name)
-        else:
-            self.handle_existing_subreddit_name(sub_name)
-
-    def handle_existing_subreddit_name(self, sub_name):
-        """
-        Handles when an existing subreddit name is added to the list.  If the settings manager indicates that subreddits
-        should be downloaded on add, a dialog is used to ascertain if the app user wants to run a single download for
-        the subreddit they are attempting to add.
-        :param sub_name: The name of the existing subreddit.
-        """
-        # TODO: rework this to add sub name to ongoing download session if user selects
-        if not self.running and self.settings_manager.download_subreddits_on_add:
-            existing_sub_dialog = ExistingRedditObjectAddDialog(sub_name, 'SUBREDDIT')
-            dialog = existing_sub_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                self.download_existing_subreddit(sub_name)
-        else:
-            Message.name_in_list(self, sub_name)
+        add_sub_dialog = AddRedditObjectDialog(self.subreddit_list_model)
+        add_sub_dialog.exec_()
 
     def download_existing_subreddit(self, sub_name):
         """

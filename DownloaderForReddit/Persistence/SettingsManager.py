@@ -28,8 +28,7 @@ class SettingsManager:
         self.subreddit_save_directory = self.get('core', 'subreddit_save_directory', default_save_path)
         self.current_user_list = self.get('core', 'current_user_list', None)
         self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
-        self.download_users_on_add = self.get('core', 'download_users_on_add', False)
-        self.download_subreddits_on_add = self.get('core', 'download_subreddits_on_add', False)
+        self.download_on_add = self.get('core', 'download_on_add', False)
         self.lock_reddit_object_settings = self.get('core', 'lock_reddit_object_settings', False)
         # endregion
 
