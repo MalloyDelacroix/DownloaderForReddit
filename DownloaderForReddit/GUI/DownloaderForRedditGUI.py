@@ -151,9 +151,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_exit.triggered.connect(self.close_from_menu)
 
         self.download_button.clicked.connect(self.button_assignment)
-        self.add_user_button.clicked.connect(self.add_user_dialog)
+        self.add_user_button.clicked.connect(self.add_user)
         self.remove_user_button.clicked.connect(self.remove_user)
-        self.add_subreddit_button.clicked.connect(self.add_subreddit_dialog)
+        self.add_subreddit_button.clicked.connect(self.add_subreddit)
         self.remove_subreddit_button.clicked.connect(self.remove_subreddit)
 
         self.user_lists_combo.activated.connect(self.change_user_list)
@@ -233,7 +233,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.running:
                 download_single.setEnabled(False)
 
-        add_user.triggered.connect(self.add_user_dialog)
+        add_user.triggered.connect(self.add_user)
         remove_user.triggered.connect(self.remove_user)
         user_settings.triggered.connect(lambda: self.user_settings(user))
         user_downloads.triggered.connect(lambda: self.user_settings(1, False))
@@ -279,7 +279,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.running:
                 download_single.setEnabled(False)
 
-        add_subreddit.triggered.connect(self.add_subreddit_dialog)
+        add_subreddit.triggered.connect(self.add_subreddit)
         remove_subreddit.triggered.connect(self.remove_subreddit)
         subreddit_settings.triggered.connect(lambda: self.subreddit_settings(subreddit))
         subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
@@ -554,63 +554,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                              suggested_name, ext)
         return file_path if file_path != '' else None
 
-    def add_user_dialog(self):
-        """Opens the dialog to enter the user name"""
-        if self.user_lists_combo != '':
-            add_user_dialog = AddUserDialog('USER', self)
-            dialog = add_user_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                if add_user_dialog.layout_style == 'SINGLE':
-                    self.add_single_user(add_user_dialog.name)
-                else:
-                    # TODO: rework this
-                    # self.add_complete_users(add_user_dialog.object_name_list_model.complete_reddit_object_list)
-                    self.add_multiple_users(add_user_dialog.object_name_list_model.name_list)
-        else:
-            Message.no_user_list(self)
-
-    def add_single_user(self, user_name):
-        if not self.user_list_model.check_name(user_name):  # checked before name is validated which requires api call
-            user = RedditObjectCreator().create_user(user_name)
-            if user is not None:
-                self.user_list_model.add_reddit_object(user)
-                self.refresh_user_count()
-                self.check_user_download_on_add(user)
-            else:
-                Message.not_valid_name(self, user_name)
-        else:
-            self.handle_existing_user_name(user_name)
-
-    def handle_existing_user_name(self, user_name):
-        """
-        Handles when an existing user name is added to the list.  If the settings manager indicates that users should
-        be downloaded on add, a dialog is used to ascertain if the app user wants to run a single download for the
-        user they are attempting to add.
-        :param user_name: The name of the existing user.
-        """
-        # TODO: rework this to add the user name to the ongoing download session if the user selects
-        if not self.running and self.settings_manager.download_users_on_add:
-            existing_user_dialog = ExistingRedditObjectAddDialog(user_name, 'USER')
-            dialog = existing_user_dialog.exec_()
-            if dialog == QtWidgets.QDialog.Accepted:
-                self.download_existing_user(user_name)
-        else:
-            Message.name_in_list(self, user_name)
-
-    def download_existing_user(self, user_name):
-        """
-        Gets an existing User object from the current list that has the supplied user_name, then runs a single download
-        for that user.
-        :param user_name: The name of the user for which a single download is to be run
-        """
-        current_list = self.get_working_list('USER')
-        user = None
-        for item in current_list.reddit_object_list:
-            if item.name == user_name:
-                user = item
-                break
-        if user is not None:
-            self.run_single_user((user, None))
+    def add_user(self):
+        add_user_dialog = AddRedditObjectDialog(self.user_list_model)
+        add_user_dialog.exec_()
 
     def check_user_download_on_add(self, user):
         """
@@ -619,34 +565,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         if not self.running and self.settings_manager.download_users_on_add:
             self.run_single_user((user, None))
-
-    def add_multiple_users(self, user_list, validate=True):
-        """
-        Makes and adds multiple users to the current user list from multiple names supplied by the
-        AddRedditObjectDialog.
-        :param user_list: A list of names to be made into users and added to the current user list
-        :param validate: Indicates whether hte names in the supplied user_list should be validated with reddit prior to
-                         being added.
-        """
-        try:
-            existing_names = []
-            invalid_names = []
-            for name in user_list:
-                if not self.user_list_model.check_name(name):
-                    user = RedditObjectCreator().create_user(name, validate=validate)  # names already validated
-                    if user is not None:
-                        self.user_list_model.add_reddit_object(user)
-                    else:
-                        invalid_names.append(user)
-                else:
-                    existing_names.append(name)
-            self.refresh_user_count()
-            if len(existing_names) > 0:
-                Message.names_in_list(self, existing_names)
-            if len(invalid_names) > 0:
-                Message.invalid_names(self, invalid_names)
-        except KeyError:
-            Message.no_user_list(self)
 
     def remove_user(self):
         """
@@ -725,7 +643,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             return self.subreddit_list_model
 
-    def add_subreddit_dialog(self):
+    def add_subreddit(self):
         add_sub_dialog = AddRedditObjectDialog(self.subreddit_list_model)
         add_sub_dialog.exec_()
 
