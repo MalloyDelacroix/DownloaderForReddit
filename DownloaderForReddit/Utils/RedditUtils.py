@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import praw
 import prawcore
-from PyQt5.QtCore import QObject, pyqtSignal
 import logging
 
 from ..version import __version__
