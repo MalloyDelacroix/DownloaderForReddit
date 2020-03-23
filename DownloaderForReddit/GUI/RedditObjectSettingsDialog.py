@@ -9,6 +9,7 @@ from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..Database.Models import Post, Content, Comment
 from ..Database.ModelEnums import *
 from ..Utils import Injector
+from ..Core import Const
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
@@ -39,8 +40,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.reddit_objects_list_view.setCurrentIndex(index)
 
         self.setup_widgets()
-        self.connect_edit_widgets()
         self.sync_all()
+        self.connect_edit_widgets()
 
     def change_objects(self, new_object):
         self.selected_object = new_object
@@ -80,8 +81,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             lambda x: setattr(self.selected_object, 'post_score_limit_operator',
                               self.score_limit_operator_combo.itemData(x))
         )
-        self.date_limit_checkbox.stateChanged.connect(
-            lambda: self.date_limit_edit.setDisabled(not self.date_limit_checkbox.isChecked()))
+        self.date_limit_checkbox.stateChanged.connect(self.date_limit_checkbox_toggled)
         self.date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
         self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
         self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
@@ -119,6 +119,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def setup_checkbox(self, checkbox, attribute):
         checkbox.stateChanged.connect(lambda: setattr(self.selected_object, attribute, checkbox.isChecked()))
+
+    def date_limit_checkbox_toggled(self):
+        checked = self.date_limit_checkbox.isChecked()
+        self.date_limit_edit.setDisabled(not checked)
+        if checked:
+            self.set_date_limit_from_edit()
+        else:
+            self.selected_object.date_limit = None
 
     def set_date_limit_from_edit(self):
         epoch = self.date_limit_edit.dateTime().toSecsSinceEpoch()
