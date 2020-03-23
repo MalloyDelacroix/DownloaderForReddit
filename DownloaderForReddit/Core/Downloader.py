@@ -1,7 +1,6 @@
 import os
 import requests
 import logging
-from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
 from ..Utils import Injector, SystemUtil, VideoMerger
