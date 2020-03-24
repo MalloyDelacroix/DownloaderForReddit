@@ -76,7 +76,7 @@ def merge_videos():
                 cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
                       (ms.video_path, ms.audio_path, output_path)
                 subprocess.call(cmd)
-                if Injector.get_settings_manager().set_file_modified_date:
+                if Injector.get_settings_manager().match_file_modified_to_post_date:
                     SystemUtil.set_file_modify_time(output_path, ms.date_modified)
             except:
                 failed_count += 1
