@@ -2,6 +2,7 @@ import os
 import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from queue import Empty
 
 from ..Utils import Injector, SystemUtil, VideoMerger
 from ..Database.Models import Content
@@ -28,8 +29,15 @@ class Downloader:
 
         self.thread_count = self.settings_manager.download_thread_count
         self.executor = ThreadPoolExecutor(self.thread_count)
+        self.hold = False
         self.continue_run = True
         self.download_count = 0
+
+    @property
+    def running(self):
+        if self.hold:
+            return not self.executor._work_queue.empty()
+        return True
 
     def run(self):
         """
@@ -37,9 +45,14 @@ class Downloader:
         """
         self.logger.debug('Downloader running')
         while self.continue_run:
-            content_id = self.download_queue.get()
-            if content_id is not None:
-                self.executor.submit(self.download, content_id=content_id)
+            item = self.download_queue.get()
+            if item is not None:
+                if item == 'HOLD':
+                    self.hold = True
+                elif item == 'RELEASE_HOLD':
+                    self.hold = False
+                else:
+                    self.executor.submit(self.download, content_id=item)
             else:
                 self.continue_run = False
         self.executor.shutdown(wait=True)

@@ -11,6 +11,8 @@ from ..Database.Models import RedditObject, RedditObjectList
 
 class RedditObjectListModel(QAbstractListModel):
 
+    reddit_object_added = pyqtSignal(int)
+
     def __init__(self, list_type):
         """
         A list model that holds a list of reddit objects to display.  Handles calls to the database made through the
@@ -126,6 +128,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.list.reddit_objects.append(item)
         self.endInsertRows()
         self.session.commit()
+        self.reddit_object_added.emit(item.id)
         return True
 
     def removeRows(self, position, rows, parent=QModelIndex(), *args):

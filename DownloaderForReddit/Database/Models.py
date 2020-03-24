@@ -54,7 +54,7 @@ class RedditObject(BaseModel):
     __tablename__ = 'reddit_object'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    # name = Column(String, unique=True)
     date_created = Column(DateTime, nullable=True)
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
@@ -163,6 +163,7 @@ class User(RedditObject):
     __tablename__ = 'user'
 
     id = Column(ForeignKey('reddit_object.id'), primary_key=True)
+    name = Column(String, unique=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'USER',
@@ -174,6 +175,7 @@ class Subreddit(RedditObject):
     __tablename__ = 'subreddit'
 
     id = Column(ForeignKey('reddit_object.id'), primary_key=True)
+    name = Column(String, unique=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'SUBREDDIT',

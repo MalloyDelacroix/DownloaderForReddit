@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 from sqlalchemy import func
 
@@ -25,21 +24,17 @@ class RedditObjectCreator:
             self.name_checker = RedditUtils.NameChecker(self.list_type)
         return self.name_checker
 
-    def create_reddit_object(self, name, validate=True, **kwargs):
+    def create_reddit_object(self, name, **kwargs):
         if self.list_type == 'USER':
-            return self.create_user(name, validate, **kwargs)
+            return self.create_user(name, **kwargs)
         else:
-            return self.create_subreddit(name, validate, **kwargs)
+            return self.create_subreddit(name, **kwargs)
 
-    def create_user(self, user_name, validate=True, **kwargs):
+    def create_user(self, user_name, **kwargs):
         with self.db.get_scoped_session() as session:
-            user = session.query(User).filter(func.lower(User.name) == func.lower(user_name)).first()
+            user = session.query(User).filter(func.lower(User.name) == user_name.lower()).first()
             if user is None:
-                if validate:
-                    actual_name, valid = self.get_name_checker().check_user_name(user_name)
-                else:
-                    actual_name = user_name
-                    valid = True
+                actual_name, valid = self.get_name_checker().check_user_name(user_name)
                 if valid:
                     defaults = self.get_default_setup('USER')
                     for key, value in kwargs.items():
@@ -48,17 +43,15 @@ class RedditObjectCreator:
                     session.add(user)
                     session.commit()
                     return user.id
-        return None
+            if user is not None:
+                return user.id
+            return None
 
-    def create_subreddit(self, sub_name, validate=True, **kwargs):
+    def create_subreddit(self, sub_name, **kwargs):
         with self.db.get_scoped_session() as session:
-            subreddit = session.query(Subreddit).filter(func.lower(Subreddit.name) == func.lower(sub_name)).first()
+            subreddit = session.query(Subreddit).filter(func.lower(Subreddit.name) == sub_name.lower()).first()
             if subreddit is None:
-                if validate:
-                    actual_name, valid = self.get_name_checker().check_subreddit_name(sub_name)
-                else:
-                    actual_name = sub_name
-                    valid = True
+                actual_name, valid = self.get_name_checker().check_subreddit_name(sub_name)
                 if valid:
                     defaults = self.get_default_setup('SUBREDDIT')
                     for key, value in kwargs.items():
@@ -67,6 +60,8 @@ class RedditObjectCreator:
                     session.add(subreddit)
                     session.commit()
                     return subreddit.id
+            if subreddit is not None:
+                return subreddit.id
             return None
 
     def get_default_setup(self, object_type):

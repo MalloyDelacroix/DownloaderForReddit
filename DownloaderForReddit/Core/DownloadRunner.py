@@ -1,7 +1,7 @@
 import prawcore
 import logging
 from PyQt5.QtCore import QObject, pyqtSignal
-from queue import Queue
+from queue import Queue, Empty
 from threading import Thread
 from datetime import datetime
 from praw.models import Redditor
@@ -48,10 +48,10 @@ class DownloadRunner(QObject):
         self.download_type = 'USER' if user_id_list is not None else 'SUBREDDIT'
         self.validated_subreddits = []
 
-        self.submission_queue = Queue()
+        self.submission_queue = Queue(maxsize=-1)
         self.extractor = None
         self.extraction_thread = None
-        self.download_queue = Queue()
+        self.download_queue = Queue(maxsize=-1)
         self.downloader = None
         self.download_thread = None
 
@@ -60,6 +60,8 @@ class DownloadRunner(QObject):
         self.perpetual = perpetual
         self.failed_connection_attempts = 0
         self.download_session_id = None
+
+        self.reddit_object_queue = Queue(maxsize=-1)
 
     def validate_user(self, user_obj):
         redditor = None
@@ -129,8 +131,7 @@ class DownloadRunner(QObject):
         self.start_extractor()
         self.start_downloader()
         self.run_download()
-        self.finish_download()
-        self.finished.emit()
+        self.hold()
 
     def create_download_session(self):
         with self.db.get_scoped_session() as session:
@@ -249,8 +250,8 @@ class DownloadRunner(QObject):
             submission_method = self.get_raw_submission_method(praw_object, sort_method.name.lower())
             return submission_method(limit=reddit_object.post_limit)
         else:
-            sort, sort_period = sort_method.name.split('_')
-            submission_method = self.get_raw_submission_method(praw_object, sort.lower())
+            sort, sort_period = sort_method.name.lower().split('_')
+            submission_method = self.get_raw_submission_method(praw_object, sort)
             return submission_method(sort_period, limit=reddit_object.post_limit)
 
     def get_raw_submission_method(self, praw_object, sort_type: str):
@@ -266,7 +267,27 @@ class DownloadRunner(QObject):
         else:
             return getattr(praw_object, sort_type)
 
+    def hold(self):
+        self.logger.debug('DownloadRunner holding')
+        self.submission_queue.put('HOLD')
+        while self.extractor.running or self.downloader.running:
+            try:
+                reddit_object_tuple = self.reddit_object_queue.get(timeout=1)
+                if reddit_object_tuple is not None:
+                    ro_id = reddit_object_tuple[0]
+                    ro_type = reddit_object_tuple[1]
+                    self.submission_queue.put('RELEASE_HOLD')
+                    if ro_type == 'USER':
+                        self.get_user_submissions(ro_id)
+                    else:
+                        self.get_subreddit_submissions(ro_id)
+                    self.submission_queue.put('HOLD')  # reapply holds after new submissions added to queue
+            except Empty:
+                pass
+        self.finish_download()
+
     def finish_download(self):
+        self.logger.debug('DownloadRunner finished')
         self.submission_queue.put(None)
         self.extraction_thread.join()
         self.download_thread.join()
@@ -275,6 +296,7 @@ class DownloadRunner(QObject):
             dl_session = self.finish_download_session(session)
             self.finish_messages(dl_session, session)
         self.download_session_signal.emit(self.download_session_id)
+        self.finished.emit()
 
     def finish_download_session(self, session):
         download_session = session.query(DownloadSession).get(self.download_session_id)

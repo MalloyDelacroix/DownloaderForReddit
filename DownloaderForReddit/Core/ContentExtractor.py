@@ -1,14 +1,13 @@
-import os
 from datetime import datetime
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from praw.models import Submission
+from queue import Empty
 
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Extractors.DirectExtractor import DirectExtractor
-from ..Database.Models import User, Subreddit, Post, Content, DownloadSession
-from ..Database.ModelEnums import SubredditSaveStructure
+from ..Database.Models import User, Subreddit, Post
 from ..Utils import Injector
 from ..Core import Const
 
@@ -26,19 +25,61 @@ class ContentExtractor:
 
         self.thread_count = self.settings_manager.extraction_thread_count
         self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
+        self.hold = False
+        self.submit_hold = False
         self.continue_run = True
         self.content_count = 0
+
+    @property
+    def running(self):
+        if self.hold:
+            return not self.executor._work_queue.empty()
+        return True
+
+    # def run(self):
+    #     self.logger.debug('Content extractor running')
+    #     while self.continue_run:
+    #         item = self.submission_queue.get()
+    #         if item is not None:
+    #             if item == 'HOLD':
+    #                 self.hold = True
+    #                 self.download_queue.put('HOLD')
+    #             elif item == 'RELEASE_HOLD':
+    #                 self.hold = False
+    #                 self.download_queue.put('RELEASE_HOLD')
+    #             else:
+    #                 submission = item[0]
+    #                 siginificant_id = item[1]
+    #                 self.handle_submission(submission, siginificant_id)
+    #         else:
+    #             self.continue_run = False
+    #     self.executor.shutdown(wait=True)
+    #     self.download_queue.put(None)
+    #     self.logger.debug('Content extractor exiting')
 
     def run(self):
         self.logger.debug('Content extractor running')
         while self.continue_run:
-            submission_tuple = self.submission_queue.get()
-            if submission_tuple is not None:
-                submission = submission_tuple[0]
-                significant_id = submission_tuple[1]
-                self.executor.submit(self.handle_submission, submission=submission, significant_id=significant_id)
-            else:
-                self.continue_run = False
+            try:
+                item = self.submission_queue.get(timeout=2)
+                if item is not None:
+                    if item == 'HOLD':
+                        self.hold = True
+                        self.submit_hold = True
+                        # self.download_queue.put('HOLD')
+                    elif item == 'RELEASE_HOLD':
+                        self.hold = False
+                        self.download_queue.put('RELEASE_HOLD')
+                    else:
+                        submission = item[0]
+                        significant_id = item[1]
+                        self.executor.submit(self.handle_submission, submission=submission, significant_id=significant_id)
+                else:
+                    self.continue_run = False
+            except Empty:
+                if self.submit_hold and not self.running:
+                    self.download_queue.put('HOLD')
+                    self.submit_hold = False
         self.executor.shutdown(wait=True)
         self.download_queue.put(None)
         self.logger.debug('Content extractor exiting')
@@ -52,8 +93,8 @@ class ContentExtractor:
     def create_post(self, submission: Submission, significant_id: int, session) -> Optional[Post]:
         post = None
         if self.check_duplicate_post_url(submission.url, session):
-            author = self.db.get_or_create(User, name=submission.author.name)[0]
-            subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name)[0]
+            author = self.db.get_or_create(User, name=submission.author.name, session=session)[0]
+            subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name, session=session)[0]
             post = Post(
                 title=submission.title,
                 date_posted=datetime.fromtimestamp(submission.created),

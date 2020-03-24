@@ -83,7 +83,7 @@ class DatabaseHandler:
         :rtype: tuple
         """
         if session is None:
-            with self.get_scoped_session() as session:
+            with self.get_scoped_update_session() as session:
                 return self.get_or_create(model, session=session, defaults=defaults, **kwargs)
         instance = session.query(model).filter_by(**kwargs).first()
         if instance:
