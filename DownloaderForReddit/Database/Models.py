@@ -1,14 +1,14 @@
 import os
 from datetime import datetime
-from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Table, Enum
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Table, Enum, event
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import (DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator,
                          PostSortMethod, CommentSortMethod)
 from ..Core import Const
-from ..Utils import SystemUtil, Injector
+from ..Utils import SystemUtil
 
 
 Base = DatabaseHandler.base
@@ -28,11 +28,24 @@ class BaseModel(Base):
             return None
 
 
-list_association = Table(
-    'reddit_object_list_assoc', Base.metadata,
-    Column('list_id', Integer, ForeignKey('reddit_object_list.id')),
-    Column('reddit_object_id', Integer, ForeignKey('reddit_object.id'))
-)
+# list_association = Table(
+#     'reddit_object_list_assoc', Base.metadata,
+#     Column('list_id', Integer, ForeignKey('reddit_object_list.id')),
+#     Column('reddit_object_id', Integer, ForeignKey('reddit_object.id'))
+# )
+
+
+class ListAssociation(BaseModel):
+
+    __tablename__ = 'reddit_object_list_association'
+
+    id = Column(Integer, primary_key=True)
+    reddit_object_list_id = Column(ForeignKey('reddit_object_list.id'))
+    reddit_object_list = relationship('RedditObjectList', backref=backref('list_subscriptions',
+                                                                          cascade='all, delete-orphan'))
+    reddit_object_id = Column(ForeignKey('reddit_object.id'))
+    reddit_object = relationship('RedditObject', backref=backref('list_subscriptions', cascade='all, delete-orphan'))
+    date_added = Column(DateTime, default=datetime.now())
 
 
 class RedditObjectList(BaseModel):
@@ -43,7 +56,7 @@ class RedditObjectList(BaseModel):
     name = Column(String)
     date_created = Column(DateTime, default=datetime.now())
     list_type = Column(String, nullable=False)
-    reddit_objects = relationship('RedditObject', secondary=list_association, backref='lists', lazy='dynamic')
+    reddit_objects = relationship('RedditObject', secondary='reddit_object_list_association', lazy='dynamic')
 
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
@@ -54,7 +67,6 @@ class RedditObject(BaseModel):
     __tablename__ = 'reddit_object'
 
     id = Column(Integer, primary_key=True)
-    # name = Column(String, unique=True)
     date_created = Column(DateTime, nullable=True)
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
@@ -83,6 +95,7 @@ class RedditObject(BaseModel):
     download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.TITLE)
     subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.SUB_NAME)
     new = Column(Boolean, default=True)
+    lists = relationship(RedditObjectList, secondary='reddit_object_list_association', lazy='dynamic')
 
     object_type = Column(String(15))
 
@@ -92,7 +105,10 @@ class RedditObject(BaseModel):
     }
 
     def __str__(self):
-        return f'{self.object_type}: {self.name}'
+        try:
+            return f'{self.object_type}: {self.name}'
+        except AttributeError:
+            return f'{self.object_type}: {self.id}'
 
     @property
     def date_created_display(self):
