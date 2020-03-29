@@ -41,11 +41,14 @@ class MessageReceiver(QObject):
         while self.continue_run:
             message = self.queue.get()
             if message is not None:
-                signal = self.signal_dict[message.message_type]
-                if message.message is None:
-                    signal.emit()
-                else:
-                    signal.emit(message.message)
+                try:
+                    signal = self.signal_dict[message.message_type]
+                    if message.message is None:
+                        signal.emit()
+                    else:
+                        signal.emit(message.message)
+                except AttributeError:
+                    print(f'\nFailed output:\n{message}\n')
         self.finished.emit()
 
     def stop_run(self):

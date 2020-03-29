@@ -10,6 +10,7 @@ from ..Extractors.DirectExtractor import DirectExtractor
 from ..Database.Models import User, Subreddit, Post
 from ..Utils import Injector
 from ..Core import Const
+from ..Messaging.Message import Message
 
 
 class ContentExtractor:
@@ -169,4 +170,4 @@ class ContentExtractor:
         message = f'Failed to extract due to: {message}'
         message_extra = f'\nTitle: {post.title}\nUser: {post.author.name}\nSubreddit: {post.subreddit.name}\n' \
                         f'Url: {post.url}\n'
-        self.output_queue.put(message + message_extra)
+        Message.send_extraction_error(message + message_extra)

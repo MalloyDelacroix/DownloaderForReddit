@@ -85,11 +85,15 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         )
         self.move(self.settings_manager.main_window_geom['x'], self.settings_manager.main_window_geom['y'])
         self.horz_splitter.setSizes(self.settings_manager.horizontal_splitter_state)
-        self.vert_splitter.setSizes(self.settings_manager.vertical_splitter_state)
         self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method
-        self.download_users_checkbox.setChecked(self.settings_manager.download_users_state)
-        self.download_subreddit_checkbox.setChecked(self.settings_manager.download_subreddits_state)
+
+        if self.settings_manager.download_radio_state == 'USER':
+            self.download_users_radio.setChecked(True)
+        elif self.settings_manager.download_radio_state == 'SUBREDDIT':
+            self.download_subreddits_radio.setChecked(True)
+        else:
+            self.constain_to_sub_list_radio.setChecked(True)
         # endregion
 
         self.queue = queue
@@ -121,8 +125,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_ffmpeg_requirement.triggered.connect(self.display_ffmpeg_info_dialog)
         self.file_check_for_updates.triggered.connect(lambda: self.check_for_updates(True))
         self.file_about.triggered.connect(self.display_about_dialog)
-        self.file_user_list_count.triggered.connect(lambda: self.user_settings(None))
-        self.file_subreddit_list_count.triggered.connect(lambda: self.subreddit_settings(None))
 
         self.list_view_group = QtWidgets.QActionGroup(self)
         self.list_view_group.addAction(self.view_sort_list_by_name)
@@ -163,7 +165,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.user_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.user_list_view.customContextMenuRequested.connect(self.user_list_right_click)
 
-        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(self.get_selected_user()))
+        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(self.get_selected_single_user()))
         self.user_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.user_lists_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -172,7 +174,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.subreddit_list_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.subreddit_list_view.customContextMenuRequested.connect(self.subreddit_list_right_click)
 
-        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(self.get_selected_subreddit()))
+        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(self.get_selected_single_subreddit()))
         self.subreddit_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.subreddit_list_combo.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -190,24 +192,42 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
 
-    def get_selected_user(self):
-        indicies = self.user_list_view.selectedIndexes()
-        if len(indicies) <= 0:
+    def get_selected_single_user(self):
+        """
+        Returns a single user that is selected from the user list.  If multiple users are selected, this method returns
+        the first user in the selection list.  Used for when only one selection is applicable to the function that
+        item selection is being used for (ie: opening the settings dialog for a user)
+        :return: A single user selected from the user list.
+        """
+        indices = self.user_list_view.selectedIndexes()
+        if len(indices) <= 0:
             return None
         else:
-            return self.user_list_model.data(indicies[0], 'RAW_DATA')
+            return self.user_list_model.data(indices[0], 'RAW_DATA')
 
-    def get_selected_subreddit(self):
-        indicies = self.subreddit_list_view.selectedIndexes()
-        if len(indicies) <= 0:
+    def get_selected_users(self):
+        indices = self.user_list_view.selectedIndexes()
+        selection_list = [self.user_list_model.data(index, 'RAW_DATA') for index in indices]
+        return selection_list
+
+    def get_selected_single_subreddit(self):
+        """See get_selected_single_user"""
+        indices = self.subreddit_list_view.selectedIndexes()
+        if len(indices) <= 0:
             return None
         else:
-            return self.subreddit_list_model.data(indicies[0], 'RAW_DATA')
+            return self.subreddit_list_model.data(indices[0], 'RAW_DATA')
+
+    def get_selected_subreddits(self):
+        indices = self.subreddit_list_view.selectedIndexes()
+        selection_list = [self.subreddit_list_model.data(index, 'RAW_DATA') for index in indices]
+        print(selection_list)
+        return selection_list
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
         try:
-            user = self.get_selected_user()
+            user = self.get_selected_single_user()
             valid = True
         except AttributeError:
             user = None
@@ -253,7 +273,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def subreddit_list_right_click(self):
         subreddit_menu = QtWidgets.QMenu()
         try:
-            subreddit = self.get_selected_subreddit()
+            subreddit = self.get_selected_single_subreddit()
             valid = True
         except AttributeError:
             subreddit = None
@@ -296,6 +316,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         subreddit_menu.exec(QtGui.QCursor.pos())
 
+    def subreddit_single_selection_context_menu(self):
+        pass
+
+    def subreddit_multiple_selection_context_menu(self):
+        pass
+
     def user_list_combo_right_click(self):
         menu = QtWidgets.QMenu()
         add_list = menu.addAction('Add User List')
@@ -333,7 +359,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens the Folder where the users downloads are saved using the default file manager"""
         selected_user = None
         try:
-            selected_user = self.get_selected_user()
+            selected_user = self.get_selected_single_user()
             SystemUtil.open_in_system(selected_user.save_directory)
             self.logger.info('User download folder opened', extra={'user': selected_user.name})
         except AttributeError:
@@ -349,7 +375,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """Opens the Folder where the subreddit downloads are saved using the default file manager"""
         selected_sub = None
         try:
-            selected_sub = self.get_selected_subreddit()
+            selected_sub = self.get_selected_single_subreddit()
             path = os.path.join(selected_sub.save_directory, selected_sub.name) if \
                 selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
             SystemUtil.open_in_system(path)
@@ -371,8 +397,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run(self):
         self.started_download_gui_shift()
-        user_id_list = self.user_list_model.get_id_list() if self.download_users_checkbox.isChecked() else None
-        sub_id_list = self.subreddit_list_model.get_id_list() if self.download_subreddit_checkbox.isChecked() else None
+        user_id_list = self.user_list_model.get_id_list() if self.download_users_radio.isChecked() or \
+                                                             self.constain_to_sub_list_radio.isChecked() else None
+        sub_id_list = self.subreddit_list_model.get_id_list() if self.download_subreddits_radio.isChecked() or \
+                                                                 self.constain_to_sub_list_radio.isChecked() else None
 
         self.download_runner = DownloadRunner(user_id_list, sub_id_list)
         self.stop_download_signal.connect(self.download_runner.stop_download)
@@ -382,10 +410,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
         self.download_runner.remove_forbidden_object.connect(self.remove_forbidden_reddit_object)
-        # TODO: get the download session id at start of download for monitoring?
-        # self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
-        # self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
-        # self.download_runner.update_download_potential.connect(self.update_status_bar_download_potential)
         self.download_runner.finished.connect(self.thread.quit)
         self.download_runner.finished.connect(self.download_runner.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
@@ -580,7 +604,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the user list and the current user list model and calls a method to
         remove the object at the current index
         """
-        self.remove_reddit_object(self.get_selected_user(), self.user_list_model)
+        self.remove_reddit_object(self.get_selected_single_user(), self.user_list_model)
 
     def remove_reddit_object(self, reddit_object, list_model):
         """
@@ -715,7 +739,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
         method to remove the object at the current index
         """
-        self.remove_reddit_object(self.get_selected_subreddit(), self.subreddit_list_model)
+        self.remove_reddit_object(self.get_selected_single_subreddit(), self.subreddit_list_model)
 
     def select_directory(self):
         """
@@ -797,6 +821,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def finished_download_gui_shift(self):
         """Re-enables disabled GUI options"""
         self.running = False
+        self.progress_bar.setVisible(False)
         self.download_button.setText('Download')
         self.add_user_button.setDisabled(False)
         self.remove_user_button.setDisabled(False)
@@ -945,18 +970,18 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def refresh_user_count(self):
         """Updates the shown user count seen in the list menu"""
         try:
-            self.user_count = self.user_list_model.rowCount()
+            user_count = self.user_list_model.rowCount()
         except:
-            self.user_count = 0
-        self.file_user_list_count.setText('User List Count: %s' % self.user_count)
+            user_count = 0
+        self.user_count_label.setText(str(user_count))
 
     def refresh_subreddit_count(self):
         """Updates the shown subreddit count seen in the list menu"""
         try:
-            self.subreddit_count = self.subreddit_list_model.rowCount()
+            subreddit_count = self.subreddit_list_model.rowCount()
         except:
-            self.subreddit_count = 0
-        self.file_subreddit_list_count.setText('Subreddit List Count: %s' % self.subreddit_count)
+            subreddit_count = 0
+        self.subreddit_count_label.setText(str(subreddit_count))
 
     def set_list_sort_method(self, method):
         self.list_sort_method = method
@@ -1001,13 +1026,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.settings_manager.main_window_geom['x'] = self.x()
         self.settings_manager.main_window_geom['y'] = self.y()
         self.settings_manager.horizontal_splitter_state = self.horz_splitter.sizes()
-        self.settings_manager.vertical_splitter_state = self.vert_splitter.sizes()
         self.settings_manager.list_sort_method = self.list_sort_method
         self.settings_manager.list_order_method = self.list_order_method
-        self.settings_manager.download_users_state = self.download_users_checkbox.isChecked()
-        self.settings_manager.download_subreddits_state = self.download_subreddit_checkbox.isChecked()
         self.settings_manager.current_user_list = self.user_lists_combo.currentText()
         self.settings_manager.current_subreddit_list = self.subreddit_list_combo.currentText()
+
+        if self.download_users_radio.isChecked():
+            self.settings_manager.download_radio_state = 'USER'
+        elif self.download_subreddits_radio.isChecked():
+            self.settings_manager.download_radio_state = 'SUBREDDIT'
+        else:
+            self.settings_manager.download_radio_state = 'CONSTRAIN'
 
     def load_state(self):
         """

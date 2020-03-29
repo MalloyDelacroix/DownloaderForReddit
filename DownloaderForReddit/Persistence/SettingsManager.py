@@ -88,11 +88,9 @@ class SettingsManager:
         }
         self.main_window_geom = self.get('main_window_gui', 'main_window_geom', main_window_geom)
         self.horizontal_splitter_state = self.get('main_window_gui', 'horizontal_splitter_state', [47, 47])
-        self.vertical_splitter_state = self.get('main_window_gui', 'vertical_splitter_state', [10, 10])
         self.list_sort_method = self.get('main_window_gui', 'list_sort_method', 2)
         self.list_order_method = self.get('main_window_gui', 'list_order_method', 2)
-        self.download_users_state = self.get('main_window_gui', 'download_users_state', False)
-        self.download_subreddits_state = self.get('main_window_gui', 'download_subreddits_state', False)
+        self.download_radio_state = self.get('main_window_gui', 'download_radio_state', 'USER')
         # endregion
 
         # region Reddit Object Settings Dialog
