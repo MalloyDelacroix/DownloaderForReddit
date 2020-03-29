@@ -29,6 +29,7 @@ import logging
 from ..Database.Models import Content, Post
 from ..Utils import Injector
 from ..Database.ModelEnums import DownloadNameMethod, SubredditSaveStructure
+from ..Messaging.Message import Message
 
 
 class BaseExtractor:
@@ -250,6 +251,7 @@ class BaseExtractor:
         extra.update(kwargs)
         if log:
             self.logger.error(f'Failed to extract content: {message}', extra=extra, exc_info=log_exception)
+        Message.send_extraction_error(message)
 
     def get_log_data(self):
         """

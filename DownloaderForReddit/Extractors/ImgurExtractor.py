@@ -121,7 +121,6 @@ class ImgurExtractor(BaseExtractor):
             message = 'Out of user credits'
         else:
             message = 'Imgur rate limit exceeded'
-            Injector.get_message_queue().put('\n%s\n' % message)  # inform user of rate limit
         self.handle_failed_extract(message=message, imgur_error_message='rate limit exceeded')
 
     def no_credit_error(self):
