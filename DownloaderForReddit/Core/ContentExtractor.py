@@ -138,7 +138,7 @@ class ContentExtractor:
             key = extractor.get_url_key()
             if key is not None and any(x in post.url.lower() for x in key):
                 return extractor
-        if post.url.lower.endswith(Const.ALL_EXT):
+        if post.url.lower().endswith(Const.ALL_EXT):
             return DirectExtractor
         return None
 
