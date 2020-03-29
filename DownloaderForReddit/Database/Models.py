@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Table, Enum, event
+from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
 
@@ -26,13 +26,6 @@ class BaseModel(Base):
             return date_time.strftime('%m/%d/%Y %I:%M %p')
         except AttributeError:
             return None
-
-
-# list_association = Table(
-#     'reddit_object_list_assoc', Base.metadata,
-#     Column('list_id', Integer, ForeignKey('reddit_object_list.id')),
-#     Column('reddit_object_id', Integer, ForeignKey('reddit_object.id'))
-# )
 
 
 class ListAssociation(BaseModel):
@@ -73,6 +66,7 @@ class RedditObject(BaseModel):
     post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
     post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
     avoid_duplicates = Column(Boolean, default=True)
+    download_self_posts = Column(Boolean, default=False)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
     download_gifs = Column(Boolean, default=True)
@@ -242,6 +236,10 @@ class Post(BaseModel):
     nsfw = Column(Boolean, default=False)
     reddit_id = Column(String)
     url = Column(String)
+
+    is_self = Column(Boolean, default=False)
+    text = Column(Text, nullable=True)
+    text_html = Column(Text, nullable=True)
 
     extracted = Column(Boolean, default=False)
     extraction_date = Column(DateTime, nullable=True)

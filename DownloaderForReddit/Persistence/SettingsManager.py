@@ -38,6 +38,7 @@ class SettingsManager:
                                                   container=LimitOperator)
         self.post_score_limit = self.get('download_defaults', 'post_score_limit', 1000)
         self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
+        self.download_self_posts = self.get('download_defaults', 'download_self_posts', False)
         self.download_videos = self.get('download_defaults', 'download_videos', True)
         self.download_images = self.get('download_defaults', 'download_images', True)
         self.download_gifs = self.get('download_defaults', 'download_gifs', True)
