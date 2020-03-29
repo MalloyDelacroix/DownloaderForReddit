@@ -11,16 +11,17 @@ from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core.ContentExtractor import ContentExtractor
 from ..Core.Downloader import Downloader
 from ..Database.Models import DownloadSession, User, Subreddit, Post, Content
+from ..Messaging.Message import Message
 
 
 class DownloadRunner(QObject):
+
     remove_invalid_object = pyqtSignal(object)
     remove_forbidden_object = pyqtSignal(object)
     finished = pyqtSignal()
     download_session_signal = pyqtSignal(int)  # emits the id of the DownloadSession created at the start of the run
     setup_progress_bar = pyqtSignal(int)
     update_progress_bar_signal = pyqtSignal()
-    update_download_potential = pyqtSignal(int)
     stop = pyqtSignal()
 
     def __init__(self, user_id_list=None, subreddit_id_list=None, perpetual=False):
@@ -38,7 +39,6 @@ class DownloadRunner(QObject):
         """
         super().__init__()
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
-        self.message_queue = Injector.get_output_queue()
         self.db = Injector.get_database_handler()
         self.settings_manager = Injector.get_settings_manager()
         self.reddit_instance = RedditUtils.get_reddit_instance()
@@ -68,7 +68,7 @@ class DownloadRunner(QObject):
         try:
             redditor = self.reddit_instance.redditor(user_obj.name)
             redditor.fullname  # validity check
-            self.message_queue.put(f'{user_obj.name} is valid')
+            Message.send_text(f'{user_obj.name} is valid')
             return redditor
         except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
             self.handle_invalid_reddit_object(user_obj)
@@ -85,7 +85,7 @@ class DownloadRunner(QObject):
         try:
             subreddit = self.reddit_instance.subreddit(subreddit_obj.name)
             subreddit.fullname  # validity check
-            self.message_queue.put(f'{subreddit_obj.name} is valid')
+            Message.send_text(f'{subreddit_obj.name} is valid')
             return subreddit
         except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
             self.handle_invalid_reddit_object(subreddit_obj)
@@ -99,25 +99,25 @@ class DownloadRunner(QObject):
     def handle_invalid_reddit_object(self, reddit_object):
         self.logger.warning('Invalid reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                      'reddit_object': reddit_object.name})
-        self.message_queue.put(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_text(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_invalid_object.emit(reddit_object)
 
     def handle_forbidden_reddit_object(self, reddit_object):
         self.logger.warning('Forbidden reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                        'reddit_object': reddit_object.name})
-        self.message_queue.put(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_text(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_invalid_object.emit(reddit_object)
 
     def handle_failed_connection(self):
         if self.failed_connection_attempts >= 3:
             self.continue_run = False
             self.logger.error('Failed connection attempts exceeded.  Shutting down run', exc_info=True)
-            self.message_queue.put('Failed connection attempts exceeded.  The downloader has been shut down.  Please '
+            Message.send_text('Failed connection attempts exceeded.  The downloader has been shut down.  Please '
                                    'try the download again later.')
         else:
             self.logger.error('Failed to connect to reddit',
                               extra={'connection_attempts': self.failed_connection_attempts})
-            self.message_queue.put(f'Failed to connect to reddit.  Connection attempts remaining: '
+            Message.send_text(f'Failed to connect to reddit.  Connection attempts remaining: '
                                    f'{3 - self.failed_connection_attempts}')
             self.failed_connection_attempts += 1
 
@@ -183,14 +183,11 @@ class DownloadRunner(QObject):
             if redditor is not None:
                 submissions = self.get_submissions(redditor, user)
                 date_limit = 0
-                potential_downloads = 0
                 for submission in submissions:
                     if submission.created > date_limit:
                         date_limit = submission.created
                     self.submission_queue.put((submission, user_id))
-                    potential_downloads += 1
                 user.set_date_limit(date_limit)  # date limit modified after submissions are extracted
-                self.update_download_potential.emit(potential_downloads)
             else:
                 user.set_inactive()
 
@@ -202,14 +199,11 @@ class DownloadRunner(QObject):
             if sub is not None:
                 submissions = self.get_submissions(sub, subreddit)
                 date_limit = 0
-                potential_downloads = 0
                 for submission in submissions:
                     if submission.created > date_limit:
                         date_limit = submission.created
                     self.submission_queue.put((submission, subreddit_id))
-                    potential_downloads += 1
                 subreddit.set_date_limit(date_limit)
-                self.update_download_potential.emit(potential_downloads)
             else:
                 subreddit.set_inactive()
 
@@ -320,7 +314,7 @@ class DownloadRunner(QObject):
                   f'Downloaded {self.download_type.lower()}s: {downloaded_object_count}\n' \
                   f'Extraction Count: {downloaded_post_count}\n' \
                   f'Download Count: {downloaded_content_count}'
-        self.message_queue.put(message)
+        Message.send_text(message)
 
     def stop_download(self):
         self.continue_run = False

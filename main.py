@@ -30,6 +30,7 @@ from PyQt5 import QtWidgets, QtCore
 import logging
 
 from DownloaderForReddit.GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
+from DownloaderForReddit.Messaging.MessageReceiver import MessageReceiver
 from DownloaderForReddit.Utils import Injector
 from DownloaderForReddit.Logging import Logger
 from DownloaderForReddit.version import __version__
@@ -45,42 +46,6 @@ if sys.platform == 'win32':
     AppUserModelID = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
-class MessageReceiver(QtCore.QObject):
-
-    output_signal = QtCore.pyqtSignal(str)
-    finished = QtCore.pyqtSignal()
-
-    def __init__(self, queue, *args, **kwargs):
-        """
-        A class monitors the supplied instance of the queue that is common throughout all parts of the program which
-        emits a signal to update the main GUI window when something comes through the queue.  This class will be moved
-        operate from another thread
-
-        This concept is taken directly from NSchrading's application "redditDataExtractor" which much of this
-        application is based on.  This is a brilliant way to solve many problems involved in sending messages between
-        parts of the application which are operating in different threads.
-
-        :param queue: An instance of the queue supplied in the "main" function
-        """
-        super().__init__(*args, **kwargs)
-        self.queue = queue
-        self.continue_run = True
-
-    def run(self):
-        while self.continue_run:
-            output = self.queue.get()
-            self.output_signal.emit(output)
-        self.finished.emit()
-
-    def stop_run(self):
-        """
-        Stops the receiver from running which allows threads to end cleanly.  '' is added to the queue because it will
-        block until it receives something
-        """
-        self.continue_run = False
-        self.queue.put('')
-
-
 def log_unhandled_exception(exc_type, value, traceback):
     logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
     logger.critical('Unhandled exception', exc_info=(exc_type, value, traceback))
@@ -93,13 +58,20 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
 
-    queue = Injector.get_output_queue()
+    queue = Injector.get_message_queue()
     thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
 
     window = DownloaderForRedditGUI(queue, receiver)
 
-    receiver.output_signal.connect(window.update_output)
+    receiver.text_output.connect(window.update_output)
+    receiver.potential_extraction.connect(window.handle_potential_extraction)
+    receiver.actual_extraction.connect(window.handle_extraction)
+    receiver.potential_download.connect(window.handle_potential_download)
+    receiver.actual_download.connect(window.handle_download)
+    receiver.extraction_error.connect(window.handle_extraction_error)
+    receiver.download_error.connect(window.handle_download_error)
+
     receiver.moveToThread(thread)
     thread.started.connect(receiver.run)
     receiver.finished.connect(thread.quit)

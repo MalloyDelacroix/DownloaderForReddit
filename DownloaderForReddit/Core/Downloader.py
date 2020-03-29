@@ -2,10 +2,10 @@ import os
 import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from queue import Empty
 
 from ..Utils import Injector, SystemUtil, VideoMerger
 from ..Database.Models import Content
+from ..Messaging.Message import Message
 
 
 class Downloader:
@@ -23,7 +23,7 @@ class Downloader:
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.download_queue = download_queue  # contains the id of content created elsewhere that is to be downloaded
         self.download_session_id = download_session_id
-        self.output_queue = Injector.get_output_queue()
+        self.output_queue = Injector.get_message_queue()
         self.db = Injector.get_database_handler()
         self.settings_manager = Injector.get_settings_manager()
 
@@ -110,7 +110,7 @@ class Downloader:
             SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
         self.check_video_merger(content)
         content.set_downloaded(self.download_session_id)
-        self.output_queue.put(f'Saved: {content.full_file_path}')
+        Message.send_text(f'Saved: {content.full_file_path}')
         self.download_count += 1
 
     def check_video_merger(self, content: Content):
@@ -156,4 +156,4 @@ class Downloader:
     def output_error(self, content, message):
         output_append = f'\nPost: {content.post.title}\nUrl: {content.url}\nUser: {content.user}\n' \
                         f'Subreddit: {content.subreddit}\n'
-        self.output_queue.put(message + output_append)
+        Message.send_download_error(message + output_append)

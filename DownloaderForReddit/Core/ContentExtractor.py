@@ -19,7 +19,7 @@ class ContentExtractor:
         self.submission_queue = submission_queue
         self.download_queue = download_queue
         self.download_session_id = download_session_id
-        self.output_queue = Injector.get_output_queue()
+        self.output_queue = Injector.get_message_queue()
         self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
 
@@ -36,53 +36,53 @@ class ContentExtractor:
             return not self.executor._work_queue.empty()
         return True
 
-    # def run(self):
-    #     self.logger.debug('Content extractor running')
-    #     while self.continue_run:
-    #         item = self.submission_queue.get()
-    #         if item is not None:
-    #             if item == 'HOLD':
-    #                 self.hold = True
-    #                 self.download_queue.put('HOLD')
-    #             elif item == 'RELEASE_HOLD':
-    #                 self.hold = False
-    #                 self.download_queue.put('RELEASE_HOLD')
-    #             else:
-    #                 submission = item[0]
-    #                 siginificant_id = item[1]
-    #                 self.handle_submission(submission, siginificant_id)
-    #         else:
-    #             self.continue_run = False
-    #     self.executor.shutdown(wait=True)
-    #     self.download_queue.put(None)
-    #     self.logger.debug('Content extractor exiting')
-
     def run(self):
         self.logger.debug('Content extractor running')
         while self.continue_run:
-            try:
-                item = self.submission_queue.get(timeout=2)
-                if item is not None:
-                    if item == 'HOLD':
-                        self.hold = True
-                        self.submit_hold = True
-                        # self.download_queue.put('HOLD')
-                    elif item == 'RELEASE_HOLD':
-                        self.hold = False
-                        self.download_queue.put('RELEASE_HOLD')
-                    else:
-                        submission = item[0]
-                        significant_id = item[1]
-                        self.executor.submit(self.handle_submission, submission=submission, significant_id=significant_id)
-                else:
-                    self.continue_run = False
-            except Empty:
-                if self.submit_hold and not self.running:
+            item = self.submission_queue.get()
+            if item is not None:
+                if item == 'HOLD':
+                    self.hold = True
                     self.download_queue.put('HOLD')
-                    self.submit_hold = False
+                elif item == 'RELEASE_HOLD':
+                    self.hold = False
+                    self.download_queue.put('RELEASE_HOLD')
+                else:
+                    submission = item[0]
+                    siginificant_id = item[1]
+                    self.handle_submission(submission, siginificant_id)
+            else:
+                self.continue_run = False
         self.executor.shutdown(wait=True)
         self.download_queue.put(None)
         self.logger.debug('Content extractor exiting')
+
+    # def run(self):
+    #     self.logger.debug('Content extractor running')
+    #     while self.continue_run:
+    #         try:
+    #             item = self.submission_queue.get(timeout=2)
+    #             if item is not None:
+    #                 if item == 'HOLD':
+    #                     self.hold = True
+    #                     self.submit_hold = True
+    #                     # self.download_queue.put('HOLD')
+    #                 elif item == 'RELEASE_HOLD':
+    #                     self.hold = False
+    #                     self.download_queue.put('RELEASE_HOLD')
+    #                 else:
+    #                     submission = item[0]
+    #                     significant_id = item[1]
+    #                     self.executor.submit(self.handle_submission, submission=submission, significant_id=significant_id)
+    #             else:
+    #                 self.continue_run = False
+    #         except Empty:
+    #             if self.submit_hold and not self.running:
+    #                 self.download_queue.put('HOLD')
+    #                 self.submit_hold = False
+    #     self.executor.shutdown(wait=True)
+    #     self.download_queue.put(None)
+    #     self.logger.debug('Content extractor exiting')
 
     def handle_submission(self, submission, significant_id):
         with self.db.get_scoped_session() as session:

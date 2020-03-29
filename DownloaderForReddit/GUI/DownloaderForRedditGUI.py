@@ -47,7 +47,6 @@ from ..Utils.Exporters import TextExporter, JsonExporter
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
-from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
 from ..version import __version__
 
 
@@ -71,8 +70,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.version = __version__
         self.failed_list = []
         self.last_downloaded_objects = {}
-        self.download_count = 0
+        self.potential_downloads = 0
         self.downloaded = 0
+        self.progress_limit = 0
+        self.progress = 0
         self.running = False
         self.db_handler = Injector.get_database_handler()
 
@@ -179,8 +180,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.progress_bar = QtWidgets.QProgressBar()
         self.statusbar.addPermanentWidget(self.progress_bar)
-        self.bar_count = 0
-        self.progress_bar.setToolTip('Displays the progress of user/subreddit validation and link extraction')
         self.progress_bar.setVisible(False)
         self.progress_label = QtWidgets.QLabel()
         self.statusbar.addPermanentWidget(self.progress_label)
@@ -384,9 +383,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.download_runner.remove_invalid_object.connect(self.remove_invalid_reddit_object)
         self.download_runner.remove_forbidden_object.connect(self.remove_forbidden_reddit_object)
         # TODO: get the download session id at start of download for monitoring?
-        self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
-        self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
-        self.download_runner.update_download_potential.connect(self.update_status_bar_download_potential)
+        # self.download_runner.setup_progress_bar.connect(self.setup_progress_bar)
+        # self.download_runner.update_progress_bar_signal.connect(self.update_progress_bar)
+        # self.download_runner.update_download_potential.connect(self.update_status_bar_download_potential)
         self.download_runner.finished.connect(self.thread.quit)
         self.download_runner.finished.connect(self.download_runner.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
@@ -403,44 +402,54 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.failed_list.append(failed_post)
 
     def update_output(self, text):
-        """
-        Updates outputs the supplied text to the output box in the GUI.  Also supplies the content to update the status
-        bar, failed download dialog box, and if the user finder is open, will emit a signal to update the user finder
-        progress bar
-        """
-        if text.lower().startswith('fail'):
-            self.output_box.append(text)
-        elif text.startswith('Saved'):
-            self.update_status_bar_download_count()
-            self.output_box.append(text)
-        else:
-            self.output_box.append(text)
+        self.output_box.append(text)
 
-    def update_status_bar_download_potential(self, count):
-        self.download_count += count
-        self.statusbar.showMessage(f'Downloaded: {self.downloaded} of {self.download_count}', -1)
+    def handle_potential_extraction(self):
+        self.extend_progress()
 
-    def update_status_bar_download_count(self):
+    def handle_extraction(self):
+        self.update_progress()
+
+    def handle_potential_download(self):
+        self.extend_progress()
+        self.potential_downloads += 1
+        self.update_status_bar()
+
+    def handle_download(self):
+        self.update_progress()
         self.downloaded += 1
-        self.statusbar.showMessage(f'Downloaded: {self.downloaded} of {self.download_count}', -1)
+        self.update_status_bar()
 
-    def setup_progress_bar(self, limit):
+    def handle_extraction_error(self, error_message):
+        self.extend_progress(forward=False)
+        # TODO: inform user somehow
+
+    def handle_download_error(self, error_message):
+        self.extend_progress(forward=False)
+        self.potential_downloads -= 1
+        self.update_status_bar()
+        # TODO: inform user somehow
+
+    def update_status_bar(self):
+        self.statusbar.showMessage(f'Downloaded: {self.downloaded} of {self.potential_downloads}', -1)
+
+    def init_progress_bar(self):
+        self.progress_limit = 0
+        self.progress = 0
+        self.progress_bar.setRange(0, 0)
+        self.progress_bar.setValue(0)
         self.progress_bar.setVisible(True)
-        if limit < 100:
-            minimum = 0
-            maximum = limit
-        else:
-            minimum = 100 - limit
-            maximum = 100
-        self.progress_bar.setMinimum(minimum)
-        self.progress_bar.setMaximum(maximum)
-        self.progress_bar.setValue(minimum)
 
-    def update_progress_bar(self):
-        self.progress_bar.setValue(self.progress_bar.value() + 1)
-        if self.progress_bar.value() == self.progress_bar.maximum():
-            self.progress_bar.setVisible(False)
-            self.progress_label.setVisible(True)
+    def extend_progress(self, forward=True):
+        if forward:
+            self.progress_limit += 1
+        else:
+            self.progress_limit -= 1
+        self.progress_bar.setMaximum(self.progress_limit)
+
+    def update_progress(self):
+        self.progress += 1
+        self.progress_bar.setValue(self.progress)
 
     def add_user_list(self):
         new_user_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog", "Enter the new user list:")
@@ -768,8 +777,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
         self.running = True
+        self.init_progress_bar()
         self.downloaded = 0
-        self.download_count = 0
+        self.potential_downloads = 0
         self.output_box.clear()
         self.download_button.setText('Downloading...Click to Stop Download')
         self.statusbar.clearMessage()
@@ -800,14 +810,14 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.file_failed_download_list.setEnabled(True)
             if self.settings_manager.auto_display_failed_list:
                 self.display_failed_downloads()
-        self.download_count = 0
+        self.potential_downloads = 0
 
     def finish_progress_bar(self):
         """
         Changes the progress bar text to show that it is complete and also moves the progress bar value to the maximum
         if for whatever reason it was not already there
         """
-        self.progress_label.setText('Download complete - Downloaded: %s' % self.download_count)
+        self.progress_label.setText('Download complete - Downloaded: %s' % self.potential_downloads)
         if self.progress_bar.value() < self.progress_bar.maximum():
             self.progress_bar.setValue(self.progress_bar.maximum())
 

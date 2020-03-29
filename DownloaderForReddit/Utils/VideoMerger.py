@@ -29,6 +29,7 @@ import logging
 from distutils.spawn import find_executable
 
 from ..Utils import Injector, SystemUtil
+from ..Messaging.Message import Message
 
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,7 @@ def clean_up():
     Updates the GUI output to show which video files have been created and deletes the temporary video and audio files
     that were combined to produce the output file.
     """
-    queue = Injector.get_output_queue()
+    queue = Injector.get_message_queue()
     for ms in videos_to_merge.values():
         if os.path.exists(ms.output_path):
             try:
@@ -119,5 +120,5 @@ def clean_up():
             except FileNotFoundError:
                 logger.error('Failed to delete reddit video part files', extra={'merged_video_path': ms.output_path},
                              exc_info=True)
-            queue.put('Merged reddit video: %s' % ms.output_path)
+            Message.send_text('Merged reddit video: %s' % ms.output_path)
     videos_to_merge.clear()
