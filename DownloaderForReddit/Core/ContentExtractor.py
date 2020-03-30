@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 from praw.models import Submission
 from queue import Empty
+from bs4 import BeautifulSoup, SoupStrainer
 
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Extractors.DirectExtractor import DirectExtractor
@@ -29,7 +30,6 @@ class ContentExtractor:
         self.hold = False
         self.submit_hold = False
         self.continue_run = True
-        self.content_count = 0
 
     @property
     def running(self):
@@ -122,27 +122,60 @@ class ContentExtractor:
 
     def extract(self, post: Post):
         try:
-            extractor = self.assign_extractor(post)(post)
-            if extractor is not None:
+            if not post.is_self:
+                extractor = self.assign_extractor(post.url)(post)
                 extractor.extract_content()
                 if not extractor.failed_extraction:
                     post.set_extracted()
+                else:
+                    post.set_extraction_failed(extractor.failed_extraction_message)
                 for content in extractor.extracted_content:
-                    self.content_count += 1
                     self.download_queue.put(content.id)
             else:
-                self.handle_unsupported_domain(post)
+                self.extract_linked_content(post)
+        except TypeError:
+            self.handle_unsupported_domain(post)
         except ConnectionError:
             self.handle_connection_error(post)
         except:
             self.handle_unknown_error(post)
 
-    def assign_extractor(self, post):
+    def extract_linked_content(self, post: Post):
+        """
+        Extracts links from self post text by scanning the html version of the text for href tags.  After links are
+        found, content is extracted the same as post content would normally be extracted, except that the process is
+        done for each link found.
+        :param post: The post who's text content is to be scanned for links.
+        """
+        print(f'Significant ro: {post.significant_reddit_object.name}')
+        if post.significant_reddit_object.extract_self_post_links:
+            failed = False
+            for link in BeautifulSoup(post.text_html, parse_only=SoupStrainer('a'), features='html.parser'):
+                if link.has_attr('href'):
+                    try:
+                        extractor = self.assign_extractor(post.url)(post)
+                        extractor.extracted_content()
+                        if extractor.failed_extraction:
+                            failed = True
+                        for content in extractor.extracted_content:
+                            self.download_queue.put(content.id)
+                    except TypeError:
+                        self.handle_unsupported_domain(post)
+                    except ConnectionError:
+                        self.handle_connection_error(post)
+                    except:
+                        self.handle_unknown_error(post)
+            if failed:
+                post.set_extraction_failed('Failed to extract one or more links from text')
+            else:
+                post.set_extracted()
+
+    def assign_extractor(self, url):
         for extractor in BaseExtractor.__subclasses__():
             key = extractor.get_url_key()
-            if key is not None and any(x in post.url.lower() for x in key):
+            if key is not None and any(x in url.lower() for x in key):
                 return extractor
-        if post.url.lower().endswith(Const.ALL_EXT):
+        if url.lower().endswith(Const.ALL_EXT):
             return DirectExtractor
         return None
 

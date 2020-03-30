@@ -36,7 +36,7 @@ class BaseExtractor:
 
     url_key = (None, )
 
-    def __init__(self, post):
+    def __init__(self, post, **kwargs):
         """
         A base class for extracting downloadable urls from container websites.  This class should be overridden and any
         necessary methods overridden by subclasses to perform link extraction from the target website.  Each subclass
@@ -48,14 +48,16 @@ class BaseExtractor:
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
         self.post = post
-        self.post_title = post.title
-        self.url = post.url
-        self.domain = post.domain
-        self.user = post.author
-        self.subreddit = post.subreddit
-        self.creation_date = post.date_posted
+        self.comment = None
+        self.post_title = kwargs.get('title', post.title)
+        self.url = kwargs.get('url', post.url)
+        self.user = kwargs.get('user', post.author)
+        self.subreddit = kwargs.get('subreddit', post.subreddit)
+        self.significant_reddit_object = kwargs.get('significant_reddit_object', post.significant_reddit_object)
+        self.creation_date = kwargs.get('date_posted', post.date_posted)
         self.extracted_content = []
         self.failed_extraction = False
+        self.failed_extraction_message = None
         self.use_count = True
 
     def __str__(self):
@@ -71,18 +73,6 @@ class BaseExtractor:
         :rtype: str
         """
         return cls.url_key
-
-    @property
-    def significant_reddit_object(self):
-        """
-        Returns the reddit object for which the extraction is being performed.  This is calculated by checking which of
-        the posts reddit objects is significant and returning that reddit object. Defaults to the posts author.
-        """
-        if self.user.significant:
-            return self.user
-        elif self.subreddit.significant:
-            return self.subreddit
-        return self.user
 
     def extract_content(self):
         """
@@ -146,15 +136,14 @@ class BaseExtractor:
         :return: The file name that should be used when creating the Content object from the extracted url.
         :rtype: str
         """
-        reddit_object = self.significant_reddit_object
-        method = reddit_object.download_naming_method
+        method = self.significant_reddit_object.download_naming_method
         if method == DownloadNameMethod.ID:
             return media_id
         elif method == DownloadNameMethod.TITLE:
             return self.post_title
         else:
             self.use_count = False  # specify not to use album item count when incrementing by number of downloads
-            return f'{reddit_object.name} {reddit_object.get_post_count()}'
+            return f'{self.significant_reddit_object.name} {self.significant_reddit_object.get_post_count()}'
 
     def make_content(self, url, file_name, extension, count=None):
         """
@@ -196,15 +185,14 @@ class BaseExtractor:
         directory and the content's significant reddit object type and subreddit save structure.
         :return: The path to the directory in which the content item being created will be saved.
         """
-        significant_ro = self.post.significant_reddit_object
-        if significant_ro.object_type == 'USER':
-            return os.path.join(self.settings_manager.user_save_directory, significant_ro.name)
+        if self.significant_reddit_object.object_type == 'USER':
+            return os.path.join(self.settings_manager.user_save_directory, self.significant_reddit_object.name)
         else:
-            if significant_ro.subreddit_save_structure == SubredditSaveStructure.SUB_NAME:
+            if self.significant_reddit_object.subreddit_save_structure == SubredditSaveStructure.SUB_NAME:
                 joiner = self.subreddit.name
-            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.AUTHOR_NAME:
+            elif self.significant_reddit_object.subreddit_save_structure == SubredditSaveStructure.AUTHOR_NAME:
                 joiner = self.user.name
-            elif significant_ro.subreddit_save_structure == SubredditSaveStructure.SUB_NAME_AUTHOR_NAME:
+            elif self.significant_reddit_object.subreddit_save_structure == SubredditSaveStructure.SUB_NAME_AUTHOR_NAME:
                 joiner = os.path.join(self.subreddit.name, self.user.name)
             else:
                 joiner = os.path.join(self.user.name, self.subreddit.name)
@@ -246,7 +234,7 @@ class BaseExtractor:
         :type log_exception: bool
         """
         self.failed_extraction = True
-        self.post.set_extraction_failed(message)
+        self.failed_extraction_message = message
         extra = {'extractor_data': self.get_log_data()}
         extra.update(kwargs)
         if log:
@@ -262,7 +250,6 @@ class BaseExtractor:
             'user': self.user.name,
             'subreddit': self.subreddit.name,
             'post_title': self.post_title,
-            'creation_date': self.creation_date,
             'extracted_content_count': len(self.extracted_content),
             'extraction_failed': self.failed_extraction,
         }

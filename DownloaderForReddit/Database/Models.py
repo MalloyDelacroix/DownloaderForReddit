@@ -67,6 +67,7 @@ class RedditObject(BaseModel):
     post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
     avoid_duplicates = Column(Boolean, default=True)
     download_self_posts = Column(Boolean, default=False)
+    extract_self_post_links = Column(Boolean, default=False)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
     download_gifs = Column(Boolean, default=True)
@@ -265,6 +266,7 @@ class Post(BaseModel):
 
     def set_extraction_failed(self, message):
         self.extracted = False
+        self.extraction_date = datetime.now()
         self.extraction_error = message
         self.get_session().commit()
 

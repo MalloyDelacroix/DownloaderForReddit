@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../Resources/Images/RedditDownloaderIcon.png</normaloff>../Resources/Images/RedditDownloaderIcon.png</iconset>
+    <normaloff>../../Resources/Images/RedditDownloaderIcon.png</normaloff>../../Resources/Images/RedditDownloaderIcon.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
