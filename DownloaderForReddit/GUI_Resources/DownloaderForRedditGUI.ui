@@ -315,7 +315,6 @@
     <addaction name="separator"/>
     <addaction name="file_failed_download_list"/>
     <addaction name="file_unfinished_downloads"/>
-    <addaction name="file_last_downloaded_list"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuUser_Finder">
@@ -358,6 +357,8 @@
     </widget>
     <addaction name="view_sort_lists_by"/>
     <addaction name="view_sort_order"/>
+    <addaction name="separator"/>
+    <addaction name="download_session_menu_item"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -414,9 +415,9 @@
     <string>Open User Finder</string>
    </property>
   </action>
-  <action name="file_last_downloaded_list">
+  <action name="download_session_menu_item">
    <property name="text">
-    <string>Last Downloaded List</string>
+    <string>Download Sessions</string>
    </property>
   </action>
   <action name="file_unfinished_downloads">

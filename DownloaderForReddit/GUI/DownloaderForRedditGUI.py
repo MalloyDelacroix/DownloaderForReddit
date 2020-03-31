@@ -46,6 +46,7 @@ from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
+from ..GUI.DownloadSessionDialog import DownloadSessionDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..version import __version__
 
@@ -118,7 +119,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.export_sub_list_as_json_menu_item.triggered.connect(self.export_subreddit_list_to_json)
 
         self.file_failed_download_list.triggered.connect(self.display_failed_downloads)
-        self.file_last_downloaded_list.triggered.connect(self.open_last_downloaded_list)
+        self.download_session_menu_item.triggered.connect(self.open_download_sessions_dialog)
         self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
         self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
         self.file_user_manual.triggered.connect(self.open_user_manual)
@@ -143,11 +144,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.refresh_user_count()
         self.refresh_subreddit_count()
-
-        if len(self.last_downloaded_objects) < 1:
-            self.file_last_downloaded_list.setEnabled(False)
-        if len(self.failed_list) < 1:
-            self.file_failed_download_list.setEnabled(False)
 
         self.file_open_settings.triggered.connect(self.open_settings_dialog)
         self.file_open_save_file_location.triggered.connect(self.open_data_directory)
@@ -779,20 +775,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.last_downloaded_objects = downloaded_object_dict
         self.file_last_downloaded_list.setEnabled(True)
 
-    def open_last_downloaded_list(self):
-        """
-        Opens a dialog that shows the downloads of any user that has been added to the last downloaded users list.
-        """
-        if len(self.last_downloaded_objects) > 0:
-            obj_display_list = self.get_last_downloaded_users()
-            obj_display_list.extend(self.get_last_downloaded_subs())
-
-            downloaded_objects_dialog = DownloadedObjectsDialog(obj_display_list, obj_display_list[0],
-                                                                self.last_downloaded_objects)
-            downloaded_objects_dialog.change_to_downloads_view()
-            downloaded_objects_dialog.show()
-        else:
-            Message.no_users_downloaded(self)
+    def open_download_sessions_dialog(self):
+        dialog = DownloadSessionDialog()
+        dialog.show()
+        dialog.exec_()
 
     def get_last_downloaded_users(self):
         """

@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum
+from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum, event
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
 
@@ -197,6 +197,7 @@ class DownloadSession(BaseModel):
     __tablename__ = 'download_session'
 
     id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=True)
     start_time = Column(DateTime, nullable=True)
     end_time = Column(DateTime, nullable=True)
     extraction_thread_count = Column(Integer, nullable=True)
@@ -204,6 +205,14 @@ class DownloadSession(BaseModel):
 
     def __str__(self):
         return f'DownloadSession: {self.id}'
+
+    @property
+    def start_time_display(self):
+        return self.get_display_date(self.start_time)
+
+    @property
+    def end_time_display(self):
+        return self.get_display_date(self.end_time)
 
     @property
     def duration(self):
@@ -219,9 +228,22 @@ class DownloadSession(BaseModel):
     def get_session_subreddits(self):
         pass
 
-    def get_session_reddit_objects(self):
-        session = self.get_session()
-        return session.query(RedditObject).filter(RedditObject in self.posts).distinct().count()
+    def get_downloaded_reddit_object_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        subquery = session.query(Post.significant_reddit_object_id).filter(Post.download_session_id == self.id)
+        return session.query(RedditObject.id).filter(RedditObject.id.in_(subquery)).count()
+
+    def get_downloaded_reddit_objects(self, session=None):
+        if session is None:
+            session = self.get_session()
+        subquery = session.query(Post.significant_reddit_object_id).filter(Post.download_session_id == self.id)
+        return session.query(RedditObject).filter(RedditObject.id.in_(subquery))
+
+
+@event.listens_for(DownloadSession, 'before_insert')
+def set_download_session_name(mapper, connection, target):
+    target.name = f'Download Session {target.get_session().query(DownloadSession.id).count() + 1}'
 
 
 class Post(BaseModel):
