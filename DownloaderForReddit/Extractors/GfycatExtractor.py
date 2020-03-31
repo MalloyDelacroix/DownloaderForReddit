@@ -31,12 +31,12 @@ class GfycatExtractor(BaseExtractor):
 
     url_key = ['gfycat', 'redgifs']
 
-    def __init__(self, post):
+    def __init__(self, post, **kwargs):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the gfycat website through their
         api.
         """
-        super().__init__(post)
+        super().__init__(post, **kwargs)
         self.api_caller = "https://api.gfycat.com/v1/gfycats/"
 
     def extract_content(self):

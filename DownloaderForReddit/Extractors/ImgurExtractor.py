@@ -33,12 +33,12 @@ class ImgurExtractor(BaseExtractor):
 
     url_key = ['imgur']
 
-    def __init__(self, post):
+    def __init__(self, post, **kwargs):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the imgur website through the
         imgur api via ImgurPython
         """
-        super().__init__(post)
+        super().__init__(post, **kwargs)
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""

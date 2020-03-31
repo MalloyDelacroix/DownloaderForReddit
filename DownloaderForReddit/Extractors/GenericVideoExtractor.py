@@ -40,8 +40,8 @@ class GenericVideoExtractor(BaseExtractor):
         url_key = None
         LogUtils.log_proxy(__name__, 'WARNING', message='Failed to load supported video sites')
 
-    def __init__(self, post):
-        super().__init__(post)
+    def __init__(self, post, **kwargs):
+        super().__init__(post, **kwargs)
 
     def extract_content(self):
         try:

@@ -33,8 +33,8 @@ class RedditVideoExtractor(BaseExtractor):
 
     url_key = ['v.redd.it']
 
-    def __init__(self, post):
-        super().__init__(post)
+    def __init__(self, post, **kwargs):
+        super().__init__(post, **kwargs)
         self.post = post
         self.host_vid = self.get_host_vid()
         self.url = None

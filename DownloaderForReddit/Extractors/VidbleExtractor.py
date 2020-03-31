@@ -32,12 +32,12 @@ class VidbleExtractor(BaseExtractor):
 
     url_key = ['vidble']
 
-    def __init__(self, post):
+    def __init__(self, post, **kwargs):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the Vidble website via
         BeautifulSoup4.
         """
-        super().__init__(post)
+        super().__init__(post, **kwargs)
         self.vidble_base = "https://vidble.com"
 
     def extract_content(self):

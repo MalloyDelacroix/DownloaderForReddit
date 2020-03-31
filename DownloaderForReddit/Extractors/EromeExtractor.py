@@ -48,12 +48,12 @@ class EromeExtractor(BaseExtractor):
 
     url_key = ['erome']
 
-    def __init__(self, post):
+    def __init__(self, post, **kwargs):
         """
         A subclass of the BaseExtractor class.  This class interacts exclusively with the Erome website via
         BeautifulSoup4.
         """
-        super().__init__(post)
+        super().__init__(post, **kwargs)
 
     def extract_content(self):
         try:
