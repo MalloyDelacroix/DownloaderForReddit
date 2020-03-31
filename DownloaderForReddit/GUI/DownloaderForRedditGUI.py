@@ -475,7 +475,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress += 1
         self.progress_bar.setValue(self.progress)
 
-    def add_user_list(self, list_name=None):
+    def add_user_list(self, *, list_name=None):
         if list_name is None:
             list_name = self.get_list_name('USER')
         if list_name is not None:
@@ -497,12 +497,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Opens a dialog for the user to enter a name for a new user or subreddit list.  The dialog text is altered
         depending on the list type string that is provided.
         :param object_type: The type of object that the list will hold.
-        :return:
         """
-        new_user_list, ok = QtWidgets.QInputDialog.getText(
-            self, f'New {object_type.capitalize()} List Dialog", "Enter the new {object_type.lower()} list:')
-        if ok and new_user_list is not None and new_user_list != '':
-            return new_user_list
+        list_name, ok = QtWidgets.QInputDialog.getText(
+            self, f'New {object_type.capitalize()} List Dialog', f'Enter the new {object_type.lower()} list:')
+        if ok:
+            if list_name is not None and list_name != '':
+                return list_name
         return None
 
     def remove_user_list(self):
@@ -542,7 +542,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.user_list_model.list, file_path)
 
-    def add_subreddit_list(self, list_name=None):
+    def add_subreddit_list(self, *, list_name=None):
         if list_name is None:
             list_name = self.get_list_name('SUBREDDIT')
         if list_name is not None:
