@@ -174,6 +174,9 @@ class BaseExtractor:
                 post=self.post,
                 directory_path=dir_path
             )
+            session = self.post.get_session()
+            session.add(content)
+            session.commit()
             self.extracted_content.append(content)
             # TODO: need to figure out best way to set directory_path before content is saved
             return content

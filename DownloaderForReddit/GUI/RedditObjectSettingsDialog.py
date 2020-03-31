@@ -84,6 +84,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.date_limit_checkbox.stateChanged.connect(self.date_limit_checkbox_toggled)
         self.date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
         self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
+        self.setup_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
         self.setup_checkbox(self.download_images_checkbox, 'download_images')
         self.nsfw_filter_combo.currentIndexChanged.connect(
@@ -174,6 +175,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         if self.selected_object.date_limit is not None:
             self.date_limit_edit.setDateTime(self.selected_object.date_limit)
         self.avoid_duplicates_checkbox.setChecked(self.selected_object.avoid_duplicates)
+        self.extract_self_post_content_checkbox.setChecked(self.selected_object.extract_self_post_links)
         self.download_videos_checkbox.setChecked(self.selected_object.download_videos)
         self.download_images_checkbox.setChecked(self.selected_object.download_images)
         self.download_gifs_checkbox.setChecked(self.selected_object.download_gifs)

@@ -25,17 +25,18 @@ class ContentExtractor:
         self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
 
-        self.thread_count = self.settings_manager.extraction_thread_count
-        self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
+        # self.thread_count = self.settings_manager.extraction_thread_count
+        # self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
         self.hold = False
         self.submit_hold = False
         self.continue_run = True
 
     @property
     def running(self):
-        if self.hold:
-            return not self.executor._work_queue.empty()
-        return True
+        # if self.hold:
+        #     return not self.executor._work_queue.empty()
+        # return True
+        return not self.hold
 
     def run(self):
         self.logger.debug('Content extractor running')
@@ -54,7 +55,7 @@ class ContentExtractor:
                     self.handle_submission(submission, siginificant_id)
             else:
                 self.continue_run = False
-        self.executor.shutdown(wait=True)
+        # self.executor.shutdown(wait=True)
         self.download_queue.put(None)
         self.logger.debug('Content extractor exiting')
 
@@ -147,24 +148,31 @@ class ContentExtractor:
         done for each link found.
         :param post: The post who's text content is to be scanned for links.
         """
-        print(f'Significant ro: {post.significant_reddit_object.name}')
         if post.significant_reddit_object.extract_self_post_links:
             failed = False
-            for link in BeautifulSoup(post.text_html, parse_only=SoupStrainer('a'), features='html.parser'):
+            links = BeautifulSoup(post.text_html, parse_only=SoupStrainer('a'), features='html.parser')
+            track_count = len(links) > 1
+            for link in links:
                 if link.has_attr('href'):
+                    url = link['href']
+                    if track_count:
+                        title = f'{post.title} {links.index(link) + 1}'
+                    else:
+                        title = post.title
                     try:
-                        extractor = self.assign_extractor(post.url)(post)
-                        extractor.extracted_content()
+                        extractor_class = self.assign_extractor(url)
+                        extractor = extractor_class(post, url=url, title=title)
+                        extractor.extract_content()
                         if extractor.failed_extraction:
                             failed = True
                         for content in extractor.extracted_content:
                             self.download_queue.put(content.id)
                     except TypeError:
-                        self.handle_unsupported_domain(post)
+                        self.handle_unsupported_domain(post, url=url, title=title)
                     except ConnectionError:
-                        self.handle_connection_error(post)
+                        self.handle_connection_error(post, url=url, title=title)
                     except:
-                        self.handle_unknown_error(post)
+                        self.handle_unknown_error(post, url=url, title=title)
             if failed:
                 post.set_extraction_failed('Failed to extract one or more links from text')
             else:
@@ -179,31 +187,31 @@ class ContentExtractor:
             return DirectExtractor
         return None
 
-    def handle_unsupported_domain(self, post):
+    def handle_unsupported_domain(self, post, **kwargs):
         message = 'Unsupported domain'
-        self.log_error(post, message, domain=post.domain)
+        self.log_error(post, message, **kwargs)
         post.set_extraction_failed(message)
-        self.output_error(post, message)
+        self.output_error(post, message, **kwargs)
 
-    def handle_connection_error(self, post):
+    def handle_connection_error(self, post, **kwargs):
         message = 'Failed to establish a connection to the server'
-        self.log_error(post, message)
+        self.log_error(post, message, **kwargs)
         post.set_extraction_failed(message)
-        self.output_error(post, message)
+        self.output_error(post, message, **kwargs)
 
-    def handle_unknown_error(self, post):
+    def handle_unknown_error(self, post, **kwargs):
         message = 'Unknown error occurred'
-        self.log_error(post, message)
+        self.log_error(post, message, **kwargs)
         post.set_extraction_failed(message)
-        self.output_error(post, message)
+        self.output_error(post, message, **kwargs)
 
     def log_error(self, post, message, **kwargs):
         extra = {'post_title': post.title, 'user': post.author.name, 'subreddit': post.subreddit.name, 'url': post.url,
                  'date_posted': post.date_posted, **kwargs}
         self.logger.error(message, extra=extra, exc_info=True)
 
-    def output_error(self, post, message):
+    def output_error(self, post, message, **kwargs):
         message = f'Failed to extract due to: {message}'
         message_extra = f'\nTitle: {post.title}\nUser: {post.author.name}\nSubreddit: {post.subreddit.name}\n' \
-                        f'Url: {post.url}\n'
+                        f'Url: {kwargs.get("url", post.url)}\n'
         Message.send_extraction_error(message + message_extra)

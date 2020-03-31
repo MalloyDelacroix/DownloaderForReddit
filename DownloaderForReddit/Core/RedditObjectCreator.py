@@ -70,6 +70,7 @@ class RedditObjectCreator:
             'post_score_limit_operator': self.settings_manager.post_score_limit_operator,
             'post_score_limit': self.settings_manager.post_score_limit,
             'avoid_duplicates': self.settings_manager.avoid_duplicates,
+            'extract_self_post_links': self.settings_manager.extract_self_post_links,
             'download_videos': self.settings_manager.download_videos,
             'download_images': self.settings_manager.download_images,
             'download_nsfw': self.settings_manager.download_nsfw,

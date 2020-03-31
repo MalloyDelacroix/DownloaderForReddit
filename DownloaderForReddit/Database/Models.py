@@ -66,7 +66,6 @@ class RedditObject(BaseModel):
     post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
     post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
     avoid_duplicates = Column(Boolean, default=True)
-    download_self_posts = Column(Boolean, default=False)
     extract_self_post_links = Column(Boolean, default=False)
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
