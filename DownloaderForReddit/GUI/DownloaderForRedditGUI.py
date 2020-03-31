@@ -475,21 +475,35 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.progress += 1
         self.progress_bar.setValue(self.progress)
 
-    def add_user_list(self):
-        new_user_list, ok = QtWidgets.QInputDialog.getText(self, "New User List Dialog", "Enter the new user list:")
-        if ok:
-            if new_user_list != '':
-                added = self.user_list_model.add_new_list(new_user_list, 'USER')
+    def add_user_list(self, list_name=None):
+        if list_name is None:
+            list_name = self.get_list_name('USER')
+        if list_name is not None:
+            if list_name != '':
+                added = self.user_list_model.add_new_list(list_name, 'USER')
                 if added:
-                    self.user_lists_combo.addItem(new_user_list)
-                    self.user_lists_combo.setCurrentText(new_user_list)
+                    self.user_lists_combo.addItem(list_name)
+                    self.user_lists_combo.setCurrentText(list_name)
                     self.refresh_user_count()
                 else:
-                    text = f'A user list already exists with the name "{new_user_list}"'
+                    text = f'A user list already exists with the name "{list_name}"'
                     Message.generic_message(self, title='List Name Exists', text=text)
             else:
-                self.logger.warning('Unable to add user list', extra={'invalid_name': new_user_list}, exc_info=True)
+                self.logger.warning('Unable to add user list', extra={'invalid_name': list_name}, exc_info=True)
                 Message.not_valid_name(self)
+
+    def get_list_name(self, object_type):
+        """
+        Opens a dialog for the user to enter a name for a new user or subreddit list.  The dialog text is altered
+        depending on the list type string that is provided.
+        :param object_type: The type of object that the list will hold.
+        :return:
+        """
+        new_user_list, ok = QtWidgets.QInputDialog.getText(
+            self, f'New {object_type.capitalize()} List Dialog", "Enter the new {object_type.lower()} list:')
+        if ok and new_user_list is not None and new_user_list != '':
+            return new_user_list
+        return None
 
     def remove_user_list(self):
         try:
@@ -528,21 +542,21 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.user_list_model.list, file_path)
 
-    def add_subreddit_list(self):
-        new_subreddit_list, ok = QtWidgets.QInputDialog.getText(self, "New Subreddit List Dialog",
-                                                                "Enter the new subreddit list:")
-        if ok:
-            if new_subreddit_list != '':
-                added = self.subreddit_list_model.add_new_list(new_subreddit_list, 'SUBREDDIT')
+    def add_subreddit_list(self, list_name=None):
+        if list_name is None:
+            list_name = self.get_list_name('SUBREDDIT')
+        if list_name is not None:
+            if list_name != '':
+                added = self.subreddit_list_model.add_new_list(list_name, 'SUBREDDIT')
                 if added:
-                    self.subreddit_list_combo.addItem(new_subreddit_list)
-                    self.subreddit_list_combo.setCurrentText(new_subreddit_list)
+                    self.subreddit_list_combo.addItem(list_name)
+                    self.subreddit_list_combo.setCurrentText(list_name)
                     self.refresh_subreddit_count()
                 else:
-                    text = f'A subreddit list already exists with the name "{new_subreddit_list}"'
+                    text = f'A subreddit list already exists with the name "{list_name}"'
                     Message.generic_message(self, title='List Name Exists', text=text)
             else:
-                self.logger.warning('Unable to add subreddit list', extra={'invalid_name': new_subreddit_list},
+                self.logger.warning('Unable to add subreddit list', extra={'invalid_name': list_name},
                                     exc_info=True)
                 Message.not_valid_name(self)
 
@@ -588,6 +602,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         return file_path if file_path != '' else None
 
     def add_user(self):
+        if self.user_list_model.list is None:
+            self.add_user_list(list_name='Default')
         add_user_dialog = AddRedditObjectDialog(self.user_list_model)
         add_user_dialog.exec_()
 
@@ -677,6 +693,8 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             return self.subreddit_list_model
 
     def add_subreddit(self):
+        if self.subreddit_list_model.list is None:
+            self.add_subreddit_list(list_name='Default')
         add_sub_dialog = AddRedditObjectDialog(self.subreddit_list_model)
         add_sub_dialog.exec_()
 
