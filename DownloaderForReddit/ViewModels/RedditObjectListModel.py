@@ -68,6 +68,7 @@ class RedditObjectListModel(QAbstractListModel):
                 .filter(RedditObjectList.list_type == self.list_type)\
                 .one()
             self.reddit_objects = self.list.reddit_objects
+            self.refresh()
             # TODO: sort list here
         except NoResultFound:
             pass
