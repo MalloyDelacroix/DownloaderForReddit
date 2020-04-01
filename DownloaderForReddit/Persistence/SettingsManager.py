@@ -80,7 +80,6 @@ class SettingsManager:
         # endregion
 
         # region Main Window GUI
-        # self.main_window_geom = self.get('main_window_gui', 'main_window_geom')
         main_window_geom = {
             'width': 1138,
             'height': 570,
@@ -103,6 +102,25 @@ class SettingsManager:
                                                         'reddit_object_content_icon_size', 110)
         self.reddit_object_settings_dialog_splitter_state = self.get('reddit_object_settings_dialog',
                                                                      'reddit_object_settings_dialog_splitter_state')
+        # endregion
+
+        # region Download Sessions Dialog
+        download_session_dialog_geom = {
+            'width': 1690,
+            'height': 920,
+            'x': 0,
+            'y': 0
+        }
+        self.dls_dialog_geom = self.get('download_session_dialog', 'dls_dialog_geom',
+                                        download_session_dialog_geom)
+        self.dls_dialog_show_reddit_objects = self.get('download_session_dialog', 'dls_dialog_show_reddit_objects',
+                                                       True)
+        self.dls_dialog_show_posts = self.get('download_session_dialog', 'dls_dialog_show_posts', True)
+        self.dls_dialog_show_content = self.get('download_session_dialog', 'dls_dialog_show_content', True)
+        self.dls_dialog_show_comments = self.get('download_session_dialog', 'dls_dialog_show_comments', True)
+        self.dls_dialog_splitter_position = self.get('download_session_dialog', 'dls_dialog_splitter_position',
+                                                     [0, 0, 0, 0, 0])
+        self.dls_dialog_icon_size = self.get('download_session_dialog', 'dls_dialog_icon_size', 250)
         # endregion
 
         # region Misc Dialogs

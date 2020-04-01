@@ -1,10 +1,9 @@
 import logging
 from sqlalchemy.orm import joinedload
-from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize
+from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex
 from PyQt5.QtGui import QPixmap, QIcon
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
-from ..Utils import Injector
 
 
 class CustomItemModel:
@@ -21,19 +20,9 @@ class CustomItemModel:
 
 class DownloadSessionModel(QAbstractListModel, CustomItemModel):
 
-    def __init__(self, download_session=None):
+    def __init__(self):
         super().__init__()
-        self.db = Injector.get_database_handler()
-        self.current_session = download_session or self.get_last_session()
-        self.sessions = self.get_sessions()
-
-    def get_last_session(self):
-        with self.db.get_scoped_session() as session:
-            return session.query(DownloadSession).first()
-
-    def get_sessions(self):
-        with self.db.get_scoped_session() as session:
-            return session.query(DownloadSession).options(joinedload('posts'), joinedload('content')).all()
+        self.sessions = []
 
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.sessions)
@@ -43,13 +32,12 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
             return self.sessions[index.row()].name
         elif role == Qt.ToolTipRole:
             session = self.sessions[index.row()]
-            with self.db.get_scoped_session() as db_session:
-                return f'Start time: {session.start_time}\n' \
-                       f'End time: {session.end_time}\n' \
-                       f'Duration: {session.duration}\n' \
-                       f'Reddit Objects: {session.get_downloaded_reddit_object_count(db_session)}\n' \
-                       f'Posts: {len(session.posts)}\n' \
-                       f'Content: {len(session.content)}'
+            return f'Start time: {session.start_time}\n' \
+                   f'End time: {session.end_time}\n' \
+                   f'Duration: {session.duration}\n' \
+                   f'Reddit Objects: {session.get_downloaded_reddit_object_count()}\n' \
+                   f'Posts: {len(session.posts)}\n' \
+                   f'Content: {len(session.content)}'
         return None
 
 
@@ -79,6 +67,12 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         self.posts = []
         self.headers = ['title', 'date_posted', 'score', 'nsfw', 'text', 'author', 'subreddit']
 
+    def set_data(self, data):
+        self.posts.clear()
+        self.beginInsertRows(QModelIndex(), 0, len(data))
+        self.posts = data
+        self.endInsertRows()
+
     def headerData(self, row, orientation, role=None):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
@@ -92,7 +86,28 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
 
     def data(self, index, role=None):
         if role == Qt.DisplayRole:
-            return getattr(self.posts[index.row()], self.headers[index.column()])
+            return self.get_post_attribute(index.column(), self.posts[index.row()])
+        if role == Qt.ToolTipRole:
+            if index.column() == 4:
+                return self.posts[index.row()].text
+        return None
+
+    def get_post_attribute(self, column, post):
+        attrs = {
+            0: post.title,
+            1: post.date_posted_display,
+            2: post.score,
+            3: post.nsfw,
+            4: post.text,
+            5: post.author.name,
+            6: post.subreddit.name
+        }
+        return attrs[column]
+
+    def refresh(self):
+        first = self.createIndex(0, 0)
+        second = self.createIndex(self.columnCount(), self.rowCount())
+        self.dataChanged.emit(first, second)
 
 
 class ContentListView(QAbstractListModel, CustomItemModel):
@@ -100,14 +115,32 @@ class ContentListView(QAbstractListModel, CustomItemModel):
     def __init__(self):
         super().__init__()
         self.content_list = []
+        self.pixmap_map = {}
+
+    def set_data(self, data):
+        self.pixmap_map.clear()
+        self.content_list.clear()
+        self.beginInsertRows(QModelIndex(), 0, len(data) - 1)
+        self.content_list = data
+        self.endInsertRows()
 
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.content_list)
 
     def data(self, index, role=None):
         if role == Qt.DisplayRole:
-            return self.content_list[index.row()].name
+            return self.content_list[index.row()].title
         elif role == Qt.DecorationRole:
-            content = self.content_list[index.row()]
+            icon = self.get_icon(self.content_list[index.row()])
+            return icon
+        elif role == Qt.ToolTipRole:
+            return self.content_list[index.row()].title
+        return None
+
+    def get_icon(self, content):
+        try:
+            pixmap = self.pixmap_map[content.id]
+        except KeyError:
             pixmap = QPixmap(content.full_file_path).scaled(QSize(500, 500), Qt.KeepAspectRatio)
-            return QIcon(pixmap)
+            self.pixmap_map[content.id] = pixmap
+        return QIcon(pixmap)

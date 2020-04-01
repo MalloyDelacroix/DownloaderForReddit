@@ -105,6 +105,10 @@ class RedditObject(BaseModel):
             return f'{self.object_type}: {self.id}'
 
     @property
+    def name(self):
+
+
+    @property
     def date_created_display(self):
         return self.get_display_date(self.date_created)
 
@@ -279,6 +283,10 @@ class Post(BaseModel):
 
     def __str__(self):
         return f'Post: {self.title}'
+
+    @property
+    def date_posted_display(self):
+        return self.get_display_date(self.date_posted)
 
     def set_extracted(self):
         self.extracted = True
