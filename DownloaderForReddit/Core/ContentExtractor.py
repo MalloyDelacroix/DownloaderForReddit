@@ -1,9 +1,9 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
-from praw.models import Submission
 from queue import Empty
+from praw.models import Submission
 from bs4 import BeautifulSoup, SoupStrainer
 
 from ..Extractors.BaseExtractor import BaseExtractor
@@ -95,8 +95,12 @@ class ContentExtractor:
     def create_post(self, submission: Submission, significant_id: int, session) -> Optional[Post]:
         post = None
         if self.check_duplicate_post_url(submission.url, session):
-            author = self.db.get_or_create(User, name=submission.author.name, session=session)[0]
-            subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name, session=session)[0]
+            author = self.db.get_or_create(User, name=submission.author.name,
+                                           date_created=datetime.fromtimestamp(submission.author.created),
+                                           session=session)[0]
+            subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name,
+                                              date_created=datetime.fromtimestamp(submission.subreddit.created),
+                                              session=session)[0]
             post = Post(
                 title=submission.title,
                 date_posted=datetime.fromtimestamp(submission.created),

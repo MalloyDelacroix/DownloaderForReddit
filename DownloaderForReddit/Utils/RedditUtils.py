@@ -25,11 +25,14 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import praw
 import prawcore
 import logging
+from datetime import datetime
+from collections import namedtuple
 
 from ..version import __version__
 
 
 logger = logging.getLogger('DownloaderForReddit.{}'.format(__name__))
+ValidationSet = namedtuple('ValidationSet', 'name date_created valid')
 
 
 def get_reddit_instance():
@@ -81,27 +84,27 @@ class NameChecker:
         user = self.r.redditor(name)
         try:
             # actual name pulled from reddit because capitalization differences may cause problems throughout the app.
-            # Test name is checked first because praw objects are evaluated lazily, and calling user.name first will
-            # not send anything to the server and will only return the name as it was supplied.  By getting the fullname
-            # first the redditor object is updated with information supplied by reddit's server.
-            test_name = user.fullname
+            # Creation date is checked first because praw objects are evaluated lazily, and calling user.name first will
+            # not send anything to the server and will only return the name as it was supplied.  By getting the creation
+            # date first, the redditor object is updated with information supplied by reddit's server.
+            created = datetime.fromtimestamp(user.created)
             actual_name = user.name
-            return actual_name, True
+            return ValidationSet(name=actual_name, date_created=created, valid=True)
         except (prawcore.exceptions.NotFound, prawcore.exceptions.Redirect, AttributeError):
-            return name, False
+            return ValidationSet(name=name, date_created=None, valid=False)
         except:
             self.logger.error('Unable to validate user name', extra={'user_name': name}, exc_info=True)
-            return name, False
+            return ValidationSet(name=name, date_created=None, valid=False)
 
     def check_subreddit_name(self, name):
         sub = self.r.subreddit(name)
         try:
             # actual name pulled from reddit because capitalization differences may cause problems throughout the app
-            test_name = sub.fullname
+            created = datetime.fromtimestamp(sub.created)
             actual_name = sub.display_name
-            return actual_name, True
+            return ValidationSet(name=actual_name, date_created=created, valid=True)
         except (prawcore.exceptions.NotFound, prawcore.exceptions.Redirect, AttributeError):
-            return name, False
+            return ValidationSet(name=name, date_created=None, valid=False)
         except:
             self.logger.error('Unable to validate subreddit name', extra={'subreddit_name': name}, exc_info=True)
-            return name, False
+            return ValidationSet(name=name, date_created=None, valid=False)

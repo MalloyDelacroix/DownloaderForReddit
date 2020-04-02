@@ -18,7 +18,6 @@ class RedditObjectCreator:
         """
         Initializes the name checker, sets it to a class variable, and returns it to the caller.  This is done so that
         the name checker does not always have to be initialized if it is not needed to create the reddit object.
-        :return:
         """
         if self.name_checker is None:
             self.name_checker = RedditUtils.NameChecker(self.list_type)
@@ -34,12 +33,12 @@ class RedditObjectCreator:
         with self.db.get_scoped_session() as session:
             user = session.query(User).filter(func.lower(User.name) == user_name.lower()).first()
             if user is None:
-                actual_name, valid = self.get_name_checker().check_user_name(user_name)
-                if valid:
+                validation_set = self.get_name_checker().check_user_name(user_name)
+                if validation_set.valid:
                     defaults = self.get_default_setup('USER')
                     for key, value in kwargs.items():
                         defaults[key] = value
-                    user = User(name=actual_name, **defaults)
+                    user = User(name=validation_set.name, date_created=validation_set.date_created, **defaults)
                     session.add(user)
                     session.commit()
                     return user.id
@@ -51,12 +50,13 @@ class RedditObjectCreator:
         with self.db.get_scoped_session() as session:
             subreddit = session.query(Subreddit).filter(func.lower(Subreddit.name) == sub_name.lower()).first()
             if subreddit is None:
-                actual_name, valid = self.get_name_checker().check_subreddit_name(sub_name)
-                if valid:
+                validation_set = self.get_name_checker().check_subreddit_name(sub_name)
+                if validation_set.valid:
                     defaults = self.get_default_setup('SUBREDDIT')
                     for key, value in kwargs.items():
                         defaults[key] = value
-                    subreddit = Subreddit(name=actual_name, **defaults)
+                    subreddit = \
+                        Subreddit(name=validation_set.name, date_created=validation_set.date_created, **defaults)
                     session.add(subreddit)
                     session.commit()
                     return subreddit.id
