@@ -1047,31 +1047,38 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         Loads the last used user and subreddit lists from the database.  Handled here in its own method so that any
         problems with loading can be logged.
         """
-        self.load_list_combos()
-        self.load_user_list()
-        self.load_subreddit_list()
-
-    def load_list_combos(self):
         with self.db_handler.get_scoped_session() as session:
-            user_lists = [x.name for x in session.query(RedditObjectList).filter(RedditObjectList.list_type == 'USER')]
-            sub_lists = \
-                [x.name for x in session.query(RedditObjectList).filter(RedditObjectList.list_type == 'SUBREDDIT')]
-            self.user_lists_combo.addItems(user_lists)
-            self.subreddit_list_combo.addItems(sub_lists)
+            self.load_list_combos(session)
+            self.load_user_list(session)
+            self.load_subreddit_list(session)
 
-    def load_user_list(self):
+    def load_list_combos(self, session):
+        user_lists = [x.name for x in session.query(RedditObjectList).filter(RedditObjectList.list_type == 'USER')]
+        sub_lists = \
+            [x.name for x in session.query(RedditObjectList).filter(RedditObjectList.list_type == 'SUBREDDIT')]
+        self.user_lists_combo.addItems(user_lists)
+        self.subreddit_list_combo.addItems(sub_lists)
+
+    def load_user_list(self, session):
         try:
             list_name = self.settings_manager.current_user_list
-            self.user_list_model.set_list(list_name)
-            self.user_lists_combo.setCurrentText(list_name)
+            if list_name == '':
+                list_name = session.query(RedditObjectList.name).filter(RedditObjectList.list_type == 'USER').first()[0]
+            if list_name is not None:
+                self.user_list_model.set_list(list_name)
+                self.user_lists_combo.setCurrentText(list_name)
         except:
             self.logger.error('Failed to load user list from database', exc_info=True)
 
-    def load_subreddit_list(self):
+    def load_subreddit_list(self, session):
         try:
             list_name = self.settings_manager.current_subreddit_list
-            self.subreddit_list_model.set_list(list_name)
-            self.subreddit_list_combo.setCurrentText(list_name)
+            if list_name == '':
+                list_name = session.query(RedditObjectList.name)\
+                    .filter(RedditObjectList.list_type == 'SUBREDDIT').first()[0]
+            if list_name is not None:
+                self.subreddit_list_model.set_list(list_name)
+                self.subreddit_list_combo.setCurrentText(list_name)
         except:
             self.logger.error('Failed to load subreddit list from database', exc_info=True)
 
