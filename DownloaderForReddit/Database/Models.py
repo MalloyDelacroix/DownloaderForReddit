@@ -3,10 +3,12 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum, event
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
+from sqlalchemy.exc import IntegrityError
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import (DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator,
                          PostSortMethod, CommentSortMethod)
+from .Exceptions import ExistingNameException
 from ..Core import Const
 from ..Utils import SystemUtil
 
@@ -60,6 +62,7 @@ class RedditObject(BaseModel):
     __tablename__ = 'reddit_object'
 
     id = Column(Integer, primary_key=True)
+    name = Column(String)
     date_created = Column(DateTime, nullable=True)
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
@@ -103,10 +106,6 @@ class RedditObject(BaseModel):
             return f'{self.object_type}: {self.name}'
         except AttributeError:
             return f'{self.object_type}: {self.id}'
-
-    @property
-    def name(self):
-
 
     @property
     def date_created_display(self):
@@ -172,12 +171,20 @@ class RedditObject(BaseModel):
         pass
 
 
+@event.listens_for(RedditObject.name, 'set')
+def check_duplicate_name(target, value, oldValue, initiator):
+    match = target.get_session().query(RedditObject.id)\
+        .filter(RedditObject.object_type == target.object_type)\
+        .filter(RedditObject.name == value).first()
+    if match is not None:
+        raise ExistingNameException(f'A {target.object_type} with the name {value} already exists in the database')
+
+
 class User(RedditObject):
 
     __tablename__ = 'user'
 
     id = Column(ForeignKey('reddit_object.id'), primary_key=True)
-    name = Column(String, unique=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'USER',
@@ -189,7 +196,6 @@ class Subreddit(RedditObject):
     __tablename__ = 'subreddit'
 
     id = Column(ForeignKey('reddit_object.id'), primary_key=True)
-    name = Column(String, unique=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'SUBREDDIT',
@@ -220,7 +226,10 @@ class DownloadSession(BaseModel):
 
     @property
     def duration(self):
-        return SystemUtil.get_duration_str(self.start_time.timestamp(), self.end_time.timestamp())
+        try:
+            return SystemUtil.get_duration_str(self.start_time.timestamp(), self.end_time.timestamp())
+        except AttributeError:
+            return 'Never finished'
 
     @property
     def duration_epoch(self):
@@ -247,7 +256,8 @@ class DownloadSession(BaseModel):
 
 @event.listens_for(DownloadSession, 'before_insert')
 def set_download_session_name(mapper, connection, target):
-    target.name = f'Download Session {target.get_session().query(DownloadSession.id).count() + 1}'
+    number = target.get_session().query(DownloadSession.id).order_by(DownloadSession.id.desc()).first()[0] + 1
+    target.name = f'Download Session {number}'
 
 
 class Post(BaseModel):
@@ -287,6 +297,10 @@ class Post(BaseModel):
     @property
     def date_posted_display(self):
         return self.get_display_date(self.date_posted)
+
+    @property
+    def score_display(self):
+        return '{:,}'.format(self.score)
 
     def set_extracted(self):
         self.extracted = True

@@ -1,5 +1,6 @@
 import logging
-from PyQt5.QtWidgets import QDialog, QMenu, QInputDialog
+from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QSpinBox, QLabel, QHBoxLayout, QWidget,
+                             QActionGroup)
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor
 
@@ -69,6 +70,9 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.download_session_list_view.customContextMenuRequested.connect(self.download_session_view_context_menu)
 
+        self.content_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.content_list_view.customContextMenuRequested.connect(self.content_view_context_menu)
+
         self.set_first_session_index()
 
     def download_session_view_context_menu(self):
@@ -78,8 +82,36 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 self.download_session_model.sessions[self.download_session_list_view.selectedIndexes()[0].row()]
         except:
             dl_session = None
-        menu.addAction('Rename Session', lambda: self.rename_download_session(dl_session))
+        rename = menu.addAction('Rename Session', lambda: self.rename_download_session(dl_session))
+        rename.setDisabled(dl_session is None)
         menu.exec_(QCursor.pos())
+
+    def content_view_context_menu(self):
+        menu = QMenu()
+        icon_menu = QMenu('Icon Size')
+        action_group = QActionGroup(self)
+        extra_small_item = self.add_icon_menu_item(icon_menu, action_group, 'Extra Small', 72)
+        small_item = self.add_icon_menu_item(icon_menu, action_group, 'Small', 110)
+        medium_item = self.add_icon_menu_item(icon_menu, action_group, 'Medium', 76)
+        large_item = self.add_icon_menu_item(icon_menu, action_group, 'Large', 256)
+        extra_large_item = self.add_icon_menu_item(icon_menu, action_group, 'Extra Large', 420)
+
+        custom_item = CustomIconSizeMenuItem(self.icon_size, parent=self)
+        custom_item.triggered.connect(lambda: self.set_content_icon_size(custom_item.spin_box.value()))
+        custom_item.triggered.connect(menu.close)
+        custom_item.setChecked(not any(x.isChecked() for x in icon_menu.actions()))
+        icon_menu.addAction(custom_item)
+        action_group.addAction(custom_item)
+
+        menu.addMenu(icon_menu)
+        menu.exec_(QCursor.pos())
+
+    def add_icon_menu_item(self, icon_menu, action_group, text, icon_size):
+        item = icon_menu.addAction(text, lambda: self.set_content_icon_size(icon_size))
+        item.setCheckable(True)
+        item.setChecked(icon_size == self.icon_size)
+        action_group.addAction(item)
+        return item
 
     def toggle_reddit_object_view(self):
         if self.show_reddit_objects_checkbox.isChecked():
@@ -120,8 +152,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.content_list_view.setGridSize(QSize(size + 2, size + 50))
 
     def set_current_download_session(self):
-        self.current_download_session = \
-            self.download_session_model.sessions[self.download_session_list_view.currentIndex().row()]
+        try:
+            self.current_download_session = \
+                self.download_session_model.sessions[self.download_session_list_view.currentIndex().row()]
+        except IndexError:
+            pass
         if self.show_reddit_objects_checkbox.isChecked():
             self.set_reddit_object_model_data()
             self.set_first_reddit_object_index()
@@ -134,8 +169,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def set_current_reddit_object(self):
         if self.show_reddit_objects_checkbox.isChecked():
-            self.current_reddit_object = \
-                self.reddit_object_model.reddit_object_list[self.reddit_object_list_view.currentIndex().row()]
+            try:
+                self.current_reddit_object = \
+                    self.reddit_object_model.reddit_object_list[self.reddit_object_list_view.currentIndex().row()]
+            except IndexError:
+                pass
             if self.show_posts_checkbox.isChecked():
                 self.set_post_model_data()
                 self.set_first_post_index()
@@ -145,42 +183,54 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def set_current_post(self):
         if self.show_posts_checkbox.isChecked():
-            self.current_post = self.post_model.posts[self.post_table_view.currentIndex().row()]
+            try:
+                self.current_post = self.post_model.posts[self.post_table_view.currentIndex().row()]
+            except IndexError:
+                pass
             self.set_content_model_data()
             self.set_comment_model_data()
 
     def set_reddit_object_model_data(self):
-        if self.show_reddit_objects_checkbox.isChecked():
-            self.reddit_object_model.set_data(
-                self.current_download_session
-                    .get_downloaded_reddit_objects(session=self.session).order_by(RedditObject.id).all())  # TODO: order by sub class name
+        try:
+            if self.show_reddit_objects_checkbox.isChecked():
+                self.reddit_object_model.set_data(
+                    self.current_download_session
+                        .get_downloaded_reddit_objects(session=self.session).order_by(RedditObject.name).all())
+        except AttributeError:
+            pass
 
     def set_post_model_data(self):
-        if self.show_posts_checkbox.isChecked():
-            if self.show_reddit_objects_checkbox.isChecked():
-                data = self.session.query(Post) \
-                    .filter(Post.download_session_id == self.current_download_session.id) \
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
-            else:
-                data = self.session.query(Post) \
-                    .filter(Post.download_session_id == self.current_download_session.id)
-            self.post_model.set_data(data.order_by(Post.title).all())
+        try:
+            if self.show_posts_checkbox.isChecked():
+                if self.show_reddit_objects_checkbox.isChecked():
+                    data = self.session.query(Post) \
+                        .filter(Post.download_session_id == self.current_download_session.id) \
+                        .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
+                else:
+                    data = self.session.query(Post) \
+                        .filter(Post.download_session_id == self.current_download_session.id)
+                self.post_model.set_data(data.order_by(Post.title).all())
+        except AttributeError:
+            pass
 
     def set_content_model_data(self):
-        if self.show_content_checkbox.isChecked():
-            self.content_list_view.clearSelection()
-            if self.show_posts_checkbox.isChecked():
-                data = self.session.query(Content) \
-                    .filter(Content.download_session_id == self.current_download_session.id) \
-                    .filter(Content.post_id == self.current_post.id)
-            elif self.show_reddit_objects_checkbox.isChecked():
-                data = self.session.query(Content).join(Post) \
-                    .filter(Content.download_session_id == self.current_download_session.id) \
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
-            else:
-                data = self.session.query(Content) \
-                    .filter(Content.download_session_id == self.current_download_session.id)
-            self.content_model.set_data(data.order_by(Content.title).all())
+        try:
+            if self.show_content_checkbox.isChecked():
+                self.content_list_view.clearSelection()
+                if self.show_posts_checkbox.isChecked():
+                    data = self.session.query(Content) \
+                        .filter(Content.download_session_id == self.current_download_session.id) \
+                        .filter(Content.post_id == self.current_post.id)
+                elif self.show_reddit_objects_checkbox.isChecked():
+                    data = self.session.query(Content).join(Post) \
+                        .filter(Content.download_session_id == self.current_download_session.id) \
+                        .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
+                else:
+                    data = self.session.query(Content) \
+                        .filter(Content.download_session_id == self.current_download_session.id)
+                self.content_model.set_data(data.order_by(Content.title).all())
+        except AttributeError:
+            pass
 
     def set_comment_model_data(self):
         pass
@@ -230,3 +280,33 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 dl_session.name = new_name
                 self.session.commit()
                 self.download_session_model.refresh()
+
+
+class CustomIconSizeMenuItem(QWidgetAction):
+
+    def __init__(self, current_icon_size, parent=None):
+        super().__init__(parent)
+
+        widget = QWidget(None)
+        layout = QHBoxLayout()
+        self.label = QLabel('Custom')
+        self.spin_box = QSpinBox()
+        self.spin_box.setValue(current_icon_size)
+        self.spin_box.setMinimum(20)
+        self.spin_box.setMaximum(800)
+        self.spin_box.setSingleStep(10)
+        self.spin_box.keyPressEvent = self.handle_event
+        layout.addWidget(self.label)
+        layout.addWidget(self.spin_box)
+
+        widget.setLayout(layout)
+        self.setDefaultWidget(widget)
+
+        self.setCheckable(True)
+
+    def handle_event(self, event):
+        key = event.key()
+        if key in (Qt.Key_Enter, Qt.Key_Return):
+            self.trigger()
+        else:
+            super(QSpinBox, self.spin_box).keyPressEvent(event)

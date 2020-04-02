@@ -1,9 +1,6 @@
 import logging
-from sqlalchemy.orm import joinedload
 from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex
 from PyQt5.QtGui import QPixmap, QIcon
-
-from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
 
 
 class CustomItemModel:
@@ -32,8 +29,8 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
             return self.sessions[index.row()].name
         elif role == Qt.ToolTipRole:
             session = self.sessions[index.row()]
-            return f'Start time: {session.start_time}\n' \
-                   f'End time: {session.end_time}\n' \
+            return f'Start time: {session.start_time_display}\n' \
+                   f'End time: {session.end_time_display}\n' \
                    f'Duration: {session.duration}\n' \
                    f'Reddit Objects: {session.get_downloaded_reddit_object_count()}\n' \
                    f'Posts: {len(session.posts)}\n' \
@@ -88,7 +85,9 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         if role == Qt.DisplayRole:
             return self.get_post_attribute(index.column(), self.posts[index.row()])
         if role == Qt.ToolTipRole:
-            if index.column() == 4:
+            if index.column() == 0:
+                return self.posts[index.row()].title
+            elif index.column() == 4:
                 return self.posts[index.row()].text
         return None
 
@@ -96,7 +95,7 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         attrs = {
             0: post.title,
             1: post.date_posted_display,
-            2: post.score,
+            2: post.score_display,
             3: post.nsfw,
             4: post.text,
             5: post.author.name,
