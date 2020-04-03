@@ -3,7 +3,6 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum, event
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
-from sqlalchemy.exc import IntegrityError
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import (DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator,
