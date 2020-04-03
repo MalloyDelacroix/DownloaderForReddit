@@ -1,7 +1,7 @@
 import logging
 from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QSpinBox, QLabel, QHBoxLayout, QWidget,
                              QActionGroup)
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, QEvent
 from PyQt5.QtGui import QCursor
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
@@ -52,10 +52,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.content_model = ContentListView()
         self.content_list_view.setModel(self.content_model)
 
-        self.reddit_object_list_view.setVisible(self.show_reddit_objects_checkbox.isChecked())
-        self.post_table_view.setVisible(self.show_posts_checkbox.isChecked())
-        self.content_list_view.setVisible(self.show_content_checkbox.isChecked())
-        self.comment_tree_view.setVisible(self.show_comments_checkbox.isChecked())
+        self.reddit_object_layout.setVisible(self.show_reddit_objects_checkbox.isChecked())
+        self.post_layout.setVisible(self.show_posts_checkbox.isChecked())
+        self.content_layout.setVisible(self.show_content_checkbox.isChecked())
+        self.comment_layout.setVisible(self.show_comments_checkbox.isChecked())
+        # TODO: figure out how to hide these layouts
 
         self.show_reddit_objects_checkbox.stateChanged.connect(self.toggle_reddit_object_view)
         self.show_posts_checkbox.stateChanged.connect(self.toggle_post_view)
@@ -88,26 +89,35 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def content_view_context_menu(self):
         menu = QMenu()
+        try:
+            content = self.content_model.content_list[self.content_list_view.selectedIndexes()[0].row()]
+        except:
+            content = None
+
+        open_directory = menu.addAction('Open Directory', lambda: SystemUtil.open_in_system(content.directory_path))
+        open_directory.setDisabled(content is None)
+
         icon_menu = QMenu('Icon Size')
         action_group = QActionGroup(self)
         extra_small_item = self.add_icon_menu_item(icon_menu, action_group, 'Extra Small', 72)
         small_item = self.add_icon_menu_item(icon_menu, action_group, 'Small', 110)
-        medium_item = self.add_icon_menu_item(icon_menu, action_group, 'Medium', 76)
+        medium_item = self.add_icon_menu_item(icon_menu, action_group, 'Medium', 176)
         large_item = self.add_icon_menu_item(icon_menu, action_group, 'Large', 256)
         extra_large_item = self.add_icon_menu_item(icon_menu, action_group, 'Extra Large', 420)
-
-        custom_item = CustomIconSizeMenuItem(self.icon_size, parent=self)
-        custom_item.triggered.connect(lambda: self.set_content_icon_size(custom_item.spin_box.value()))
-        custom_item.triggered.connect(menu.close)
-        custom_item.setChecked(not any(x.isChecked() for x in icon_menu.actions()))
-        icon_menu.addAction(custom_item)
-        action_group.addAction(custom_item)
-
+        custom_item = self.add_icon_menu_item(icon_menu, action_group, 'Custom', None, connect=False)
+        custom_item.triggered.connect(self.set_custom_content_icon_size)
+        if not any(x.isChecked() for x in icon_menu.actions()):
+            custom_item.setChecked(True)
+            custom_item.setText(custom_item.text() + f' ({self.icon_size})')
         menu.addMenu(icon_menu)
+
         menu.exec_(QCursor.pos())
 
-    def add_icon_menu_item(self, icon_menu, action_group, text, icon_size):
-        item = icon_menu.addAction(text, lambda: self.set_content_icon_size(icon_size))
+    def add_icon_menu_item(self, icon_menu, action_group, text, icon_size, connect=True):
+        if connect:
+            item = icon_menu.addAction(text, lambda: self.set_content_icon_size(icon_size))
+        else:
+            item = icon_menu.addAction(text)
         item.setCheckable(True)
         item.setChecked(icon_size == self.icon_size)
         action_group.addAction(item)
@@ -115,11 +125,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def toggle_reddit_object_view(self):
         if self.show_reddit_objects_checkbox.isChecked():
-            self.reddit_object_list_view.setVisible(True)
+            self.reddit_object_layout.setVisible(True)
             self.set_reddit_object_model_data()
             self.set_first_reddit_object_index()
         else:
-            self.reddit_object_list_view.setVisible(False)
+            self.reddit_object_layout.setVisible(False)
             if self.show_posts_checkbox.isChecked():
                 self.set_post_model_data()
                 self.set_first_post_index()
@@ -128,20 +138,20 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def toggle_post_view(self):
         if self.show_posts_checkbox.isChecked():
-            self.post_table_view.setVisible(True)
+            self.post_layout.setVisible(True)
             self.set_post_model_data()
             self.set_first_post_index()
         else:
-            self.post_table_view.setVisible(False)
+            self.post_layout.setVisible(False)
             self.set_content_model_data()
 
     def toggle_content_view(self):
         self.set_content_model_data()
-        self.content_list_view.setVisible(self.show_content_checkbox.isChecked())
+        self.content_layout.setVisible(self.show_content_checkbox.isChecked())
 
     def toggle_comment_view(self):
         self.set_comment_model_data()
-        self.comment_tree_view.setVisible(self.show_comments_checkbox.isChecked())
+        self.comment_layout.setVisible(self.show_comments_checkbox.isChecked())
 
     def set_content_icon_size(self, size=None):
         if size is None:
@@ -149,7 +159,12 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         else:
             self.icon_size = size
         self.content_list_view.setIconSize(QSize(size, size))
-        self.content_list_view.setGridSize(QSize(size + 2, size + 50))
+        self.content_list_view.setGridSize(QSize(size + 2, size + 45))
+
+    def set_custom_content_icon_size(self):
+        size, ok = QInputDialog.getInt(self, 'Custom Icon Size', 'Enter custom icon size:')
+        if ok:
+            self.set_content_icon_size(size)
 
     def set_current_download_session(self):
         try:
@@ -280,33 +295,3 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 dl_session.name = new_name
                 self.session.commit()
                 self.download_session_model.refresh()
-
-
-class CustomIconSizeMenuItem(QWidgetAction):
-
-    def __init__(self, current_icon_size, parent=None):
-        super().__init__(parent)
-
-        widget = QWidget(None)
-        layout = QHBoxLayout()
-        self.label = QLabel('Custom')
-        self.spin_box = QSpinBox()
-        self.spin_box.setValue(current_icon_size)
-        self.spin_box.setMinimum(20)
-        self.spin_box.setMaximum(800)
-        self.spin_box.setSingleStep(10)
-        self.spin_box.keyPressEvent = self.handle_event
-        layout.addWidget(self.label)
-        layout.addWidget(self.spin_box)
-
-        widget.setLayout(layout)
-        self.setDefaultWidget(widget)
-
-        self.setCheckable(True)
-
-    def handle_event(self, event):
-        key = event.key()
-        if key in (Qt.Key_Enter, Qt.Key_Return):
-            self.trigger()
-        else:
-            super(QSpinBox, self.spin_box).keyPressEvent(event)
