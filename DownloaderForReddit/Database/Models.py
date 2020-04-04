@@ -255,7 +255,10 @@ class DownloadSession(BaseModel):
 
 @event.listens_for(DownloadSession, 'before_insert')
 def set_download_session_name(mapper, connection, target):
-    number = target.get_session().query(DownloadSession.id).order_by(DownloadSession.id.desc()).first()[0] + 1
+    try:
+        number = target.get_session().query(DownloadSession.id).order_by(DownloadSession.id.desc()).first()[0] + 1
+    except TypeError:
+        number = 1
     target.name = f'Download Session {number}'
 
 
