@@ -119,7 +119,7 @@ class SettingsManager:
         self.dls_dialog_show_content = self.get('download_session_dialog', 'dls_dialog_show_content', True)
         self.dls_dialog_show_comments = self.get('download_session_dialog', 'dls_dialog_show_comments', True)
         self.dls_dialog_splitter_position = self.get('download_session_dialog', 'dls_dialog_splitter_position',
-                                                     [0, 0, 0, 0, 0])
+                                                     [330, 330, 330, 330, 330])
         self.dls_dialog_icon_size = self.get('download_session_dialog', 'dls_dialog_icon_size', 250)
         # endregion
 
