@@ -178,7 +178,6 @@ class BaseExtractor:
             session.add(content)
             session.commit()
             self.extracted_content.append(content)
-            # TODO: need to figure out best way to set directory_path before content is saved
             return content
         return None
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>727</width>
-    <height>1216</height>
+    <height>1266</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -351,87 +351,111 @@
              </property>
             </widget>
            </item>
-           <item row="9" column="0">
+           <item row="11" column="0">
             <widget class="QLabel" name="label_13">
              <property name="text">
               <string>Download Videos:</string>
              </property>
             </widget>
            </item>
-           <item row="9" column="1">
+           <item row="11" column="1">
             <widget class="QCheckBox" name="download_videos_checkbox">
              <property name="text">
               <string/>
              </property>
             </widget>
            </item>
-           <item row="10" column="0">
+           <item row="12" column="0">
             <widget class="QLabel" name="label_14">
              <property name="text">
               <string>Download Images:</string>
              </property>
             </widget>
            </item>
-           <item row="10" column="1">
+           <item row="12" column="1">
             <widget class="QCheckBox" name="download_images_checkbox">
              <property name="text">
               <string/>
              </property>
             </widget>
            </item>
-           <item row="11" column="0">
+           <item row="13" column="0">
             <widget class="QLabel" name="label_29">
              <property name="text">
               <string>Download Gifs:</string>
              </property>
             </widget>
            </item>
-           <item row="11" column="1">
+           <item row="13" column="1">
             <widget class="QCheckBox" name="download_gifs_checkbox">
              <property name="text">
               <string/>
              </property>
             </widget>
            </item>
-           <item row="12" column="0">
+           <item row="14" column="0">
             <widget class="QLabel" name="label_28">
              <property name="text">
               <string>NSFW Filter:</string>
              </property>
             </widget>
            </item>
-           <item row="12" column="1">
+           <item row="14" column="1">
             <widget class="QComboBox" name="nsfw_filter_combo"/>
            </item>
-           <item row="13" column="0">
+           <item row="15" column="0">
             <widget class="QLabel" name="label_16">
              <property name="text">
               <string>Sort Posts By:</string>
              </property>
             </widget>
            </item>
-           <item row="13" column="1">
+           <item row="15" column="1">
             <widget class="QComboBox" name="post_sort_combo"/>
            </item>
-           <item row="14" column="0">
+           <item row="16" column="0">
             <widget class="QLabel" name="label_17">
              <property name="text">
               <string>Download Naming:</string>
              </property>
             </widget>
            </item>
-           <item row="14" column="1">
+           <item row="16" column="1">
             <widget class="QComboBox" name="download_naming_combo"/>
            </item>
-           <item row="15" column="0">
+           <item row="17" column="0">
             <widget class="QLabel" name="subreddit_save_structure_label">
              <property name="text">
               <string>Subreddit Path Scheme:</string>
              </property>
             </widget>
            </item>
-           <item row="15" column="1">
+           <item row="17" column="1">
             <widget class="QComboBox" name="subreddit_save_structure_combo"/>
+           </item>
+           <item row="9" column="0">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>Download Self Post Text:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="0">
+            <widget class="QLabel" name="label_31">
+             <property name="text">
+              <string>Self Post File Format:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QCheckBox" name="download_self_post_text_checkbox">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="10" column="1">
+            <widget class="QComboBox" name="self_post_file_format_combo"/>
            </item>
           </layout>
          </item>

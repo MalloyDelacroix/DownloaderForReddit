@@ -69,6 +69,8 @@ class RedditObject(BaseModel):
     post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
     avoid_duplicates = Column(Boolean, default=True)
     extract_self_post_links = Column(Boolean, default=False)
+    download_self_post_text = Column(Boolean, default=False)
+    self_post_file_format = Column(String, default='txt')
     download_videos = Column(Boolean, default=True)
     download_images = Column(Boolean, default=True)
     download_gifs = Column(Boolean, default=True)

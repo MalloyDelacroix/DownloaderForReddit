@@ -51,6 +51,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         for value in LimitOperator:
             self.score_limit_operator_combo.addItem(value.display_name, value)
             self.comment_score_operator_combo.addItem(value.display_name, value)
+        self.self_post_file_format_combo.addItems(['.txt', '.html'])
         for value in NsfwFilter:
             self.nsfw_filter_combo.addItem(value.display_name, value)
         for value in PostSortMethod:
@@ -85,6 +86,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
         self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
         self.setup_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
+        self.setup_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
+        self.self_post_file_format_combo.currentIndexChanged.connect(
+            lambda: setattr(self.selected_object, 'self_post_file_format',
+                            self.self_post_file_format_combo.currentText().strip('.')))
         self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
         self.setup_checkbox(self.download_images_checkbox, 'download_images')
         self.nsfw_filter_combo.currentIndexChanged.connect(
@@ -176,6 +181,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.date_limit_edit.setDateTime(self.selected_object.date_limit)
         self.avoid_duplicates_checkbox.setChecked(self.selected_object.avoid_duplicates)
         self.extract_self_post_content_checkbox.setChecked(self.selected_object.extract_self_post_links)
+        self.download_self_post_text_checkbox.setChecked(self.selected_object.download_self_post_text)
+        self.self_post_file_format_combo.setCurrentText(self.selected_object.self_post_file_format)
         self.download_videos_checkbox.setChecked(self.selected_object.download_videos)
         self.download_images_checkbox.setChecked(self.selected_object.download_images)
         self.download_gifs_checkbox.setChecked(self.selected_object.download_gifs)

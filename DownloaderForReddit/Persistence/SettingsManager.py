@@ -39,6 +39,8 @@ class SettingsManager:
         self.post_score_limit = self.get('download_defaults', 'post_score_limit', 1000)
         self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
         self.extract_self_post_links = self.get('download_defaults', 'extract_self_post_links', False)
+        self.download_self_post_text = self.get('download_defaults', 'download_self_post_text', False)
+        self.self_post_file_format = self.get('download_defaults', 'self_post_file_format', 'txt')
         self.download_videos = self.get('download_defaults', 'download_videos', True)
         self.download_images = self.get('download_defaults', 'download_images', True)
         self.download_gifs = self.get('download_defaults', 'download_gifs', True)

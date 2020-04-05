@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Extractors.DirectExtractor import DirectExtractor
+from ..Extractors.SelfPostExtractor import SelfPostExtractor
 from ..Database.Models import User, Subreddit, Post
 from ..Utils import Injector
 from ..Core import Const
@@ -97,14 +98,14 @@ class ContentExtractor:
         if self.check_duplicate_post_url(submission.url, session):
             try:
                 author = self.db.get_or_create(User, name=submission.author.name,
-                                               date_created=datetime.fromtimestamp(submission.author.created),
+                                               date_created=self.get_created(submission.author),
                                                session=session)[0]
             except AttributeError:
                 author = self.db.get_or_create(User, name='deleted', session=session)[0]
 
             try:
                 subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name,
-                                                  date_created=datetime.fromtimestamp(submission.subreddit.created),
+                                                  date_created=self.get_created(submission.subreddit),
                                                   session=session)[0]
             except AttributeError:
                 subreddit = self.db.get_or_create(Subreddit, name='deleted', session=session)[0]
@@ -130,6 +131,12 @@ class ContentExtractor:
             session.commit()
         return post
 
+    def get_created(self, praw_object):
+        try:
+            return datetime.fromtimestamp(praw_object.created)
+        except:
+            self.logger.error('Failed to get creation date for reddit object', exc_info=True)
+
     def check_duplicate_post_url(self, url, session):
         return session.query(Post.id).filter(Post.url == url).scalar() is None
 
@@ -137,6 +144,12 @@ class ContentExtractor:
         try:
             if not post.is_self:
                 extractor = self.assign_extractor(post.url)(post)
+            else:
+                if post.significant_reddit_object.download_self_post_text:
+                    extractor = SelfPostExtractor(post, download_session_id=self.download_session_id)
+                else:
+                    extractor = None
+            if extractor is not None:
                 extractor.extract_content()
                 if not extractor.failed_extraction:
                     post.set_extracted()
@@ -144,8 +157,6 @@ class ContentExtractor:
                     post.set_extraction_failed(extractor.failed_extraction_message)
                 for content in extractor.extracted_content:
                     self.download_queue.put(content.id)
-            else:
-                self.extract_linked_content(post)
         except TypeError:
             self.handle_unsupported_domain(post)
         except ConnectionError:
