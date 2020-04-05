@@ -78,6 +78,14 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.download_session_list_view.customContextMenuRequested.connect(self.download_session_view_context_menu)
 
+        headers = self.post_table_view.horizontalHeader()
+        headers.setContextMenuPolicy(Qt.CustomContextMenu)
+        headers.customContextMenuRequested.connect(self.post_headers_context_menu)
+        headers.setSectionsMovable(True)
+        for key, value in self.settings_manager.dls_post_table_headers.items():
+            index = self.post_model.headers.index(key)
+            headers.setSectionHidden(index, value)
+
         self.post_text_browser.setContextMenuPolicy(Qt.CustomContextMenu)
         self.post_text_browser.customContextMenuRequested.connect(self.post_text_browser_context_menu)
 
@@ -96,6 +104,9 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         rename = menu.addAction('Rename Session', lambda: self.rename_download_session(dl_session))
         rename.setDisabled(dl_session is None)
         menu.exec_(QCursor.pos())
+
+    def post_headers_context_menu(self):
+        pass
 
     def post_text_browser_context_menu(self):
         menu = QMenu()

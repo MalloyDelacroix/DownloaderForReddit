@@ -125,6 +125,20 @@ class SettingsManager:
         self.dls_dialog_post_text_font = self.get('download_session_dialog', 'dls_dialog_post_text_font', 'Times')
         self.dls_dialog_post_text_font_size = self.get('download_session_dialog', 'dls_dialog_post_text_font_size', 10)
         self.dls_dialog_icon_size = self.get('download_session_dialog', 'dls_dialog_icon_size', 250)
+        self.default_dls_post_headers = {
+            'title': True,
+            'date_posted': True,
+            'score': True,
+            'is_self': True,
+            'text': True,
+            'url': True,
+            'domain': True,
+            'author': True,
+            'subreddit': True,
+            'nsfw': True
+        }
+        self.dls_post_table_headers = self.get('download_session_dialog', 'dls_post_table_headers',
+                                               self.default_dls_post_headers)
         # endregion
 
         # region Misc Dialogs

@@ -62,7 +62,8 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
     def __init__(self):
         super().__init__()
         self.posts = []
-        self.headers = ['title', 'date_posted', 'score', 'nsfw', 'text', 'author', 'subreddit']
+        self.headers = ['title', 'date_posted', 'score', 'is_self', 'text', 'url', 'domain', 'author', 'subreddit',
+                        'nsfw']
 
     def set_data(self, data):
         self.posts.clear()
@@ -96,10 +97,13 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
             0: post.title,
             1: post.date_posted_display,
             2: post.score_display,
-            3: post.nsfw,
+            3: post.is_self,
             4: post.text,
-            5: post.author.name,
-            6: post.subreddit.name
+            5: post.url,
+            6: post.url,
+            7: post.domain,
+            8: post.author.name,
+            9: post.subreddit.name
         }
         return attrs[column]
 
