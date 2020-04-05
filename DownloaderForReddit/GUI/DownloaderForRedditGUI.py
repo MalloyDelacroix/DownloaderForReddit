@@ -1063,9 +1063,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             list_name = self.settings_manager.current_user_list
             if list_name == '':
-                list_name = session.query(RedditObjectList.name).filter(RedditObjectList.list_type == 'USER').first()
-            if list_name is not None:
-                self.user_list_model.set_list(list_name[0])
+                row = session.query(RedditObjectList.name).filter(RedditObjectList.list_type == 'USER').first()
+                if row is not None:
+                    list_name = row.name
+            if list_name != '':
+                self.user_list_model.set_list(list_name)
                 self.user_lists_combo.setCurrentText(list_name)
         except:
             self.logger.error('Failed to load user list from database', exc_info=True)
@@ -1074,10 +1076,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             list_name = self.settings_manager.current_subreddit_list
             if list_name == '':
-                list_name = session.query(RedditObjectList.name)\
+                row = session.query(RedditObjectList.name)\
                     .filter(RedditObjectList.list_type == 'SUBREDDIT').first()
-            if list_name is not None:
-                self.subreddit_list_model.set_list(list_name[0])
+                if row is not None:
+                    list_name = row.name
+            if list_name != '':
+                self.subreddit_list_model.set_list(list_name)
                 self.subreddit_list_combo.setCurrentText(list_name)
         except:
             self.logger.error('Failed to load subreddit list from database', exc_info=True)
