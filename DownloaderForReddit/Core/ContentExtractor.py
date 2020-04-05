@@ -95,12 +95,20 @@ class ContentExtractor:
     def create_post(self, submission: Submission, significant_id: int, session) -> Optional[Post]:
         post = None
         if self.check_duplicate_post_url(submission.url, session):
-            author = self.db.get_or_create(User, name=submission.author.name,
-                                           date_created=datetime.fromtimestamp(submission.author.created),
-                                           session=session)[0]
-            subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name,
-                                              date_created=datetime.fromtimestamp(submission.subreddit.created),
-                                              session=session)[0]
+            try:
+                author = self.db.get_or_create(User, name=submission.author.name,
+                                               date_created=datetime.fromtimestamp(submission.author.created),
+                                               session=session)[0]
+            except AttributeError:
+                author = self.db.get_or_create(User, name='deleted', session=session)[0]
+
+            try:
+                subreddit = self.db.get_or_create(Subreddit, name=submission.subreddit.display_name,
+                                                  date_created=datetime.fromtimestamp(submission.subreddit.created),
+                                                  session=session)[0]
+            except AttributeError:
+                subreddit = self.db.get_or_create(Subreddit, name='deleted', session=session)[0]
+
             post = Post(
                 title=submission.title,
                 date_posted=datetime.fromtimestamp(submission.created),
