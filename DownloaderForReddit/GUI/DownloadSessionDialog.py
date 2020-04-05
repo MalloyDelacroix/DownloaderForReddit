@@ -1,8 +1,8 @@
 import logging
-from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QSpinBox, QLabel, QHBoxLayout, QWidget,
-                             QActionGroup)
+from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QFontComboBox, QComboBox, QActionGroup,
+                             QWidget, QHBoxLayout, QLabel)
 from PyQt5.QtCore import QSize, Qt, QEvent
-from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QCursor, QFont
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
 from ..GUI_Resources.DownloadSessionsDialog_auto import Ui_DownloadSessionDialog
@@ -31,6 +31,9 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.show_posts_checkbox.setChecked(self.settings_manager.dls_dialog_show_posts)
         self.show_content_checkbox.setChecked(self.settings_manager.dls_dialog_show_content)
         self.show_comments_checkbox.setChecked(self.settings_manager.dls_dialog_show_comments)
+
+        self.post_text_font_size = self.settings_manager.dls_dialog_post_text_font_size
+        self.post_text_font = QFont(self.settings_manager.dls_dialog_post_text_font, self.post_text_font_size)
         self.icon_size = self.settings_manager.dls_dialog_icon_size
 
         self.current_download_session = None
@@ -52,11 +55,15 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.content_model = ContentListView()
         self.content_list_view.setModel(self.content_model)
 
-        self.reddit_object_layout.setVisible(self.show_reddit_objects_checkbox.isChecked())
-        self.post_layout.setVisible(self.show_posts_checkbox.isChecked())
-        self.content_layout.setVisible(self.show_content_checkbox.isChecked())
-        self.comment_layout.setVisible(self.show_comments_checkbox.isChecked())
-        # TODO: figure out how to hide these layouts
+        self.reddit_object_widget.setVisible(self.show_reddit_objects_checkbox.isChecked())
+        self.post_widget.setVisible(self.show_posts_checkbox.isChecked())
+        self.content_widget.setVisible(self.show_content_checkbox.isChecked())
+        self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
+
+        self.post_text_browser.setVisible(False)
+        font = QFont(self.settings_manager.dls_dialog_post_text_font,
+                     self.settings_manager.dls_dialog_post_text_font_size)
+        self.post_text_browser.setFont(font)
 
         self.show_reddit_objects_checkbox.stateChanged.connect(self.toggle_reddit_object_view)
         self.show_posts_checkbox.stateChanged.connect(self.toggle_post_view)
@@ -70,6 +77,9 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.download_session_list_view.customContextMenuRequested.connect(self.download_session_view_context_menu)
+
+        self.post_text_browser.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.post_text_browser.customContextMenuRequested.connect(self.post_text_browser_context_menu)
 
         self.content_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.content_list_view.customContextMenuRequested.connect(self.content_view_context_menu)
@@ -85,6 +95,40 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             dl_session = None
         rename = menu.addAction('Rename Session', lambda: self.rename_download_session(dl_session))
         rename.setDisabled(dl_session is None)
+        menu.exec_(QCursor.pos())
+
+    def post_text_browser_context_menu(self):
+        menu = QMenu()
+        font_box = QFontComboBox()
+        font_box.setCurrentFont(self.post_text_font)
+        font_box.currentFontChanged.connect(lambda: self.set_post_text_font(font=font_box.currentFont()))
+        font_box.currentFontChanged.connect(menu.close)
+        font_box_label = QLabel('Font:')
+        layout = QHBoxLayout()
+        layout.addWidget(font_box_label)
+        layout.addWidget(font_box)
+        font_box_widget = QWidget(self)
+        font_box_widget.setLayout(layout)
+        font_box_item = QWidgetAction(self)
+        font_box_item.setDefaultWidget(font_box_widget)
+
+        font_size_box = QComboBox()
+        font_size_box.addItems(str(x) for x in range(4, 30))
+        font_size_box.setCurrentText(str(self.post_text_font_size))
+        font_size_label = QLabel('Font Size:')
+        size_layout = QHBoxLayout()
+        size_layout.addWidget(font_size_label)
+        size_layout.addWidget(font_size_box)
+        font_size_widget = QWidget(self)
+        font_size_widget.setLayout(size_layout)
+        font_size_box.currentIndexChanged.connect(lambda:
+                                                  self.set_post_text_font(size=int(font_size_box.currentText())))
+        font_size_box.currentIndexChanged.connect(menu.close)
+        font_size_item = QWidgetAction(self)
+        font_size_item.setDefaultWidget(font_size_widget)
+
+        menu.addAction(font_box_item)
+        menu.addAction(font_size_item)
         menu.exec_(QCursor.pos())
 
     def content_view_context_menu(self):
@@ -125,11 +169,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def toggle_reddit_object_view(self):
         if self.show_reddit_objects_checkbox.isChecked():
-            self.reddit_object_layout.setVisible(True)
+            self.reddit_object_widget.setVisible(True)
             self.set_reddit_object_model_data()
             self.set_first_reddit_object_index()
         else:
-            self.reddit_object_layout.setVisible(False)
+            self.reddit_object_widget.setVisible(False)
             if self.show_posts_checkbox.isChecked():
                 self.set_post_model_data()
                 self.set_first_post_index()
@@ -138,20 +182,38 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def toggle_post_view(self):
         if self.show_posts_checkbox.isChecked():
-            self.post_layout.setVisible(True)
+            self.post_widget.setVisible(True)
             self.set_post_model_data()
             self.set_first_post_index()
         else:
-            self.post_layout.setVisible(False)
+            self.post_widget.setVisible(False)
             self.set_content_model_data()
 
     def toggle_content_view(self):
         self.set_content_model_data()
-        self.content_layout.setVisible(self.show_content_checkbox.isChecked())
+        self.content_widget.setVisible(self.show_content_checkbox.isChecked())
 
     def toggle_comment_view(self):
         self.set_comment_model_data()
-        self.comment_layout.setVisible(self.show_comments_checkbox.isChecked())
+        self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
+
+    def set_post_text_font(self, font=None, size=None):
+        """
+        Sets the font and size of the post text browser.
+        :param font: The font that the post text browser should be set to display.
+        :param size: The size of the font for the post text browser
+        """
+        if font is not None:
+            self.post_text_font = font
+            font.setPointSize(self.post_text_font_size)
+            self.post_text_font = font
+            self.post_text_browser.setFont(font)
+        if size is not None:
+            self.post_text_font_size = size
+            font = self.post_text_browser.font()
+            font.setPointSize(size)
+            self.post_text_font = font
+            self.post_text_browser.setFont(font)
 
     def set_content_icon_size(self, size=None):
         if size is None:
@@ -200,6 +262,12 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         if self.show_posts_checkbox.isChecked():
             try:
                 self.current_post = self.post_model.posts[self.post_table_view.currentIndex().row()]
+                if self.current_post.text is not None and self.current_post.text != '':
+                    self.post_text_browser.setVisible(True)
+                    self.post_text_browser.setHtml(self.current_post.text_html)
+                else:
+                    self.post_text_browser.clear()
+                    self.post_text_browser.setVisible(False)
             except IndexError:
                 pass
             self.set_content_model_data()
@@ -255,6 +323,8 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.settings_manager.dls_dialog_show_posts = self.show_posts_checkbox.isChecked()
         self.settings_manager.dls_dialog_show_content = self.show_content_checkbox.isChecked()
         self.settings_manager.dls_dialog_show_comments = self.show_comments_checkbox.isChecked()
+        self.settings_manager.dls_dialog_post_text_font = self.post_text_font.family()
+        self.settings_manager.dls_dialog_post_text_font_size = self.post_text_font_size
         self.settings_manager.dls_dialog_icon_size = self.icon_size
         self.settings_manager.dls_dialog_geom['width'] = self.width()
         self.settings_manager.dls_dialog_geom['height'] = self.height()

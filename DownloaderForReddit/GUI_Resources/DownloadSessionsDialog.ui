@@ -70,8 +70,8 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <layout class="QVBoxLayout" name="download_session_layout">
+     <widget class="QWidget" name="download_session_widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <widget class="QListView" name="download_session_list_view">
          <property name="editTriggers">
@@ -81,8 +81,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="verticalLayoutWidget_2">
-      <layout class="QVBoxLayout" name="reddit_object_layout">
+     <widget class="QWidget" name="reddit_object_widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QListView" name="reddit_object_list_view">
          <property name="editTriggers">
@@ -92,28 +92,38 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="verticalLayoutWidget_3">
-      <layout class="QVBoxLayout" name="post_layout">
+     <widget class="QWidget" name="post_widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QTableView" name="post_table_view">
-         <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
+        <widget class="QSplitter" name="post_splitter">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="selectionMode">
-          <enum>QAbstractItemView::SingleSelection</enum>
-         </property>
-         <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
-         </property>
-         <property name="gridStyle">
-          <enum>Qt::NoPen</enum>
-         </property>
+         <widget class="QTableView" name="post_table_view">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="gridStyle">
+           <enum>Qt::NoPen</enum>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="post_text_browser">
+          <property name="openExternalLinks">
+           <bool>true</bool>
+          </property>
+         </widget>
         </widget>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="verticalLayoutWidget_4">
-      <layout class="QVBoxLayout" name="content_layout">
+     <widget class="QWidget" name="content_widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
         <widget class="QListView" name="content_list_view">
          <property name="editTriggers">
@@ -156,8 +166,8 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="verticalLayoutWidget_5">
-      <layout class="QVBoxLayout" name="comment_layout">
+     <widget class="QWidget" name="comment_widget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout_5">
        <item>
         <widget class="QTreeView" name="comment_tree_view">
          <property name="editTriggers">

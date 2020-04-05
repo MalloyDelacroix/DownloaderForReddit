@@ -120,6 +120,8 @@ class SettingsManager:
         self.dls_dialog_show_comments = self.get('download_session_dialog', 'dls_dialog_show_comments', True)
         self.dls_dialog_splitter_position = self.get('download_session_dialog', 'dls_dialog_splitter_position',
                                                      [330, 330, 330, 330, 330])
+        self.dls_dialog_post_text_font = self.get('download_session_dialog', 'dls_dialog_post_text_font', 'Times')
+        self.dls_dialog_post_text_font_size = self.get('download_session_dialog', 'dls_dialog_post_text_font_size', 10)
         self.dls_dialog_icon_size = self.get('download_session_dialog', 'dls_dialog_icon_size', 250)
         # endregion
 
