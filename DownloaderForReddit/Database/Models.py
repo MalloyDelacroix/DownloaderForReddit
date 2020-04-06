@@ -132,6 +132,11 @@ class RedditObject(BaseModel):
     def inactive_date_display(self):
         return self.get_display_date(self.inactive_date)
 
+    @property
+    def extract_comments(self):
+        return self.download_comments is not CommentDownload.DO_NOT_DOWNLOAD or \
+               self.download_comment_content is not CommentDownload.DO_NOT_DOWNLOAD
+
     def set_date_limit(self, epoch):
         """
         Tests the supplied epoch time to see if it is newer than the already established absolute date limit, and if so
@@ -274,7 +279,7 @@ class Post(BaseModel):
     domain = Column(String)
     score = Column(Integer)
     nsfw = Column(Boolean, default=False)
-    reddit_id = Column(String)
+    reddit_id = Column(String, unique=True)
     url = Column(String)
 
     is_self = Column(Boolean, default=False)
@@ -328,6 +333,7 @@ class Comment(BaseModel):
     score = Column(Integer)
     date_added = Column(DateTime, default=datetime.now())
     date_posted = Column(DateTime)
+    reddit_id = Column(String, unique=True)
 
     author_id = Column(ForeignKey('user.id'))
     author = relationship('User', foreign_keys=author_id, backref='comments')
