@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'DownloadSessionsDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_DownloadSessionDialog(object):
     def setupUi(self, DownloadSessionDialog):
@@ -68,11 +66,14 @@ class Ui_DownloadSessionDialog(object):
         self.post_splitter.setOrientation(QtCore.Qt.Vertical)
         self.post_splitter.setObjectName("post_splitter")
         self.post_table_view = QtWidgets.QTableView(self.post_splitter)
+        self.post_table_view.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
         self.post_table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.post_table_view.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.post_table_view.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.post_table_view.setShowGrid(False)
         self.post_table_view.setGridStyle(QtCore.Qt.NoPen)
         self.post_table_view.setObjectName("post_table_view")
+        self.post_table_view.horizontalHeader().setCascadingSectionResizes(False)
         self.post_text_browser = QtWidgets.QTextBrowser(self.post_splitter)
         self.post_text_browser.setOpenExternalLinks(True)
         self.post_text_browser.setObjectName("post_text_browser")
@@ -115,3 +116,4 @@ class Ui_DownloadSessionDialog(object):
         self.show_posts_checkbox.setText(_translate("DownloadSessionDialog", "Show posts"))
         self.show_content_checkbox.setText(_translate("DownloadSessionDialog", "Show content"))
         self.show_comments_checkbox.setText(_translate("DownloadSessionDialog", "Show comments"))
+

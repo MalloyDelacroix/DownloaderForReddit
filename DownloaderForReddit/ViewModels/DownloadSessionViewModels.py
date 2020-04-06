@@ -62,8 +62,8 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
     def __init__(self):
         super().__init__()
         self.posts = []
-        self.headers = ['title', 'date_posted', 'score', 'is_self', 'text', 'url', 'domain', 'author', 'subreddit',
-                        'nsfw']
+        self.headers = ['title', 'date_posted_display', 'score_display', 'is_self', 'text', 'url', 'domain', 'author',
+                        'subreddit', 'nsfw']
 
     def set_data(self, data):
         self.posts.clear()
@@ -74,7 +74,7 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
     def headerData(self, row, orientation, role=None):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return self.headers[row].replace('_', ' ').title()
+                return self.headers[row].replace('_', ' ').replace('display', '').title()
 
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.posts)
@@ -86,26 +86,17 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         if role == Qt.DisplayRole:
             return self.get_post_attribute(index.column(), self.posts[index.row()])
         if role == Qt.ToolTipRole:
-            if index.column() == 0:
-                return self.posts[index.row()].title
-            elif index.column() == 4:
-                return self.posts[index.row()].text
+            col = index.column()
+            if col != self.headers.index('text'):
+                return self.get_post_attribute(col, self.posts[index.row()])
         return None
 
     def get_post_attribute(self, column, post):
-        attrs = {
-            0: post.title,
-            1: post.date_posted_display,
-            2: post.score_display,
-            3: post.is_self,
-            4: post.text,
-            5: post.url,
-            6: post.url,
-            7: post.domain,
-            8: post.author.name,
-            9: post.subreddit.name
-        }
-        return attrs[column]
+        attr = self.headers[column]
+        value = getattr(post, attr)
+        if attr == 'subreddit' or attr == 'author':
+            return value.name
+        return value
 
     def refresh(self):
         first = self.createIndex(0, 0)

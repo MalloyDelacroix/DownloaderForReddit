@@ -100,6 +100,9 @@
           <enum>Qt::Vertical</enum>
          </property>
          <widget class="QTableView" name="post_table_view">
+          <property name="sizeAdjustPolicy">
+           <enum>QAbstractScrollArea::AdjustIgnored</enum>
+          </property>
           <property name="editTriggers">
            <set>QAbstractItemView::NoEditTriggers</set>
           </property>
@@ -109,9 +112,15 @@
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="showGrid">
+           <bool>false</bool>
+          </property>
           <property name="gridStyle">
            <enum>Qt::NoPen</enum>
           </property>
+          <attribute name="horizontalHeaderCascadingSectionResizes">
+           <bool>false</bool>
+          </attribute>
          </widget>
          <widget class="QTextBrowser" name="post_text_browser">
           <property name="openExternalLinks">

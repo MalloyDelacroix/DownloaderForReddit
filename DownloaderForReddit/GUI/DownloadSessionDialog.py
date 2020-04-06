@@ -84,7 +84,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         headers.setSectionsMovable(True)
         for key, value in self.settings_manager.dls_post_table_headers.items():
             index = self.post_model.headers.index(key)
-            headers.setSectionHidden(index, value)
+            headers.setSectionHidden(index, not value)
 
         self.post_text_browser.setContextMenuPolicy(Qt.CustomContextMenu)
         self.post_text_browser.customContextMenuRequested.connect(self.post_text_browser_context_menu)
@@ -106,7 +106,20 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         menu.exec_(QCursor.pos())
 
     def post_headers_context_menu(self):
-        pass
+        menu = QMenu()
+        for value in self.post_model.headers:
+            item = menu.addAction(value.replace('_', ' ').title())
+            item.triggered.connect(lambda x, header=value: self.toggle_post_table_header(header))
+            item.setCheckable(True)
+            item.setChecked(self.settings_manager.dls_post_table_headers[value])
+        menu.exec_(QCursor.pos())
+
+    def toggle_post_table_header(self, header):
+        index = self.post_model.headers.index(header)
+        visible = self.settings_manager.dls_post_table_headers[header]
+        self.settings_manager.dls_post_table_headers[header] = not visible
+        # sets the table header visibility to the opposite of what visible originally was
+        self.post_table_view.horizontalHeader().setSectionHidden(index, visible)
 
     def post_text_browser_context_menu(self):
         menu = QMenu()
@@ -250,6 +263,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             self.set_first_reddit_object_index()
         elif self.show_posts_checkbox.isChecked():
             self.set_post_model_data()
+            self.resize_post_table_columns()
             self.set_first_post_index()
         else:
             self.set_content_model_data()
@@ -264,6 +278,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 pass
             if self.show_posts_checkbox.isChecked():
                 self.set_post_model_data()
+                self.resize_post_table_columns()
                 self.set_first_post_index()
             else:
                 self.set_content_model_data()
@@ -328,6 +343,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def set_comment_model_data(self):
         pass
+
+    def resize_post_table_columns(self):
+        for col in self.post_model.headers:
+            if col in ('date_posted_display', 'score_display', 'author', 'subreddit'):
+                self.post_table_view.resizeColumnToContents(self.post_model.headers.index(col))
 
     def closeEvent(self, event):
         self.settings_manager.dls_dialog_show_reddit_objects = self.show_reddit_objects_checkbox.isChecked()
