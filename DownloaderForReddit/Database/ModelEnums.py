@@ -8,19 +8,19 @@ class DisplayableEnum(Enum):
         return self.name.replace('_', ' ')
 
 
-class DownloadNameMethod(DisplayableEnum):
-
-    ID = 1
-    TITLE = 2
-    AUTHOR_NAME = 3
-
-
-class SubredditSaveStructure(DisplayableEnum):
-
-    SUB_NAME = 1
-    AUTHOR_NAME = 2
-    SUB_NAME_AUTHOR_NAME = 3
-    AUTHOR_NAME_SUB_NAME = 4
+# class DownloadNameMethod(DisplayableEnum):
+#
+#     ID = 1
+#     TITLE = 2
+#     AUTHOR_NAME = 3
+#
+#
+# class SubredditSaveStructure(DisplayableEnum):
+#
+#     SUB_NAME = 1
+#     AUTHOR_NAME = 2
+#     SUB_NAME_AUTHOR_NAME = 3
+#     AUTHOR_NAME_SUB_NAME = 4
 
 
 class CommentDownload(DisplayableEnum):

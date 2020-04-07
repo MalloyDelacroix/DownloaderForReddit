@@ -26,7 +26,6 @@ from ..Extractors.BaseExtractor import BaseExtractor
 from ..Utils import ImgurUtils
 from ..Utils.ImgurUtils import  ImgurError
 from ..Core import Const
-from ..Utils import Injector
 
 
 class ImgurExtractor(BaseExtractor):
@@ -64,16 +63,14 @@ class ImgurExtractor(BaseExtractor):
             if '?' in url:
                 url = url[:url.find('?')]
             _, extension = url.rsplit('.', 1)
-            file_name = self.get_filename(album_id)
-            self.make_content(url, file_name, extension, count)
+            self.make_content(url, extension, count)
             count += 1
 
     def extract_single(self):
         _, image_id = self.url.rsplit('/', 1)
         url = ImgurUtils.get_single_image(image_id)
         _, extension = url.rsplit('.', 1)
-        file_name = self.get_filename(image_id)
-        self.make_content(url, file_name, extension)
+        self.make_content(url, extension)
 
     def extract_direct_link(self):
         try:
@@ -82,15 +79,13 @@ class ImgurExtractor(BaseExtractor):
                 url = url[:url.find('?')]
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
-            file_name = self.get_filename(image_id)
             if extension == 'gif':
                 extension = 'mp4'
             url = "{}/{}.{}".format(domain, image_id, extension)
-            self.make_content(url, file_name, extension)
+            self.make_content(url, extension)
         except (AttributeError, NameError, TypeError):
             message = 'Unrecognized extension'
             self.handle_failed_extract(message=message, extractor_error_message=message)
-
 
     def handle_client_error(self, status_code):
         """

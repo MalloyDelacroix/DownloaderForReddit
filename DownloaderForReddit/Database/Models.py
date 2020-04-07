@@ -5,8 +5,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
 
 from .DatabaseHandler import DatabaseHandler
-from .ModelEnums import (DownloadNameMethod, SubredditSaveStructure, CommentDownload, NsfwFilter, LimitOperator,
-                         PostSortMethod, CommentSortMethod)
+from .ModelEnums import (CommentDownload, NsfwFilter, LimitOperator, PostSortMethod, CommentSortMethod)
 from .Exceptions import ExistingNameException
 from ..Core import Const
 from ..Utils import SystemUtil
@@ -90,8 +89,8 @@ class RedditObject(BaseModel):
     significant = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     inactive_date = Column(DateTime, nullable=True)
-    download_naming_method = Column(Enum(DownloadNameMethod), default=DownloadNameMethod.TITLE)
-    subreddit_save_structure = Column(Enum(SubredditSaveStructure), default=SubredditSaveStructure.SUB_NAME)
+    download_naming_method = Column(String, default='%[title]')
+    save_structure = Column(String, default='%[author_name]')
     new = Column(Boolean, default=True)
     lists = relationship(RedditObjectList, secondary='reddit_object_list_association', lazy='dynamic')
 
@@ -335,13 +334,15 @@ class Comment(BaseModel):
     date_posted = Column(DateTime)
     reddit_id = Column(String, unique=True)
 
+    extracted = Column(Boolean, default=False)
+    has_content = Column(Boolean, default=False)
+    extraction_date = Column(DateTime, nullable=True)
+    extraction_error = Column(String, nullable=True)
+
     author_id = Column(ForeignKey('user.id'))
     author = relationship('User', foreign_keys=author_id, backref='comments')
     subreddit_id = Column(ForeignKey('subreddit.id'))
     subreddit = relationship('Subreddit', foreign_keys=subreddit_id, backref='comments')
-    significant_reddit_object_id = Column(ForeignKey('reddit_object.id'))
-    significant_reddit_object = relationship('RedditObject', foreign_keys=significant_reddit_object_id,
-                                             backref='significant_comments')
     post_id = Column(ForeignKey('post.id'))
     post = relationship('Post', backref='comments')
     parent_id = Column(ForeignKey('comment.id'), nullable=True)
@@ -381,8 +382,6 @@ class Content(BaseModel):
     # download_session if the content was unable to be downloaded during the same session, and was downloaded at a
     # later date.
     download_session = relationship('DownloadSession', backref='content')
-
-    video_merge_id = None
 
     def __str__(self):
         return f'Content: {self.title}'

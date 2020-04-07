@@ -60,12 +60,11 @@ class SettingsManager:
         self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 1, container=PostSortMethod)
         self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 1,
                                                    container=PostSortMethod)
-        self.user_download_naming_method = self.get('download_defaults', 'user_download_naming_method', 2,
-                                                    container=DownloadNameMethod)
-        self.subreddit_download_naming_method = self.get('download_defaults', 'subreddit_download_naming_method', 2,
-                                                         container=DownloadNameMethod)
-        self.subreddit_save_structure = self.get('download_defaults', 'subreddit_save_structure', 1,
-                                                 container=SubredditSaveStructure)
+        self.user_download_naming_method = self.get('download_defaults', 'user_download_naming_method', '%[title]')
+        self.subreddit_download_naming_method = self.get('download_defaults', 'subreddit_download_naming_method',
+                                                         '%[title]')
+        self.user_save_structure = self.get('download_defaults', 'user_save_structure', '%[author_name]')
+        self.subreddit_save_structure = self.get('download_defaults', 'subreddit_save_structure', '%[subreddit_name]')
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
         # endregion
 

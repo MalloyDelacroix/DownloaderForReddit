@@ -50,13 +50,13 @@ class RedditUploadsExtractor(BaseExtractor):
         if not self.url.endswith(Const.ALL_EXT):
             self.url = self.url + '.jpg'  # add jpg extension here for direct download
         media_id = self.clean_ext(self.get_link_id())
-        self.make_content(self.url, self.get_filename(media_id), 'jpg')
+        self.make_content(self.url, 'jpg')
 
     def extract_direct_link(self):
         """This is overridden here so that a proper media id can be extracted."""
         ext = self.url.rsplit('.', 1)[1]
         media_id = self.clean_ext(self.get_link_id())
-        self.make_content(self.url, self.get_filename(media_id), ext)
+        self.make_content(self.url, ext)
 
     def get_link_id(self):
         """

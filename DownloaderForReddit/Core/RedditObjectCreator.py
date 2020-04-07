@@ -84,17 +84,19 @@ class RedditObjectCreator:
             'comment_sort_method': self.settings_manager.comment_sort_method,
             'date_limit': self.settings_manager.date_limit,
             'significant': True,
-            'subreddit_save_structure': self.settings_manager.subreddit_save_structure,
             'lock_settings': self.settings_manager.lock_reddit_object_settings
         }
         self.get_specific_defaults(defaults, object_type)
         return defaults
 
     def get_specific_defaults(self, defaults, object_type):
+        kwargs = {}
         if object_type == 'USER':
-            post_sort_method = self.settings_manager.user_post_sort_method
-            download_naming_method = self.settings_manager.user_download_naming_method
+            kwargs['save_structure'] = self.settings_manager.user_save_structure
+            kwargs['post_sort_method'] = self.settings_manager.user_post_sort_method
+            kwargs['download_naming_method'] = self.settings_manager.user_download_naming_method
         else:
-            post_sort_method = self.settings_manager.subreddit_post_sort_method
-            download_naming_method = self.settings_manager.subreddit_download_naming_method
-        defaults.update({'post_sort_method': post_sort_method, 'download_naming_method': download_naming_method})
+            kwargs['save_structure'] = self.settings_manager.subreddit_save_structure
+            kwargs['post_sort_method'] = self.settings_manager.subreddit_post_sort_method
+            kwargs['download_naming_method'] = self.settings_manager.subreddit_download_naming_method
+        defaults.update(**kwargs)

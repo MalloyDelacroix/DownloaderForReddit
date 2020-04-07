@@ -108,27 +108,9 @@ class Downloader:
         """
         if self.settings_manager.match_file_modified_to_post_date:
             SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
-        self.check_video_merger(content)
         content.set_downloaded(self.download_session_id)
         Message.send_text(f'Saved: {content.full_file_path}')
         self.download_count += 1
-
-    def check_video_merger(self, content: Content):
-        """
-        If the content item has a video merge id, this method takes care of setting the correct settings in the
-        VideoMerger so that the parts can be successfully merged later.
-        :param content: The content item that may need to be merged.
-        """
-        if content.video_merge_id is not None:
-            try:
-                ms = VideoMerger.videos_to_merge[content.video_merge_id]
-                if content.extension == 'mp4':
-                    ms.video_path = content.full_file_path
-                else:
-                    ms.audio_path = content.full_file_path
-            except KeyError:
-                self.logger.error('Failed to add file to video merge list.  A merge set with this id does not exist.',
-                                  extra={'merge_id': content.video_merge_id, 'filename': content.full_file_path})
 
     def handle_unsuccessful_response(self, content: Content, status_code):
         message = 'Failed Download: Unsuccessful response from server'

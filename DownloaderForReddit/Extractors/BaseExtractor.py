@@ -28,7 +28,7 @@ import logging
 
 from ..Database.Models import Content, Post
 from ..Utils import Injector
-from ..Database.ModelEnums import DownloadNameMethod, SubredditSaveStructure
+from ..Utils.TokenParser import TokenParser
 from ..Messaging.Message import Message
 
 
@@ -107,8 +107,7 @@ class BaseExtractor:
         """
         domain, id_with_ext = self.url.rsplit('/', 1)
         media_id, extension = id_with_ext.rsplit('.', 1)
-        file_name = self.get_filename(media_id)
-        self.make_content(self.url, file_name, extension)
+        self.make_content(self.url, extension)
 
     def get_json(self, url):
         """Makes sure that a request is valid and handles without errors if the connection is not successful"""
@@ -127,44 +126,23 @@ class BaseExtractor:
         else:
             self.handle_failed_extract(message='Failed to retrieve data from link', response_code=response.status_code)
 
-    def get_filename(self, media_id):
-        """
-        Checks the settings manager to determine if the post title or the content id (as stored on the container site)
-        should be used to name the content that is being extracted.
-        :param media_id: The image/album/video id as stored on a container site.
-        :type media_id: str
-        :return: The file name that should be used when creating the Content object from the extracted url.
-        :rtype: str
-        """
-        method = self.significant_reddit_object.download_naming_method
-        if method == DownloadNameMethod.ID:
-            return media_id
-        elif method == DownloadNameMethod.TITLE:
-            return self.post_title
-        else:
-            self.use_count = False  # specify not to use album item count when incrementing by number of downloads
-            return f'{self.significant_reddit_object.name} {self.significant_reddit_object.get_post_count()}'
-
-    def make_content(self, url, file_name, extension, count=None):
+    def make_content(self, url, extension, count=None, name_modifier=''):
         """
         Takes content elements that are extracted and creates a Content object with the extracted parts and the global
         extractor items, then sends the new Content object to the extracted content list.
         :param url: The url of the content item.
-        :param file_name: The file name of the content item, either the post name or the album id depending on user
-                          settings.
         :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
         :param extension: The extension of the supplied url and the url used for the downloaded file.
         :return: The content object that was created.
         :type url: str
-        :type file_name: str
         :type extension: str
         :type count: int
         :rtype: Content
         """
         if self.check_duplicate_content(url):
             count = f' {count}' if count and self.use_count else ''
-            title = file_name + count
-            dir_path = self.make_dir_path()
+            title = f'{self.make_title()}{name_modifier}{count}'
+            directory = self.make_dir_path()
             content = Content(
                 title=title,
                 extension=extension,
@@ -172,7 +150,7 @@ class BaseExtractor:
                 user=self.user,
                 subreddit=self.subreddit,
                 post=self.post,
-                directory_path=dir_path
+                directory_path=directory
             )
             session = self.post.get_session()
             session.add(content)
@@ -181,24 +159,19 @@ class BaseExtractor:
             return content
         return None
 
+    def make_title(self):
+        token_string = self.significant_reddit_object.download_naming_method
+        title = TokenParser.parse_tokens(self.post, token_string)
+        return title
+
     def make_dir_path(self):
-        """
-        Creates and returns the path for the directory the content should be saved in based on the user set base save
-        directory and the content's significant reddit object type and subreddit save structure.
-        :return: The path to the directory in which the content item being created will be saved.
-        """
+        token_string = self.significant_reddit_object.save_structure
+        sub_path = TokenParser.parse_tokens(self.post, token_string)
         if self.significant_reddit_object.object_type == 'USER':
-            return os.path.join(self.settings_manager.user_save_directory, self.significant_reddit_object.name)
+            base = self.settings_manager.user_save_directory
         else:
-            if self.significant_reddit_object.subreddit_save_structure == SubredditSaveStructure.SUB_NAME:
-                joiner = self.subreddit.name
-            elif self.significant_reddit_object.subreddit_save_structure == SubredditSaveStructure.AUTHOR_NAME:
-                joiner = self.user.name
-            elif self.significant_reddit_object.subreddit_save_structure == SubredditSaveStructure.SUB_NAME_AUTHOR_NAME:
-                joiner = os.path.join(self.subreddit.name, self.user.name)
-            else:
-                joiner = os.path.join(self.user.name, self.subreddit.name)
-            return os.path.join(self.settings_manager.subreddit_save_directory, joiner)
+            base = self.settings_manager.subreddit_save_directory
+        return os.path.join(base, sub_path)
 
     def check_duplicate_content(self, url: str) -> bool:
         """

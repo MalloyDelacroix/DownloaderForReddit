@@ -79,7 +79,7 @@ class JSONRedditObjectEncoder(json.JSONEncoder):
                 'download_comment_content': o.download_comment_content,
                 'download_nsfw': o.download_nsfw,
                 'download_naming_method': o.download_naming_method,
-                'subreddit_save_structure': o.subreddit_save_structure,
+                'subreddit_save_structure': o.save_structure,
                 'absolute_date_limit_epoch': o.absolute_date_limit,
                 'absolute_date_limit_readable': epoch_to_str(o.absolute_date_limit),
                 'date_limit_epoch': o.date_limit,

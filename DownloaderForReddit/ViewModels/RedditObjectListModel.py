@@ -189,7 +189,7 @@ class RedditObjectListModel(QAbstractListModel):
             'absolute_date_limit': f'Absolute Date Limit: {reddit_object.absolute_date_limit}',
             'post_limit': f'Post Limit: {reddit_object.post_limit}',
             'download_naming_method': f'Name Downloads By: {reddit_object.download_naming_method}',
-            'subreddit_save_method': f'Subreddit Save Method: {reddit_object.subreddit_save_structure}',
+            'subreddit_save_method': f'Subreddit Save Method: {reddit_object.save_structure}',
             'download_images': f'Download Images: {reddit_object.download_images}',
             'download_videos': f'Download Videos: {reddit_object.download_videos}',
             'download_nsfw': f'NSFW Filter: {reddit_object.download_nsfw.display_name}',

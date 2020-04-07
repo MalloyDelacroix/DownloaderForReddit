@@ -28,6 +28,7 @@ import os
 import logging
 from distutils.spawn import find_executable
 
+from ..Database.Models import Content
 from ..Utils import Injector, SystemUtil
 from ..Messaging.Message import Message
 
@@ -38,29 +39,22 @@ ffmpeg_valid = find_executable('ffmpeg') is not None
 
 
 # A dict of MergeSet's containing the path of the video and audio files that are to be merged.
-videos_to_merge = {}
+videos_to_merge = []
 
 
 class MergeSet:
 
-    def __init__(self, merge_id, video_path, audio_path, date_modified=None):
+    def __init__(self, video_id, audio_id, date_modified=None):
         """
         Holds data about the parts of a reddit video that are to be merged.
-        :param merge_id: The id that was assigned to the merge set and corresponding content items when the video and
-                         audio files were extracted.
-        :param video_path: The path that the file containing only the video is located at.
-        :param audio_path: The path that the file containing only the audio is located at.
+        :param video_id: The id of the content which holds the video portion.
+        :param audio_id: The id of the content which holds the audio portion
         :param date_modified: The date that the post containing the video was created.  If set in the settings manager,
                               this will be used to set the files date modified time.
         """
-        self.merge_id = merge_id
-        self.video_path = video_path
-        self.audio_path = audio_path
+        self.video_id = video_id
+        self.audio_id = audio_id
         self.date_modified = date_modified
-
-    @property
-    def output_path(self):
-        return self.video_path.replace('(video)', '')
 
 
 def merge_videos():
@@ -70,55 +64,51 @@ def merge_videos():
     MergeSet if the user settings dictate to do so.
     """
     if ffmpeg_valid:
-        failed_count = 0
-        for ms in videos_to_merge.values():
-            try:
-                output_path = get_output_path(ms.output_path)
-                cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
-                      (ms.video_path, ms.audio_path, output_path)
-                subprocess.call(cmd)
-                if Injector.get_settings_manager().match_file_modified_to_post_date:
-                    SystemUtil.set_file_modify_time(output_path, ms.date_modified)
-            except:
-                failed_count += 1
-                logger.error('Failed to merge video', extra={'video_path': ms.video_path, 'audio_path': ms.audio_path,
-                                                             'output_path': ms.output_path}, exc_info=True)
-        logger.info('Video merger complete', extra={'videos_successfully_merged': len(videos_to_merge) - failed_count,
-                                                    'videos_unsuccessfully_merged': failed_count})
-        clean_up()
+        db = Injector.get_database_handler()
+        with db.get_scoped_session() as session:
+            failed_count = 0
+            for ms in videos_to_merge:
+                try:
+                    video_content = session.query(Content).get(ms.video_id)
+                    audio_content = session.query(Content).get(ms.audio_id)
+                    output_path = video_content.full_file_path.replace('(video)', '')
+                    cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
+                          (video_content.full_file_path, audio_content.full_file_path, output_path)
+                    subprocess.call(cmd)
+                    if Injector.get_settings_manager().match_file_modified_to_post_date:
+                        SystemUtil.set_file_modify_time(output_path, ms.date_modified)
+                    clean_up(video_content, audio_content, session)
+                except:
+                    failed_count += 1
+                    logger.error('Failed to merge video', extra={'video_id': ms.video_id, 'audio_id': ms.audio_id,
+                                                                 'output_path': output_path}, exc_info=True)
+            logger.info('Video merger complete', extra={'videos_successfully_merged': len(videos_to_merge) - failed_count,
+                                                        'videos_unsuccessfully_merged': failed_count})
+            videos_to_merge.clear()
     else:
         logger.warning('Ffmpeg is not installed: unable to merge video and audio files',
                        extra={'videos_to_merge': len(videos_to_merge)})
 
 
-def get_output_path(output_path):
-    """
-    Checks the output path against paths that already exist and adds a number that increments as necessary to get a
-    file name that does not exist.
-    :param output_path: The output path that should be used if it does not already exist.
-    :return: A unique output path that can be used to merge the files.
-    """
-    unique_count = 1
-    while os.path.exists(output_path):
-        path, ext = output_path.rsplit('.')
-        output_path = f'{path}({unique_count}).{ext}'
-        unique_count += 1
-    return output_path
+def clean_up(video_content, audio_content, session):
+    content = Content(
+        title=video_content.title.replace('(video)', ''),
+        extension='mp4',
+        url=video_content.url,
+        user=video_content.user,
+        subreddit=video_content.subreddit,
+        post=video_content.post,
+        directory_path=video_content.directory_path,
+        downloaded=True,
+        download_date=video_content.download_date,
+        download_error=video_content.download_error,
+        download_session_id=video_content.download_session_id,
+        comment_id=video_content.comment_id
+    )
+    session.add(content)
+    SystemUtil.delete_file(video_content.full_file_path)
+    SystemUtil.delete_file(audio_content.full_file_path)
+    video_content.delete()
+    audio_content.delete()
+    session.commit()
 
-
-def clean_up():
-    """
-    Updates the GUI output to show which video files have been created and deletes the temporary video and audio files
-    that were combined to produce the output file.
-    """
-    queue = Injector.get_message_queue()
-    for ms in videos_to_merge.values():
-        if os.path.exists(ms.output_path):
-            try:
-                os.remove(ms.video_path)
-                os.remove(ms.audio_path)
-            except FileNotFoundError:
-                logger.error('Failed to delete reddit video part files', extra={'merged_video_path': ms.output_path},
-                             exc_info=True)
-            Message.send_text('Merged reddit video: %s' % ms.output_path)
-    videos_to_merge.clear()

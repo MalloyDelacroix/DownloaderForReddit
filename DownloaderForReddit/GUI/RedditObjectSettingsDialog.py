@@ -2,18 +2,18 @@ import logging
 from datetime import datetime
 from threading import Thread
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtGui import QCursor
 
 from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..Database.Models import Post, Content, Comment
 from ..Database.ModelEnums import *
 from ..Utils import Injector
-from ..Core import Const
+from ..Utils.TokenParser import TokenParser
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
-
     download_signal = pyqtSignal(int)
 
     def __init__(self, list_type, list_name, selected_object_id: int):
@@ -56,18 +56,22 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.nsfw_filter_combo.addItem(value.display_name, value)
         for value in PostSortMethod:
             self.post_sort_combo.addItem(value.display_name, value)
-        for value in DownloadNameMethod:
-            self.download_naming_combo.addItem(value.display_name, value)
-        self.subreddit_save_structure_label.setVisible(self.list_type == 'SUBREDDIT')
-        self.subreddit_save_structure_combo.setVisible(self.list_type == 'SUBREDDIT')
-        if self.list_type == 'SUBREDDIT':
-            for value in SubredditSaveStructure:
-                self.subreddit_save_structure_combo.addItem(value.display_name, value)
         for value in CommentDownload:
             self.comment_download_combo.addItem(value.display_name, value)
             self.comment_content_download_combo.addItem(value.display_name, value)
         for value in CommentSortMethod:
             self.comment_sort_combo.addItem(value.display_name, value)
+
+        self.download_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.download_naming_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.download_naming_line_edit))
+        self.download_naming_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.download_naming_line_edit))
+        self.save_path_structure_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.save_path_structure_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.save_path_structure_line_edit))
+        self.save_structure_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.save_path_structure_line_edit))
 
         self.post_limit_max_button.clicked.connect(
             lambda: self.post_limit_spinbox.setValue(self.post_limit_spinbox.maximum()))
@@ -98,13 +102,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.post_sort_combo.currentIndexChanged.connect(
             lambda x: setattr(self.selected_object, 'post_sort_method', self.post_sort_combo.itemData(x))
         )
-        self.download_naming_combo.currentIndexChanged.connect(
-            lambda x: setattr(self.selected_object, 'download_naming_method', self.download_naming_combo.itemData(x))
-        )
-        self.subreddit_save_structure_combo.currentIndexChanged.connect(
-            lambda x: setattr(self.selected_object, 'subreddit_save_structure',
-                              self.subreddit_save_structure_combo.itemData(x))
-        )
+        self.download_naming_line_edit.editingFinished.connect(
+            lambda: setattr(self.selected_object, 'download_naming_method', self.download_naming_line_edit.text()))
+        self.save_path_structure_line_edit.editingFinished.connect(
+            lambda: setattr(self.selected_object, 'save_structure', self.save_path_structure_line_edit.text()))
         self.comment_download_combo.currentIndexChanged.connect(
             lambda x: setattr(self.selected_object, 'download_comments', self.comment_download_combo.itemData(x))
         )
@@ -138,6 +139,12 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         epoch = self.date_limit_edit.dateTime().toSecsSinceEpoch()
         self.selected_object.date_limit = datetime.fromtimestamp(epoch)
 
+    def path_token_context_menu(self, line_edit):
+        menu = QtWidgets.QMenu()
+        for key in TokenParser.token_dict.keys():
+            menu.addAction(key.replace('_', ' ').title(), lambda token=key: line_edit.insert(f'%[{token}]'))
+        menu.exec_(QCursor.pos())
+
     def sync_all(self):
         self.set_basic_info()
         self.set_download_info()
@@ -156,13 +163,13 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def set_download_info_labels(self):
         with self.db.get_scoped_session() as session:
-            post_count = session.query(Post.id)\
+            post_count = session.query(Post.id) \
                 .filter(Post.significant_reddit_object_id == self.selected_object.id).count()
-            comment_count = session.query(Comment.id)\
-                .filter(Comment.significant_reddit_object_id == self.selected_object.id).count()
-            content_count = session.query(Content.id)\
-                .filter(Content.post_id.in_(session.query(Post.id)
-                .filter(Post.significant_reddit_object_id == self.selected_object.id))).count()
+            comment_count = session.query(Comment.id).join(Post) \
+                .filter(Post.significant_reddit_object_id == self.selected_object.id).count()
+            content_count = session.query(Content.id) \
+                .filter(Content.post_id.in_(session.query(Post.id).filter(
+                Post.significant_reddit_object_id == self.selected_object.id))).count()
             self.post_count_label.setText(str(post_count))
             self.comment_count_label.setText(str(comment_count))
             self.content_count_label.setText(str(content_count))
@@ -188,10 +195,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.download_gifs_checkbox.setChecked(self.selected_object.download_gifs)
         self.nsfw_filter_combo.setCurrentIndex(self.nsfw_filter_combo.findData(self.selected_object.download_nsfw))
         self.post_sort_combo.setCurrentIndex(self.post_sort_combo.findData(self.selected_object.post_sort_method))
-        self.download_naming_combo.setCurrentIndex(
-            self.download_naming_combo.findData(self.selected_object.download_naming_method))
-        self.subreddit_save_structure_combo.setCurrentIndex(
-            self.subreddit_save_structure_combo.findData(self.selected_object.subreddit_save_structure))
+        self.download_naming_line_edit.setText(self.selected_object.download_naming_method)
+        self.save_path_structure_line_edit.setText(self.selected_object.save_structure)
         self.comment_download_combo.setCurrentIndex(
             self.comment_download_combo.findData(self.selected_object.download_comments))
         self.comment_content_download_combo.setCurrentIndex(

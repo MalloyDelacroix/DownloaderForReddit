@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>727</width>
-    <height>1266</height>
+    <height>1273</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -413,25 +413,19 @@
            <item row="15" column="1">
             <widget class="QComboBox" name="post_sort_combo"/>
            </item>
-           <item row="16" column="0">
+           <item row="18" column="0">
             <widget class="QLabel" name="label_17">
              <property name="text">
               <string>Download Naming:</string>
              </property>
             </widget>
            </item>
-           <item row="16" column="1">
-            <widget class="QComboBox" name="download_naming_combo"/>
-           </item>
-           <item row="17" column="0">
-            <widget class="QLabel" name="subreddit_save_structure_label">
+           <item row="19" column="0">
+            <widget class="QLabel" name="save_structure_label">
              <property name="text">
-              <string>Subreddit Path Scheme:</string>
+              <string>Save Path Structure:</string>
              </property>
             </widget>
-           </item>
-           <item row="17" column="1">
-            <widget class="QComboBox" name="subreddit_save_structure_combo"/>
            </item>
            <item row="9" column="0">
             <widget class="QLabel" name="label_15">
@@ -456,6 +450,46 @@
            </item>
            <item row="10" column="1">
             <widget class="QComboBox" name="self_post_file_format_combo"/>
+           </item>
+           <item row="18" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLineEdit" name="download_naming_line_edit"/>
+             </item>
+             <item>
+              <widget class="QToolButton" name="download_naming_available_tokens_button">
+               <property name="toolTip">
+                <string>See available tokens</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item row="19" column="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLineEdit" name="save_path_structure_line_edit"/>
+             </item>
+             <item>
+              <widget class="QToolButton" name="save_structure_available_tokens_button">
+               <property name="toolTip">
+                <string>See available tokens</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>

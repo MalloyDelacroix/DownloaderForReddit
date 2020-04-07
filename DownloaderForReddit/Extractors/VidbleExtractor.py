@@ -69,8 +69,7 @@ class VidbleExtractor(BaseExtractor):
             base, extension = link.rsplit('.', 1)
             file_name = "{}.{}".format(vidble_id, extension)
             url = self.vidble_base + '/' + file_name
-            name = self.get_filename(vidble_id)
-            self.make_content(url, name, extension)
+            self.make_content(url, extension)
 
     def extract_album(self):
         # We will use the undocumented API specified here:
@@ -83,5 +82,5 @@ class VidbleExtractor(BaseExtractor):
             file_name = file_name.replace('_med', '')
             base, extension = file_name.rsplit('.', 1)
             url = "https:{}/{}".format(domain, file_name)
-            self.make_content(url, base, extension, count=count)
+            self.make_content(url, extension, count=count)
             count += 1
