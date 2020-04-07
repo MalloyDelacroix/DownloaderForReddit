@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional
+from typing import Optional, Union
 from queue import Empty
 from praw.models import Submission, Comment as PrawComment
 from bs4 import BeautifulSoup, SoupStrainer
@@ -10,6 +10,7 @@ from ..Extractors.BaseExtractor import BaseExtractor
 from ..Extractors.DirectExtractor import DirectExtractor
 from ..Extractors.SelfPostExtractor import SelfPostExtractor
 from ..Database.Models import User, Subreddit, Post, Comment
+from ..Database.ModelEnums import CommentDownload
 from ..Utils import Injector
 from ..Core import Const
 from ..Messaging.Message import Message
@@ -75,7 +76,8 @@ class ContentExtractor:
                     else:
                         submission = item[0]
                         significant_id = item[1]
-                        self.executor.submit(self.handle_submission, submission=submission, significant_id=significant_id)
+                        self.executor.submit(self.handle_submission, submission=submission,
+                                             significant_id=significant_id)
                 else:
                     self.continue_run = False
             except Empty:
@@ -90,9 +92,12 @@ class ContentExtractor:
         with self.db.get_scoped_session() as session:
             post = self.create_post(submission, significant_id, session)
             if post is not None:
-                self.extract(post)
-                if post.significant_reddit_object.extract_comments:
-                    self.handle_comments(post, session)
+                if post.is_self:
+                    self.extract_linked_content(post)
+                else:
+                    self.extract(post)
+                # if post.significant_reddit_object.extract_comments:
+                #     self.handle_comments(post, session)
 
     def create_post(self, submission: Submission, significant_id: int, session) -> Optional[Post]:
         post = None
@@ -194,14 +199,33 @@ class ContentExtractor:
     def handle_comments(self, post: Post, session):
         pass
 
-    def cascade_comments(self, comment, parent, extract_content):
-        pass
+    def cascade_comments(self, praw_comment: PrawComment, parent: Optional[Comment], post: Post, session):
+        comment = self.create_comment(praw_comment, parent, post, session)
+        if post.significant_reddit_object.download_comment_content != CommentDownload.DO_NOT_DOWNLOAD:
+            self.handle_comment_content(comment)
+        for child in praw_comment.replies:
+            self.cascade_comments(child, comment, post, session)
+
+    def handle_comment_content(self, comment: Comment):
+        download_type = comment.post.significant_reddit_object.download_comment_content
+        if (download_type == CommentDownload.DOWNLOAD_ONLY_AUTHOR and comment.author_id == comment.post.author_id) or \
+                download_type == CommentDownload.DOWNLOAD:
+            self.extract_comment_content(comment)
 
     def extract_comment_content(self, comment: Comment):
-        pass
+        failed = False
+        links = BeautifulSoup(comment.body_html, parse_only=SoupStrainer('a'), features='html.parser')
+        links_size = len(links)
+        if links_size > 0:
+            comment.has_content = True
+        track_count = links_size
+        for link in links:
+            if link.has_attr('href'):
+                url = link['href']
+                if track_count:
+                    pass  # TODO: finish here
 
-    def create_comment(self, praw_comment: PrawComment, parent_comment: Optional[PrawComment], post: Post,
-                       significant_id, session):
+    def create_comment(self, praw_comment: PrawComment, parent_comment: Optional[PrawComment], post: Post, session):
         comment = None
         if self.check_duplicate_comment(comment, session):
             author = self.get_author(praw_comment, session)
@@ -209,7 +233,6 @@ class ContentExtractor:
             comment = Comment(
                 author=author,
                 subreddit=subreddit,
-                significant_reddit_object_id=significant_id,
                 post=post,
                 reddit_id=praw_comment.id,
                 body=praw_comment.body,
@@ -226,7 +249,7 @@ class ContentExtractor:
     def check_duplicate_comment(self, comment_id, session):
         return session.query(Comment.reddit_id == comment_id).scalar() is None
 
-    def get_author(self, praw_object: Optional[Submission, PrawComment], session):
+    def get_author(self, praw_object: Union[Submission, PrawComment], session):
         try:
             author = self.db.get_or_create(User, name=praw_object.author.name,
                                            date_created=self.get_created(praw_object), session=session)[0]
@@ -234,7 +257,7 @@ class ContentExtractor:
             author = self.db.get_or_create(User, name='deleted', session=session)[0]
         return author
 
-    def get_subreddit(self, praw_object: Optional[Submission, PrawComment], session):
+    def get_subreddit(self, praw_object: Union[Submission, PrawComment], session):
         try:
             subreddit = self.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name,
                                               date_created=self.get_created(praw_object.subreddit),
