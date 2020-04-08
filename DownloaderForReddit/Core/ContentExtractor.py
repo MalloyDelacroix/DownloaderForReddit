@@ -5,14 +5,17 @@ from typing import Optional, Union
 from queue import Empty
 from praw.models import Submission, Comment as PrawComment
 from bs4 import BeautifulSoup, SoupStrainer
+from sqlalchemy.orm.session import Session
 
 from ..Extractors.BaseExtractor import BaseExtractor
 from ..Extractors.DirectExtractor import DirectExtractor
 from ..Extractors.SelfPostExtractor import SelfPostExtractor
+from ..Extractors.CommentExtractor import CommentExtractor
 from ..Database.Models import User, Subreddit, Post, Comment
 from ..Database.ModelEnums import CommentDownload
 from ..Utils import Injector
 from ..Core import Const
+from ..Core.CommentFilter import CommentFilter
 from ..Messaging.Message import Message
 
 
@@ -26,67 +29,67 @@ class ContentExtractor:
         self.output_queue = Injector.get_message_queue()
         self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
+        self.comment_filter = CommentFilter()
 
-        self.thread_count = self.settings_manager.extraction_thread_count
-        self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
+        # self.thread_count = self.settings_manager.extraction_thread_count
+        # self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
         self.hold = False
         self.submit_hold = False
         self.continue_run = True
 
     @property
     def running(self):
-        if self.hold:
-            return not self.executor._work_queue.empty()
-        return True
-        # return not self.hold
-
-    # def run(self):
-    #     self.logger.debug('Content extractor running')
-    #     while self.continue_run:
-    #         item = self.submission_queue.get()
-    #         if item is not None:
-    #             if item == 'HOLD':
-    #                 self.hold = True
-    #                 self.download_queue.put('HOLD')
-    #             elif item == 'RELEASE_HOLD':
-    #                 self.hold = False
-    #                 self.download_queue.put('RELEASE_HOLD')
-    #             else:
-    #                 submission = item[0]
-    #                 siginificant_id = item[1]
-    #                 self.handle_submission(submission, siginificant_id)
-    #         else:
-    #             self.continue_run = False
-    #     # self.executor.shutdown(wait=True)
-    #     self.download_queue.put(None)
-    #     self.logger.debug('Content extractor exiting')
+        # if self.hold:
+        #     return not self.executor._work_queue.empty()
+        # return True
+        return not self.hold
 
     def run(self):
         self.logger.debug('Content extractor running')
         while self.continue_run:
-            try:
-                item = self.submission_queue.get(timeout=2)
-                if item is not None:
-                    if item == 'HOLD':
-                        self.hold = True
-                        self.submit_hold = True
-                    elif item == 'RELEASE_HOLD':
-                        self.hold = False
-                        self.download_queue.put('RELEASE_HOLD')
-                    else:
-                        submission = item[0]
-                        significant_id = item[1]
-                        self.executor.submit(self.handle_submission, submission=submission,
-                                             significant_id=significant_id)
-                else:
-                    self.continue_run = False
-            except Empty:
-                if self.submit_hold and not self.running:
+            item = self.submission_queue.get()
+            if item is not None:
+                if item == 'HOLD':
+                    self.hold = True
                     self.download_queue.put('HOLD')
-                    self.submit_hold = False
-        self.executor.shutdown(wait=True)
+                elif item == 'RELEASE_HOLD':
+                    self.hold = False
+                    self.download_queue.put('RELEASE_HOLD')
+                else:
+                    submission = item[0]
+                    siginificant_id = item[1]
+                    self.handle_submission(submission, siginificant_id)
+            else:
+                self.continue_run = False
         self.download_queue.put(None)
         self.logger.debug('Content extractor exiting')
+
+    # def run(self):
+    #     self.logger.debug('Content extractor running')
+    #     while self.continue_run:
+    #         try:
+    #             item = self.submission_queue.get(timeout=2)
+    #             if item is not None:
+    #                 if item == 'HOLD':
+    #                     self.hold = True
+    #                     self.submit_hold = True
+    #                 elif item == 'RELEASE_HOLD':
+    #                     self.hold = False
+    #                     self.download_queue.put('RELEASE_HOLD')
+    #                 else:
+    #                     submission = item[0]
+    #                     significant_id = item[1]
+    #                     self.executor.submit(self.handle_submission, submission=submission,
+    #                                          significant_id=significant_id)
+    #             else:
+    #                 self.continue_run = False
+    #         except Empty:
+    #             if self.submit_hold and not self.running:
+    #                 self.download_queue.put('HOLD')
+    #                 self.submit_hold = False
+    #     self.executor.shutdown(wait=True)
+    #     self.download_queue.put(None)
+    #     self.logger.debug('Content extractor exiting')
 
     def handle_submission(self, submission, significant_id):
         with self.db.get_scoped_session() as session:
@@ -96,10 +99,10 @@ class ContentExtractor:
                     self.extract_linked_content(post)
                 else:
                     self.extract(post)
-                # if post.significant_reddit_object.extract_comments:
-                #     self.handle_comments(post, session)
+                if post.significant_reddit_object.run_comment_operations:
+                    self.handle_comments(post, submission, session)
 
-    def create_post(self, submission: Submission, significant_id: int, session) -> Optional[Post]:
+    def create_post(self, submission: Submission, significant_id: int, session: Session) -> Optional[Post]:
         post = None
         if self.check_duplicate_post_url(submission.url, session):
             author = self.get_author(submission, session)
@@ -125,12 +128,6 @@ class ContentExtractor:
             session.add(post)
             session.commit()
         return post
-
-    def get_created(self, praw_object):
-        try:
-            return datetime.fromtimestamp(praw_object.created)
-        except:
-            self.logger.error('Failed to get creation date for reddit object', exc_info=True)
 
     def check_duplicate_post_url(self, url, session):
         return session.query(Post.id).filter(Post.url == url).scalar() is None
@@ -173,13 +170,11 @@ class ContentExtractor:
             for link in links:
                 if link.has_attr('href'):
                     url = link['href']
-                    if track_count:
-                        title = f'{post.title} {links.index(link) + 1}'
-                    else:
-                        title = post.title
+                    title = post.title
+                    count = links.index(link) + 1 if track_count else None
                     try:
                         extractor_class = self.assign_extractor(url)
-                        extractor = extractor_class(post, url=url, title=title)
+                        extractor = extractor_class(post, url=url, count=count)
                         extractor.extract_content()
                         if extractor.failed_extraction:
                             failed = True
@@ -196,15 +191,37 @@ class ContentExtractor:
             else:
                 post.set_extracted()
 
-    def handle_comments(self, post: Post, session):
-        pass
+    def handle_comments(self, post: Post, submission: Submission, session: Session):
+        significant_ro = post.significant_reddit_object
+        sort_method = significant_ro.comment_sort_method
+        if sort_method.value == 6:
+            sort_method = 'q&a'
+        else:
+            sort_method = sort_method.name.lower()
+        submission.comment_sort = sort_method
+        submission.comments.replace_more(limit=0)
+        for praw_comment in submission.comments[: significant_ro.comment_limit]:
+            self.cascade_comments(praw_comment, post, session)
 
-    def cascade_comments(self, praw_comment: PrawComment, parent: Optional[Comment], post: Post, session):
-        comment = self.create_comment(praw_comment, parent, post, session)
-        if post.significant_reddit_object.download_comment_content != CommentDownload.DO_NOT_DOWNLOAD:
-            self.handle_comment_content(comment)
-        for child in praw_comment.replies:
-            self.cascade_comments(child, comment, post, session)
+    def cascade_comments(self, praw_comment: PrawComment, post: Post, session: Session,
+                         parent_id: Optional[int] = None):
+        significant_ro = post.significant_reddit_object
+        if self.comment_filter.filter_extraction(praw_comment, significant_ro) and \
+                self.comment_filter.filter_score_limit(praw_comment, significant_ro):
+            comment = self.create_comment(praw_comment, post, session, parent_comment_id=parent_id)
+            if comment is not None:
+                if self.comment_filter.filter_download(praw_comment, significant_ro):
+                    self.extract_comment_text(comment)
+                if self.comment_filter.filter_content_download(praw_comment, significant_ro):
+                    self.extract_comment_content(comment)
+
+                praw_comment.replies.replace_more(limit=0)
+                for sub_comment in praw_comment.replies:
+                    self.cascade_comments(sub_comment, post, session, parent_id=comment.id)
+
+    def extract_comment_text(self, comment):
+        extractor = CommentExtractor(post=comment.post, comment=comment, download_session_id=self.download_session_id)
+        extractor.extract_content()
 
     def handle_comment_content(self, comment: Comment):
         download_type = comment.post.significant_reddit_object.download_comment_content
@@ -218,16 +235,38 @@ class ContentExtractor:
         links_size = len(links)
         if links_size > 0:
             comment.has_content = True
-        track_count = links_size
+        track_count = links_size > 1
         for link in links:
             if link.has_attr('href'):
                 url = link['href']
-                if track_count:
-                    pass  # TODO: finish here
+                count = links.index(link) + 1 if track_count else None
+                try:
+                    extractor_class = self.assign_extractor(url)
+                    extractor = extractor_class(comment.post, comment=comment, count=count, author=comment.author,
+                                                subreddit=comment.subreddit, url=url, date_posted=comment.date_posted)
+                    extractor.extract_content()
+                    if extractor.failed_extraction:
+                        failed = True
+                    for content in extractor.extracted_content:
+                        self.download_queue.put(content.id)
+                except TypeError:
+                    self.handle_unsupported_domain(comment.post, url=url, comment_author=comment.author,
+                                                   comment_id=comment.id)
+                except ConnectionError:
+                    self.handle_connection_error(comment.post, url=url, comment_author=comment.author,
+                                                 comment_id=comment.id)
+                except:
+                    self.handle_unknown_error(comment.post, url=url, comment_author=comment.author,
+                                              comment_id=comment.id)
+        if failed:
+            comment.set_extraction_failed('Failed to extract one or more links from text body')
+        else:
+            comment.set_extracted()
 
-    def create_comment(self, praw_comment: PrawComment, parent_comment: Optional[PrawComment], post: Post, session):
+    def create_comment(self, praw_comment: PrawComment, post: Post, session: Session,
+                       parent_comment_id: Optional[int] = None):
         comment = None
-        if self.check_duplicate_comment(comment, session):
+        if self.check_duplicate_comment(praw_comment.id, session):
             author = self.get_author(praw_comment, session)
             subreddit = self.get_subreddit(praw_comment, session)
             comment = Comment(
@@ -239,25 +278,25 @@ class ContentExtractor:
                 body_html=praw_comment.body_html,
                 score=praw_comment.score,
                 date_posted=datetime.fromtimestamp(praw_comment.created),
-                parent=parent_comment,
+                parent_id=parent_comment_id,
                 download_session_id=self.download_session_id
             )
             session.add(comment)
             session.commit()
         return comment
 
-    def check_duplicate_comment(self, comment_id, session):
+    def check_duplicate_comment(self, comment_id: str, session: Session):
         return session.query(Comment.reddit_id == comment_id).scalar() is None
 
-    def get_author(self, praw_object: Union[Submission, PrawComment], session):
+    def get_author(self, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             author = self.db.get_or_create(User, name=praw_object.author.name,
-                                           date_created=self.get_created(praw_object), session=session)[0]
+                                           date_created=self.get_created(praw_object.author), session=session)[0]
         except AttributeError:
             author = self.db.get_or_create(User, name='deleted', session=session)[0]
         return author
 
-    def get_subreddit(self, praw_object: Union[Submission, PrawComment], session):
+    def get_subreddit(self, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             subreddit = self.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name,
                                               date_created=self.get_created(praw_object.subreddit),
@@ -265,6 +304,12 @@ class ContentExtractor:
         except AttributeError:
             subreddit = self.db.get_or_create(Subreddit, name='deleted', session=session)[0]
         return subreddit
+
+    def get_created(self, praw_object):
+        try:
+            return datetime.fromtimestamp(praw_object.created)
+        except:
+            self.logger.error('Failed to get creation date for reddit object', exc_info=True)
 
     def assign_extractor(self, url):
         for extractor in BaseExtractor.__subclasses__():

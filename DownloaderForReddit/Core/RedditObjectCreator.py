@@ -76,6 +76,7 @@ class RedditObjectCreator:
             'download_videos': self.settings_manager.download_videos,
             'download_images': self.settings_manager.download_images,
             'download_nsfw': self.settings_manager.download_nsfw,
+            'extract_comments': self.settings_manager.extract_comments,
             'download_comments': self.settings_manager.download_comments,
             'download_comment_content': self.settings_manager.download_comment_content,
             'comment_limit': self.settings_manager.comment_limit,
@@ -92,11 +93,15 @@ class RedditObjectCreator:
     def get_specific_defaults(self, defaults, object_type):
         kwargs = {}
         if object_type == 'USER':
-            kwargs['save_structure'] = self.settings_manager.user_save_structure
             kwargs['post_sort_method'] = self.settings_manager.user_post_sort_method
-            kwargs['download_naming_method'] = self.settings_manager.user_download_naming_method
+            kwargs['post_download_naming_method'] = self.settings_manager.user_post_download_naming_method
+            kwargs['post_save_structure'] = self.settings_manager.user_post_save_structure
+            kwargs['comment_naming_method'] = self.settings_manager.user_comment_download_naming_method
+            kwargs['comment_save_structure'] = self.settings_manager.user_comment_save_structure
         else:
-            kwargs['save_structure'] = self.settings_manager.subreddit_save_structure
             kwargs['post_sort_method'] = self.settings_manager.subreddit_post_sort_method
-            kwargs['download_naming_method'] = self.settings_manager.subreddit_download_naming_method
+            kwargs['post_download_naming_method'] = self.settings_manager.subreddit_post_download_naming_method
+            kwargs['post_save_structure'] = self.settings_manager.subreddit_post_save_structure
+            kwargs['comment_naming_method'] = self.settings_manager.subreddit_comment_download_naming_method
+            kwargs['comment_save_structure'] = self.settings_manager.subreddit_comment_save_structure
         defaults.update(**kwargs)

@@ -8,7 +8,7 @@ from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import (CommentDownload, NsfwFilter, LimitOperator, PostSortMethod, CommentSortMethod)
 from .Exceptions import ExistingNameException
 from ..Core import Const
-from ..Utils import SystemUtil
+from ..Utils import SystemUtil, Injector
 
 
 Base = DatabaseHandler.base
@@ -74,6 +74,7 @@ class RedditObject(BaseModel):
     download_images = Column(Boolean, default=True)
     download_gifs = Column(Boolean, default=True)
     download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
+    extract_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     comment_limit = Column(Integer, default=100)
@@ -89,8 +90,10 @@ class RedditObject(BaseModel):
     significant = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     inactive_date = Column(DateTime, nullable=True)
-    download_naming_method = Column(String, default='%[title]')
-    save_structure = Column(String, default='%[author_name]')
+    post_download_naming_method = Column(String, default='%[title]')
+    post_save_structure = Column(String, default='%[author_name]')
+    comment_naming_method = Column(String, default='%[author_name]-comment')
+    comment_save_structure = Column(String, default='Comments/%[post_id]')
     new = Column(Boolean, default=True)
     lists = relationship(RedditObjectList, secondary='reddit_object_list_association', lazy='dynamic')
 
@@ -132,9 +135,10 @@ class RedditObject(BaseModel):
         return self.get_display_date(self.inactive_date)
 
     @property
-    def extract_comments(self):
-        return self.download_comments is not CommentDownload.DO_NOT_DOWNLOAD or \
-               self.download_comment_content is not CommentDownload.DO_NOT_DOWNLOAD
+    def run_comment_operations(self):
+        return any((self.extract_comments != CommentDownload.DO_NOT_DOWNLOAD,
+                    self.download_comments != CommentDownload.DO_NOT_DOWNLOAD,
+                    self.download_comment_content != CommentDownload.DO_NOT_DOWNLOAD))
 
     def set_date_limit(self, epoch):
         """
@@ -303,6 +307,10 @@ class Post(BaseModel):
         return f'Post: {self.title}'
 
     @property
+    def short_title(self):
+        return self.title[:Injector.get_settings_manager().short_title_char_length]
+
+    @property
     def date_posted_display(self):
         return self.get_display_date(self.date_posted)
 
@@ -353,6 +361,17 @@ class Comment(BaseModel):
     def __str__(self):
         return f'Comment: {self.id}'
 
+    def set_extracted(self):
+        self.extracted = True
+        self.extraction_date = datetime.now()
+        self.get_session().commit()
+
+    def set_extraction_failed(self, message):
+        self.extracted = False
+        self.extraction_date = datetime.now()
+        self.extraction_error = message
+        self.get_session().commit()
+
 
 class Content(BaseModel):
 
@@ -385,6 +404,10 @@ class Content(BaseModel):
 
     def __str__(self):
         return f'Content: {self.title}'
+
+    @property
+    def short_title(self):
+        return self.title[:Injector.get_settings_manager().short_title_char_length]
 
     @property
     def full_file_path(self):

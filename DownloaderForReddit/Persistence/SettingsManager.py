@@ -30,6 +30,7 @@ class SettingsManager:
         self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
         self.download_on_add = self.get('core', 'download_on_add', False)
         self.lock_reddit_object_settings = self.get('core', 'lock_reddit_object_settings', False)
+        self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
         # endregion
 
         # region Download Defaults
@@ -41,10 +42,12 @@ class SettingsManager:
         self.extract_self_post_links = self.get('download_defaults', 'extract_self_post_links', False)
         self.download_self_post_text = self.get('download_defaults', 'download_self_post_text', False)
         self.self_post_file_format = self.get('download_defaults', 'self_post_file_format', 'txt')
+        self.comment_file_format = self.get('download_defaults', 'comment_file_format', 'txt')
         self.download_videos = self.get('download_defaults', 'download_videos', True)
         self.download_images = self.get('download_defaults', 'download_images', True)
         self.download_gifs = self.get('download_defaults', 'download_gifs', True)
         self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
+        self.extract_comments = self.get('download_defaults', 'extract_comments', 2, container=CommentDownload)
         self.download_comments = self.get('download_defaults', 'download_comments', 2,
                                           container=CommentDownload)
         self.download_comment_content = self.get('download_defaults', 'download_comment_content', 2,
@@ -60,11 +63,23 @@ class SettingsManager:
         self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 1, container=PostSortMethod)
         self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 1,
                                                    container=PostSortMethod)
-        self.user_download_naming_method = self.get('download_defaults', 'user_download_naming_method', '%[title]')
-        self.subreddit_download_naming_method = self.get('download_defaults', 'subreddit_download_naming_method',
+        self.user_post_download_naming_method = self.get('download_defaults', 'user_post_download_naming_method',
                                                          '%[title]')
-        self.user_save_structure = self.get('download_defaults', 'user_save_structure', '%[author_name]')
-        self.subreddit_save_structure = self.get('download_defaults', 'subreddit_save_structure', '%[subreddit_name]')
+        self.user_comment_download_naming_method = self.get('download_defaults', 'user_comment_download_naming_method',
+                                                            '%[author_name]-comment')
+        self.subreddit_post_download_naming_method = self.get('download_defaults',
+                                                              'subreddit_post_download_naming_method',
+                                                              '%[title]')
+        self.subreddit_comment_download_naming_method = self.get('download_defaults',
+                                                                 'subreddit_comment_download_naming_method',
+                                                                 '%[author_name]-comment')
+        self.user_post_save_structure = self.get('download_defaults', 'user_post_save_structure', '%[author_name]')
+        self.user_comment_save_structure = self.get('download_defaults', 'user_comment_save_structure',
+                                                    'Comments/%[post_id]')
+        self.subreddit_post_save_structure = self.get('download_defaults', 'subreddit_post_save_structure',
+                                                      '%[subreddit_name]')
+        self.subreddit_comment_save_structure = self.get('download_defaults', 'subreddit_comment_save_structure',
+                                                         'Comments/%[post_id]')
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
         # endregion
 
@@ -88,21 +103,24 @@ class SettingsManager:
             'y': 0
         }
         self.main_window_geom = self.get('main_window_gui', 'main_window_geom', main_window_geom)
-        self.horizontal_splitter_state = self.get('main_window_gui', 'horizontal_splitter_state', [47, 47])
+        self.horizontal_splitter_state = self.get('main_window_gui', 'horizontal_splitter_state', [228, 258, 624])
         self.list_sort_method = self.get('main_window_gui', 'list_sort_method', 2)
         self.list_order_method = self.get('main_window_gui', 'list_order_method', 2)
         self.download_radio_state = self.get('main_window_gui', 'download_radio_state', 'USER')
         # endregion
 
         # region Reddit Object Settings Dialog
+        ro_settings_geom = {
+            'width': 773,
+            'height': 877,
+            'x': 0,
+            'y': 0
+        }
         self.reddit_object_settings_dialog_geom = self.get('reddit_object_settings_dialog',
-                                                           'reddit_object_settings_dialog_geom')
-        self.reddit_object_content_icons_full_width = self.get('reddit_object_settings_dialog',
-                                                               'reddit_object_content_icons_full_width', False)
-        self.reddit_object_content_icon_size = self.get('reddit_object_settings_dialog',
-                                                        'reddit_object_content_icon_size', 110)
+                                                           'reddit_object_settings_dialog_geom', ro_settings_geom)
         self.reddit_object_settings_dialog_splitter_state = self.get('reddit_object_settings_dialog',
-                                                                     'reddit_object_settings_dialog_splitter_state')
+                                                                     'reddit_object_settings_dialog_splitter_state',
+                                                                     [181, 565])
         # endregion
 
         # region Download Sessions Dialog

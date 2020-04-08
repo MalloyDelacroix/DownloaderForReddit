@@ -48,13 +48,13 @@ class BaseExtractor:
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
         self.post = post
-        self.comment = None
-        self.post_title = kwargs.get('title', post.title)
+        self.comment = kwargs.get('comment', None)
         self.url = kwargs.get('url', post.url)
         self.user = kwargs.get('user', post.author)
         self.subreddit = kwargs.get('subreddit', post.subreddit)
         self.significant_reddit_object = kwargs.get('significant_reddit_object', post.significant_reddit_object)
         self.creation_date = kwargs.get('date_posted', post.date_posted)
+        self.count = kwargs.get('count', None)
         self.extracted_content = []
         self.failed_extraction = False
         self.failed_extraction_message = None
@@ -140,6 +140,8 @@ class BaseExtractor:
         :rtype: Content
         """
         if self.check_duplicate_content(url):
+            if count is None:
+                count = self.count
             count = f' {count}' if count and self.use_count else ''
             title = f'{self.make_title()}{name_modifier}{count}'
             directory = self.make_dir_path()
@@ -160,13 +162,21 @@ class BaseExtractor:
         return None
 
     def make_title(self):
-        token_string = self.significant_reddit_object.download_naming_method
-        title = TokenParser.parse_tokens(self.post, token_string)
+        if self.comment is None:
+            token_string = self.significant_reddit_object.post_download_naming_method
+            title = TokenParser.parse_tokens(self.post, token_string)
+        else:
+            token_string = self.significant_reddit_object.comment_naming_method
+            title = TokenParser.parse_tokens(self.comment, token_string)
         return title
 
     def make_dir_path(self):
-        token_string = self.significant_reddit_object.save_structure
-        sub_path = TokenParser.parse_tokens(self.post, token_string)
+        if self.comment is None:
+            token_string = self.significant_reddit_object.post_save_structure
+            sub_path = TokenParser.parse_tokens(self.post, token_string)
+        else:
+            token_string = self.significant_reddit_object.comment_save_structure
+            sub_path = TokenParser.parse_tokens(self.comment, token_string)
         if self.significant_reddit_object.object_type == 'USER':
             base = self.settings_manager.user_save_directory
         else:
@@ -224,7 +234,7 @@ class BaseExtractor:
             'url': self.url,
             'user': self.user.name,
             'subreddit': self.subreddit.name,
-            'post_title': self.post_title,
+            'post_title': self.post.title,
             'extracted_content_count': len(self.extracted_content),
             'extraction_failed': self.failed_extraction,
         }

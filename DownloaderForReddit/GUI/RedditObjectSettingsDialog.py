@@ -14,16 +14,24 @@ from ..Utils.TokenParser import TokenParser
 
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
+
     download_signal = pyqtSignal(int)
 
     def __init__(self, list_type, list_name, selected_object_id: int):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+        self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
         self.list_type = list_type
         self.list_name = list_name
         self.selected_object = None
+
+        geom = self.settings_manager.reddit_object_settings_dialog_geom
+        self.resize(geom['width'], geom['height'])
+        if geom['x'] != 0 and geom['y'] != 0:
+            self.move(geom['x'], geom['y'])
+        self.splitter.setSizes(self.settings_manager.reddit_object_settings_dialog_splitter_state)
 
         self.dialog_button_box.accepted.connect(self.save_and_close)
         self.dialog_button_box.rejected.connect(self.close)
@@ -57,21 +65,35 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         for value in PostSortMethod:
             self.post_sort_combo.addItem(value.display_name, value)
         for value in CommentDownload:
+            self.comment_extract_combo.addItem(value.display_name, value)
             self.comment_download_combo.addItem(value.display_name, value)
             self.comment_content_download_combo.addItem(value.display_name, value)
         for value in CommentSortMethod:
             self.comment_sort_combo.addItem(value.display_name, value)
 
-        self.download_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.download_naming_line_edit.customContextMenuRequested.connect(
-            lambda: self.path_token_context_menu(self.download_naming_line_edit))
-        self.download_naming_available_tokens_button.clicked.connect(
-            lambda: self.path_token_context_menu(self.download_naming_line_edit))
-        self.save_path_structure_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.save_path_structure_line_edit.customContextMenuRequested.connect(
-            lambda: self.path_token_context_menu(self.save_path_structure_line_edit))
-        self.save_structure_available_tokens_button.clicked.connect(
-            lambda: self.path_token_context_menu(self.save_path_structure_line_edit))
+        self.post_download_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.post_download_naming_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.post_download_naming_line_edit))
+        self.post_download_naming_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.post_download_naming_line_edit))
+
+        self.post_save_path_structure_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.post_save_path_structure_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.post_save_path_structure_line_edit))
+        self.post_save_structure_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.post_save_path_structure_line_edit))
+
+        self.comment_download_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.comment_download_naming_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.comment_download_naming_line_edit))
+        self.comment_download_naming_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.comment_download_naming_line_edit))
+
+        self.comment_save_path_structure_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.comment_save_path_structure_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.comment_save_path_structure_line_edit))
+        self.comment_save_structure_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.comment_save_path_structure_line_edit))
 
         self.post_limit_max_button.clicked.connect(
             lambda: self.post_limit_spinbox.setValue(self.post_limit_spinbox.maximum()))
@@ -102,10 +124,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.post_sort_combo.currentIndexChanged.connect(
             lambda x: setattr(self.selected_object, 'post_sort_method', self.post_sort_combo.itemData(x))
         )
-        self.download_naming_line_edit.editingFinished.connect(
-            lambda: setattr(self.selected_object, 'download_naming_method', self.download_naming_line_edit.text()))
-        self.save_path_structure_line_edit.editingFinished.connect(
-            lambda: setattr(self.selected_object, 'save_structure', self.save_path_structure_line_edit.text()))
+        self.post_download_naming_line_edit.editingFinished.connect(
+            lambda: setattr(self.selected_object, 'post_download_naming_method', self.post_download_naming_line_edit.text()))
+        self.post_save_path_structure_line_edit.editingFinished.connect(
+            lambda: setattr(self.selected_object, 'post_save_structure',
+                            self.post_save_path_structure_line_edit.text()))
+        self.comment_extract_combo.currentIndexChanged.connect(
+            lambda x: setattr(self.selected_object, 'extract_comments', self.comment_extract_combo.itemData(x))
+        )
         self.comment_download_combo.currentIndexChanged.connect(
             lambda x: setattr(self.selected_object, 'download_comments', self.comment_download_combo.itemData(x))
         )
@@ -122,6 +148,14 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         )
         self.comment_sort_combo.currentIndexChanged.connect(
             lambda x: setattr(self.selected_object, 'comment_sort_method', self.comment_sort_combo.itemData(x))
+        )
+        self.comment_download_naming_line_edit.editingFinished.connect(
+            lambda: setattr(self.selected_object, 'comment_naming_method',
+                            self.comment_download_naming_line_edit.text())
+        )
+        self.comment_save_path_structure_line_edit.editingFinished.connect(
+            lambda: setattr(self.selected_object, 'comment_save_structure',
+                            self.comment_save_path_structure_line_edit.text())
         )
 
     def setup_checkbox(self, checkbox, attribute):
@@ -195,8 +229,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.download_gifs_checkbox.setChecked(self.selected_object.download_gifs)
         self.nsfw_filter_combo.setCurrentIndex(self.nsfw_filter_combo.findData(self.selected_object.download_nsfw))
         self.post_sort_combo.setCurrentIndex(self.post_sort_combo.findData(self.selected_object.post_sort_method))
-        self.download_naming_line_edit.setText(self.selected_object.download_naming_method)
-        self.save_path_structure_line_edit.setText(self.selected_object.save_structure)
+        self.post_download_naming_line_edit.setText(self.selected_object.post_download_naming_method)
+        self.post_save_path_structure_line_edit.setText(self.selected_object.post_save_structure)
+        self.comment_extract_combo.setCurrentIndex(
+            self.comment_extract_combo.findData(self.selected_object.extract_comments))
         self.comment_download_combo.setCurrentIndex(
             self.comment_download_combo.findData(self.selected_object.download_comments))
         self.comment_content_download_combo.setCurrentIndex(
@@ -207,6 +243,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.comment_score_operator_combo.findData(self.selected_object.comment_score_limit_operator))
         self.comment_sort_combo.setCurrentIndex(
             self.comment_sort_combo.findData(self.selected_object.comment_sort_method))
+        self.comment_download_naming_line_edit.setText(self.selected_object.comment_naming_method)
+        self.comment_save_path_structure_line_edit.setText(self.selected_object.comment_save_structure)
 
     def save_and_close(self):
         self.list_model.session.commit()
@@ -218,3 +256,12 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def download(self):
         self.download_signal.emit(self.selected_object.id)
+
+    def closeEvent(self, event):
+        self.settings_manager.main_window_geom = {
+            'width': self.width(),
+            'height': self.height(),
+            'x': self.x(),
+            'y': self.y()
+        }
+        self.settings_manager.reddit_object_settings_dialog_splitter_state = self.splitter.sizes()

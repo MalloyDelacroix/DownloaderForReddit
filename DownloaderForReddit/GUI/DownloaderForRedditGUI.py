@@ -81,10 +81,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         # region Settings
         self.settings_manager = Injector.get_settings_manager()
 
-        self.resize(
-            self.settings_manager.main_window_geom['width'], self.settings_manager.main_window_geom['height']
-        )
-        self.move(self.settings_manager.main_window_geom['x'], self.settings_manager.main_window_geom['y'])
+        geom = self.settings_manager.main_window_geom
+        self.resize(geom['width'], geom['height'])
+        if geom['x'] != 0 and geom['y'] != 0:
+            self.move(geom['x'], geom['y'])
         self.horz_splitter.setSizes(self.settings_manager.horizontal_splitter_state)
         self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method

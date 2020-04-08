@@ -30,8 +30,8 @@ class SelfPostExtractor(BaseExtractor):
                 subreddit=self.subreddit,
                 post=self.post,
             )
-            content.title = self.make_title(content)
-            content.directory_path = self.make_dir_path(content)
+            content.title = self.make_title()
+            content.directory_path = self.make_dir_path()
             content.make_download_title()
             self.download_text_post(content)
             session = self.post.get_session()
@@ -42,13 +42,17 @@ class SelfPostExtractor(BaseExtractor):
     def download_text_post(self, content):
         try:
             with open(content.full_file_path, 'w') as file:
-                if content.extension == 'txt':
-                    file.write(self.post.text)
-                else:
-                    file.write(self.post.text_html)
+                text = self.get_text(content.extension)
+                file.write(text)
                 content.set_downloaded(self.download_session_id)
         except Exception as e:
             content.set_download_error('Failed to save text post', extra={'error': e})
+
+    def get_text(self, ext):
+        if ext == 'txt':
+            return self.comment.body if self.comment is not None else self.post.text
+        else:
+            return self.comment.body_html if self.comment is not None else self.post.text_html
 
     def create_dir_path(self, dir_path):
         try:
