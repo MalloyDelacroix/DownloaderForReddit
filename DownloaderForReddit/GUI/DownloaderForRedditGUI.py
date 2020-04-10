@@ -54,7 +54,6 @@ from ..version import __version__
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     stop_download_signal = QtCore.pyqtSignal()
-    add_to_download_signal = QtCore.pyqtSignal(int)
 
     def __init__(self, queue, receiver):
         """
@@ -335,21 +334,27 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         menu.exec(QtGui.QCursor.pos())
 
     def user_settings(self, user):
+        """
+        Opens the RedditObjectSettingsDialog and sets the supplied user as the selected user to display the settings
+        for.  The current user list is also taken by the dialog and the names shown in the additional objects list.
+        :param user: The user that is to be set as the currently selected user of the settings dialog.
+        """
         if user is None:
             user = self.user_list_model.reddit_objects[0]
-        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name, user.id)
+        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name, selected_object_id=user.id)
+        dialog.download_signal.connect(self.add_to_download)
         dialog.show()
         dialog.exec_()
 
     def subreddit_settings(self, subreddit):
-        # TODO: revisit this...something looks off here
         """Operates the same as the user_settings function"""
         if subreddit is None:
             subreddit = self.subreddit_list_model.reddit_objects[0]
-        ro_settings_dialog = RedditObjectSettingsDialog('SUBREDDIT', self.subreddit_list_model.list.name,
-                                                        selected_object_id=subreddit.id)
-        ro_settings_dialog.show()
-        ro_settings_dialog.exec_()
+        dialog = RedditObjectSettingsDialog('SUBREDDIT', self.subreddit_list_model.list.name,
+                                            selected_object_id=subreddit.id)
+        dialog.download_signal.connect(self.add_to_download)
+        dialog.show()
+        dialog.exec_()
 
     def open_user_download_folder(self):
         """Opens the Folder where the users downloads are saved using the default file manager"""
@@ -391,13 +396,15 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             self.stop_download_signal.emit()
 
-    def run(self):
-        self.started_download_gui_shift()
+    def run_full_download(self):
         user_id_list = self.user_list_model.get_id_list() if self.download_users_radio.isChecked() or \
                                                              self.constain_to_sub_list_radio.isChecked() else None
         sub_id_list = self.subreddit_list_model.get_id_list() if self.download_subreddits_radio.isChecked() or \
                                                                  self.constain_to_sub_list_radio.isChecked() else None
+        self.run(user_id_list, sub_id_list)
 
+    def run(self, user_id_list, sub_id_list):
+        self.started_download_gui_shift()
         self.download_runner = DownloadRunner(user_id_list, sub_id_list)
         self.stop_download_signal.connect(self.download_runner.stop_download)
         self.thread = QtCore.QThread()
@@ -412,6 +419,27 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.thread.finished.connect(self.finished_download_gui_shift)
         self.thread.start()
         self.logger.info('Download thread started')
+
+    def add_to_download(self, add_list):
+        """
+        Adds a list of reddit object id's to a current download session if there is one active, otherwise starts a
+        download session with the supplied id's.
+        :param add_list: A list of named tuples holding the 'id' and 'object_type' of reddit objects that are to be
+                         downloaded.
+        :type add_list: list
+        """
+        if self.running:
+            for pair in add_list:
+                self.download_runner.reddit_object_queue.put(pair)
+        else:
+            dl_type = add_list[0].object_type
+            id_list = []
+            for pair in add_list:
+                id_list.append(pair.id)
+            if dl_type == 'USER':
+                self.run(user_id_list=id_list, sub_id_list=None)
+            else:
+                self.run(user_id_list=None, sub_id_list=id_list)
 
     def handle_failed_download_object(self, failed_post):
         """

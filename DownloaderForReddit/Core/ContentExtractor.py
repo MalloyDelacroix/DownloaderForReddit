@@ -31,65 +31,65 @@ class ContentExtractor:
         self.db = Injector.get_database_handler()
         self.comment_filter = CommentFilter()
 
-        # self.thread_count = self.settings_manager.extraction_thread_count
-        # self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
+        self.thread_count = self.settings_manager.extraction_thread_count
+        self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
         self.hold = False
         self.submit_hold = False
         self.continue_run = True
 
     @property
     def running(self):
-        # if self.hold:
-        #     return not self.executor._work_queue.empty()
-        # return True
-        return not self.hold
-
-    def run(self):
-        self.logger.debug('Content extractor running')
-        while self.continue_run:
-            item = self.submission_queue.get()
-            if item is not None:
-                if item == 'HOLD':
-                    self.hold = True
-                    self.download_queue.put('HOLD')
-                elif item == 'RELEASE_HOLD':
-                    self.hold = False
-                    self.download_queue.put('RELEASE_HOLD')
-                else:
-                    submission = item[0]
-                    siginificant_id = item[1]
-                    self.handle_submission(submission, siginificant_id)
-            else:
-                self.continue_run = False
-        self.download_queue.put(None)
-        self.logger.debug('Content extractor exiting')
+        if self.hold:
+            return not self.executor._work_queue.empty()
+        return True
+        # return not self.hold
 
     # def run(self):
     #     self.logger.debug('Content extractor running')
     #     while self.continue_run:
-    #         try:
-    #             item = self.submission_queue.get(timeout=2)
-    #             if item is not None:
-    #                 if item == 'HOLD':
-    #                     self.hold = True
-    #                     self.submit_hold = True
-    #                 elif item == 'RELEASE_HOLD':
-    #                     self.hold = False
-    #                     self.download_queue.put('RELEASE_HOLD')
-    #                 else:
-    #                     submission = item[0]
-    #                     significant_id = item[1]
-    #                     self.executor.submit(self.handle_submission, submission=submission,
-    #                                          significant_id=significant_id)
-    #             else:
-    #                 self.continue_run = False
-    #         except Empty:
-    #             if self.submit_hold and not self.running:
+    #         item = self.submission_queue.get()
+    #         if item is not None:
+    #             if item == 'HOLD':
+    #                 self.hold = True
     #                 self.download_queue.put('HOLD')
-    #                 self.submit_hold = False
-    #     self.executor.shutdown(wait=True)
+    #             elif item == 'RELEASE_HOLD':
+    #                 self.hold = False
+    #                 self.download_queue.put('RELEASE_HOLD')
+    #             else:
+    #                 submission = item[0]
+    #                 siginificant_id = item[1]
+    #                 self.handle_submission(submission, siginificant_id)
+    #         else:
+    #             self.continue_run = False
     #     self.download_queue.put(None)
     #     self.logger.debug('Content extractor exiting')
+
+    def run(self):
+        self.logger.debug('Content extractor running')
+        while self.continue_run:
+            try:
+                item = self.submission_queue.get(timeout=2)
+                if item is not None:
+                    if item == 'HOLD':
+                        self.hold = True
+                        self.submit_hold = True
+                    elif item == 'RELEASE_HOLD':
+                        self.hold = False
+                        self.download_queue.put('RELEASE_HOLD')
+                    else:
+                        submission = item[0]
+                        significant_id = item[1]
+                        self.executor.submit(self.handle_submission, submission=submission,
+                                             significant_id=significant_id)
+                else:
+                    self.continue_run = False
+            except Empty:
+                if self.submit_hold and not self.running:
+                    self.download_queue.put('HOLD')
+                    self.submit_hold = False
+        self.executor.shutdown(wait=True)
+        self.download_queue.put(None)
+        self.logger.debug('Content extractor exiting')
 
     def handle_submission(self, submission, significant_id):
         with self.db.get_scoped_session() as session:
@@ -265,7 +265,6 @@ class ContentExtractor:
 
     def create_comment(self, praw_comment: PrawComment, post: Post, session: Session,
                        parent_comment_id: Optional[int] = None):
-        comment = None
         if self.check_duplicate_comment(praw_comment.id, session):
             author = self.get_author(praw_comment, session)
             subreddit = self.get_subreddit(praw_comment, session)
@@ -283,10 +282,11 @@ class ContentExtractor:
             )
             session.add(comment)
             session.commit()
-        return comment
+            return comment
+        return None
 
     def check_duplicate_comment(self, comment_id: str, session: Session):
-        return session.query(Comment.reddit_id == comment_id).scalar() is None
+        return session.query(Comment).filter(Comment.reddit_id == comment_id).scalar() is None
 
     def get_author(self, praw_object: Union[Submission, PrawComment], session: Session):
         try:

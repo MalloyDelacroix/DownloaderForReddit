@@ -28,11 +28,14 @@ import subprocess
 import shutil
 import datetime
 import logging
+import re
 
 from ..Logging import LogUtils
 
 
 logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+
+FORBIDDEN_CHARS = '"*\\/\'.|?:<>'
 
 
 def open_in_system(item):
@@ -47,6 +50,25 @@ def open_in_system(item):
     else:
         opener = 'open' if sys.platform == 'darwin' else 'xdg-open'
         subprocess.call([opener, item])
+
+
+def clean_path(path):
+    """
+    Cleans a path of all forbidden characters and shortens parts to a system appropriate length if they are too long.
+    :param path: The path that is to be cleaned.
+    :return:  A clean file path that can be used by the system.
+    """
+    return '/'.join(__clean(part) for part in re.split('[\\\\/]+', path))
+
+
+def __clean(part):
+    # For some reason the file system (Windows at least) is having trouble saving files that are over 180ish
+    # characters.  I'm not sure why this is, as the file name limit should be around 240. But either way, this
+    # method has been adapted to work with the results that I am consistently getting.
+    clean_part = ''.join([x if x not in FORBIDDEN_CHARS else '#' for x in part])
+    if len(clean_part) >= 176:
+        clean_part = clean_part[:170] + '...'
+    return clean_part
 
 
 def create_directory(path):

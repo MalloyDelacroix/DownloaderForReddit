@@ -15,7 +15,7 @@ from ..Utils.TokenParser import TokenParser
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
 
-    download_signal = pyqtSignal(int)
+    download_signal = pyqtSignal(tuple)
 
     def __init__(self, list_type, list_name, selected_object_id: int):
         QtWidgets.QDialog.__init__(self)

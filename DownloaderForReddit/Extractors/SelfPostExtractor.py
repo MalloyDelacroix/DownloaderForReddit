@@ -11,10 +11,11 @@ class SelfPostExtractor(BaseExtractor):
 
     def extract_content(self):
         try:
-            ext = self.settings_manager.self_post_file_format
+            ext = self.significant_reddit_object.self_post_file_format
             directory = self.make_dir_path()
-            self.create_dir_path(directory)
-            self.make_content(self.url, ext)
+            if self.check_duplicate_content(self.url):
+                self.create_dir_path(directory)
+                self.make_content(self.url, ext)
         except Exception as e:
             self.failed_extraction = True
             self.failed_extraction_message = f'Failed to save self post.  ERROR: {e}'
@@ -22,22 +23,21 @@ class SelfPostExtractor(BaseExtractor):
                               extra={'url': self.url, 'user': self.user, 'subreddit': self.subreddit}, exc_info=True)
 
     def make_content(self, url, extension, count=None, name_modifier=None):
-        if self.check_duplicate_content(url):
-            content = Content(
-                extension=extension,
-                url=url,
-                user=self.user,
-                subreddit=self.subreddit,
-                post=self.post,
-            )
-            content.title = self.make_title()
-            content.directory_path = self.make_dir_path()
-            content.make_download_title()
-            self.download_text_post(content)
-            session = self.post.get_session()
-            session.add(content)
-            session.commit()
-            return content
+        content = Content(
+            title=self.make_title(),
+            extension=extension,
+            url=url,
+            user=self.user,
+            subreddit=self.subreddit,
+            post=self.post,
+            directory_path=self.make_dir_path()
+        )
+        content.make_download_title()
+        self.download_text_post(content)
+        session = self.post.get_session()
+        session.add(content)
+        session.commit()
+        return content
 
     def download_text_post(self, content):
         try:

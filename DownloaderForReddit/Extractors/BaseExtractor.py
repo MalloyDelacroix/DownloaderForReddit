@@ -27,7 +27,7 @@ import requests
 import logging
 
 from ..Database.Models import Content, Post
-from ..Utils import Injector
+from ..Utils import Injector, SystemUtil
 from ..Utils.TokenParser import TokenParser
 from ..Messaging.Message import Message
 
@@ -145,6 +145,7 @@ class BaseExtractor:
             count = f' {count}' if count and self.use_count else ''
             title = f'{self.make_title()}{name_modifier}{count}'
             directory = self.make_dir_path()
+            comment_id = self.comment.id if self.comment is not None else None
             content = Content(
                 title=title,
                 extension=extension,
@@ -152,7 +153,8 @@ class BaseExtractor:
                 user=self.user,
                 subreddit=self.subreddit,
                 post=self.post,
-                directory_path=directory
+                directory_path=directory,
+                comment_id=comment_id
             )
             session = self.post.get_session()
             session.add(content)
@@ -161,7 +163,7 @@ class BaseExtractor:
             return content
         return None
 
-    def make_title(self):
+    def make_title(self) -> str:
         if self.comment is None:
             token_string = self.significant_reddit_object.post_download_naming_method
             title = TokenParser.parse_tokens(self.post, token_string)
@@ -170,7 +172,7 @@ class BaseExtractor:
             title = TokenParser.parse_tokens(self.comment, token_string)
         return title
 
-    def make_dir_path(self):
+    def make_dir_path(self) -> str:
         if self.comment is None:
             token_string = self.significant_reddit_object.post_save_structure
             sub_path = TokenParser.parse_tokens(self.post, token_string)
@@ -181,7 +183,8 @@ class BaseExtractor:
             base = self.settings_manager.user_save_directory
         else:
             base = self.settings_manager.subreddit_save_directory
-        return os.path.join(base, sub_path)
+        clean_sub_path = SystemUtil.clean_path(sub_path)
+        return os.path.join(base, clean_sub_path)
 
     def check_duplicate_content(self, url: str) -> bool:
         """
