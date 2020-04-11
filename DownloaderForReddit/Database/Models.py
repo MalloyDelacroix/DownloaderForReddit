@@ -93,7 +93,7 @@ class RedditObject(BaseModel):
     post_download_naming_method = Column(String, default='%[title]')
     post_save_structure = Column(String, default='%[author_name]')
     comment_naming_method = Column(String, default='%[author_name]-comment')
-    comment_save_structure = Column(String, default='Comments/%[post_id]')
+    comment_save_structure = Column(String, default='%[post_author_name]/Comments/%[post_title]')
     new = Column(Boolean, default=True)
     lists = relationship(RedditObjectList, secondary='reddit_object_list_association', lazy='dynamic')
 
