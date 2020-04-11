@@ -392,7 +392,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def button_assignment(self):
         """Assigns what the download button does depending on if the downloader is currently running"""
         if not self.running:
-            self.run()
+            self.run_full_download()
         else:
             self.stop_download_signal.emit()
 
