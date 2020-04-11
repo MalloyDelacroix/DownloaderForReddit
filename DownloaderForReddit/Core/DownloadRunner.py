@@ -10,7 +10,7 @@ from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core.ContentExtractor import ContentExtractor
 from ..Core.Downloader import Downloader
-from ..Database.Models import DownloadSession, User, Subreddit, Post, Content
+from ..Database.Models import DownloadSession, User, Subreddit, Post, Content, Comment
 from ..Messaging.Message import Message
 
 
@@ -299,20 +299,25 @@ class DownloadRunner(QObject):
         return download_session
 
     def finish_messages(self, dl_session, session):
-        downloaded_post_count = session.query(Post.id).filter(Post.download_session == dl_session).count()
-        downloaded_content_count = session.query(Content.id).filter(Content.download_session == dl_session).count()
+        extracted_post_count = session.query(Post.id).filter(Post.download_session_id == dl_session.id).count()
+        extracted_comment_count = \
+            session.query(Comment.id).filter(Comment.download_session_id == dl_session.id).count()
+        downloaded_content_count = \
+            session.query(Content.id).filter(Content.download_session_id == dl_session.id).count()
         downloaded_object_count = \
             session.query(Post.significant_reddit_object_id).filter(Post.download_session == dl_session) \
             .distinct().count()
         self.logger.info('Download complete', extra={
             'download_time': dl_session.duration,
             'downloaded_reddit_object_count': downloaded_object_count,
-            'extraction_count': downloaded_post_count,
+            'post_extraction_count': extracted_post_count,
+            'comment_extraction_count': extracted_comment_count,
             'download_count': downloaded_content_count,
         })
         message = f'\nFinished\nRun Time: {dl_session.duration}\n' \
                   f'Downloaded {self.download_type.lower()}s: {downloaded_object_count}\n' \
-                  f'Extraction Count: {downloaded_post_count}\n' \
+                  f'Post Count: {extracted_post_count}\n' \
+                  f'Comment Count: {extracted_comment_count}\n' \
                   f'Download Count: {downloaded_content_count}'
         Message.send_text(message)
 
