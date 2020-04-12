@@ -2,12 +2,12 @@ import logging
 from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QFontComboBox, QComboBox, QActionGroup,
                              QWidget, QHBoxLayout, QLabel)
 from PyQt5.QtCore import QSize, Qt, QEvent
-from PyQt5.QtGui import QCursor, QFont
+from PyQt5.QtGui import QCursor, QFont, QStandardItemModel
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
 from ..GUI_Resources.DownloadSessionsDialog_auto import Ui_DownloadSessionDialog
 from ..ViewModels.DownloadSessionViewModels import (DownloadSessionModel, RedditObjectModel, PostTableModel,
-                                                    ContentListView)
+                                                    ContentListModel, CommentTreeModel)
 from ..Utils import Injector, SystemUtil
 
 
@@ -52,8 +52,14 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.post_table_view.setModel(self.post_model)
 
         self.set_content_icon_size()
-        self.content_model = ContentListView()
+        self.content_model = ContentListModel()
         self.content_list_view.setModel(self.content_model)
+
+        # self.comment_tree_model = CommentTreeModel()
+        self.comment_tree_model = QStandardItemModel()
+        self.comment_headers = ['id', 'body', 'score', 'date_posted', 'author', 'subreddit']
+        self.comment_tree_model.setHorizontalHeaderLabels(self.comment_headers)
+        self.comment_tree_view.setModel(self.comment_tree_model)
 
         self.reddit_object_widget.setVisible(self.show_reddit_objects_checkbox.isChecked())
         self.post_widget.setVisible(self.show_posts_checkbox.isChecked())
@@ -342,7 +348,38 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             pass
 
     def set_comment_model_data(self):
-        pass
+        if self.show_comments_checkbox.isChecked():
+            self.comment_tree_view.clearSelection()
+            query = self.session.query(Comment).filter(Comment.download_session_id == self.current_download_session.id)
+            if self.show_posts_checkbox.isChecked():
+                data = query.filter(Comment.post_id == self.current_post.id)
+            elif self.show_reddit_objects_checkbox.isChecked():
+                data = query.join(Post).filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
+            else:
+                data = query
+            top_comments = data.filter(Comment.parent_id is None).order_by(Comment.id).all()
+            root = QStandardItemModel(None)
+            for comment in top_comments:
+                self.set_tree_data(comment, root)
+            self.comment_tree_view.expandAll()
+
+    def set_tree_data(self, comment, parent=None):
+        self.comment_tree_model.setRowCount(0)
+        if parent is None:
+            parent = self.comment_tree_model.invisibleRootItem()
+        attrs = self.get_comment_attributes(comment)
+        parent.appendRow(attrs)
+        for sub_comment in comment.children:
+            self.set_tree_data(sub_comment, attrs[0])
+
+    def get_comment_attributes(self, comment) -> list:
+        attrs = []
+        for x in self.comment_headers:
+            value = getattr(comment, x)
+            if x in ('author', 'subreddit'):
+                value = value.name
+            attrs.append(QStandardItemModel(str(getattr(comment, value))))
+        return attrs
 
     def resize_post_table_columns(self):
         for col in self.post_model.headers:

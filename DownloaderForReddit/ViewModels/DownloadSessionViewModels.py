@@ -104,7 +104,7 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         self.dataChanged.emit(first, second)
 
 
-class ContentListView(QAbstractListModel, CustomItemModel):
+class ContentListModel(QAbstractListModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
@@ -138,3 +138,107 @@ class ContentListView(QAbstractListModel, CustomItemModel):
             pixmap = QPixmap(content.full_file_path).scaled(QSize(500, 500), Qt.KeepAspectRatio)
             self.pixmap_map[content.id] = pixmap
         return QIcon(pixmap)
+
+
+class CommentTreeModel(QAbstractItemModel, CustomItemModel):
+
+    def __init__(self):
+        super().__init__()
+        self.headers = ['id', 'body', 'score', 'date_posted', 'author', 'subreddit']
+        self.top_level_comments = []
+
+    def rowCount(self, parent: QModelIndex) -> int:
+        return len(self.top_level_comments)
+
+    def columnCount(self, parent: QModelIndex) -> int:
+        return sum(x.children.count() for x in self.top_level_comments)
+
+    def data(self, index: QModelIndex, role=None):
+        if role == Qt.DisplayRole:
+            pass
+
+
+
+# class CommentTreeModel(QAbstractItemModel, CustomItemModel):
+#
+#     def __init__(self):
+#         super().__init__()
+#         self.headers = ['id', 'body', 'score', 'date_posted', 'author', 'subreddit']
+#         self.top_level_comments = []
+#
+#     def set_data(self, top_level_comments):
+#         self.top_level_comments = top_level_comments
+#
+#     def rowCount(self, index):
+#         if index.isValid():
+#             return len(index.internalPointer().children)
+#         return len(self.top_level_comments)
+#
+#     # def index(self, row, column, parent=None):
+#     #     if not parent or not parent.isValid():
+#     #         parent_item = self.root_item
+#     #     else:
+#     #         parent_item = parent.internalPointer()
+#     #
+#     #     if not self.hasIndex(row, column, parent):
+#     #         return QModelIndex()
+#     #     child = parent.child(row)
+#     #     if child:
+#     #         return self.createIndex(row, column, child)
+#     #     else:
+#     #         return QModelIndex()
+#
+#     def parent(self, index):
+#         if index.isValid():
+#             parent = index.internalPointer().parent()
+#             if parent:
+#                 return self.createIndex(parent.row(), 0, parent)
+#         return QModelIndex()
+#
+#     def columnCount(self, index):
+#         if index.isValid():
+#             return index.internalPointer().columnCount()
+#         return self.root_item.columnCount()
+#
+#     def data(self, index, role=None):
+#         if not index.isValid() or role != Qt.DisplayRole:
+#             return None
+#         node = index.internalPointer()
+#         return node.data(index.column())
+
+
+class TreeNode:
+
+    def __init__(self, data):
+        self._data = data or [None]
+
+        self._column_count = len(self._data)
+        self._children = []
+        self._parent = None
+        self._row = 0
+
+    def data(self, column):
+        if 0 <= column < len(self._data):
+            return self._data[column]
+
+    def columnCount(self):
+        return self._column_count
+
+    def childCount(self):
+        return len(self._children)
+
+    def child(self, row):
+        if 0 <= row < len(self._data):
+            return self._children[row]
+
+    def parent(self):
+        return self._parent
+
+    def row(self):
+        return self._row
+
+    def addChild(self, child):
+        child._parent = self
+        child._row = len(self._children)
+        self._children.append(child)
+        self._column_count = max(child.columnCount(), self._column_count)
