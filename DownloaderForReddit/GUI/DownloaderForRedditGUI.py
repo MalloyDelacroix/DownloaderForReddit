@@ -205,6 +205,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         selection_list = [self.user_list_model.data(index, 'RAW_DATA') for index in indices]
         return selection_list
 
+    def get_selected_user_ids(self):
+        return [x.id for x in self.get_selected_users()]
+
     def get_selected_single_subreddit(self):
         """See get_selected_single_user"""
         indices = self.subreddit_list_view.selectedIndexes()
@@ -216,8 +219,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def get_selected_subreddits(self):
         indices = self.subreddit_list_view.selectedIndexes()
         selection_list = [self.subreddit_list_model.data(index, 'RAW_DATA') for index in indices]
-        print(selection_list)
         return selection_list
+
+    def get_selected_subreddit_ids(self):
+        return [x.id for x in self.get_selected_subreddits()]
 
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
@@ -243,7 +248,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
             user_menu.addSeparator()
             download_single = user_menu.addAction('Download %s' % user.name)
-            download_single.triggered.connect(lambda: self.run_single_user((user, None)))
+            download_single.triggered.connect(lambda: self.add_to_download(*self.get_selected_user_ids()))
             if self.running:
                 download_single.setEnabled(False)
 
@@ -289,7 +294,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             toggle_download_enabled.triggered.connect(subreddit.toggle_enable_download)
             subreddit_menu.addSeparator()
             download_single = subreddit_menu.addAction('Download %s' % subreddit.name)
-            download_single.triggered.connect(lambda: self.run_single_subreddit((subreddit, None)))
+            download_single.triggered.connect(lambda: self.add_to_download(*self.get_selected_subreddit_ids()))
             if self.running:
                 download_single.setEnabled(False)
 
@@ -403,9 +408,9 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
                                                                  self.constain_to_sub_list_radio.isChecked() else None
         self.run(user_id_list, sub_id_list)
 
-    def run(self, user_id_list, sub_id_list):
+    def run(self, user_id_list, sub_id_list, reddit_object_id_list=None):
         self.started_download_gui_shift()
-        self.download_runner = DownloadRunner(user_id_list, sub_id_list)
+        self.download_runner = DownloadRunner(user_id_list, sub_id_list, reddit_object_id_list)
         self.stop_download_signal.connect(self.download_runner.stop_download)
         self.thread = QtCore.QThread()
         self.download_runner.moveToThread(self.thread)
@@ -420,26 +425,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.thread.start()
         self.logger.info('Download thread started')
 
-    def add_to_download(self, add_list):
+    def add_to_download(self, *args):
         """
         Adds a list of reddit object id's to a current download session if there is one active, otherwise starts a
         download session with the supplied id's.
-        :param add_list: A list of named tuples holding the 'id' and 'object_type' of reddit objects that are to be
-                         downloaded.
-        :type add_list: list
+        :param args: Reddit object id's that are to be downloaded
         """
         if self.running:
-            for pair in add_list:
-                self.download_runner.reddit_object_queue.put(pair)
+            for ro_id in args:
+                self.download_runner.reddit_object_queue.put(ro_id)
         else:
-            dl_type = add_list[0].object_type
-            id_list = []
-            for pair in add_list:
-                id_list.append(pair.id)
-            if dl_type == 'USER':
-                self.run(user_id_list=id_list, sub_id_list=None)
-            else:
-                self.run(user_id_list=None, sub_id_list=id_list)
+            self.run(user_id_list=None, sub_id_list=None, reddit_object_id_list=args)
 
     def handle_failed_download_object(self, failed_post):
         """

@@ -10,7 +10,7 @@ from ..Utils import Injector, RedditUtils, VideoMerger
 from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core.ContentExtractor import ContentExtractor
 from ..Core.Downloader import Downloader
-from ..Database.Models import DownloadSession, User, Subreddit, Post, Content, Comment
+from ..Database.Models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
 from ..Messaging.Message import Message
 
 
@@ -24,7 +24,7 @@ class DownloadRunner(QObject):
     update_progress_bar_signal = pyqtSignal()
     stop = pyqtSignal()
 
-    def __init__(self, user_id_list=None, subreddit_id_list=None, perpetual=False):
+    def __init__(self, user_id_list=None, subreddit_id_list=None, reddit_object_id_list=None, perpetual=False):
         """
         Initializes the download runner with the settings needed to perform the download session.
         :param user_id_list: The list user id's queried from the database which is to be downloaded.  None indicates a
@@ -45,7 +45,7 @@ class DownloadRunner(QObject):
         self.submission_filter = SubmissionFilter()
         self.continue_run = True
         self.filter_subreddits = False
-        self.download_type = 'USER' if user_id_list is not None else 'SUBREDDIT'
+        self.download_type = 'USER' if user_id_list is not None else 'SUBREDDIT'  # TODO: set for ro download
         self.validated_subreddits = []
 
         self.submission_queue = Queue(maxsize=-1)
@@ -57,6 +57,7 @@ class DownloadRunner(QObject):
 
         self.user_id_list = user_id_list
         self.subreddit_id_list = subreddit_id_list
+        self.reddit_object_id_list = reddit_object_id_list
         self.perpetual = perpetual
         self.failed_connection_attempts = 0
         self.download_session_id = None
@@ -155,15 +156,19 @@ class DownloadRunner(QObject):
         self.download_thread.start()
 
     def run_download(self):
-        if self.user_id_list is not None and self.subreddit_id_list is not None:
-            self.filter_subreddits = True
-            self.validate_subreddit_list()
-        if self.user_id_list is not None:
-            for user_id in self.user_id_list:
-                self.get_user_submissions(user_id)
+        if self.reddit_object_id_list:
+            for ro_id in self.reddit_object_id_list:
+                self.get_reddit_object_submissions(ro_id)
         else:
-            for subreddit_id in self.subreddit_id_list:
-                self.get_subreddit_submissions(subreddit_id)
+            if self.user_id_list is not None and self.subreddit_id_list is not None:
+                self.filter_subreddits = True
+                self.validate_subreddit_list()
+            if self.user_id_list is not None:
+                for user_id in self.user_id_list:
+                    self.get_user_submissions(user_id)
+            else:
+                for subreddit_id in self.subreddit_id_list:
+                    self.get_subreddit_submissions(subreddit_id)
 
     def validate_subreddit_list(self):
         with self.db.get_scoped_session() as session:
@@ -175,37 +180,54 @@ class DownloadRunner(QObject):
                 else:
                     subreddit.set_inactive()
 
-    def get_user_submissions(self, user_id):
+    def get_reddit_object_submissions(self, reddit_object_id):
+        """
+        Takes a RedditObject id and then calls the appropriate method to get submissions for the object depending on
+        what type of reddit object it is (user or subreddit)
+        :param reddit_object_id: The id of the reddit object to be downloaded.
+        """
         with self.db.get_scoped_session() as session:
-            user = session.query(User).get(user_id)
-            redditor = self.validate_user(user)
-
-            if redditor is not None:
-                submissions = self.get_submissions(redditor, user)
-                date_limit = 0
-                for submission in submissions:
-                    if submission.created > date_limit:
-                        date_limit = submission.created
-                    self.submission_queue.put((submission, user_id))
-                user.set_date_limit(date_limit)  # date limit modified after submissions are extracted
+            object_type = session.query(RedditObject.object_type).filter(RedditObject.id == reddit_object_id).first()
+            if object_type[0] == 'USER':
+                self.get_user_submissions(reddit_object_id, session=session)
             else:
-                user.set_inactive()
+                self.get_subreddit_submissions(reddit_object_id, session=session)
 
-    def get_subreddit_submissions(self, subreddit_id):
-        with self.db.get_scoped_session() as session:
-            subreddit = session.query(Subreddit).get(subreddit_id)
-            sub = self.validate_subreddit(subreddit)
+    def get_user_submissions(self, user_id, session=None):
+        if session is None:
+            with self.db.get_scoped_session() as session:
+                self.get_user_submissions(user_id, session=session)
+        user = session.query(User).get(user_id)
+        redditor = self.validate_user(user)
 
-            if sub is not None:
-                submissions = self.get_submissions(sub, subreddit)
-                date_limit = 0
-                for submission in submissions:
-                    if submission.created > date_limit:
-                        date_limit = submission.created
-                    self.submission_queue.put((submission, subreddit_id))
-                subreddit.set_date_limit(date_limit)
-            else:
-                subreddit.set_inactive()
+        if redditor is not None:
+            submissions = self.get_submissions(redditor, user)
+            date_limit = 0
+            for submission in submissions:
+                if submission.created > date_limit:
+                    date_limit = submission.created
+                self.submission_queue.put((submission, user_id))
+            user.set_date_limit(date_limit)  # date limit modified after submissions are extracted
+        else:
+            user.set_inactive()
+
+    def get_subreddit_submissions(self, subreddit_id, session=None):
+        if session is None:
+            with self.db.get_scoped_session() as session:
+                self.get_subreddit_submissions(subreddit_id, session=session)
+        subreddit = session.query(Subreddit).get(subreddit_id)
+        sub = self.validate_subreddit(subreddit)
+
+        if sub is not None:
+            submissions = self.get_submissions(sub, subreddit)
+            date_limit = 0
+            for submission in submissions:
+                if submission.created > date_limit:
+                    date_limit = submission.created
+                self.submission_queue.put((submission, subreddit_id))
+            subreddit.set_date_limit(date_limit)
+        else:
+            subreddit.set_inactive()
 
     def get_submissions(self, praw_object, reddit_object):
         """
@@ -266,15 +288,10 @@ class DownloadRunner(QObject):
         self.submission_queue.put('HOLD')
         while self.extractor.running or self.downloader.running:
             try:
-                reddit_object_tuple = self.reddit_object_queue.get(timeout=1)
-                if reddit_object_tuple is not None:
-                    ro_id = reddit_object_tuple[0]
-                    ro_type = reddit_object_tuple[1]
+                reddit_object_id = self.reddit_object_queue.get(timeout=1)
+                if reddit_object_id is not None:
                     self.submission_queue.put('RELEASE_HOLD')
-                    if ro_type == 'USER':
-                        self.get_user_submissions(ro_id)
-                    else:
-                        self.get_subreddit_submissions(ro_id)
+                    self.get_reddit_object_submissions(reddit_object_id)
                     self.submission_queue.put('HOLD')  # reapply holds after new submissions added to queue
             except Empty:
                 pass

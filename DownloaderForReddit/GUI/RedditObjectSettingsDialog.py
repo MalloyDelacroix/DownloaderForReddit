@@ -15,7 +15,7 @@ from ..Utils.TokenParser import TokenParser
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
 
-    download_signal = pyqtSignal(tuple)
+    download_signal = pyqtSignal(int)
 
     def __init__(self, list_type, list_name, selected_object_id: int):
         QtWidgets.QDialog.__init__(self)
@@ -47,6 +47,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.selected_object = self.list_model.data(index, 'RAW_DATA')
         self.reddit_objects_list_view.setCurrentIndex(index)
 
+        self.download_button.clicked.connect(self.download)
+        self.download_button.setToolTip(f'Save and download this {self.list_type.lower()}')
         self.setup_widgets()
         self.sync_all()
         self.connect_edit_widgets()
@@ -255,6 +257,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.sync_all()
 
     def download(self):
+        self.list_model.session.commit()
         self.download_signal.emit(self.selected_object.id)
 
     def closeEvent(self, event):
