@@ -41,7 +41,7 @@ class SelfPostExtractor(BaseExtractor):
 
     def download_text_post(self, content):
         try:
-            with open(content.full_file_path, 'w') as file:
+            with open(content.full_file_path, 'w', encoding='utf-8') as file:
                 text = self.get_text(content.extension)
                 file.write(text)
                 content.set_downloaded(self.download_session_id)

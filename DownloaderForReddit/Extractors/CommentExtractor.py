@@ -28,7 +28,7 @@ class CommentExtractor(SelfPostExtractor):
         try:
             self.create_dir_path(dir_path)
             path = os.path.join(dir_path, title) + f'.{extension}'
-            with open(path, 'w') as file:
+            with open(path, 'w', encoding='utf-8') as file:
                 text = self.get_text(extension)
                 file.write(text)
         except:
