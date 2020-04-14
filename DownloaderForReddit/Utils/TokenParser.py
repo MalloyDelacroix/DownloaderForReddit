@@ -17,7 +17,7 @@ class TokenParser:
         'subreddit_reddit_id': lambda x: TokenParser.tokenize(x, 'subreddit.reddit_id'),
         'post_id': lambda x: TokenParser.tokenize(x, 'post.id', 'id'),
         'post_title': lambda x: TokenParser.tokenize(x, 'post.title', 'title'),
-        'post_short_title': lambda x:TokenParser.tokenize(x, 'post.short_title', 'short_title'),
+        'post_short_title': lambda x: TokenParser.tokenize(x, 'post.short_title', 'short_title'),
         'post_author_name': lambda x: TokenParser.tokenize(x, 'post.author.name', 'author.name'),
         'post_author_id': lambda x: TokenParser.tokenize(x, 'post.author.id', 'author.id'),
         'post_subreddit_name': lambda x: TokenParser.tokenize(x, 'post.subreddit.name', 'subreddit.name'),
