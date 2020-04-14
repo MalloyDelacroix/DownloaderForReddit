@@ -361,6 +361,22 @@ class Comment(BaseModel):
     def __str__(self):
         return f'Comment: {self.id}'
 
+    @property
+    def date_posted_display(self):
+        return self.get_display_date(self.date_posted)
+
+    @property
+    def score_display(self):
+        return '{:,}'.format(self.score)
+
+    @property
+    def post_title(self):
+        return self.post.title
+
+    @property
+    def short_post_title(self):
+        return self.post.short_title
+
     def set_extracted(self):
         self.extracted = True
         self.extraction_date = datetime.now()
