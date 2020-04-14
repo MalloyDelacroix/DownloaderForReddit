@@ -3,8 +3,12 @@ from operator import attrgetter
 from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant
 from PyQt5.QtGui import QPixmap, QIcon
 
+from ..Utils import Injector
+
 
 class CustomItemModel:
+
+    settings_manager = Injector.get_settings_manager()
 
     def refresh(self):
         """
@@ -145,7 +149,7 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
-        self.headers = ['author', 'body', 'score', 'date_posted']
+        self.headers = ['author', 'id', 'subreddit', 'body', 'body_html', 'score', 'date_posted', 'reddit_id']
         self.top_level_comments = []
         self.root = TreeItem(None, None)
 
@@ -223,11 +227,22 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
 
 class TreeItem:
 
+    header_map = {
+        'author': lambda x: x.author.name,
+        'id': lambda x: x.id,
+        'subreddit': lambda x: x.subreddit.name,
+        'body': lambda x: x.body,
+        'body_html': lambda x: x.body_html,
+        'score': lambda x: x.score,
+        'date_posted': lambda x: x.date_posted_display,
+        'reddit_id': lambda x: x.reddit_id,
+    }
+
     def __init__(self, comment, parent):
         self.comment = comment
         self.parent = parent
         self.children = []
-        self.headers = ['author', 'body', 'score', 'date_posted']
+        self.headers = ['author', 'id', 'subreddit', 'body', 'body_html', 'score', 'date_posted', 'reddit_id']
 
     def clear(self):
         for child in self.children:
@@ -248,20 +263,10 @@ class TreeItem:
 
     def data(self, column):
         if self.comment is None:
-            return self.headers[column]
+            return QVariant(self.headers[column])
         else:
             header = self.headers[column]
-            return self.get_attr(header)
-
-    def get_attr(self, header):
-        header_map = {
-            'author': lambda x: x.author.name,
-            'subreddit': lambda x: x.subreddit.name,
-            'body': lambda x: x.body,
-            'score': lambda x: x.score,
-            'date_posted': lambda x: x.date_posted_display,
-        }
-        return header_map[header](self.comment)
+            return self.header_map[header](self.comment)
 
     def row(self):
         if self.parent:

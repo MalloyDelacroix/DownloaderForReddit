@@ -84,19 +84,27 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.download_session_list_view.customContextMenuRequested.connect(self.download_session_view_context_menu)
 
-        headers = self.post_table_view.horizontalHeader()
-        headers.setContextMenuPolicy(Qt.CustomContextMenu)
-        headers.customContextMenuRequested.connect(self.post_headers_context_menu)
-        headers.setSectionsMovable(True)
+        post_headers = self.post_table_view.horizontalHeader()
+        post_headers.setContextMenuPolicy(Qt.CustomContextMenu)
+        post_headers.customContextMenuRequested.connect(self.post_headers_context_menu)
+        post_headers.setSectionsMovable(True)
         for key, value in self.settings_manager.dls_post_table_headers.items():
             index = self.post_model.headers.index(key)
-            headers.setSectionHidden(index, not value)
+            post_headers.setSectionHidden(index, not value)
 
         self.post_text_browser.setContextMenuPolicy(Qt.CustomContextMenu)
         self.post_text_browser.customContextMenuRequested.connect(self.post_text_browser_context_menu)
 
         self.content_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.content_list_view.customContextMenuRequested.connect(self.content_view_context_menu)
+
+        comment_headers = self.comment_tree_view.header()
+        comment_headers.setSectionsMovable(True)
+        comment_headers.setContextMenuPolicy(Qt.CustomContextMenu)
+        comment_headers.customContextMenuRequested.connect(self.comment_header_context_menu)
+        for key, value in self.settings_manager.dls_comment_tree_headers.items():
+            index = self.comment_tree_model.headers.index(key)
+            comment_headers.setSectionHidden(index, not value)
 
         self.set_first_session_index()
 
@@ -196,6 +204,22 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         item.setChecked(icon_size == self.icon_size)
         action_group.addAction(item)
         return item
+
+    def comment_header_context_menu(self):
+        menu = QMenu()
+        for value in self.comment_tree_model.headers:
+            item = menu.addAction(value.replace('_', ' ').title())
+            item.triggered.connect(lambda x, header=value: self.toggle_comment_tree_headers(header))
+            item.setCheckable(True)
+            item.setChecked(self.settings_manager.dls_comment_tree_headers[value])
+        menu.exec_(QCursor.pos())
+
+    def toggle_comment_tree_headers(self, header):
+        index = self.comment_tree_model.headers.index(header)
+        visible = self.settings_manager.dls_comment_tree_headers[header]
+        self.settings_manager.dls_comment_tree_headers[header] = not visible
+        # sets the header visibility to the opposite of what it originally was
+        self.comment_tree_view.header().setSectionHidden(index, visible)
 
     def toggle_reddit_object_view(self):
         if self.show_reddit_objects_checkbox.isChecked():

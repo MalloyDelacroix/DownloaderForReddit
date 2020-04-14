@@ -156,6 +156,18 @@ class SettingsManager:
         }
         self.dls_post_table_headers = self.get('download_session_dialog', 'dls_post_table_headers',
                                                self.default_dls_post_headers)
+        self.default_dls_comment_headers = {
+            'author': True,
+            'id': False,
+            'body': True,
+            'body_html': False,
+            'score': True,
+            'subreddit': False,
+            'reddit_id': False,
+            'date_posted': True,
+        }
+        self.dls_comment_tree_headers = self.get('download_session_dialog', 'dls_comment_tree_headers',
+                                                 self.default_dls_comment_headers)
         # endregion
 
         # region Misc Dialogs
