@@ -75,11 +75,11 @@ class SettingsManager:
                                                                  '%[author_name]-comment')
         self.user_post_save_structure = self.get('download_defaults', 'user_post_save_structure', '%[author_name]')
         self.user_comment_save_structure = self.get('download_defaults', 'user_comment_save_structure',
-                                                    'Comments/%[post_id]')
+                                                    '%[post_author_name]/Comments/%[post_title]')
         self.subreddit_post_save_structure = self.get('download_defaults', 'subreddit_post_save_structure',
                                                       '%[subreddit_name]')
         self.subreddit_comment_save_structure = self.get('download_defaults', 'subreddit_comment_save_structure',
-                                                         'Comments/%[post_id]')
+                                                         '%[post_subreddit_name]/Comments/%[post_title]')
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
         # endregion
 
