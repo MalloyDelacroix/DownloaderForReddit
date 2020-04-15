@@ -144,9 +144,9 @@ class SettingsManager:
         self.dls_dialog_icon_size = self.get('download_session_dialog', 'dls_dialog_icon_size', 250)
         self.default_dls_post_headers = {
             'title': True,
-            'date_posted_display': True,
-            'score_display': True,
-            'is_self': True,
+            'date_posted': True,
+            'score': True,
+            'self_post': True,
             'text': True,
             'url': True,
             'domain': True,

@@ -1,5 +1,3 @@
-import logging
-from operator import attrgetter
 from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant
 from PyQt5.QtGui import QPixmap, QIcon
 
@@ -64,10 +62,23 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
 
 class PostTableModel(QAbstractTableModel, CustomItemModel):
 
+    header_map = {
+        'title': lambda x: x.title,
+        'date_posted': lambda x: x.date_posted_display,
+        'score': lambda x: x.score_display,
+        'self_post': lambda x: x.is_self,
+        'text': lambda x: x.text,
+        'url': lambda x: x.url,
+        'domain': lambda x: x.domain,
+        'author': lambda x: x.author.name,
+        'subreddit': lambda x: x.subreddit.name,
+        'nsfw': lambda x: x.nsfw
+    }
+
     def __init__(self):
         super().__init__()
         self.posts = []
-        self.headers = ['title', 'date_posted_display', 'score_display', 'is_self', 'text', 'url', 'domain', 'author',
+        self.headers = ['title', 'date_posted', 'score', 'self_post', 'text', 'url', 'domain', 'author',
                         'subreddit', 'nsfw']
 
     def set_data(self, data):
@@ -79,7 +90,7 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
     def headerData(self, row, orientation, role=None):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return self.headers[row].replace('_', ' ').replace('display', '').title()
+                return self.headers[row].replace('_', ' ').title()
 
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.posts)
@@ -88,12 +99,12 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         return len(self.headers)
 
     def data(self, index, role=None):
+        col = index.column()
         if role == Qt.DisplayRole:
-            return self.get_post_attribute(index.column(), self.posts[index.row()])
+            return self.header_map[self.headers[col]](self.posts[index.row()])
         if role == Qt.ToolTipRole:
-            col = index.column()
             if col != self.headers.index('text'):
-                return self.get_post_attribute(col, self.posts[index.row()])
+                return self.header_map[self.headers[col]](self.posts[index.row()])
         return None
 
     def get_post_attribute(self, column, post):

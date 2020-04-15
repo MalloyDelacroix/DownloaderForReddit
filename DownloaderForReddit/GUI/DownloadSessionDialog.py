@@ -1,8 +1,8 @@
 import logging
 from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QFontComboBox, QComboBox, QActionGroup,
-                             QWidget, QHBoxLayout, QLabel, QVBoxLayout, QStyledItemDelegate)
-from PyQt5.QtCore import QSize, Qt, QEvent
-from PyQt5.QtGui import QCursor, QFont, QStandardItemModel, QStandardItem
+                             QWidget, QHBoxLayout, QLabel)
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QCursor, QFont
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
 from ..GUI_Resources.DownloadSessionsDialog_auto import Ui_DownloadSessionDialog
@@ -55,9 +55,6 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.content_model = ContentListModel()
         self.content_list_view.setModel(self.content_model)
 
-        # self.comment_tree_model = QStandardItemModel()
-        # self.comment_headers = ['author', 'body', 'score', 'date_posted']
-        # self.comment_tree_model.setHorizontalHeaderLabels(self.comment_headers)
         self.comment_tree_model = CommentTreeModel()
         self.comment_tree_view.setModel(self.comment_tree_model)
 
@@ -122,7 +119,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
     def post_headers_context_menu(self):
         menu = QMenu()
         for value in self.post_model.headers:
-            item = menu.addAction(value.replace('_', ' ').title())
+            item = menu.addAction(value.replace('_', ' ').replace(' display', '').title())
             item.triggered.connect(lambda x, header=value: self.toggle_post_table_header(header))
             item.setCheckable(True)
             item.setChecked(self.settings_manager.dls_post_table_headers[value])
