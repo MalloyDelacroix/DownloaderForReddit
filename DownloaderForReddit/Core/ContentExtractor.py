@@ -14,6 +14,7 @@ from ..Extractors.CommentExtractor import CommentExtractor
 from ..Database.Models import User, Subreddit, Post, Comment
 from ..Database.ModelEnums import CommentDownload
 from ..Utils import Injector
+from ..Utils.VerifyRun import verify_run
 from ..Core import Const
 from ..Core.CommentFilter import CommentFilter
 from ..Messaging.Message import Message
@@ -36,6 +37,7 @@ class ContentExtractor:
         self.hold = False
         self.submit_hold = False
         self.continue_run = True
+        self.hard_stop = False
 
     @property
     def running(self):
@@ -91,6 +93,7 @@ class ContentExtractor:
         self.download_queue.put(None)
         self.logger.debug('Content extractor exiting')
 
+    @verify_run
     def handle_submission(self, submission, significant_id):
         with self.db.get_scoped_session() as session:
             post = self.create_post(submission, significant_id, session)
@@ -102,6 +105,7 @@ class ContentExtractor:
                 if post.significant_reddit_object.run_comment_operations:
                     self.handle_comments(post, submission, session)
 
+    @verify_run
     def create_post(self, submission: Submission, significant_id: int, session: Session) -> Optional[Post]:
         post = None
         if self.check_duplicate_post_url(submission.url, session):
@@ -132,6 +136,7 @@ class ContentExtractor:
     def check_duplicate_post_url(self, url, session):
         return session.query(Post.id).filter(Post.url == url).scalar() is None
 
+    @verify_run
     def extract(self, post: Post):
         try:
             if not post.is_self:
@@ -156,6 +161,7 @@ class ContentExtractor:
         except:
             self.handle_unknown_error(post)
 
+    @verify_run
     def extract_linked_content(self, post: Post):
         """
         Extracts links from self post text by scanning the html version of the text for href tags.  After links are
@@ -191,6 +197,7 @@ class ContentExtractor:
             else:
                 post.set_extracted()
 
+    @verify_run
     def handle_comments(self, post: Post, submission: Submission, session: Session):
         significant_ro = post.significant_reddit_object
         sort_method = significant_ro.comment_sort_method
@@ -203,6 +210,7 @@ class ContentExtractor:
         for praw_comment in submission.comments[: significant_ro.comment_limit]:
             self.cascade_comments(praw_comment, post, session)
 
+    @verify_run
     def cascade_comments(self, praw_comment: PrawComment, post: Post, session: Session,
                          parent_id: Optional[int] = None):
         significant_ro = post.significant_reddit_object
@@ -219,16 +227,19 @@ class ContentExtractor:
                 for sub_comment in praw_comment.replies:
                     self.cascade_comments(sub_comment, post, session, parent_id=comment.id)
 
+    @verify_run
     def extract_comment_text(self, comment):
         extractor = CommentExtractor(post=comment.post, comment=comment, download_session_id=self.download_session_id)
         extractor.extract_content()
 
+    @verify_run
     def handle_comment_content(self, comment: Comment):
         download_type = comment.post.significant_reddit_object.download_comment_content
         if (download_type == CommentDownload.DOWNLOAD_ONLY_AUTHOR and comment.author_id == comment.post.author_id) or \
                 download_type == CommentDownload.DOWNLOAD:
             self.extract_comment_content(comment)
 
+    @verify_run
     def extract_comment_content(self, comment: Comment):
         failed = False
         links = BeautifulSoup(comment.body_html, parse_only=SoupStrainer('a'), features='html.parser')

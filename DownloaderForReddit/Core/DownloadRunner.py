@@ -7,6 +7,7 @@ from datetime import datetime
 from praw.models import Redditor
 
 from ..Utils import Injector, RedditUtils, VideoMerger
+from ..Utils.VerifyRun import verify_run
 from ..Core.SubmissionFilter import SubmissionFilter
 from ..Core.ContentExtractor import ContentExtractor
 from ..Core.Downloader import Downloader
@@ -44,6 +45,7 @@ class DownloadRunner(QObject):
         self.reddit_instance = RedditUtils.get_reddit_instance()
         self.submission_filter = SubmissionFilter()
         self.continue_run = True
+        self.stopped = False
         self.filter_subreddits = False
         self.download_type = 'USER' if user_id_list is not None else 'SUBREDDIT'  # TODO: set for ro download
         self.validated_subreddits = []
@@ -119,13 +121,19 @@ class DownloadRunner(QObject):
             self.logger.error('Failed to connect to reddit',
                               extra={'connection_attempts': self.failed_connection_attempts})
             Message.send_text(f'Failed to connect to reddit.  Connection attempts remaining: '
-                                   f'{3 - self.failed_connection_attempts}')
+                              f'{3 - self.failed_connection_attempts}')
             self.failed_connection_attempts += 1
 
     def handle_unknown_error(self, reddit_object):
         self.logger.error('Failed to validate reddit object due to unknown error',
                           extra={'object_type': reddit_object.object_type, 'reddit_object': reddit_object.name},
                           exc_info=True)
+
+    def run_unextracted(self):
+        pass
+
+    def run_undownloaded(self):
+        pass
 
     def run(self):
         self.create_download_session()
@@ -173,13 +181,17 @@ class DownloadRunner(QObject):
     def validate_subreddit_list(self):
         with self.db.get_scoped_session() as session:
             for subreddit_id in self.subreddit_id_list:
-                subreddit = session.query(Subreddit).get(subreddit_id)
-                sub = self.validate_subreddit(subreddit)
-                if sub is not None:
-                    self.validated_subreddits.append(sub)
+                if self.continue_run:
+                    subreddit = session.query(Subreddit).get(subreddit_id)
+                    sub = self.validate_subreddit(subreddit)
+                    if sub is not None:
+                        self.validated_subreddits.append(sub)
+                    else:
+                        subreddit.set_inactive()
                 else:
-                    subreddit.set_inactive()
+                    break
 
+    @verify_run
     def get_reddit_object_submissions(self, reddit_object_id):
         """
         Takes a RedditObject id and then calls the appropriate method to get submissions for the object depending on
@@ -193,6 +205,7 @@ class DownloadRunner(QObject):
             else:
                 self.get_subreddit_submissions(reddit_object_id, session=session)
 
+    @verify_run
     def get_user_submissions(self, user_id, session=None):
         if session is None:
             with self.db.get_scoped_session() as session:
@@ -211,6 +224,7 @@ class DownloadRunner(QObject):
         else:
             user.set_inactive()
 
+    @verify_run
     def get_subreddit_submissions(self, subreddit_id, session=None):
         if session is None:
             with self.db.get_scoped_session() as session:
@@ -229,6 +243,7 @@ class DownloadRunner(QObject):
         else:
             subreddit.set_inactive()
 
+    @verify_run
     def get_submissions(self, praw_object, reddit_object):
         """
         Extracts submissions from the supplied praw object's submission generator.  The submissions are passed through
@@ -286,7 +301,7 @@ class DownloadRunner(QObject):
     def hold(self):
         self.logger.debug('DownloadRunner holding')
         self.submission_queue.put('HOLD')
-        while self.extractor.running or self.downloader.running:
+        while self.extractor.running or self.downloader.running and self.continue_run:
             try:
                 reddit_object_id = self.reddit_object_queue.get(timeout=1)
                 if reddit_object_id is not None:
@@ -324,19 +339,27 @@ class DownloadRunner(QObject):
         downloaded_object_count = \
             session.query(Post.significant_reddit_object_id).filter(Post.download_session == dl_session) \
             .distinct().count()
-        self.logger.info('Download complete', extra={
+        extra = {
             'download_time': dl_session.duration,
             'downloaded_reddit_object_count': downloaded_object_count,
             'post_extraction_count': extracted_post_count,
             'comment_extraction_count': extracted_comment_count,
             'download_count': downloaded_content_count,
-        })
+        }
         message = f'\nFinished\nRun Time: {dl_session.duration}\n' \
                   f'Downloaded {self.download_type.lower()}s: {downloaded_object_count}\n' \
                   f'Post Count: {extracted_post_count}\n' \
                   f'Comment Count: {extracted_comment_count}\n' \
                   f'Download Count: {downloaded_content_count}'
+        if self.stopped:
+            extra.update(download_stopped=True)
+            message += f'\nDownload stopped{message}'
+        self.logger.info('Download complete', extra=extra)
         Message.send_text(message)
 
-    def stop_download(self):
+    def stop_download(self, hard_stop=False):
+        self.stopped = True
         self.continue_run = False
+        self.extractor.continue_run = False
+        self.downloader.continue_run = False
+        self.downloader.hard_stop = hard_stop

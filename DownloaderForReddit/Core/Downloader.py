@@ -3,7 +3,8 @@ import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from ..Utils import Injector, SystemUtil, VideoMerger
+from ..Utils import Injector, SystemUtil
+from ..Utils.VerifyRun import verify_run
 from ..Database.Models import Content
 from ..Messaging.Message import Message
 
@@ -31,6 +32,7 @@ class Downloader:
         self.executor = ThreadPoolExecutor(self.thread_count)
         self.hold = False
         self.continue_run = True
+        self.hard_stop = False
         self.download_count = 0
 
     @property
@@ -58,6 +60,7 @@ class Downloader:
         self.executor.shutdown(wait=True)
         self.logger.debug('Downloader exiting')
 
+    @verify_run
     def download(self, content_id: int):
         """
         Connects to the content url and downloads the content item to the file path specified by the content item.
@@ -73,7 +76,10 @@ class Downloader:
                     file_path = content.full_file_path
                     with open(file_path, 'wb') as file:
                         for chunk in response.iter_content(1024 * 1024):
-                            file.write(chunk)
+                            if not self.hard_stop:
+                                file.write(chunk)
+                            else:
+                                break
                     self.finish_download(content)
                 else:
                     self.handle_unsuccessful_response(content, response.status_code)
@@ -106,11 +112,16 @@ class Downloader:
         setting the date modified for the file, and saving the content changes to the database.
         :param content: The content item that has been downloaded and needs to be finished.
         """
-        if self.settings_manager.match_file_modified_to_post_date:
-            SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
-        content.set_downloaded(self.download_session_id)
-        Message.send_text(f'Saved: {content.full_file_path}')
-        self.download_count += 1
+        if not self.hard_stop:
+            if self.settings_manager.match_file_modified_to_post_date:
+                SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
+            content.set_downloaded(self.download_session_id)
+            Message.send_text(f'Saved: {content.full_file_path}')
+            self.download_count += 1
+        else:
+            message = 'Download was stopped before finished'
+            content.set_download_error(message)
+            Message.send_download_error(f'{message}. File at path: "{content.full_file_path}" may be corrupted')
 
     def handle_unsuccessful_response(self, content: Content, status_code):
         message = 'Failed Download: Unsuccessful response from server'
