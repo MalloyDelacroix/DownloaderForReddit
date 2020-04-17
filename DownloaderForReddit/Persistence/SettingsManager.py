@@ -31,6 +31,7 @@ class SettingsManager:
         self.download_on_add = self.get('core', 'download_on_add', False)
         self.lock_reddit_object_settings = self.get('core', 'lock_reddit_object_settings', False)
         self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
+        self.finish_incomplete_before_download = self.get('core', 'finish_incomplete_before_download', False)
         # endregion
 
         # region Download Defaults

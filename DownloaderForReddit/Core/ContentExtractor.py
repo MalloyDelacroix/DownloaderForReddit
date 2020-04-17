@@ -95,15 +95,29 @@ class ContentExtractor:
 
     @verify_run
     def handle_submission(self, submission, significant_id):
+        """
+        Takes a reddit submission and creates a Post from its data.  Then calls the appropriate methods for the post.
+        If comments are to be extracted from the submission, this is also handled here.
+        :param submission: The reddit submission that is to be extracted.
+        :param significant_id: The id of the reddit object for which the submissions was extracted from reddit.
+        """
         with self.db.get_scoped_session() as session:
             post = self.create_post(submission, significant_id, session)
             if post is not None:
-                if post.is_self:
-                    self.extract_linked_content(post)
-                else:
-                    self.extract(post)
-                if post.significant_reddit_object.run_comment_operations:
-                    self.handle_comments(post, submission, session)
+                self.handle_post(post)
+            if post.significant_reddit_object.run_comment_operations:
+                self.handle_comments(post, submission, session)
+
+    @verify_run
+    def handle_post(self, post):
+        """
+        Calls the appropriate methods for the supplied post.
+        :param post: The post that is to be extracted.
+        """
+        if post.is_self:
+            self.extract_linked_content(post)
+        else:
+            self.extract(post)
 
     @verify_run
     def create_post(self, submission: Submission, significant_id: int, session: Session) -> Optional[Post]:
@@ -330,6 +344,27 @@ class ContentExtractor:
         if url.lower().endswith(Const.ALL_EXT):
             return DirectExtractor
         return None
+
+    def run_unextracted_posts(self):
+        """
+        Queries the database for posts that were not extracted (either due to connection error or user interference with
+        download) and attempts to re-extract and download them.
+        """
+        self.logger.debug('Content extractor running un-extracted posts')
+        with self.db.get_scoped_session() as session:
+            unfinished_posts = session.query(Post.id)\
+                .filter(Post.extracted == False)\
+                .filter(Post.extraction_error == None)
+            for post_id in unfinished_posts:
+                self.executor.submit(self.finish_post, post_id)
+        self.executor.shutdown(wait=True)
+        self.download_queue.put(None)
+        self.logger.debug('Content extractor finished un-extracted posts, now exiting')
+
+    def finish_post(self, post_id):
+        with self.db.get_scoped_session() as session:
+            post = session.query(Post).get(post_id)
+            self.handle_post(post)
 
     def handle_unsupported_domain(self, post, **kwargs):
         message = 'Unsupported domain'

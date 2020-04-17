@@ -130,10 +130,21 @@ class DownloadRunner(QObject):
                           exc_info=True)
 
     def run_unextracted(self):
-        pass
+        self.start_downloader()
+        self.extractor = ContentExtractor(self.submission_queue, self.download_queue, self.download_session_id)
+        self.extraction_thread = Thread(target=self.extractor.run_unextracted_posts)
+        self.extraction_thread.start()
 
     def run_undownloaded(self):
-        pass
+        self.start_downloader()
+        with self.db.get_scoped_session() as session:
+            unfunished_downloads = session.query(Content.id)\
+                .filter(Content.downloaded == False)\
+                .filter(Content.download_error == None)
+            for content_id in unfunished_downloads:
+                self.download_queue.put(content_id)
+        self.download_queue.put(None)
+        self.finish_download()
 
     def run(self):
         self.create_download_session()
@@ -315,8 +326,14 @@ class DownloadRunner(QObject):
     def finish_download(self):
         self.logger.debug('DownloadRunner finished')
         self.submission_queue.put(None)
-        self.extraction_thread.join()
-        self.download_thread.join()
+        try:
+            self.extraction_thread.join()
+        except AttributeError:
+            pass
+        try:
+            self.download_thread.join()
+        except AttributeError:
+            pass
         VideoMerger.merge_videos()
         with self.db.get_scoped_session() as session:
             dl_session = self.finish_download_session(session)
