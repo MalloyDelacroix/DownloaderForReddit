@@ -53,7 +53,7 @@ from ..version import __version__
 
 class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
-    stop_download_signal = QtCore.pyqtSignal()
+    stop_download_signal = QtCore.pyqtSignal(bool)  # bool indicates whether the stop is a hard stop or not
 
     def __init__(self, queue, receiver):
         """
@@ -148,7 +148,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.file_open_save_file_location.triggered.connect(self.open_data_directory)
         self.file_exit.triggered.connect(self.close_from_menu)
 
-        self.download_button.clicked.connect(self.button_assignment)
+        self.download_button.clicked.connect(self.run_full_download)
+        self.soft_stop_download_button.clicked.connect(lambda: self.stop_download_signal.emit(False))
+        self.terminate_download_button.clicked.connect(lambda: self.stop_download_signal.emit(True))
+        self.shift_download_buttons()
+
         self.add_user_button.clicked.connect(self.add_user)
         self.remove_user_button.clicked.connect(self.remove_user)
         self.add_subreddit_button.clicked.connect(self.add_subreddit)
@@ -393,13 +397,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             self.logger.error('Download folder tired to open with no download folder found',
                               extra={'selected_sub_save_directory': path}, exc_info=True)
             Message.no_download_folder(self, 'subreddit')
-
-    def button_assignment(self):
-        """Assigns what the download button does depending on if the downloader is currently running"""
-        if not self.running:
-            self.run_full_download()
-        else:
-            self.stop_download_signal.emit()
 
     def run_full_download(self):
         user_id_list = self.user_list_model.get_id_list() if self.download_users_radio.isChecked() or \
@@ -833,37 +830,26 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.downloaded = 0
         self.potential_downloads = 0
         self.output_box.clear()
-        self.download_button.setText('Downloading...Click to Stop Download')
         self.statusbar.clearMessage()
-        self.add_user_button.setDisabled(True)
-        self.remove_user_button.setDisabled(True)
-        self.add_subreddit_button.setDisabled(True)
-        self.remove_subreddit_button.setDisabled(True)
-        self.file_add_user_list.setDisabled(True)
-        self.file_add_subreddit_list.setDisabled(True)
-        self.file_remove_user_list.setDisabled(True)
-        self.file_remove_subreddit_list.setDisabled(True)
         self.progress_label.setVisible(False)
         self.progress_bar.setVisible(True)
+        self.shift_download_buttons()
 
     def finished_download_gui_shift(self):
         """Re-enables disabled GUI options"""
         self.running = False
         self.progress_bar.setVisible(False)
-        self.download_button.setText('Download')
-        self.add_user_button.setDisabled(False)
-        self.remove_user_button.setDisabled(False)
-        self.add_subreddit_button.setDisabled(False)
-        self.remove_subreddit_button.setDisabled(False)
-        self.file_add_user_list.setDisabled(False)
-        self.file_add_subreddit_list.setDisabled(False)
-        self.file_remove_user_list.setDisabled(False)
-        self.file_remove_subreddit_list.setDisabled(False)
         if len(self.failed_list) > 0:
             self.file_failed_download_list.setEnabled(True)
             if self.settings_manager.auto_display_failed_list:
                 self.display_failed_downloads()
         self.potential_downloads = 0
+        self.shift_download_buttons()
+
+    def shift_download_buttons(self):
+        self.download_button.setVisible(not self.running)
+        self.soft_stop_download_button.setVisible(self.running)
+        self.terminate_download_button.setVisible(self.running)
 
     def finish_progress_bar(self):
         """

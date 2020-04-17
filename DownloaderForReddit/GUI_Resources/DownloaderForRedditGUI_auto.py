@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -20,7 +22,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.horz_splitter = QtWidgets.QSplitter(self.centralwidget)
-        self.horz_splitter.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.horz_splitter.setOrientation(QtCore.Qt.Horizontal)
         self.horz_splitter.setObjectName("horz_splitter")
         self.layoutWidget = QtWidgets.QWidget(self.horz_splitter)
@@ -113,36 +114,50 @@ class Ui_MainWindow(object):
         self.remove_subreddit_button.setObjectName("remove_subreddit_button")
         self.horizontalLayout_2.addWidget(self.remove_subreddit_button)
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
-        self.layoutWidget2 = QtWidgets.QWidget(self.horz_splitter)
-        self.layoutWidget2.setObjectName("layoutWidget2")
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.layoutWidget2)
+        self.widget = QtWidgets.QWidget(self.horz_splitter)
+        self.widget.setObjectName("widget")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.widget)
         self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_3.setSpacing(6)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.download_button = QtWidgets.QPushButton(self.layoutWidget2)
+        self.download_button_layout = QtWidgets.QHBoxLayout()
+        self.download_button_layout.setObjectName("download_button_layout")
+        self.download_button = QtWidgets.QPushButton(self.widget)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.download_button.setFont(font)
         self.download_button.setObjectName("download_button")
-        self.verticalLayout_3.addWidget(self.download_button)
+        self.download_button_layout.addWidget(self.download_button)
+        self.soft_stop_download_button = QtWidgets.QPushButton(self.widget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.soft_stop_download_button.setFont(font)
+        self.soft_stop_download_button.setObjectName("soft_stop_download_button")
+        self.download_button_layout.addWidget(self.soft_stop_download_button)
+        self.terminate_download_button = QtWidgets.QPushButton(self.widget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.terminate_download_button.setFont(font)
+        self.terminate_download_button.setObjectName("terminate_download_button")
+        self.download_button_layout.addWidget(self.terminate_download_button)
+        self.verticalLayout_3.addLayout(self.download_button_layout)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.download_users_radio = QtWidgets.QRadioButton(self.layoutWidget2)
+        self.download_users_radio = QtWidgets.QRadioButton(self.widget)
         self.download_users_radio.setObjectName("download_users_radio")
         self.horizontalLayout_3.addWidget(self.download_users_radio)
-        self.download_subreddits_radio = QtWidgets.QRadioButton(self.layoutWidget2)
+        self.download_subreddits_radio = QtWidgets.QRadioButton(self.widget)
         self.download_subreddits_radio.setObjectName("download_subreddits_radio")
         self.horizontalLayout_3.addWidget(self.download_subreddits_radio)
-        self.constain_to_sub_list_radio = QtWidgets.QRadioButton(self.layoutWidget2)
+        self.constain_to_sub_list_radio = QtWidgets.QRadioButton(self.widget)
         self.constain_to_sub_list_radio.setObjectName("constain_to_sub_list_radio")
         self.horizontalLayout_3.addWidget(self.constain_to_sub_list_radio)
         self.verticalLayout_3.addLayout(self.horizontalLayout_3)
-        self.line = QtWidgets.QFrame(self.layoutWidget2)
+        self.line = QtWidgets.QFrame(self.widget)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.verticalLayout_3.addWidget(self.line)
-        self.output_box = QtWidgets.QTextBrowser(self.layoutWidget2)
+        self.output_box = QtWidgets.QTextBrowser(self.widget)
         font = QtGui.QFont()
         font.setPointSize(10)
         self.output_box.setFont(font)
@@ -311,6 +326,10 @@ class Ui_MainWindow(object):
         self.remove_subreddit_button.setText(_translate("MainWindow", "Remove Subreddit"))
         self.download_button.setToolTip(_translate("MainWindow", "Download selected user or subreddit list"))
         self.download_button.setText(_translate("MainWindow", "Download"))
+        self.soft_stop_download_button.setToolTip(_translate("MainWindow", "Stops the current download, but allows in progress downloads to finish"))
+        self.soft_stop_download_button.setText(_translate("MainWindow", "Stop Download"))
+        self.terminate_download_button.setToolTip(_translate("MainWindow", "Stops the download immediately and terminates in progress downloads (may result in corrupted files for downloads that were not complete)"))
+        self.terminate_download_button.setText(_translate("MainWindow", "Terminate Download"))
         self.download_users_radio.setToolTip(_translate("MainWindow", "Download only user list"))
         self.download_users_radio.setText(_translate("MainWindow", "Users"))
         self.download_subreddits_radio.setToolTip(_translate("MainWindow", "Download only subreddit list"))
@@ -358,4 +377,3 @@ class Ui_MainWindow(object):
         self.export_sub_list_as_xml_menu_item.setText(_translate("MainWindow", "Export As Xml"))
         self.export_user_list_as_xml_menu_item.setText(_translate("MainWindow", "Export As Xml"))
         self.file_ffmpeg_requirement.setText(_translate("MainWindow", "FFmpeg Requirement"))
-
