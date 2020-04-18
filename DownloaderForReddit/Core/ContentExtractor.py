@@ -37,7 +37,6 @@ class ContentExtractor:
         self.hold = False
         self.submit_hold = False
         self.continue_run = True
-        self.hard_stop = False
 
     @property
     def running(self):

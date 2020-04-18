@@ -312,7 +312,7 @@ class DownloadRunner(QObject):
     def hold(self):
         self.logger.debug('DownloadRunner holding')
         self.submission_queue.put('HOLD')
-        while self.extractor.running or self.downloader.running and self.continue_run:
+        while self.continue_run and (self.extractor.running or self.downloader.running):
             try:
                 reddit_object_id = self.reddit_object_queue.get(timeout=1)
                 if reddit_object_id is not None:
@@ -370,7 +370,7 @@ class DownloadRunner(QObject):
                   f'Download Count: {downloaded_content_count}'
         if self.stopped:
             extra.update(download_stopped=True)
-            message += f'\nDownload stopped{message}'
+            message = f'\nDownload stopped{message}'
         self.logger.info('Download complete', extra=extra)
         Message.send_text(message)
 
@@ -380,3 +380,4 @@ class DownloadRunner(QObject):
         self.extractor.continue_run = False
         self.downloader.continue_run = False
         self.downloader.hard_stop = hard_stop
+        Message.send_text('\nStopped\n')

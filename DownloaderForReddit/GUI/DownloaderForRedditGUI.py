@@ -36,7 +36,6 @@ from DownloaderForReddit.GUI.Messages import Message
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from ..Core.DownloadRunner import DownloadRunner
 from ..Core.RedditObjectCreator import RedditObjectCreator
-from ..Core import Const
 from ..Database.Models import User, Subreddit, RedditObjectList
 from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
@@ -99,8 +98,6 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.queue = queue
         self.receiver = receiver
 
-
-
         # region Main Menu
 
         # region File Menu
@@ -142,6 +139,12 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.failed_download_list_menu_item.triggered.connect(self.display_failed_downloads)
         self.unfinished_downloads_menu_item.triggered.connect(self.display_unfinished_downloads_dialog)
+        # endregion
+
+        # region Download Menu
+        self.download_user_list_menu_item.triggered.connect(self.download_user_list)
+        self.download_subreddit_list_menu_item.triggered.connect(self.download_subreddit_list)
+        self.download_user_list_constrained_menu_item.triggered.connect(self.download_user_list_constrained)
         # endregion
 
         # region Help Menu
