@@ -31,12 +31,12 @@ import logging
 
 from ..GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from ..GUI.AboutDialog import AboutDialog
-from ..GUI.DownloadedObjectsDialog import DownloadedObjectsDialog
 from ..GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from DownloaderForReddit.GUI.Messages import Message
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from ..Core.DownloadRunner import DownloadRunner
 from ..Core.RedditObjectCreator import RedditObjectCreator
+from ..Core import Const
 from ..Database.Models import User, Subreddit, RedditObjectList
 from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
@@ -99,17 +99,40 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.queue = queue
         self.receiver = receiver
 
-        self.user_list_model = RedditObjectListModel('USER')
-        self.user_list_view.setModel(self.user_list_model)
-        self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
-        self.subreddit_list_view.setModel(self.subreddit_list_model)
 
-        self.load_state()
 
-        self.file_add_user_list.triggered.connect(self.add_user_list)
-        self.file_remove_user_list.triggered.connect(self.remove_user_list)
-        self.file_add_subreddit_list.triggered.connect(self.add_subreddit_list)
-        self.file_remove_subreddit_list.triggered.connect(self.remove_subreddit_list)
+        # region Main Menu
+
+        # region File Menu
+        self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
+        self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
+        self.exit_menu_item.triggered.connect(self.close_from_menu)
+        # endregion
+
+        # region View Menu
+        self.list_view_group = QtWidgets.QActionGroup(self)
+        self.list_view_group.addAction(self.sort_list_by_name_menu_item)
+        self.list_view_group.addAction(self.sort_list_by_date_added_menu_item)
+        self.list_view_group.addAction(self.sort_list_by_post_count_menu_item)
+        self.sort_list_by_name_menu_item.triggered.connect(lambda: self.set_list_sort_method(0))
+        self.sort_list_by_date_added_menu_item.triggered.connect(lambda: self.set_list_sort_method(1))
+        self.sort_list_by_post_count_menu_item.triggered.connect(lambda: self.set_list_sort_method(2))
+
+        self.list_view_order = QtWidgets.QActionGroup(self)
+        self.list_view_order.addAction(self.sort_list_ascending_menu_item)
+        self.list_view_order.addAction(self.sort_list_descending_menu_item)
+        self.sort_list_ascending_menu_item.triggered.connect(lambda: self.set_list_order_method(0))
+        self.sort_list_descending_menu_item.triggered.connect(lambda: self.set_list_order_method(1))
+        self.set_view_menu_items_checked()
+
+        self.download_session_menu_item.triggered.connect(self.open_download_sessions_dialog)
+        # endregion
+
+        # region Lists Menu
+        self.add_user_list_menu_item.triggered.connect(self.add_user_list)
+        self.remove_user_list_menu_item.triggered.connect(self.remove_user_list)
+        self.add_subreddit_list_menu_item.triggered.connect(self.add_subreddit_list)
+        self.remove_subreddit_list_menu_item.triggered.connect(self.remove_subreddit_list)
 
         self.export_user_list_as_text_menu_item.triggered.connect(self.export_user_list_to_text)
         self.export_user_list_as_json_menu_item.triggered.connect(self.export_user_list_to_json)
@@ -117,36 +140,29 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.export_sub_list_as_text_menu_item.triggered.connect(self.export_subreddit_list_to_text)
         self.export_sub_list_as_json_menu_item.triggered.connect(self.export_subreddit_list_to_json)
 
-        self.file_failed_download_list.triggered.connect(self.display_failed_downloads)
-        self.download_session_menu_item.triggered.connect(self.open_download_sessions_dialog)
-        self.file_unfinished_downloads.triggered.connect(self.display_unfinished_downloads_dialog)
-        self.file_imgur_credits.triggered.connect(self.display_imgur_client_information)
-        self.file_user_manual.triggered.connect(self.open_user_manual)
-        self.file_ffmpeg_requirement.triggered.connect(self.display_ffmpeg_info_dialog)
-        self.file_check_for_updates.triggered.connect(lambda: self.check_for_updates(True))
-        self.file_about.triggered.connect(self.display_about_dialog)
+        self.failed_download_list_menu_item.triggered.connect(self.display_failed_downloads)
+        self.unfinished_downloads_menu_item.triggered.connect(self.display_unfinished_downloads_dialog)
+        # endregion
 
-        self.list_view_group = QtWidgets.QActionGroup(self)
-        self.list_view_group.addAction(self.view_sort_list_by_name)
-        self.list_view_group.addAction(self.view_sort_list_by_date_added)
-        self.list_view_group.addAction(self.view_sort_list_by_number_of_downloads)
-        self.view_sort_list_by_name.triggered.connect(lambda: self.set_list_sort_method(0))
-        self.view_sort_list_by_date_added.triggered.connect(lambda: self.set_list_sort_method(1))
-        self.view_sort_list_by_number_of_downloads.triggered.connect(lambda: self.set_list_sort_method(2))
+        # region Help Menu
+        self.imgur_credit_dialog_menu_item.triggered.connect(self.display_imgur_client_information)
+        self.user_manual_menu_item.triggered.connect(self.open_user_manual)
+        self.ffmpeg_requirement_dialog_menu_item.triggered.connect(self.display_ffmpeg_info_dialog)
+        self.check_for_updates_menu_item.triggered.connect(lambda: self.check_for_updates(True))
+        self.about_menu_item.triggered.connect(self.display_about_dialog)
+        # endregion
 
-        self.list_view_order = QtWidgets.QActionGroup(self)
-        self.list_view_order.addAction(self.view_order_by_ascending)
-        self.list_view_order.addAction(self.view_order_by_descending)
-        self.view_order_by_ascending.triggered.connect(lambda: self.set_list_order_method(0))
-        self.view_order_by_descending.triggered.connect(lambda: self.set_list_order_method(1))
-        self.set_view_menu_items_checked()
+        # endregion
+
+        self.user_list_model = RedditObjectListModel('USER')
+        self.user_list_view.setModel(self.user_list_model)
+        self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
+        self.subreddit_list_view.setModel(self.subreddit_list_model)
+
+        self.load_state()
 
         self.refresh_user_count()
         self.refresh_subreddit_count()
-
-        self.file_open_settings.triggered.connect(self.open_settings_dialog)
-        self.file_open_save_file_location.triggered.connect(self.open_data_directory)
-        self.file_exit.triggered.connect(self.close_from_menu)
 
         self.download_button.clicked.connect(self.run_full_download)
         self.soft_stop_download_button.clicked.connect(lambda: self.stop_download_signal.emit(False))
@@ -399,10 +415,24 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
             Message.no_download_folder(self, 'subreddit')
 
     def run_full_download(self):
-        user_id_list = self.user_list_model.get_id_list() if self.download_users_radio.isChecked() or \
-                                                             self.constain_to_sub_list_radio.isChecked() else None
-        sub_id_list = self.subreddit_list_model.get_id_list() if self.download_subreddits_radio.isChecked() or \
-                                                                 self.constain_to_sub_list_radio.isChecked() else None
+        if self.download_users_radio.isChecked():
+            self.download_user_list()
+        elif self.download_subreddits_radio.isChecked():
+            self.download_subreddit_list()
+        else:
+            self.download_user_list_constrained()
+
+    def download_user_list(self):
+        user_id_list = self.user_list_model.get_id_list()
+        self.run(user_id_list, None)
+
+    def download_subreddit_list(self):
+        sub_id_list = self.subreddit_list_model.get_id_list()
+        self.run(None, sub_id_list)
+
+    def download_user_list_constrained(self):
+        user_id_list = self.user_list_model.get_id_list()
+        sub_id_list = self.subreddit_list_model.get_id_list()
         self.run(user_id_list, sub_id_list)
 
     def run(self, user_id_list, sub_id_list, reddit_object_id_list=None):
@@ -602,20 +632,20 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def export_subreddit_list_to_text(self):
         current_list = self.subreddit_list_combo.currentText()
-        file_path = self.get_file_path(current_list, 'Text Files (*.txt)')
+        path = SystemUtil.join_path(self.settings_manager.user_save_directory, current_list)
+        file_path = self.get_file_path('Export Path', path, 'Text Files (*.txt)')
         if file_path is not None:
             TextExporter.export_reddit_objects_to_text(self.subreddit_list_model.list, file_path)
 
     def export_subreddit_list_to_json(self):
         current_list = self.subreddit_list_combo.currentText()
-        file_path = self.get_file_path(current_list, 'Json Files (*.json)')
+        path = SystemUtil.join_path(self.settings_manager.subreddit_save_directory, current_list)
+        file_path = self.get_file_path('Export Path', path, 'Json Files (*.json)')
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.subreddit_list_model.list, file_path)
 
-    def get_file_path(self, suggested_name, ext):
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Export Path',
-                                                             self.settings_manager.save_directory +
-                                                             suggested_name, ext)
+    def get_file_path(self, title, suggested_path, ext):
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, title, suggested_path, ext)
         return file_path if file_path != '' else None
 
     def add_user(self):
@@ -840,7 +870,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         self.running = False
         self.progress_bar.setVisible(False)
         if len(self.failed_list) > 0:
-            self.file_failed_download_list.setEnabled(True)
+            self.failed_download_list_menu_item.setEnabled(True)
             if self.settings_manager.auto_display_failed_list:
                 self.display_failed_downloads()
         self.potential_downloads = 0
@@ -926,7 +956,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """
         self.unfinished_downloads = unfinished_list
         self.unfinished_downloads_available = True
-        self.file_unfinished_downloads.setEnabled(True)
+        self.unfinished_downloads_menu_item.setEnabled(True)
 
     def display_unfinished_downloads_dialog(self):
         try:
@@ -1014,11 +1044,11 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         """A dispatch table to set the correct view menu item checked"""
         pass
         # TODO: fix sorting
-        # view_sort_dict = {0: self.view_sort_list_by_name,
-        #                   1: self.view_sort_list_by_date_added,
-        #                   2: self.view_sort_list_by_number_of_downloads}
-        # view_order_dict = {0: self.view_order_by_ascending,
-        #                    1: self.view_order_by_descending}
+        # view_sort_dict = {0: self.sort_list_by_name_menu_item,
+        #                   1: self.sort_list_by_date_added_menu_item,
+        #                   2: self.sort_list_by_post_count_menu_item}
+        # view_order_dict = {0: self.sort_list_ascending_menu_item,
+        #                    1: self.sort_list_descending_menu_item}
         # view_sort_dict[self.list_sort_method].setChecked(True)
         # view_order_dict[self.list_order_method].setChecked(True)
 

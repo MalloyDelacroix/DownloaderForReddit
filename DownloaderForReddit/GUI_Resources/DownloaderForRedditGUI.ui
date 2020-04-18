@@ -184,7 +184,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="download_button_layout">
@@ -300,29 +300,26 @@
      <height>31</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="file_menu">
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="file_open_settings"/>
+    <addaction name="open_settings_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_save"/>
-    <addaction name="file_import_save_file"/>
-    <addaction name="file_open_save_file_location"/>
+    <addaction name="open_data_directory_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_exit"/>
+    <addaction name="exit_menu_item"/>
    </widget>
-   <widget class="QMenu" name="menuLists">
+   <widget class="QMenu" name="lists_menu">
     <property name="title">
      <string>Lists</string>
     </property>
-    <widget class="QMenu" name="file_export_user_list">
+    <widget class="QMenu" name="export_user_list_menu">
      <property name="title">
       <string>Export User List</string>
      </property>
      <addaction name="export_user_list_as_text_menu_item"/>
      <addaction name="export_user_list_as_json_menu_item"/>
-     <addaction name="export_user_list_as_xml_menu_item"/>
     </widget>
     <widget class="QMenu" name="file_export_subreddit_list">
      <property name="title">
@@ -330,77 +327,85 @@
      </property>
      <addaction name="export_sub_list_as_text_menu_item"/>
      <addaction name="export_sub_list_as_json_menu_item"/>
-     <addaction name="export_sub_list_as_xml_menu_item"/>
     </widget>
-    <addaction name="file_add_user_list"/>
-    <addaction name="file_add_subreddit_list"/>
+    <addaction name="add_user_list_menu_item"/>
+    <addaction name="add_subreddit_list_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_remove_user_list"/>
-    <addaction name="file_remove_subreddit_list"/>
+    <addaction name="remove_user_list_menu_item"/>
+    <addaction name="remove_subreddit_list_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_export_user_list"/>
+    <addaction name="export_user_list_menu"/>
     <addaction name="file_export_subreddit_list"/>
     <addaction name="separator"/>
-    <addaction name="file_failed_download_list"/>
-    <addaction name="file_unfinished_downloads"/>
+    <addaction name="failed_download_list_menu_item"/>
+    <addaction name="unfinished_downloads_menu_item"/>
     <addaction name="separator"/>
    </widget>
-   <widget class="QMenu" name="menuUser_Finder">
-    <property name="title">
-     <string>User Finder</string>
-    </property>
-    <addaction name="file_open_user_finder"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="help_menu">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="file_imgur_credits"/>
+    <addaction name="imgur_credit_dialog_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_user_manual"/>
-    <addaction name="file_ffmpeg_requirement"/>
+    <addaction name="user_manual_menu_item"/>
+    <addaction name="ffmpeg_requirement_dialog_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_check_for_updates"/>
+    <addaction name="check_for_updates_menu_item"/>
     <addaction name="separator"/>
-    <addaction name="file_about"/>
+    <addaction name="about_menu_item"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="QMenu" name="view_menu">
     <property name="title">
      <string>View</string>
     </property>
-    <widget class="QMenu" name="view_sort_lists_by">
+    <widget class="QMenu" name="list_sort_menu_item">
      <property name="title">
       <string>Sort Lists By</string>
      </property>
-     <addaction name="view_sort_list_by_name"/>
-     <addaction name="view_sort_list_by_date_added"/>
-     <addaction name="view_sort_list_by_number_of_downloads"/>
+     <addaction name="sort_list_by_name_menu_item"/>
+     <addaction name="sort_list_by_date_added_menu_item"/>
+     <addaction name="sort_list_by_post_count_menu_item"/>
+     <addaction name="sort_list_by_content_count_menu_item"/>
+     <addaction name="sort_list_by_comment_count_menu_item"/>
+     <addaction name="sort_list_by_date_created_menu_item"/>
+     <addaction name="sort_list_by_score_menu_item"/>
     </widget>
-    <widget class="QMenu" name="view_sort_order">
+    <widget class="QMenu" name="list_order_menu_item">
      <property name="title">
       <string>Sort Order</string>
      </property>
-     <addaction name="view_order_by_ascending"/>
-     <addaction name="view_order_by_descending"/>
+     <addaction name="sort_list_ascending_menu_item"/>
+     <addaction name="sort_list_descending_menu_item"/>
     </widget>
-    <addaction name="view_sort_lists_by"/>
-    <addaction name="view_sort_order"/>
+    <addaction name="list_sort_menu_item"/>
+    <addaction name="list_order_menu_item"/>
     <addaction name="separator"/>
     <addaction name="download_session_menu_item"/>
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuView"/>
-   <addaction name="menuLists"/>
-   <addaction name="menuUser_Finder"/>
-   <addaction name="menuHelp"/>
+   <widget class="QMenu" name="menuDownload">
+    <property name="title">
+     <string>Download</string>
+    </property>
+    <addaction name="download_user_list_menu_item"/>
+    <addaction name="download_subreddit_list_menu_item"/>
+    <addaction name="download_user_list_constrained_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="run_unfinished_extractions_menu_item"/>
+    <addaction name="run_unfiinished_downloads_menu_item"/>
+   </widget>
+   <addaction name="file_menu"/>
+   <addaction name="view_menu"/>
+   <addaction name="lists_menu"/>
+   <addaction name="menuDownload"/>
+   <addaction name="help_menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="file_add_user_list">
+  <action name="add_user_list_menu_item">
    <property name="text">
     <string>Add User List</string>
    </property>
   </action>
-  <action name="file_add_subreddit_list">
+  <action name="add_subreddit_list_menu_item">
    <property name="text">
     <string>Add Subreddit List</string>
    </property>
@@ -410,27 +415,27 @@
     <string>Save</string>
    </property>
   </action>
-  <action name="file_remove_user_list">
+  <action name="remove_user_list_menu_item">
    <property name="text">
     <string>Remove User List</string>
    </property>
   </action>
-  <action name="file_remove_subreddit_list">
+  <action name="remove_subreddit_list_menu_item">
    <property name="text">
     <string>Remove Subreddit List</string>
    </property>
   </action>
-  <action name="file_open_settings">
+  <action name="open_settings_menu_item">
    <property name="text">
     <string>Settings</string>
    </property>
   </action>
-  <action name="file_exit">
+  <action name="exit_menu_item">
    <property name="text">
     <string>Exit</string>
    </property>
   </action>
-  <action name="file_failed_download_list">
+  <action name="failed_download_list_menu_item">
    <property name="text">
     <string>Failed Download List</string>
    </property>
@@ -448,17 +453,17 @@
     <string>Download Sessions</string>
    </property>
   </action>
-  <action name="file_unfinished_downloads">
+  <action name="unfinished_downloads_menu_item">
    <property name="text">
     <string>Unfinished Downloads</string>
    </property>
   </action>
-  <action name="file_imgur_credits">
+  <action name="imgur_credit_dialog_menu_item">
    <property name="text">
     <string>Imgur Credits</string>
    </property>
   </action>
-  <action name="file_about">
+  <action name="about_menu_item">
    <property name="text">
     <string>About</string>
    </property>
@@ -473,17 +478,17 @@
     <string>Subreddit List Count:</string>
    </property>
   </action>
-  <action name="file_user_manual">
+  <action name="user_manual_menu_item">
    <property name="text">
     <string>User Manual</string>
    </property>
   </action>
-  <action name="file_check_for_updates">
+  <action name="check_for_updates_menu_item">
    <property name="text">
     <string>Check For Update</string>
    </property>
   </action>
-  <action name="view_sort_list_by_name">
+  <action name="sort_list_by_name_menu_item">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -491,7 +496,7 @@
     <string>Name</string>
    </property>
   </action>
-  <action name="view_sort_list_by_date_added">
+  <action name="sort_list_by_date_added_menu_item">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -499,15 +504,15 @@
     <string>Date Added</string>
    </property>
   </action>
-  <action name="view_sort_list_by_number_of_downloads">
+  <action name="sort_list_by_post_count_menu_item">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Number of Downloads</string>
+    <string>Post Count</string>
    </property>
   </action>
-  <action name="view_order_by_ascending">
+  <action name="sort_list_ascending_menu_item">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -515,7 +520,7 @@
     <string>Ascending</string>
    </property>
   </action>
-  <action name="view_order_by_descending">
+  <action name="sort_list_descending_menu_item">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -523,12 +528,12 @@
     <string>Descending</string>
    </property>
   </action>
-  <action name="file_open_save_file_location">
+  <action name="open_data_directory_menu_item">
    <property name="text">
-    <string>Open Save Location</string>
+    <string>Open Data Directory</string>
    </property>
   </action>
-  <action name="file_import_save_file">
+  <action name="import_database_file_menu_item">
    <property name="text">
     <string>Import Save File</string>
    </property>
@@ -563,9 +568,60 @@
     <string>Export As Xml</string>
    </property>
   </action>
-  <action name="file_ffmpeg_requirement">
+  <action name="ffmpeg_requirement_dialog_menu_item">
    <property name="text">
     <string>FFmpeg Requirement</string>
+   </property>
+  </action>
+  <action name="download_user_list_menu_item">
+   <property name="text">
+    <string>Download User List</string>
+   </property>
+  </action>
+  <action name="download_subreddit_list_menu_item">
+   <property name="text">
+    <string>Download Subreddit List</string>
+   </property>
+  </action>
+  <action name="download_user_list_constrained_menu_item">
+   <property name="text">
+    <string>Download User List Constrained</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Download user list, but only extract posts made to subreddits in the subreddit list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="run_unfinished_extractions_menu_item">
+   <property name="text">
+    <string>Run Unfinished Extractions</string>
+   </property>
+  </action>
+  <action name="run_unfiinished_downloads_menu_item">
+   <property name="text">
+    <string>Run Unfinished Downloads</string>
+   </property>
+  </action>
+  <action name="sort_list_by_content_count_menu_item">
+   <property name="text">
+    <string>Content Count</string>
+   </property>
+  </action>
+  <action name="sort_list_by_comment_count_menu_item">
+   <property name="text">
+    <string>Comment Count</string>
+   </property>
+  </action>
+  <action name="sort_list_by_date_created_menu_item">
+   <property name="text">
+    <string>Date Created</string>
+   </property>
+   <property name="toolTip">
+    <string>Sort reddit objects by the date that the item was created on reddit</string>
+   </property>
+  </action>
+  <action name="sort_list_by_score_menu_item">
+   <property name="text">
+    <string>Total Score</string>
    </property>
   </action>
  </widget>
