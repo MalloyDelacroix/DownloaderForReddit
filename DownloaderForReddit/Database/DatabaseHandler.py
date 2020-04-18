@@ -4,6 +4,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
+from ..Core import Const
 from ..Utils import SystemUtil
 
 
@@ -12,7 +13,7 @@ class DatabaseHandler:
     base = declarative_base()
 
     def __init__(self):
-        database_path = os.path.join(SystemUtil.get_data_directory(), 'dfr.db')
+        database_path = os.path.join(SystemUtil.get_data_directory(), Const.DATABASE_NAME)
         self.engine = sqlalchemy.create_engine(f'sqlite:///{database_path}')
         self.base.metadata.create_all(self.engine)
 

@@ -25,6 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
 
+DATABASE_NAME = 'dfr.db'
 IMAGE_EXT = ('.jpg', '.jpeg', '.png', '.gif', '.gifv', '.webm')  # TODO: remove gif extensions after gif settings added
 GIF_EXT = ('.gif', '.gifv', '.webm')
 VID_EXT = ('.mp4', '.wmv', '.avi', '.mpg', '.divx')
