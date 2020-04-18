@@ -43,7 +43,7 @@ Please see this [wikiHow article](https://www.wikihow.com/Install-FFmpeg-on-Wind
 Installing The Downloader For Reddit
 ---------------------------------
 
-By far the easiest way to install and use The Downloader for Reddit is to download one of the pre-packaged executables from the [releases section](https://github.com/MalloyDelacroix/DownloaderForReddit/releases) (at the moment stand alone executables are only available for Windows and Linux).
+By far the easiest way to install and use The Downloader for Reddit is to download one of the pre-packaged executables from the [releases section](https://github.com/MalloyDelacroix/DownloaderForReddit/releases) (at the moment stand alone executables are only available for Windows). Alternatively, you can download the latest automatic build from [GitHub Actions](https://github.com/MalloyDelacroix/DownloaderForReddit/actions?query=workflow%3ABuild+branch%3Amaster). 
 
 To run the program, extract the folder (DownloaderForReddit) from the zip file and scroll down to and click the executable file (DownloaderForReddit.exe on windows and just DownloaderForReddit on Linux). Everything is self contained in the folder, there is nothing to install.
 
