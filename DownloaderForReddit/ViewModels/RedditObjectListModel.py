@@ -43,19 +43,13 @@ class RedditObjectListModel(QAbstractListModel):
         return None
 
     def add_new_list(self, list_name, list_type):
-        exists = self.session.query(RedditObjectList.id)\
-                     .filter(RedditObjectList.name == list_name)\
-                     .filter(RedditObjectList.list_type == self.list_type)\
-                     .scalar() is not None
-        if exists:
-            return False
-        else:
-            new_list = RedditObjectList(name=list_name, list_type=list_type)
-            self.session.add(new_list)
-            self.session.commit()
-            self.list = new_list
+        creator = RedditObjectCreator(list_type)
+        ro_list = creator.create_reddit_object_list(list_name)
+        if ro_list is not None:
+            self.list = ro_list
             self.reddit_objects = self.list.reddit_objects
             return True
+        return False
 
     def delete_current_list(self):
         # TODO: delete list and commit
@@ -110,7 +104,7 @@ class RedditObjectListModel(QAbstractListModel):
         """
         self.validating = True
         self.validation_thread = QThread()
-        self.validator = ObjectValidator(name_list, self.list_type)
+        self.validator = ObjectValidator(name_list, self.list_type, list_defaults=self.list.get_default_dict())
         self.validation_thread.started.connect(self.validator.run)
         self.validator.new_object_signal.connect(self.add_validated_reddit_object)
         self.validator.invalid_name_signal.connect(lambda name: print(f'Invalid name: {name}'))
@@ -225,15 +219,16 @@ class ObjectValidator(QObject):
     invalid_name_signal = pyqtSignal(str)
     finished = pyqtSignal()
 
-    def __init__(self, name_list, list_type):
+    def __init__(self, name_list, list_type, list_defaults):
         super().__init__()
         self.name_list = name_list
         self.list_type = list_type
+        self.list_defaults = list_defaults
 
     def run(self):
         object_creator = RedditObjectCreator(self.list_type)
         for name in self.name_list:
-            reddit_object_id = object_creator.create_reddit_object(name)
+            reddit_object_id = object_creator.create_reddit_object(name, self.list_defaults)
             if reddit_object_id is not None:
                 self.new_object_signal.emit(reddit_object_id)
             else:

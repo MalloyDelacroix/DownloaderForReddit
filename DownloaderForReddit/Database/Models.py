@@ -51,8 +51,63 @@ class RedditObjectList(BaseModel):
     list_type = Column(String, nullable=False)
     reddit_objects = relationship('RedditObject', secondary='reddit_object_list_association', lazy='dynamic')
 
+    # region List Download Defaults
+    post_limit = Column(SmallInteger, default=25)
+    post_score_limit = Column(Integer, default=1000)
+    post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
+    post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
+    avoid_duplicates = Column(Boolean, default=True)
+    extract_self_post_links = Column(Boolean, default=False)
+    download_self_post_text = Column(Boolean, default=False)
+    self_post_file_format = Column(String, default='txt')
+    download_videos = Column(Boolean, default=True)
+    download_images = Column(Boolean, default=True)
+    download_gifs = Column(Boolean, default=True)
+    download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
+    extract_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
+    download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
+    download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
+    comment_limit = Column(Integer, default=100)
+    comment_score_limit = Column(Integer, default=1000)
+    comment_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
+    comment_sort_method = Column(Enum(CommentSortMethod), default=CommentSortMethod.NEW)
+    date_limit = Column(DateTime, nullable=True)
+    post_download_naming_method = Column(String, default='%[title]')
+    post_save_structure = Column(String, default='%[author_name]')
+    comment_naming_method = Column(String, default='%[author_name]-comment')
+    comment_save_structure = Column(String, default='%[post_author_name]/Comments/%[post_title]')
+    # endregion
+
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
+
+    def get_default_dict(self):
+        return {
+            'post_limit': self.post_limit,
+            'post_score_limit': self.post_score_limit,
+            'post_score_limit_operator': self.post_score_limit_operator,
+            'post_sort_method': self.post_sort_method,
+            'avoid_duplicates': self.avoid_duplicates,
+            'extract_self_post_links': self.extract_self_post_links,
+            'download_self_post_text': self.download_self_post_text,
+            'self_post_file_format': self.self_post_file_format,
+            'download_videos': self.download_videos,
+            'download_images': self.download_images,
+            'download_gifs': self.download_gifs,
+            'download_nsfw': self.download_nsfw,
+            'extract_comments': self.extract_comments,
+            'download_comments': self.download_comments,
+            'download_comment_content': self.download_comment_content,
+            'comment_limit': self.comment_limit,
+            'comment_score_limit': self.comment_score_limit,
+            'comment_score_limit_operator': self.comment_score_limit_operator,
+            'comment_sort_method': self.comment_sort_method,
+            'date_limit': self.date_limit,
+            'post_download_naming_method': self.post_download_naming_method,
+            'post_save_structure': self.post_save_structure,
+            'comment_naming_method': self.comment_naming_method,
+            'comment_save_structure': self.comment_save_structure
+        }
 
 
 class RedditObject(BaseModel):

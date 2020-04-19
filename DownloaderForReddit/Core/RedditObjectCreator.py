@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy import func
 
-from ..Database.Models import User, Subreddit
+from ..Database.Models import User, Subreddit, RedditObjectList
 from ..Utils import Injector, RedditUtils
 
 
@@ -23,22 +23,20 @@ class RedditObjectCreator:
             self.name_checker = RedditUtils.NameChecker(self.list_type)
         return self.name_checker
 
-    def create_reddit_object(self, name, **kwargs):
+    def create_reddit_object(self, name, list_defaults):
         if self.list_type == 'USER':
-            return self.create_user(name, **kwargs)
+            return self.create_user(name, list_defaults)
         else:
-            return self.create_subreddit(name, **kwargs)
+            return self.create_subreddit(name, list_defaults)
 
-    def create_user(self, user_name, **kwargs):
+    def create_user(self, user_name, list_defaults):
         with self.db.get_scoped_session() as session:
             user = session.query(User).filter(func.lower(User.name) == user_name.lower()).first()
             if user is None:
                 validation_set = self.get_name_checker().check_user_name(user_name)
                 if validation_set.valid:
-                    defaults = self.get_default_setup('USER')
-                    for key, value in kwargs.items():
-                        defaults[key] = value
-                    user = User(name=validation_set.name, date_created=validation_set.date_created, **defaults)
+                    list_defaults['significant'] = True
+                    user = User(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
                     session.add(user)
                     session.commit()
                     return user.id
@@ -46,23 +44,35 @@ class RedditObjectCreator:
                 return user.id
             return None
 
-    def create_subreddit(self, sub_name, **kwargs):
+    def create_subreddit(self, sub_name, list_defaults):
         with self.db.get_scoped_session() as session:
             subreddit = session.query(Subreddit).filter(func.lower(Subreddit.name) == sub_name.lower()).first()
             if subreddit is None:
                 validation_set = self.get_name_checker().check_subreddit_name(sub_name)
                 if validation_set.valid:
-                    defaults = self.get_default_setup('SUBREDDIT')
-                    for key, value in kwargs.items():
-                        defaults[key] = value
+                    list_defaults['significant'] = True
                     subreddit = \
-                        Subreddit(name=validation_set.name, date_created=validation_set.date_created, **defaults)
+                        Subreddit(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
                     session.add(subreddit)
                     session.commit()
                     return subreddit.id
             if subreddit is not None:
                 return subreddit.id
             return None
+
+    def create_reddit_object_list(self, name):
+        with self.db.get_scoped_session() as session:
+            exists = session.query(RedditObjectList.id)\
+                     .filter(RedditObjectList.name == name)\
+                     .filter(RedditObjectList.list_type == self.list_type)\
+                     .scalar() is not None
+            if not exists:
+                defaults = self.get_default_setup(self.list_type)
+                ro_list = RedditObjectList(name=name, list_type=self.list_type, **defaults)
+                session.add(ro_list)
+                session.commit()
+                return ro_list
+        return None
 
     def get_default_setup(self, object_type):
         defaults = {
@@ -84,8 +94,6 @@ class RedditObjectCreator:
             'comment_score_limit_operator': self.settings_manager.comment_score_limit_operator,
             'comment_sort_method': self.settings_manager.comment_sort_method,
             'date_limit': self.settings_manager.date_limit,
-            'significant': True,
-            'lock_settings': self.settings_manager.lock_reddit_object_settings
         }
         self.get_specific_defaults(defaults, object_type)
         return defaults
