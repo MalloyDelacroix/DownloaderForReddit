@@ -1,3 +1,5 @@
+import os
+
 from .BaseExtractor import BaseExtractor
 from ..Database.Models import Content
 from ..Utils import SystemUtil
@@ -32,7 +34,7 @@ class SelfPostExtractor(BaseExtractor):
             post=self.post,
             directory_path=self.make_dir_path()
         )
-        content.make_download_title()
+        self.check_file_path(content)
         self.download_text_post(content)
         session = self.post.get_session()
         session.add(content)
@@ -41,7 +43,7 @@ class SelfPostExtractor(BaseExtractor):
 
     def download_text_post(self, content):
         try:
-            with open(content.full_file_path, 'w', encoding='utf-8') as file:
+            with open(content.get_full_file_path(), 'w', encoding='utf-8') as file:
                 text = self.get_text(content.extension)
                 file.write(text)
                 content.set_downloaded(self.download_session_id)
@@ -53,6 +55,18 @@ class SelfPostExtractor(BaseExtractor):
             return self.comment.body if self.comment is not None else self.post.text
         else:
             return self.comment.body_html if self.comment is not None else self.post.text_html
+
+    def check_file_path(self, content):
+        self.create_dir_path(content.directory_path)
+        unique_count = 1
+        base_path = SystemUtil.clean_path(content.title)
+        download_title = base_path
+        path = content.get_full_file_path(download_title)
+        while os.path.exists(path):
+            download_title = f'{base_path}({unique_count})'
+            path = content.get_full_file_path(download_title)
+            unique_count += 1
+        content.download_title = download_title
 
     def create_dir_path(self, dir_path):
         try:
