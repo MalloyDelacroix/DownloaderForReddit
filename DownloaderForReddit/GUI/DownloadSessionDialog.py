@@ -425,7 +425,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
 
     def open_selected_content(self):
         content = self.content_model.content_list[self.content_list_view.selectedIndexes()[0].row()]
-        SystemUtil.open_in_system(content.full_file_path)
+        SystemUtil.open_in_system(content.get_full_file_path())
 
     def rename_download_session(self, dl_session):
         if dl_session is not None:

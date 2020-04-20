@@ -151,7 +151,7 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         try:
             pixmap = self.pixmap_map[content.id]
         except KeyError:
-            pixmap = QPixmap(content.full_file_path).scaled(QSize(500, 500), Qt.KeepAspectRatio)
+            pixmap = QPixmap(content.get_full_file_path()).scaled(QSize(500, 500), Qt.KeepAspectRatio)
             self.pixmap_map[content.id] = pixmap
         return QIcon(pixmap)
 
