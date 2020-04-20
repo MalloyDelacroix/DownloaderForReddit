@@ -72,8 +72,7 @@ class Downloader:
                 response = requests.get(content.url, stream=True)
                 if response.status_code == 200:
                     self.check_file_path(content)
-                    content.make_download_title()
-                    file_path = content.full_file_path
+                    file_path = content.get_full_file_path()
                     with open(file_path, 'wb') as file:
                         for chunk in response.iter_content(1024 * 1024):
                             if not self.hard_stop:
@@ -100,11 +99,14 @@ class Downloader:
             self.logger.error('Could not create directory path', extra={'directory_path': content.directory_path},
                               exc_info=True)
         unique_count = 1
-        path = content.full_file_path
+        base_path = SystemUtil.clean_path(content.title)
+        download_title = base_path
+        path = content.get_full_file_path(download_title)
         while os.path.exists(path):
-            content.title = f'{content.title}({unique_count})'
-            path = content.full_file_path
+            download_title = f'{base_path}({unique_count})'
+            path = content.get_full_file_path(download_title)
             unique_count += 1
+        content.download_title = download_title
 
     def finish_download(self, content: Content):
         """
@@ -114,14 +116,14 @@ class Downloader:
         """
         if not self.hard_stop:
             if self.settings_manager.match_file_modified_to_post_date:
-                SystemUtil.set_file_modify_time(content.full_file_path, content.post.date_posted.timestamp())
+                SystemUtil.set_file_modify_time(content.get_full_file_path(), content.post.date_posted.timestamp())
             content.set_downloaded(self.download_session_id)
-            Message.send_text(f'Saved: {content.full_file_path}')
+            Message.send_text(f'Saved: {content.get_full_file_path()}')
             self.download_count += 1
         else:
             message = 'Download was stopped before finished'
             content.set_download_error(message)
-            Message.send_download_error(f'{message}. File at path: "{content.full_file_path}" may be corrupted')
+            Message.send_download_error(f'{message}. File at path: "{content.get_full_file_path()}" may be corrupted')
 
     def handle_unsuccessful_response(self, content: Content, status_code):
         message = 'Failed Download: Unsuccessful response from server'
@@ -143,7 +145,7 @@ class Downloader:
 
     def log_errors(self, content: Content, message, **kwargs):
         extra = {'url': content.url, 'submission_id': content.post.reddit_id, 'user': content.user,
-                 'subreddit': content.subreddit, 'save_path': content.full_file_path, **kwargs}
+                 'subreddit': content.subreddit, 'save_path': content.get_full_file_path(), **kwargs}
         self.logger.error(message, extra=extra, exc_info=True)
 
     def output_error(self, content, message):
