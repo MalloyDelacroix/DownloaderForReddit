@@ -187,9 +187,9 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
         if not index.isValid():
             return QVariant()
         item = index.internalPointer()
-        if role == Qt.DisplayRole:
-            return item.data(index.column())
-        if role == Qt.UserRole:
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
+            return item.data(index.column(), role)
+        elif role == Qt.UserRole:
             if item:
                 return item.comment
         return QVariant()
@@ -272,12 +272,11 @@ class TreeItem:
     def columnCount(self):
         return len(self.headers)
 
-    def data(self, column):
-        if self.comment is None:
-            return QVariant(self.headers[column])
-        else:
+    def data(self, column, role):
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
             header = self.headers[column]
             return self.header_map[header](self.comment)
+        return QVariant(self.headers[column])
 
     def row(self):
         if self.parent:
