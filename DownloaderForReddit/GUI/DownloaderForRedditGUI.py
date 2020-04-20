@@ -31,23 +31,23 @@ import logging
 
 from ..GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from ..GUI.AboutDialog import AboutDialog
-from ..GUI.DownloadedObjectsDialog import DownloadedObjectsDialog
 from ..GUI.FailedDownloadsDialog import FailedDownloadsDialog
-from DownloaderForReddit.GUI.Messages import Message
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
-from ..Core.DownloadRunner import DownloadRunner
-from ..Core.RedditObjectCreator import RedditObjectCreator
-from ..Database.Models import User, Subreddit, RedditObjectList
 from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
-from DownloaderForReddit.Utils.UpdaterChecker import UpdateChecker
+from ..GUI.Messages import Message
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
-from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
-from ..Utils.Exporters import TextExporter, JsonExporter
-from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.DownloadSessionDialog import DownloadSessionDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
+from ..Core.DownloadRunner import DownloadRunner
+from ..Core.RedditObjectCreator import RedditObjectCreator
+from ..Database.Models import User, Subreddit, RedditObject, RedditObjectList
+from ..Utils.UpdaterChecker import UpdateChecker
+from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
+from ..Utils.Exporters import TextExporter, JsonExporter
+from ..Utils.TokenParser import TokenParser
+from ..ViewModels.RedditObjectListModel import RedditObjectListModel
 from ..version import __version__
 
 
@@ -260,7 +260,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         remove_user.triggered.connect(self.remove_user)
         user_settings.triggered.connect(lambda: self.user_settings(user))
         user_downloads.triggered.connect(lambda: self.user_settings(1, False))
-        open_user_folder.triggered.connect(self.open_user_download_folder)
+        open_user_folder.triggered.connect(lambda: self.open_reddit_object_download_folder(user))
 
         if not valid:
             user_settings.setVisible(False)
@@ -306,7 +306,7 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         remove_subreddit.triggered.connect(self.remove_subreddit)
         subreddit_settings.triggered.connect(lambda: self.subreddit_settings(subreddit))
         subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
-        open_subreddit_folder.triggered.connect(self.open_subreddit_download_folder)
+        open_subreddit_folder.triggered.connect(lambda: self.open_reddit_object_download_folder(subreddit))
 
         if not valid:
             subreddit_settings.setVisible(False)
@@ -365,38 +365,17 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         dialog.show()
         dialog.exec_()
 
-    def open_user_download_folder(self):
-        """Opens the Folder where the users downloads are saved using the default file manager"""
-        selected_user = None
+    def open_reddit_object_download_folder(self, reddit_object: RedditObject):
+        sub_path = TokenParser.parse_tokens(reddit_object, reddit_object.post_save_structure)
+        if reddit_object.object_type == 'USER':
+            base_path = self.settings_manager.user_save_directory
+        else:
+            base_path = self.settings_manager.subreddit_save_directory
+        path = os.path.join(base_path, sub_path)
         try:
-            selected_user = self.get_selected_single_user()
-            SystemUtil.open_in_system(selected_user.save_directory)
-            self.logger.info('User download folder opened', extra={'user': selected_user.name})
-        except AttributeError:
-            self.logger.error('Download folder tried to open with no user selected', exc_info=True)
-            Message.no_reddit_object_selected(self, 'user')
-        except FileNotFoundError:
-            path = selected_user.save_directory if selected_user is not None else 'No Selected User'
-            self.logger.error('Download folder tried to open with no download folder found',
-                              extra={'selected_user_save_directory': path}, exc_info=True)
-            Message.no_download_folder(self, 'user')
-
-    def open_subreddit_download_folder(self):
-        """Opens the Folder where the subreddit downloads are saved using the default file manager"""
-        selected_sub = None
-        try:
-            selected_sub = self.get_selected_single_subreddit()
-            path = os.path.join(selected_sub.save_directory, selected_sub.name) if \
-                selected_sub.subreddit_save_method.startswith('Subreddit') else selected_sub.save_directory
             SystemUtil.open_in_system(path)
-        except AttributeError:
-            self.logger.error('Download folder tried to open with no subreddit selected', exc_info=True)
-            Message.no_reddit_object_selected(self, 'subreddit')
         except FileNotFoundError:
-            path = selected_sub.save_direcory if selected_sub is not None else 'No Sub Selected'
-            self.logger.error('Download folder tired to open with no download folder found',
-                              extra={'selected_sub_save_directory': path}, exc_info=True)
-            Message.no_download_folder(self, 'subreddit')
+            Message.no_download_folder(self, reddit_object.object_type.lower())
 
     def run_full_download(self):
         user_id_list = self.user_list_model.get_id_list() if self.download_users_radio.isChecked() or \
