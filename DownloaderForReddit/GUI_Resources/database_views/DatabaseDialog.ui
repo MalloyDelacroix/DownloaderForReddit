@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1689</width>
-    <height>919</height>
+    <width>1698</width>
+    <height>981</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,77 +17,114 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <item>
-      <widget class="QGroupBox" name="model_focus_group_box">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>61</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>Model Focus</string>
-       </property>
-       <widget class="QWidget" name="horizontalLayoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>971</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QRadioButton" name="download_session_focus_radio">
-           <property name="text">
-            <string>Download Sessions</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="reddit_object_focus_radio">
-           <property name="text">
-            <string>Reddit Objects</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="post_focus_radio">
-           <property name="text">
-            <string>Posts</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="content_focus_radio">
-           <property name="text">
-            <string>Content</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="comment_focus_radio">
-           <property name="text">
-            <string>Comments</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </widget>
-      </widget>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QGroupBox" name="model_focus_group_box">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>61</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Model Focus</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QRadioButton" name="download_session_focus_radio">
+              <property name="text">
+               <string>Download Sessions</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="reddit_object_focus_radio">
+              <property name="text">
+               <string>Reddit Objects</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="post_focus_radio">
+              <property name="text">
+               <string>Posts</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="content_focus_radio">
+              <property name="text">
+               <string>Content</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="comment_focus_radio">
+              <property name="text">
+               <string>Comments</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QCheckBox" name="show_download_sessions_checkbox">
+              <property name="text">
+               <string>Show download sessions</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_reddit_objects_checkbox">
+              <property name="text">
+               <string>Show reddit objects</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_posts_checkbox">
+              <property name="text">
+               <string>Show posts</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_content_checkbox">
+              <property name="text">
+               <string>Show content</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_comments_checkbox">
+              <property name="text">
+               <string>Show comments</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="filter_button">
+            <property name="text">
+             <string>Filter</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="filter_layout"/>
      </item>
      <item>
       <widget class="QSplitter" name="splitter">
@@ -103,6 +140,9 @@
        <widget class="QWidget" name="download_session_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
+          <widget class="QComboBox" name="download_session_sort_combo"/>
+         </item>
+         <item>
           <widget class="QListView" name="download_session_list_view">
            <property name="editTriggers">
             <set>QAbstractItemView::NoEditTriggers</set>
@@ -114,6 +154,9 @@
        <widget class="QWidget" name="reddit_object_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
+          <widget class="QComboBox" name="reddit_object_sort_combo"/>
+         </item>
+         <item>
           <widget class="QListView" name="reddit_object_list_view">
            <property name="editTriggers">
             <set>QAbstractItemView::NoEditTriggers</set>
@@ -124,6 +167,9 @@
        </widget>
        <widget class="QWidget" name="post_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QComboBox" name="post_sort_combo"/>
+         </item>
          <item>
           <widget class="QSplitter" name="post_splitter">
            <property name="orientation">
@@ -163,6 +209,9 @@
        </widget>
        <widget class="QWidget" name="content_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QComboBox" name="content_sort_combo"/>
+         </item>
          <item>
           <widget class="QListView" name="content_list_view">
            <property name="editTriggers">
@@ -208,6 +257,9 @@
        <widget class="QWidget" name="comment_widget" native="true">
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
+          <widget class="QComboBox" name="comment_sort_combo"/>
+         </item>
+         <item>
           <widget class="QTreeView" name="comment_tree_view">
            <property name="editTriggers">
             <set>QAbstractItemView::NoEditTriggers</set>
@@ -217,58 +269,6 @@
         </layout>
        </widget>
       </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QCheckBox" name="show_download_sessions_checkbox">
-         <property name="text">
-          <string>Show download sessions</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="show_reddit_objects_checkbox">
-         <property name="text">
-          <string>Show reddit objects</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="show_posts_checkbox">
-         <property name="text">
-          <string>Show posts</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="show_content_checkbox">
-         <property name="text">
-          <string>Show content</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="show_comments_checkbox">
-         <property name="text">
-          <string>Show comments</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
      </item>
     </layout>
    </item>

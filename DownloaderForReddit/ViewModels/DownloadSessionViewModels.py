@@ -24,6 +24,9 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
         super().__init__()
         self.sessions = []
 
+    def get_item(self, row):
+        return self.sessions[row]
+
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.sessions)
 
@@ -46,6 +49,9 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
     def __init__(self):
         super().__init__()
         self.reddit_object_list = []
+
+    def get_item(self, row):
+        return self.reddit_object_list[row]
 
     def set_data(self, data):
         self.reddit_object_list = data
@@ -80,6 +86,9 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         self.posts = []
         self.headers = ['title', 'date_posted', 'score', 'self_post', 'text', 'url', 'domain', 'author',
                         'subreddit', 'nsfw']
+
+    def get_item(self, row):
+        return self.posts[row]
 
     def set_data(self, data):
         self.posts.clear()
@@ -126,6 +135,9 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         super().__init__()
         self.content_list = []
         self.pixmap_map = {}
+
+    def get_item(self, row):
+        return self.content_list[row]
 
     def set_data(self, data):
         self.pixmap_map.clear()
