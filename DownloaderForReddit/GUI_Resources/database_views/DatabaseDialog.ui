@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DatabaseDialog</class>
+ <widget class="QDialog" name="DatabaseDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1698</width>
+    <height>981</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Database</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_7">
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QGroupBox" name="model_focus_group_box">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>61</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Model Focus</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QRadioButton" name="download_session_focus_radio">
+              <property name="text">
+               <string>Download Sessions</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="reddit_object_focus_radio">
+              <property name="text">
+               <string>Reddit Objects</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="post_focus_radio">
+              <property name="text">
+               <string>Posts</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="content_focus_radio">
+              <property name="text">
+               <string>Content</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="comment_focus_radio">
+              <property name="text">
+               <string>Comments</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QCheckBox" name="show_download_sessions_checkbox">
+              <property name="text">
+               <string>Show download sessions</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_reddit_objects_checkbox">
+              <property name="text">
+               <string>Show reddit objects</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_posts_checkbox">
+              <property name="text">
+               <string>Show posts</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_content_checkbox">
+              <property name="text">
+               <string>Show content</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="show_comments_checkbox">
+              <property name="text">
+               <string>Show comments</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="filter_button">
+            <property name="text">
+             <string>Filter</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="filter_layout"/>
+     </item>
+     <item>
+      <widget class="QSplitter" name="splitter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QWidget" name="download_session_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QComboBox" name="download_session_sort_combo"/>
+         </item>
+         <item>
+          <widget class="QListView" name="download_session_list_view">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="reddit_object_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QComboBox" name="reddit_object_sort_combo"/>
+         </item>
+         <item>
+          <widget class="QListView" name="reddit_object_list_view">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="post_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QComboBox" name="post_sort_combo"/>
+         </item>
+         <item>
+          <widget class="QSplitter" name="post_splitter">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <widget class="QTableView" name="post_table_view">
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustIgnored</enum>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="showGrid">
+             <bool>false</bool>
+            </property>
+            <property name="gridStyle">
+             <enum>Qt::NoPen</enum>
+            </property>
+            <attribute name="horizontalHeaderCascadingSectionResizes">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+           <widget class="QTextBrowser" name="post_text_browser">
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="content_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QComboBox" name="content_sort_combo"/>
+         </item>
+         <item>
+          <widget class="QListView" name="content_list_view">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="flow">
+            <enum>QListView::LeftToRight</enum>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Adjust</enum>
+           </property>
+           <property name="layoutMode">
+            <enum>QListView::Batched</enum>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <property name="gridSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="viewMode">
+            <enum>QListView::IconMode</enum>
+           </property>
+           <property name="batchSize">
+            <number>10</number>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="comment_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QComboBox" name="comment_sort_combo"/>
+         </item>
+         <item>
+          <widget class="QTreeView" name="comment_tree_view">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

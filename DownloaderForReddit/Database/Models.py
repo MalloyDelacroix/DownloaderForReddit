@@ -78,6 +78,8 @@ class RedditObjectList(BaseModel):
     comment_save_structure = Column(String, default='%[post_author_name]/Comments/%[post_title]')
     # endregion
 
+    object_type = 'REDDIT_OBJECT_LIST'
+
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
 
@@ -480,13 +482,10 @@ class Content(BaseModel):
     def short_title(self):
         return self.title[:Injector.get_settings_manager().short_title_char_length]
 
-    @property
-    def full_file_path(self):
-        return os.path.join(self.directory_path, f'{self.download_title}.{self.extension}')
-
-    def make_download_title(self):
-        """Ensures the file name does not contain forbidden characters and is within the character limit"""
-        self.download_title = SystemUtil.clean_path(self.title)
+    def get_full_file_path(self, download_title=None):
+        if not download_title:
+            download_title = self.download_title
+        return os.path.join(self.directory_path, f'{download_title}.{self.extension}')
 
     def set_downloaded(self, download_session_id):
         self.download_session_id = download_session_id

@@ -74,8 +74,8 @@ class RedditVideoExtractor(BaseExtractor):
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
                             merge_set = VideoMerger.MergeSet(
-                                video_id=video_content.full_file_path,
-                                audio_id=audio_content.full_file_path,
+                                video_id=video_content.get_full_file_path(),
+                                audio_id=audio_content.get_full_file_path(),
                                 date_modified=self.post.date_posted
                             )
                             VideoMerger.videos_to_merge.append(merge_set)

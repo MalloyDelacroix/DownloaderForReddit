@@ -1,20 +1,20 @@
 import logging
-from PyQt5.QtWidgets import (QDialog, QMenu, QWidgetAction, QInputDialog, QFontComboBox, QComboBox, QActionGroup,
+from PyQt5.QtWidgets import (QMenu, QWidgetAction, QInputDialog, QFontComboBox, QComboBox, QActionGroup,
                              QWidget, QHBoxLayout, QLabel)
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor, QFont
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
-from ..GUI_Resources.DownloadSessionsDialog_auto import Ui_DownloadSessionDialog
+from ..GUI_Resources.DatabaseDialog_auto import Ui_DatabaseDialog
 from ..ViewModels.DownloadSessionViewModels import (DownloadSessionModel, RedditObjectModel, PostTableModel,
                                                     ContentListModel, CommentTreeModel)
 from ..Utils import Injector, SystemUtil
 
 
-class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
+class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def __init__(self):
-        QDialog.__init__(self)
+        QWidget.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
@@ -26,6 +26,8 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         if geom['x'] != 0 and geom['y'] != 0:
             self.move(geom['x'], geom['y'])
         self.splitter.setSizes(self.settings_manager.dls_dialog_splitter_position)
+
+
 
         self.show_reddit_objects_checkbox.setChecked(self.settings_manager.dls_dialog_show_reddit_objects)
         self.show_posts_checkbox.setChecked(self.settings_manager.dls_dialog_show_posts)
@@ -39,6 +41,8 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.current_download_session = None
         self.current_reddit_object = None
         self.current_post = None
+        self.current_content = None
+        self.current_comment = None
 
         self.download_session_model = DownloadSessionModel()
         self.download_session_model.sessions = \
@@ -279,7 +283,14 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         if ok:
             self.set_content_icon_size(size)
 
+    # region Download Session
     def set_current_download_session(self):
+        if self.download_session_focus_radio.isChecked():
+            self.set_current_download_session_download_session_focus()
+        elif self.reddit_object_focus_radio.isChecked():
+            self.set_current_download_session_reddit_object_focus()
+
+    def set_current_download_session_download_session_focus(self):
         try:
             self.current_download_session = \
                 self.download_session_model.sessions[self.download_session_list_view.currentIndex().row()]
@@ -296,6 +307,11 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             self.set_content_model_data()
             self.set_comment_model_data()
 
+    def set_current_download_session_reddit_object_focus(self):
+        pass
+    # endregion
+
+    # region RedditObject
     def set_current_reddit_object(self):
         if self.show_reddit_objects_checkbox.isChecked():
             try:
@@ -311,6 +327,32 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 self.set_content_model_data()
                 self.set_comment_model_data()
 
+    def set_current_reddit_object_download_session_focus(self):
+        pass
+
+    def set_current_reddit_object_reddit_object_focus(self):
+        pass
+
+    def set_current_reddit_object_post_focus(self):
+        pass
+
+    def set_current_reddit_object_content_focus(self):
+        pass
+
+    def set_current_reddit_object_comment_focus(self):
+        pass
+
+    def set_reddit_object_model_data(self):
+        try:
+            if self.show_reddit_objects_checkbox.isChecked():
+                self.reddit_object_model.set_data(
+                    self.current_download_session
+                        .get_downloaded_reddit_objects(session=self.session).order_by(RedditObject.name).all())
+        except AttributeError:
+            pass
+    # endregion
+
+    # region Post
     def set_current_post(self):
         if self.show_posts_checkbox.isChecked():
             try:
@@ -326,15 +368,6 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             self.set_content_model_data()
             self.set_comment_model_data()
 
-    def set_reddit_object_model_data(self):
-        try:
-            if self.show_reddit_objects_checkbox.isChecked():
-                self.reddit_object_model.set_data(
-                    self.current_download_session
-                        .get_downloaded_reddit_objects(session=self.session).order_by(RedditObject.name).all())
-        except AttributeError:
-            pass
-
     def set_post_model_data(self):
         try:
             if self.show_posts_checkbox.isChecked():
@@ -348,7 +381,9 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 self.post_model.set_data(data.order_by(Post.title).all())
         except AttributeError:
             pass
+    # endregion
 
+    # region Content
     def set_content_model_data(self):
         try:
             if self.show_content_checkbox.isChecked():
@@ -367,7 +402,9 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 self.content_model.set_data(data.order_by(Content.title).all())
         except AttributeError:
             pass
+    # endregion
 
+    # region Comment
     def set_comment_model_data(self):
         if self.show_comments_checkbox.isChecked():
             self.comment_tree_view.clearSelection()
@@ -381,6 +418,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             top_comments = data.filter(Comment.parent_id == None).order_by(Comment.id).all()
             self.comment_tree_model.set_data(top_comments)
             self.comment_tree_view.expandAll()
+    # endregion
 
     def resize_post_table_columns(self):
         for col in self.post_model.headers:

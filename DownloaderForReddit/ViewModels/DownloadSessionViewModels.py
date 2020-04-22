@@ -24,6 +24,9 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
         super().__init__()
         self.sessions = []
 
+    def get_item(self, row):
+        return self.sessions[row]
+
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.sessions)
 
@@ -46,6 +49,9 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
     def __init__(self):
         super().__init__()
         self.reddit_object_list = []
+
+    def get_item(self, row):
+        return self.reddit_object_list[row]
 
     def set_data(self, data):
         self.reddit_object_list = data
@@ -80,6 +86,9 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         self.posts = []
         self.headers = ['title', 'date_posted', 'score', 'self_post', 'text', 'url', 'domain', 'author',
                         'subreddit', 'nsfw']
+
+    def get_item(self, row):
+        return self.posts[row]
 
     def set_data(self, data):
         self.posts.clear()
@@ -127,6 +136,9 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         self.content_list = []
         self.pixmap_map = {}
 
+    def get_item(self, row):
+        return self.content_list[row]
+
     def set_data(self, data):
         self.pixmap_map.clear()
         self.content_list.clear()
@@ -151,7 +163,7 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         try:
             pixmap = self.pixmap_map[content.id]
         except KeyError:
-            pixmap = QPixmap(content.full_file_path).scaled(QSize(500, 500), Qt.KeepAspectRatio)
+            pixmap = QPixmap(content.get_full_file_path()).scaled(QSize(500, 500), Qt.KeepAspectRatio)
             self.pixmap_map[content.id] = pixmap
         return QIcon(pixmap)
 
@@ -187,9 +199,9 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
         if not index.isValid():
             return QVariant()
         item = index.internalPointer()
-        if role == Qt.DisplayRole:
-            return item.data(index.column())
-        if role == Qt.UserRole:
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
+            return item.data(index.column(), role)
+        elif role == Qt.UserRole:
             if item:
                 return item.comment
         return QVariant()
@@ -272,12 +284,11 @@ class TreeItem:
     def columnCount(self):
         return len(self.headers)
 
-    def data(self, column):
-        if self.comment is None:
-            return QVariant(self.headers[column])
-        else:
+    def data(self, column, role):
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
             header = self.headers[column]
             return self.header_map[header](self.comment)
+        return QVariant(self.headers[column])
 
     def row(self):
         if self.parent:

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>773</width>
-    <height>877</height>
+    <height>940</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,11 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QListView" name="reddit_objects_list_view"/>
+     <widget class="QListView" name="reddit_objects_list_view">
+      <property name="selectionMode">
+       <enum>QAbstractItemView::ExtendedSelection</enum>
+      </property>
+     </widget>
      <widget class="QScrollArea" name="scroll_area">
       <property name="horizontalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -41,130 +45,29 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>437</width>
-         <height>1354</height>
+         <width>262</width>
+         <height>867</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="lock_settings_checkbox">
-              <property name="toolTip">
-               <string>When checked, the settings in this window will not be overwritten due to changes in the main settings window</string>
-              </property>
-              <property name="layoutDirection">
-               <enum>Qt::LeftToRight</enum>
-              </property>
-              <property name="text">
-               <string>Lock Settings</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QPushButton" name="download_button">
-              <property name="text">
-               <string>Download </string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="enable_download_checkbox">
-              <property name="text">
-               <string>Download Enabled</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QPushButton" name="download_button">
+            <property name="text">
+             <string>Download </string>
+            </property>
+           </widget>
           </item>
           <item>
-           <layout class="QFormLayout" name="info_form">
-            <item row="1" column="0">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Name:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Id:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Date Created:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Date Added:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Last Download:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="name_label">
-              <property name="text">
-               <string>name</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="id_label">
-              <property name="text">
-               <string>0</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="date_created_label">
-              <property name="text">
-               <string>date_created</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QLabel" name="date_added_label">
-              <property name="text">
-               <string>date_added</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QLabel" name="last_download_label">
-              <property name="text">
-               <string>last_download</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="2">
-             <widget class="QLabel" name="label_27">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Basic Info</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="ObjectInfoWidget" name="info_widget" native="true"/>
           </item>
           <item>
            <widget class="Line" name="line">
@@ -174,512 +77,7 @@
            </widget>
           </item>
           <item>
-           <layout class="QFormLayout" name="download_info_form">
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Post Count:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="post_count_label">
-              <property name="text">
-               <string>post_count</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Comment Count:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLabel" name="comment_count_label">
-              <property name="text">
-               <string>comment_count</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>Content Count:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="content_count_label">
-              <property name="text">
-               <string>content_count</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="2">
-             <widget class="QLabel" name="label_26">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Download Info</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="Line" name="line_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QFormLayout" name="post_download_form">
-            <item row="0" column="0">
-             <widget class="Line" name="line_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" colspan="2">
-             <widget class="QLabel" name="label_19">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Post Download Settings</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Post Limit:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QSpinBox" name="post_limit_spinbox">
-                <property name="maximum">
-                 <number>1000</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="post_limit_max_button">
-                <property name="text">
-                 <string>Max</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Score Limit:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QSpinBox" name="score_limit_spinbox">
-              <property name="maximum">
-               <number>10000000</number>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>Score Limit Eval:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QComboBox" name="score_limit_operator_combo"/>
-            </item>
-            <item row="6" column="0">
-             <widget class="QCheckBox" name="date_limit_checkbox">
-              <property name="layoutDirection">
-               <enum>Qt::RightToLeft</enum>
-              </property>
-              <property name="text">
-               <string>Date Limit:    </string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QDateTimeEdit" name="date_limit_edit">
-              <property name="dateTime">
-               <datetime>
-                <hour>14</hour>
-                <minute>43</minute>
-                <second>53</second>
-                <year>2005</year>
-                <month>6</month>
-                <day>23</day>
-               </datetime>
-              </property>
-              <property name="minimumDateTime">
-               <datetime>
-                <hour>14</hour>
-                <minute>43</minute>
-                <second>53</second>
-                <year>2005</year>
-                <month>6</month>
-                <day>23</day>
-               </datetime>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_12">
-              <property name="text">
-               <string>Avoid Duplicates:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="1">
-             <widget class="QCheckBox" name="avoid_duplicates_checkbox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_30">
-              <property name="text">
-               <string>Extract Self Post Content:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="1">
-             <widget class="QCheckBox" name="extract_self_post_content_checkbox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="11" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>Download Videos:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="11" column="1">
-             <widget class="QCheckBox" name="download_videos_checkbox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="12" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Download Images:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="12" column="1">
-             <widget class="QCheckBox" name="download_images_checkbox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="13" column="0">
-             <widget class="QLabel" name="label_29">
-              <property name="text">
-               <string>Download Gifs:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="13" column="1">
-             <widget class="QCheckBox" name="download_gifs_checkbox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="14" column="0">
-             <widget class="QLabel" name="label_28">
-              <property name="text">
-               <string>NSFW Filter:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="14" column="1">
-             <widget class="QComboBox" name="nsfw_filter_combo"/>
-            </item>
-            <item row="15" column="0">
-             <widget class="QLabel" name="label_16">
-              <property name="text">
-               <string>Sort Posts By:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="15" column="1">
-             <widget class="QComboBox" name="post_sort_combo"/>
-            </item>
-            <item row="18" column="0">
-             <widget class="QLabel" name="label_17">
-              <property name="text">
-               <string>Download Naming:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="19" column="0">
-             <widget class="QLabel" name="save_structure_label">
-              <property name="text">
-               <string>Save Path Structure:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="text">
-               <string>Download Self Post Text:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="10" column="0">
-             <widget class="QLabel" name="label_31">
-              <property name="text">
-               <string>Self Post File Format:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="1">
-             <widget class="QCheckBox" name="download_self_post_text_checkbox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="10" column="1">
-             <widget class="QComboBox" name="self_post_file_format_combo"/>
-            </item>
-            <item row="18" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <property name="spacing">
-               <number>2</number>
-              </property>
-              <item>
-               <widget class="QLineEdit" name="post_download_naming_line_edit"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="post_download_naming_available_tokens_button">
-                <property name="toolTip">
-                 <string>See available tokens</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="19" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_5">
-              <property name="spacing">
-               <number>2</number>
-              </property>
-              <item>
-               <widget class="QLineEdit" name="post_save_path_structure_line_edit"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="post_save_structure_available_tokens_button">
-                <property name="toolTip">
-                 <string>See available tokens</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="Line" name="line_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QFormLayout" name="comment_download_form">
-            <item row="0" column="0" colspan="2">
-             <widget class="QLabel" name="label_20">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Comment Download Settings</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_22">
-              <property name="text">
-               <string>Download:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QComboBox" name="comment_download_combo"/>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_21">
-              <property name="text">
-               <string>Download Links</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QComboBox" name="comment_content_download_combo"/>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_23">
-              <property name="text">
-               <string>Comment Limit:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_24">
-              <property name="text">
-               <string>Score Limit:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QSpinBox" name="comment_score_limit_spinbox">
-              <property name="maximum">
-               <number>10000000</number>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_25">
-              <property name="text">
-               <string>Score Limit Eval:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="1">
-             <widget class="QComboBox" name="comment_score_operator_combo"/>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_18">
-              <property name="text">
-               <string>Sort Comments By:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="1">
-             <widget class="QComboBox" name="comment_sort_combo"/>
-            </item>
-            <item row="5" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <item>
-               <widget class="QSpinBox" name="comment_limit_spinbox">
-                <property name="toolTip">
-                 <string>Only limits top level comment.  May pull more comments depending on replies</string>
-                </property>
-                <property name="maximum">
-                 <number>10000</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="comment_limit_max_button">
-                <property name="text">
-                 <string>Max</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_32">
-              <property name="text">
-               <string>Extract:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QComboBox" name="comment_extract_combo"/>
-            </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_33">
-              <property name="text">
-               <string>Download Naming:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="10" column="0">
-             <widget class="QLabel" name="label_34">
-              <property name="text">
-               <string>Save Path Structure:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_6">
-              <item>
-               <widget class="QLineEdit" name="comment_download_naming_line_edit"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="comment_download_naming_available_tokens_button">
-                <property name="toolTip">
-                 <string>See available tokens</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="10" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="QLineEdit" name="comment_save_path_structure_line_edit"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="comment_save_structure_available_tokens_button">
-                <property name="toolTip">
-                 <string>See available tokens</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
+           <widget class="ObjectSettingsWidget" name="settings_widget" native="true"/>
           </item>
          </layout>
         </item>
@@ -724,6 +122,20 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ObjectInfoWidget</class>
+   <extends>QWidget</extends>
+   <header>DownloaderForReddit/GUI/widgets/ObjectInfoWidget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ObjectSettingsWidget</class>
+   <extends>QWidget</extends>
+   <header>DownloaderForReddit/GUI/widgets/ObjectSettingsWidget</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

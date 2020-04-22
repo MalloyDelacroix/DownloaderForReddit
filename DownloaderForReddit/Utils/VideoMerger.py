@@ -71,9 +71,9 @@ def merge_videos():
                 try:
                     video_content = session.query(Content).get(ms.video_id)
                     audio_content = session.query(Content).get(ms.audio_id)
-                    output_path = video_content.full_file_path.replace('(video)', '')
+                    output_path = video_content.get_full_file_path().replace('(video)', '')
                     cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
-                          (video_content.full_file_path, audio_content.full_file_path, output_path)
+                          (video_content.get_full_file_path(), audio_content.get_full_file_path(), output_path)
                     subprocess.call(cmd)
                     if Injector.get_settings_manager().match_file_modified_to_post_date:
                         SystemUtil.set_file_modify_time(output_path, ms.date_modified)
@@ -106,8 +106,8 @@ def clean_up(video_content, audio_content, session):
         comment_id=video_content.comment_id
     )
     session.add(content)
-    SystemUtil.delete_file(video_content.full_file_path)
-    SystemUtil.delete_file(audio_content.full_file_path)
+    SystemUtil.delete_file(video_content.get_full_file_path())
+    SystemUtil.delete_file(audio_content.get_full_file_path())
     video_content.delete()
     audio_content.delete()
     session.commit()
