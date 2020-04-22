@@ -25,7 +25,11 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QListView" name="reddit_objects_list_view"/>
+     <widget class="QListView" name="reddit_objects_list_view">
+      <property name="selectionMode">
+       <enum>QAbstractItemView::ExtendedSelection</enum>
+      </property>
+     </widget>
      <widget class="QScrollArea" name="scroll_area">
       <property name="horizontalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -41,7 +45,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>463</width>
+         <width>262</width>
          <height>867</height>
         </rect>
        </property>

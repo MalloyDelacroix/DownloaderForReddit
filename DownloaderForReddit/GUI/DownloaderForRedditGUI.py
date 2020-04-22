@@ -231,10 +231,10 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
     def user_list_right_click(self):
         user_menu = QtWidgets.QMenu()
         try:
-            user = self.get_selected_single_user()
+            users = self.get_selected_users()
             valid = True
         except AttributeError:
-            user = None
+            users = []
             valid = False
 
         user_settings = user_menu.addAction("User Settings")
@@ -245,22 +245,36 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         add_user = user_menu.addAction("Add User")
         remove_user = user_menu.addAction("Remove User")
 
-        if user is not None:
+        # if users is not None:
+        #     user_menu.addSeparator()
+        #     download_enabled_text = 'Enable Download' if not user.download_enabled else 'Disable Download'
+        #     toggle_download_enabled = user_menu.addAction(download_enabled_text)
+        #     toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
+        #     user_menu.addSeparator()
+        #     download_single = user_menu.addAction('Download %s' % user.name)
+        #     download_single.triggered.connect(lambda: self.add_to_download(*self.get_selected_user_ids()))
+        #     if self.running:
+        #         download_single.setEnabled(False)
+
+        if users:
             user_menu.addSeparator()
-            download_enabled_text = 'Enable Download' if not user.download_enabled else 'Disable Download'
-            toggle_download_enabled = user_menu.addAction(download_enabled_text)
-            toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
-            user_menu.addSeparator()
-            download_single = user_menu.addAction('Download %s' % user.name)
-            download_single.triggered.connect(lambda: self.add_to_download(*self.get_selected_user_ids()))
-            if self.running:
-                download_single.setEnabled(False)
+            if len(users) == 1:
+                download_enabled_text = 'Enable Download' if not users[0].download_enabled else 'Disable Download'
+            else:
+                enabled = users[0].download_enabled
+                if all(x.download_enabled == enabled for x in users):
+                    download_enabled_text = 'Enable Download' if not users[0].download_enabled else 'Disable Download'
+                else:
+                    download_enabled_text = 'Differing Enabled States'
+            toggle_downloads_enabled = user_menu.addAction(download_enabled_text)
+            # TODO: connect this
+
 
         add_user.triggered.connect(self.add_user)
         remove_user.triggered.connect(self.remove_user)
-        user_settings.triggered.connect(lambda: self.user_settings(user))
-        user_downloads.triggered.connect(lambda: self.user_settings(1, False))
-        open_user_folder.triggered.connect(lambda: self.open_reddit_object_download_folder(user))
+        user_settings.triggered.connect(lambda: self.user_settings(users))
+        # user_downloads.triggered.connect(lambda: self.user_settings(1, False))
+        open_user_folder.triggered.connect(lambda: self.open_reddit_object_download_folder(users[0]))
 
         if not valid:
             user_settings.setVisible(False)
@@ -342,15 +356,16 @@ class DownloaderForRedditGUI(QtWidgets.QMainWindow, Ui_MainWindow):
         remove_list.triggered.connect(self.remove_subreddit_list)
         menu.exec(QtGui.QCursor.pos())
 
-    def user_settings(self, user):
+    def user_settings(self, users):
         """
         Opens the RedditObjectSettingsDialog and sets the supplied user as the selected user to display the settings
         for.  The current user list is also taken by the dialog and the names shown in the additional objects list.
-        :param user: The user that is to be set as the currently selected user of the settings dialog.
+        :param users: A list of users that is to be set as the currently selected users list in the settings dialog.
         """
-        if user is None:
-            user = self.user_list_model.reddit_objects[0]
-        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name, selected_object_id=user.id)
+        if users is None:
+            users = [self.user_list_model.reddit_objects[0]]
+        id_list = [x.id for x in users]
+        dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name, selected_object_ids=id_list)
         dialog.download_signal.connect(self.add_to_download)
         dialog.show()
         dialog.exec_()

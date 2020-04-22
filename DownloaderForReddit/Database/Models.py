@@ -51,6 +51,8 @@ class RedditObjectList(BaseModel):
     list_type = Column(String, nullable=False)
     reddit_objects = relationship('RedditObject', secondary='reddit_object_list_association', lazy='dynamic')
 
+    object_type = 'REDDIT_OBJECT_LIST'
+
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
 

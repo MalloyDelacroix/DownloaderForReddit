@@ -1,6 +1,6 @@
 import logging
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QItemSelectionModel
 
 from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
@@ -11,7 +11,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     download_signal = pyqtSignal(int)
 
-    def __init__(self, list_type, list_name, selected_object_id: int):
+    def __init__(self, list_type, list_name, selected_object_ids: list):
         QtWidgets.QDialog.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
@@ -19,7 +19,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.db = Injector.get_database_handler()
         self.list_type = list_type
         self.list_name = list_name
-        self.selected_object = None
+        self.selected_objects = None
 
         geom = self.settings_manager.reddit_object_settings_dialog_geom
         self.resize(geom['width'], geom['height'])
@@ -37,18 +37,29 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.list_model = RedditObjectListModel(self.list_type)
         self.list_model.set_list(self.list_name)
         self.reddit_objects_list_view.setModel(self.list_model)
-        index = self.list_model.index(self.list_model.get_id_list().index(selected_object_id), 0)
-        self.set_objects(self.list_model.data(index, 'RAW_DATA'))
-        self.reddit_objects_list_view.setCurrentIndex(index)
+        # index = self.list_model.index(self.list_model.get_id_list().index(selected_object_id), 0)
+        # self.set_objects(self.list_model.data(index, 'RAW_DATA'))
+        # self.reddit_objects_list_view.setCurrentIndex(index)
+
+        id_list = self.list_model.get_id_list()
+        indices = [id_list.index(x) for x in selected_object_ids]
+        selected_objects = [self.list_model.reddit_objects[index] for index in indices]
+        self.set_objects(selected_objects)
+        for row in indices:
+            index = self.list_model.createIndex(row, 0)
+            self.reddit_objects_list_view.selectionModel().select(index, QItemSelectionModel.Select)
 
         self.download_button.clicked.connect(self.download)
         self.download_button.setToolTip(f'Save and download this {self.list_type.lower()}')
 
-    def set_objects(self, new_object):
-        self.selected_object = new_object
-        self.info_widget.set_object(self.selected_object)
-        self.settings_widget.set_object(self.selected_object)
-        self.download_button.setText(f'Download {new_object.name}')
+    def set_objects(self, object_list):
+        self.selected_objects = object_list
+        self.info_widget.set_objects(self.selected_objects)
+        self.settings_widget.set_objects(self.selected_objects)
+        if len(self.selected_objects) == 1:
+            self.download_button.setText(f'Download {object_list[0].name}')
+        else:
+            self.download_button.setText(f'Download {len(self.selected_objects)} {self.list_type.lower()}s')
 
     def save_and_close(self):
         self.list_model.session.commit()
@@ -56,11 +67,11 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def reset(self):
         self.list_model.session.rollback()
-        self.settings_widget.set_object(self.selected_object)
+        self.settings_widget.set_objects(self.selected_objects)
 
     def download(self):
         self.list_model.session.commit()
-        self.download_signal.emit(self.selected_object.id)
+        self.download_signal.emit(self.selected_objects.id)
 
     def closeEvent(self, event):
         self.settings_manager.main_window_geom = {
