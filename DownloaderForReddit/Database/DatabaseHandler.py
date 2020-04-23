@@ -1,7 +1,7 @@
 import os
 from sqlalchemy.ext.declarative import declarative_base
 import sqlalchemy
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from contextlib import contextmanager
 
 from ..Utils import SystemUtil
@@ -15,6 +15,9 @@ class DatabaseHandler:
         database_path = os.path.join(SystemUtil.get_data_directory(), 'dfr.db')
         self.engine = sqlalchemy.create_engine(f'sqlite:///{database_path}')
         self.base.metadata.create_all(self.engine)
+
+        # session_factory = sessionmaker(bind=self.engine)
+        # self.Session = scoped_session(session_factory)
 
         self.Session = sessionmaker(bind=self.engine)
 

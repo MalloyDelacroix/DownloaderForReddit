@@ -103,8 +103,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.receiver = receiver
 
         self.user_list_model = RedditObjectListModel('USER')
+        self.user_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.user_list_view.setModel(self.user_list_model)
         self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
+        self.subreddit_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.subreddit_list_view.setModel(self.subreddit_list_model)
 
         self.load_state()
@@ -165,22 +167,24 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_combo.activated.connect(self.change_subreddit_list)
 
         self.user_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.user_list_view.customContextMenuRequested.connect(self.user_list_right_click)
+        self.user_list_view.customContextMenuRequested.connect(lambda: self.reddit_object_list_context_menu('USER'))
 
         self.user_list_view.doubleClicked.connect(lambda: self.user_settings(self.get_selected_single_user()))
         self.user_list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.user_lists_combo.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.user_lists_combo.customContextMenuRequested.connect(self.user_list_combo_right_click)
+        self.user_lists_combo.customContextMenuRequested.connect(self.user_list_combo_context_menu)
 
         self.subreddit_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.subreddit_list_view.customContextMenuRequested.connect(self.subreddit_list_right_click)
+        self.subreddit_list_view.customContextMenuRequested.connect(
+            lambda: self.reddit_object_list_context_menu('SUBREDDIT'))
 
-        self.subreddit_list_view.doubleClicked.connect(lambda: self.subreddit_settings(self.get_selected_single_subreddit()))
+        self.subreddit_list_view.doubleClicked.connect(
+            lambda: self.subreddit_settings(self.get_selected_single_subreddit()))
         self.subreddit_list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.subreddit_list_combo.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.subreddit_list_combo.customContextMenuRequested.connect(self.subreddit_list_combo_right_click)
+        self.subreddit_list_combo.customContextMenuRequested.connect(self.subreddit_list_combo_context_menu)
 
         self.progress_bar = QProgressBar()
         self.statusbar.addPermanentWidget(self.progress_bar)
@@ -231,119 +235,65 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def get_selected_subreddit_ids(self):
         return [x.id for x in self.get_selected_subreddits()]
 
-    def user_list_right_click(self):
-        user_menu = QMenu()
+    def reddit_object_list_context_menu(self, object_type):
+        menu = QMenu()
         try:
-            users = self.get_selected_users()
-            valid = True
-        except AttributeError:
-            users = []
-            valid = False
-
-        user_settings = user_menu.addAction("User Settings")
-        user_downloads = user_menu.addAction("View User Downloads")
-        user_menu.addSeparator()
-        open_user_folder = user_menu.addAction("Open Download Folder")
-        user_menu.addSeparator()
-        add_user = user_menu.addAction("Add User")
-        remove_user = user_menu.addAction("Remove User")
-
-        # if users is not None:
-        #     user_menu.addSeparator()
-        #     download_enabled_text = 'Enable Download' if not user.download_enabled else 'Disable Download'
-        #     toggle_download_enabled = user_menu.addAction(download_enabled_text)
-        #     toggle_download_enabled.triggered.connect(lambda: user.toggle_enable_download())
-        #     user_menu.addSeparator()
-        #     download_single = user_menu.addAction('Download %s' % user.name)
-        #     download_single.triggered.connect(lambda: self.add_to_download(*self.get_selected_user_ids()))
-        #     if self.running:
-        #         download_single.setEnabled(False)
-
-        if users:
-            user_menu.addSeparator()
-            if len(users) == 1:
-                download_enabled_text = 'Enable Download' if not users[0].download_enabled else 'Disable Download'
+            if object_type == 'USER':
+                ros = self.get_selected_users()
             else:
-                enabled = users[0].download_enabled
-                if all(x.download_enabled == enabled for x in users):
-                    download_enabled_text = 'Enable Download' if not users[0].download_enabled else 'Disable Download'
-                else:
-                    download_enabled_text = 'Differing Enabled States'
-            toggle_downloads_enabled = user_menu.addAction(download_enabled_text)
-            # TODO: connect this
-
-
-        add_user.triggered.connect(self.add_user)
-        remove_user.triggered.connect(self.remove_user)
-        user_settings.triggered.connect(lambda: self.user_settings(users))
-        # user_downloads.triggered.connect(lambda: self.user_settings(1, False))
-        open_user_folder.triggered.connect(lambda: self.open_reddit_object_download_folder(users[0]))
-
-        if not valid:
-            user_settings.setVisible(False)
-            user_downloads.setVisible(False)
-            open_user_folder.setVisible(False)
-            remove_user.setVisible(False)
-
-        if self.running:
-            add_user.setEnabled(False)
-            remove_user.setEnabled(False)
-
-        user_menu.exec(QCursor.pos())
-
-    def subreddit_list_right_click(self):
-        subreddit_menu = QMenu()
-        try:
-            subreddit = self.get_selected_single_subreddit()
-            valid = True
+                ros = self.get_selected_subreddits()
         except AttributeError:
-            subreddit = None
-            valid = False
+            ros = []
 
-        subreddit_settings = subreddit_menu.addAction("Subreddit Settings")
-        subreddit_downloads = subreddit_menu.addAction("View Subreddit Downloads")
-        subreddit_menu.addSeparator()
-        open_subreddit_folder = subreddit_menu.addAction("Open Download Folder")
-        subreddit_menu.addSeparator()
-        add_subreddit = subreddit_menu.addAction("Add Subreddit")
-        remove_subreddit = subreddit_menu.addAction("Remove Subreddit")
+        if object_type == 'USER':
+            ros = self.get_selected_users()
+            open_settings_command = self.user_settings
+            add_command = self.add_user
+            remove_command = self.remove_user
+        else:
+            ros = self.get_selected_subreddits()
+            open_settings_command = self.subreddit_settings
+            add_command = self.add_subreddit
+            remove_command = self.remove_subreddit
 
-        if subreddit is not None:
-            subreddit_menu.addSeparator()
-            download_enabled_text = 'Enable Download' if not subreddit.download_enabled else 'Disable Download'
-            toggle_download_enabled = subreddit_menu.addAction(download_enabled_text)
-            toggle_download_enabled.triggered.connect(subreddit.toggle_enable_download)
-            subreddit_menu.addSeparator()
-            download_single = subreddit_menu.addAction('Download %s' % subreddit.name)
-            download_single.triggered.connect(lambda: self.add_to_download(*self.get_selected_subreddit_ids()))
-            if self.running:
-                download_single.setEnabled(False)
+        try:
+            enabled = ros[0].download_enabled
+            download_text = \
+                f'Download {ros[0].name}' if len(ros) == 1 else f'Download {len(ros)} {object_type.title()}s'
+        except IndexError:
+            enabled = False
+            download_text = 'Download'
 
-        add_subreddit.triggered.connect(self.add_subreddit)
-        remove_subreddit.triggered.connect(self.remove_subreddit)
-        subreddit_settings.triggered.connect(lambda: self.subreddit_settings(subreddit))
-        subreddit_downloads.triggered.connect(lambda: self.subreddit_settings(1, False))
-        open_subreddit_folder.triggered.connect(lambda: self.open_reddit_object_download_folder(subreddit))
+        open_settings = menu.addAction('Settings', lambda: open_settings_command(ros))
+        menu.addSeparator()
+        open_downloads = menu.addAction('Open Download Folder',
+                                        lambda: self.open_reddit_object_download_folder(ros[0]))
+        menu.addSeparator()
+        add_object = menu.addAction(f'Add {object_type.title()}', add_command)
+        remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
+        menu.addSeparator()
+        disable_enable_download_option = False
+        if all(x.download_enabled == enabled for x in ros):
+            enabled_text = 'Enable Download' if not enabled else 'Disable Download'
+        else:
+            disable_enable_download_option = True
+            enabled_text = 'Differing Download Enabled States'
+        enable_download = menu.addAction(enabled_text,
+                                         lambda: self.set_selection_attribute(ros, 'download_enabled', not enabled))
+        download = menu.addAction(download_text, lambda: self.add_to_download(*[x.id for x in ros]))
 
-        if not valid:
-            subreddit_settings.setVisible(False)
-            subreddit_downloads.setVisible(False)
-            open_subreddit_folder.setVisible(False)
-            remove_subreddit.setVisible(False)
+        for action in menu.actions():
+            if action != add_object:
+                action.setDisabled(len(ros) <= 0)
+        enable_download.setDisabled(disable_enable_download_option)
 
-        if self.running:
-            add_subreddit.setEnabled(False)
-            remove_subreddit.setEnabled(False)
+        menu.exec_(QCursor.pos())
 
-        subreddit_menu.exec(QCursor.pos())
+    def set_selection_attribute(self, selected, attr, value):
+        for x in selected:
+            setattr(x, attr, value)
 
-    def subreddit_single_selection_context_menu(self):
-        pass
-
-    def subreddit_multiple_selection_context_menu(self):
-        pass
-
-    def user_list_combo_right_click(self):
+    def user_list_combo_context_menu(self):
         menu = QMenu()
         add_list = menu.addAction('Add User List')
         remove_list = menu.addAction('Remove User List')
@@ -351,7 +301,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         remove_list.triggered.connect(self.remove_user_list)
         menu.exec(QCursor.pos())
 
-    def subreddit_list_combo_right_click(self):
+    def subreddit_list_combo_context_menu(self):
         menu = QMenu()
         add_list = menu.addAction('Add Subreddit List')
         remove_list = menu.addAction('Remove Subreddit List')
@@ -373,24 +323,28 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         dialog.show()
         dialog.exec_()
 
-    def subreddit_settings(self, subreddit):
+    def subreddit_settings(self, subreddits):
         """Operates the same as the user_settings function"""
-        if subreddit is None:
-            subreddit = self.subreddit_list_model.reddit_objects[0]
+        if subreddits is None:
+            subreddits = [self.subreddit_list_model.reddit_objects[0]]
+        id_list = [x.id for x in subreddits]
         dialog = RedditObjectSettingsDialog('SUBREDDIT', self.subreddit_list_model.list.name,
-                                            selected_object_id=subreddit.id)
+                                            selected_object_ids=id_list)
         dialog.download_signal.connect(self.add_to_download)
         dialog.show()
         dialog.exec_()
 
-    def open_reddit_object_download_folder(self, reddit_object: RedditObject):
+    def get_reddit_object_download_folder(self, reddit_object: RedditObject):
         sub_path = TokenParser.parse_tokens(reddit_object, reddit_object.post_save_structure)
         if reddit_object.object_type == 'USER':
             base_path = self.settings_manager.user_save_directory
         else:
             base_path = self.settings_manager.subreddit_save_directory
-        path = os.path.join(base_path, sub_path)
+        return os.path.join(base_path, sub_path)
+
+    def open_reddit_object_download_folder(self, reddit_object: RedditObject):
         try:
+            path = self.get_reddit_object_download_folder(reddit_object)
             SystemUtil.open_in_system(path)
         except FileNotFoundError:
             Message.no_download_folder(self, reddit_object.object_type.lower())
@@ -419,7 +373,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.thread.start()
         self.logger.info('Download thread started')
 
-    def add_to_download(self, *args):
+    def add_to_download(self, *args: int):
         """
         Adds a list of reddit object id's to a current download session if there is one active, otherwise starts a
         download session with the supplied id's.
@@ -618,16 +572,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def add_user(self):
         if self.user_list_model.list is None:
             self.add_user_list(list_name='Default')
-        add_user_dialog = AddRedditObjectDialog(self.user_list_model)
-        add_user_dialog.exec_()
-
-    def check_user_download_on_add(self, user):
-        """
-        Checks the settings manager to determine if the supplied user should be downloaded as a single download.
-        :param user: The User that was just added to a list and is checked for single download eligibility.
-        """
-        if not self.running and self.settings_manager.download_users_on_add:
-            self.run_single_user((user, None))
+        dialog = AddRedditObjectDialog(self.user_list_model)
+        dialog.exec_()
 
     def remove_user(self):
         """
@@ -659,7 +605,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         :type reddit_object: RedditObject
         """
         if Message.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
-            self.remove_problem_reddit_object(reddit_object, True, 'Invalid')
+            self.remove_problem_reddit_object(reddit_object, self.settings_manager.rename_invalidated_download_folders,
+                                              'Invalid')
 
     def remove_forbidden_reddit_object(self, reddit_object):
         """
@@ -685,7 +632,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         working_list.delete_reddit_object(reddit_object)
         rename_message = 'Not Attempted'
         if rename:
-            if not SystemUtil.rename_directory_deleted(reddit_object.save_directory):
+            path = self.get_reddit_object_download_folder(reddit_object)
+            if not SystemUtil.rename_directory_deleted(path):
                 rename_message = 'Failed'
                 Message.failed_to_rename_error(self, reddit_object.name)
             else:
@@ -712,60 +660,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         add_sub_dialog = AddRedditObjectDialog(self.subreddit_list_model)
         add_sub_dialog.exec_()
 
-    def download_existing_subreddit(self, sub_name):
-        """
-        Gets an existing Subreddit object from the current list that has the supplied sub_name, then runs a single
-        download for that subreddit.
-        :param sub_name: The name of the subreddit for which a single download is to be run.
-        """
-        current_list = self.get_working_list('SUBREDDIT')
-        sub = None
-        for item in current_list.reddit_object_list:
-            if item.name == sub_name:
-                sub = item
-                break
-        if sub is not None:
-            self.run_single_subreddit((sub, None))
-
-    def check_subreddit_download_on_add(self, subreddit):
-        """
-        Checks the settings manager to determine if the supplied subreddit should be downloaded as a single download.
-        :param subreddit: The Subreddit that was just added to a list and is checked for single download eligibility.
-        """
-        if not self.running and self.settings_manager.download_subreddits_on_add:
-            self.run_single_subreddit((subreddit, None))
-
-    def add_multiple_subreddits(self, sub_list, validate=True):
-        """
-        Makes and adds multiple subreddits to the current subreddit list from multiple names supplied by the
-        AddRedditObjectDialog.
-        :param sub_list: A list of names to be made into subreddits and added to the current subreddit list.
-        :param validate: Indicates whether the names in the supplied sub_list should be validated with reddit prior to
-                         being added.  In some circumstances the names have already been validated before reaching this
-                         point, in which case they would not need to be re-validated.  Defaults to True.
-        :type sub_list: list
-        :type validate: bool
-        """
-        try:
-            existing_names = []
-            invalid_names = []
-            for name in sub_list:
-                if not self.subreddit_list_model.check_name(name):
-                    subreddit = RedditObjectCreator().create_subreddit(name, validate=validate)
-                    if subreddit is not None:
-                        self.subreddit_list_model.add_reddit_object(subreddit)
-                    else:
-                        invalid_names.append(name)
-                else:
-                    existing_names.append(name)
-            self.refresh_subreddit_count()
-            if len(existing_names) > 0:
-                Message.names_in_list(self, existing_names)
-            if len(invalid_names) > 0:
-                Message.invalid_names(self, invalid_names)
-        except KeyError:
-            Message.no_user_list(self)
-
     def remove_subreddit(self):
         """
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
@@ -788,37 +682,17 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             Message.invalid_file_path(self)
             return None
 
-    def fill_downloaded_objects_list(self, downloaded_object_dict):
-        """Adds a users name to a list if they had content downloaded while the program is open"""
-        self.last_downloaded_objects = downloaded_object_dict
-        self.file_last_downloaded_list.setEnabled(True)
+    def check_existing_object_for_download(self, *existing_names):
+        pass
+
+    def check_new_object_for_download(self, reddit_object_id):
+        if self.settings_manager.download_on_add:
+            self.add_to_download(reddit_object_id)
 
     def open_download_sessions_dialog(self):
         dialog = DownloadSessionDialog()
         dialog.show()
         dialog.exec_()
-
-    def get_last_downloaded_users(self):
-        """
-        Creates and returns a list of users from the current user list that are also in the last downloaded objects list
-        without errors if the application user does not have either a user list created.
-        :return: A list of users from the current user list that are also in the downloaded objects list.
-        """
-        try:
-            return [user for user in self.user_list_model.list if user.name in self.last_downloaded_objects]
-        except KeyError:
-            return []
-
-    def get_last_downloaded_subs(self):
-        """
-        Creates and returns a list of subreddits from the current subreddit list that are also in the last downloaded
-        objects list without errors if the application user does not have a subreddit list created.
-        :return: A list of subreddits from the current subreddit list that are also in the downloaded objects list.
-        """
-        try:
-            return [sub for sub in self.subreddit_list_model.list if sub.name in self.last_downloaded_objects]
-        except KeyError:
-            return []
 
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
