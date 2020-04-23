@@ -1,16 +1,17 @@
 import os
 import logging
-from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QDialog, QFileDialog, QApplication
+from PyQt5.QtCore import Qt, pyqtSignal
 
 from ..GUI_Resources.AddRedditObjectDialog_auto import Ui_AddRedditObjectDialog
 from ..Utils import Injector, SystemUtil
 from ..Utils.Importers import JsonImporter, TextImporter
 
 
-class AddRedditObjectDialog(QtWidgets.QDialog, Ui_AddRedditObjectDialog):
+class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
 
     def __init__(self, list_model, parent=None):
-        QtWidgets.QDialog.__init__(self, parent=parent)
+        QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
@@ -64,7 +65,7 @@ class AddRedditObjectDialog(QtWidgets.QDialog, Ui_AddRedditObjectDialog):
             self.multi_object_list_widget.addItems(import_list)
 
     def get_import_file_path(self):
-        file_path = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Import File', SystemUtil.get_data_directory(),
+        file_path = QFileDialog.getOpenFileName(self, 'Select Import File', SystemUtil.get_data_directory(),
                                                           'Import File (*.txt, *.json)')[0]
         if os.path.isfile(file_path):
             return file_path
@@ -91,9 +92,9 @@ class AddRedditObjectDialog(QtWidgets.QDialog, Ui_AddRedditObjectDialog):
 
     def keyPressEvent(self, event):
         key = event.key()
-        if key in (QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return):
+        if key in (Qt.Key_Enter, Qt.Key_Return):
             if self.tab_widget.currentIndex() == 0:
-                shift = QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ShiftModifier
+                shift = QApplication.keyboardModifiers() == Qt.ShiftModifier
                 if shift:
                     self.multi_object_list_widget.addItem(self.single_object_line_edit.text())
                     self.single_object_line_edit.clear()
