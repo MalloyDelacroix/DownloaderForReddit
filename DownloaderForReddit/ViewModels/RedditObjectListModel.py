@@ -165,12 +165,18 @@ class RedditObjectListModel(QAbstractListModel):
                     return None
             elif role == Qt.ToolTipRole:
                 return self.set_tooltips(self.reddit_objects[row])
-            elif role == 'RAW_DATA':
+            elif role == Qt.UserRole:
                 return self.reddit_objects[row]
             else:
                 return None
         except IndexError:
             pass
+
+    def raw_data(self, row):
+        try:
+            return self.reddit_objects[row]
+        except IndexError:
+            return None
 
     def set_tooltips(self, reddit_object):
         """
@@ -207,7 +213,7 @@ class RedditObjectListModel(QAbstractListModel):
                 return key
 
     def flags(self, QModelIndex):
-        return Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        return Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
     def refresh(self):
         """
