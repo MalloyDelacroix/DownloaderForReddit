@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum, event
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import func
 
 from .DatabaseHandler import DatabaseHandler
 from .ModelEnums import (CommentDownload, NsfwFilter, LimitOperator, PostSortMethod, CommentSortMethod)
@@ -196,6 +197,18 @@ class RedditObject(BaseModel):
         return any((self.extract_comments != CommentDownload.DO_NOT_DOWNLOAD,
                     self.download_comments != CommentDownload.DO_NOT_DOWNLOAD,
                     self.download_comment_content != CommentDownload.DO_NOT_DOWNLOAD))
+
+    @property
+    def total_score(self):
+        score = self.get_session().query(func.sum(Post.score))\
+            .filter(Post.significant_reddit_object_id == self.id).first()[0]
+        if score is None:
+            score = 0
+        return score
+
+    @property
+    def total_score_display(self):
+        return '{:,}'.format(self.total_score)
 
     def set_date_limit(self, epoch):
         """

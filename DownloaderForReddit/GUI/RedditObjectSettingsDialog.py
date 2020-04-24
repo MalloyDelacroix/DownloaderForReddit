@@ -31,23 +31,19 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.dialog_button_box.rejected.connect(self.close)
         self.reset_button.clicked.connect(self.reset)
 
-        self.reddit_objects_list_view.clicked.connect(
-            lambda x: self.set_objects(self.list_model.data(x, 'RAW_DATA'))
-        )
         self.list_model = RedditObjectListModel(self.list_type)
         self.list_model.set_list(self.list_name)
         self.reddit_objects_list_view.setModel(self.list_model)
-        # index = self.list_model.index(self.list_model.get_id_list().index(selected_object_id), 0)
-        # self.set_objects(self.list_model.data(index, 'RAW_DATA'))
-        # self.reddit_objects_list_view.setCurrentIndex(index)
 
         id_list = self.list_model.get_id_list()
         indices = [id_list.index(x) for x in selected_object_ids]
         selected_objects = [self.list_model.reddit_objects[index] for index in indices]
-        self.set_objects(selected_objects)
         for row in indices:
             index = self.list_model.createIndex(row, 0)
             self.reddit_objects_list_view.selectionModel().select(index, QItemSelectionModel.Select)
+
+        self.set_objects(selected_objects)
+        self.reddit_objects_list_view.selectionModel().selectionChanged.connect(self.select_objects)
 
         self.download_button.clicked.connect(self.download)
         self.download_button.setToolTip(f'Save and download this {self.list_type.lower()}')
@@ -60,6 +56,10 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             self.download_button.setText(f'Download {object_list[0].name}')
         else:
             self.download_button.setText(f'Download {len(self.selected_objects)} {self.list_type.lower()}s')
+
+    def select_objects(self):
+        indecies = self.reddit_objects_list_view.selectionModel().selectedRows(0)
+        self.set_objects([self.list_model.raw_data(x.row()) for x in indecies])
 
     def save_and_close(self):
         self.list_model.session.commit()

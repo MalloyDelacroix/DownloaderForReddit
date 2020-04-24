@@ -295,7 +295,11 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="post_download_naming_line_edit"/>
+          <widget class="QLineEdit" name="post_download_naming_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QToolButton" name="post_download_naming_available_tokens_button">
@@ -322,7 +326,11 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="post_save_path_structure_line_edit"/>
+          <widget class="QLineEdit" name="post_save_path_structure_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QToolButton" name="post_save_structure_available_tokens_button">
@@ -469,7 +477,11 @@
        <item row="9" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
-          <widget class="QLineEdit" name="comment_download_naming_line_edit"/>
+          <widget class="QLineEdit" name="comment_download_naming_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QToolButton" name="comment_download_naming_available_tokens_button">
@@ -486,7 +498,11 @@
        <item row="10" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <widget class="QLineEdit" name="comment_save_path_structure_line_edit"/>
+          <widget class="QLineEdit" name="comment_save_path_structure_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QToolButton" name="comment_save_structure_available_tokens_button">

@@ -26,6 +26,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.list_type = list_type
         self.list = None
         self.reddit_objects = None
+        self.row_count = 0
 
         self.validator = None
         self.validation_thread = None
@@ -48,6 +49,7 @@ class RedditObjectListModel(QAbstractListModel):
         if ro_list is not None:
             self.list = ro_list
             self.reddit_objects = self.list.reddit_objects
+            self.row_count = self.list.reddit_objects.count()
             return True
         return False
 
@@ -62,6 +64,7 @@ class RedditObjectListModel(QAbstractListModel):
                 .filter(RedditObjectList.list_type == self.list_type)\
                 .one()
             self.reddit_objects = self.list.reddit_objects
+            self.row_count = self.list.reddit_objects.count()
             self.refresh()
             # TODO: sort list here
         except NoResultFound:
@@ -124,6 +127,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.endInsertRows()
         self.session.commit()
         self.reddit_object_added.emit(item.id)
+        self.row_count += 1
         return True
 
     def removeRows(self, position, rows, parent=QModelIndex(), *args):
@@ -132,6 +136,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.list.reddit_objects.remove(self.list.reddit_objects[position])
         self.endRemoveRows()
         self.session.commit()
+        self.row_count -= 1
         return True
 
     def removeRow(self, row, parent=QModelIndex(), *args):
@@ -143,7 +148,7 @@ class RedditObjectListModel(QAbstractListModel):
 
     def rowCount(self, parent=QModelIndex(), *args, **kwargs):
         try:
-            return self.list.reddit_objects.count()
+            return self.row_count
         except AttributeError:
             return 0
 
@@ -159,12 +164,18 @@ class RedditObjectListModel(QAbstractListModel):
                     return None
             elif role == Qt.ToolTipRole:
                 return self.set_tooltips(self.reddit_objects[row])
-            elif role == 'RAW_DATA':
+            elif role == Qt.UserRole:
                 return self.reddit_objects[row]
             else:
                 return None
         except IndexError:
             pass
+
+    def raw_data(self, row):
+        try:
+            return self.reddit_objects[row]
+        except IndexError:
+            return None
 
     def set_tooltips(self, reddit_object):
         """
@@ -201,7 +212,7 @@ class RedditObjectListModel(QAbstractListModel):
                 return key
 
     def flags(self, QModelIndex):
-        return Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        return Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
     def refresh(self):
         """

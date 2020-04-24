@@ -26,7 +26,8 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         for value in LimitOperator:
             self.score_limit_operator_combo.addItem(value.display_name, value)
             self.comment_score_operator_combo.addItem(value.display_name, value)
-        self.self_post_file_format_combo.addItems(['.txt', '.html'])
+        self.self_post_file_format_combo.addItem('.txt', 'txt')
+        self.self_post_file_format_combo.addItem('.html', 'html')
         for value in NsfwFilter:
             self.nsfw_filter_combo.addItem(value.display_name, value)
         for value in PostSortMethod:
@@ -137,12 +138,21 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
     def set_object_value(self, attr, value):
         for obj in self.selected_objects:
             setattr(obj, attr, value)
+            if obj.object_type == 'REDDIT_OBJECT_LIST':
+                for ro in obj.reddit_objects:
+                    if not ro.lock_settings:
+                        setattr(ro, attr, value)
 
     def path_token_context_menu(self, line_edit):
         menu = QMenu()
         for key in TokenParser.token_dict.keys():
-            menu.addAction(key.replace('_', ' ').title(), lambda token=key: line_edit.insert(f'%[{token}]'))
+            menu.addAction(key.replace('_', ' ').title(), lambda token=key: self.insert_token(line_edit, token))
         menu.exec_(QCursor.pos())
+
+    def insert_token(self, line_edit, token):
+        if line_edit.hasSelectedText():
+            line_edit.del_()
+        line_edit.insert(f'%[{token}]')
 
     def sync_widgets_to_object(self):
         self.sync_checkbox(self.lock_settings_checkbox, 'lock_settings')
@@ -174,41 +184,41 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
 
     def sync_checkbox(self, checkbox, attr):
         value = self.get_value(attr)
-        if value:
+        if value is not None:
             checkbox.setChecked(value)
         else:
             checkbox.setCheckState(1)
 
     def sync_combo(self, combo, attr):
         value = self.get_value(attr)
-        if value:
+        if value is not None:
             combo.setCurrentIndex(combo.findData(value))
         else:
             combo.setCurrentIndex(-1)
 
     def sync_spin_box(self, spin_box, attr):
         value = self.get_value(attr)
-        if value:
+        if value is not None:
             spin_box.setValue(value)
         else:
             spin_box.lineEdit().setText('-')
 
     def sync_date_edit(self, date_edit, attr):
         value = self.get_value(attr)
-        if value:
+        if value is not None:
             date_edit.setDateTime(value)
         else:
             date_edit.lineEdit().setText('-')
 
     def sync_line_edit(self, line_edit, attr):
         value = self.get_value(attr)
-        if not value:
-            value = '-'
+        if value is None:
+            value = ''
         line_edit.setText(value)
 
     def get_value(self, attr):
         value = getattr(self.selected_objects[0], attr)
-        if all(getattr(x, attr) == value for x in self.selected_objects):
+        if len(self.selected_objects) == 1 or all(getattr(x, attr) == value for x in self.selected_objects):
             return value
         return None
 
