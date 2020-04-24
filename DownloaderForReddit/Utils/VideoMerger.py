@@ -75,7 +75,9 @@ def merge_videos():
                 output_path = get_output_path(ms.output_path)
                 cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
                       (ms.video_path, ms.audio_path, output_path)
-                subprocess.call(cmd)
+                si = subprocess.STARTUPINFO()
+                si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                handle = subprocess.run(cmd, capture_output=True, startupinfo=si)
                 if Injector.get_settings_manager().set_file_modified_date:
                     SystemUtil.set_file_modify_time(output_path, ms.date_modified)
             except:
