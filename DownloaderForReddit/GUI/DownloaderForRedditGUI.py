@@ -44,8 +44,8 @@ from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.DownloadSessionDialog import DownloadSessionDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..Core.DownloadRunner import DownloadRunner
-from ..Core.RedditObjectCreator import RedditObjectCreator
 from ..Database.Models import User, Subreddit, RedditObject, RedditObjectList
+from ..Database.ModelEnums import RedditObjectSortMethod
 from ..Utils.UpdaterChecker import UpdateChecker
 from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter
@@ -111,15 +111,16 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # endregion
 
         # region View Menu
-        self.list_view_group = QtWidgets.QActionGroup(self)
-        self.list_view_group.addAction(self.sort_list_by_name_menu_item)
-        self.list_view_group.addAction(self.sort_list_by_date_added_menu_item)
-        self.list_view_group.addAction(self.sort_list_by_post_count_menu_item)
-        self.sort_list_by_name_menu_item.triggered.connect(lambda: self.set_list_sort_method(0))
-        self.sort_list_by_date_added_menu_item.triggered.connect(lambda: self.set_list_sort_method(1))
-        self.sort_list_by_post_count_menu_item.triggered.connect(lambda: self.set_list_sort_method(2))
+        # self.list_view_group = QActionGroup(self)
+        # self.list_view_group.addAction(self.sort_list_by_name_menu_item)
+        # self.list_view_group.addAction(self.sort_list_by_date_added_menu_item)
+        # self.list_view_group.addAction(self.sort_list_by_post_count_menu_item)
+        # self.sort_list_by_name_menu_item.triggered.connect(lambda: self.set_list_sort_method(0))
+        # self.sort_list_by_date_added_menu_item.triggered.connect(lambda: self.set_list_sort_method(1))
+        # self.sort_list_by_post_count_menu_item.triggered.connect(lambda: self.set_list_sort_method(2))
+        self.setup_list_sort_menu()
 
-        self.list_view_order = QtWidgets.QActionGroup(self)
+        self.list_view_order = QActionGroup(self)
         self.list_view_order.addAction(self.sort_list_ascending_menu_item)
         self.list_view_order.addAction(self.sort_list_descending_menu_item)
         self.sort_list_ascending_menu_item.triggered.connect(lambda: self.set_list_order_method(0))
@@ -217,6 +218,15 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
+
+    def setup_list_sort_menu(self):
+        list_view_group = QActionGroup(self)
+        for value in RedditObjectSortMethod:
+            item = self.list_sort_menu_item.addAction(value.display_name.title(),
+                                                      lambda sort_method=value: self.set_list_sort_method(sort_method))
+            list_view_group.addAction(item)
+            item.setCheckable(True)
+            item.setChecked(value == self.list_sort_method)
 
     def get_selected_single_user(self):
         """
@@ -534,13 +544,15 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def export_user_list_to_text(self):
         current_list = self.user_lists_combo.currentText()
-        file_path = self.get_file_path(current_list, 'Text Files (*.txt)')
+        path = SystemUtil.join_path(self.settings_manager.user_save_directory, current_list)
+        file_path = self.get_file_path('Export Path', path, 'Text Files (*.txt)')
         if file_path is not None:
             TextExporter.export_reddit_objects_to_text(self.user_list_model.list, file_path)
 
     def export_user_list_to_json(self):
         current_list = self.user_lists_combo.currentText()
-        file_path = self.get_file_path(current_list, 'Json Files (*.json)')
+        path = SystemUtil.join_path(self.settings_manager.user_save_directory, current_list)
+        file_path = self.get_file_path('Export Path', path, 'Json Files (*.json)')
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.user_list_model.list, file_path)
 
@@ -599,12 +611,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if file_path is not None:
             JsonExporter.export_reddit_objects_to_json(self.subreddit_list_model.list, file_path)
 
-    def get_file_path(self, suggested_name, ext):
-        file_path, _ = QFileDialog.getSaveFileName(self, 'Export Path',
-                                                             self.settings_manager.save_directory +
-                                                             suggested_name, ext)
     def get_file_path(self, title, suggested_path, ext):
-        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, title, suggested_path, ext)
+        file_path, _ = QFileDialog.getSaveFileName(self, title, suggested_path, ext)
         return file_path if file_path != '' else None
 
     def add_user(self):
@@ -909,6 +917,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def set_list_sort_method(self, method):
         self.list_sort_method = method
         self.change_list_sort_method()
+        # TODO: set sort order in model filter
 
     def set_list_order_method(self, method):
         self.list_order_method = method

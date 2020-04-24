@@ -362,13 +362,6 @@
      <property name="title">
       <string>Sort Lists By</string>
      </property>
-     <addaction name="sort_list_by_name_menu_item"/>
-     <addaction name="sort_list_by_date_added_menu_item"/>
-     <addaction name="sort_list_by_post_count_menu_item"/>
-     <addaction name="sort_list_by_content_count_menu_item"/>
-     <addaction name="sort_list_by_comment_count_menu_item"/>
-     <addaction name="sort_list_by_date_created_menu_item"/>
-     <addaction name="sort_list_by_score_menu_item"/>
     </widget>
     <widget class="QMenu" name="list_order_menu_item">
      <property name="title">

@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'DownloaderForRedditGUI.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -304,13 +302,6 @@ class Ui_MainWindow(object):
         self.help_menu.addAction(self.check_for_updates_menu_item)
         self.help_menu.addSeparator()
         self.help_menu.addAction(self.about_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_name_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_date_added_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_post_count_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_content_count_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_comment_count_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_date_created_menu_item)
-        self.list_sort_menu_item.addAction(self.sort_list_by_score_menu_item)
         self.list_order_menu_item.addAction(self.sort_list_ascending_menu_item)
         self.list_order_menu_item.addAction(self.sort_list_descending_menu_item)
         self.view_menu.addAction(self.list_sort_menu_item.menuAction())
@@ -411,3 +402,4 @@ class Ui_MainWindow(object):
         self.sort_list_by_date_created_menu_item.setText(_translate("MainWindow", "Date Created"))
         self.sort_list_by_date_created_menu_item.setToolTip(_translate("MainWindow", "Sort reddit objects by the date that the item was created on reddit"))
         self.sort_list_by_score_menu_item.setText(_translate("MainWindow", "Total Score"))
+
