@@ -302,11 +302,12 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
         remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
         menu.addSeparator()
-        disable_enable_download_option = False
+        disable_enable_download_option = True
         if all(x.download_enabled == enabled for x in ros):
             enabled_text = 'Enable Download' if not enabled else 'Disable Download'
+            if len(ros) > 0:
+                disable_enable_download_option = False
         else:
-            disable_enable_download_option = True
             enabled_text = 'Differing Download Enabled States'
         enable_download = menu.addAction(enabled_text,
                                          lambda: self.set_selection_attribute(ros, 'download_enabled', not enabled))
