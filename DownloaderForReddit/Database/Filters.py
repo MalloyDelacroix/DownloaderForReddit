@@ -1,5 +1,6 @@
 from abc import ABC
 from sqlalchemy.sql import func
+from sqlalchemy import desc as descending
 
 from .DatabaseHandler import DatabaseHandler
 from .Models import RedditObjectList, RedditObject, DownloadSession, Post, Content, Comment
@@ -12,48 +13,54 @@ class Filter(ABC):
     attributes.
     """
 
-    metadata = DatabaseHandler.base.metadata
+    op_map = {
+        'eq': lambda attr, value: attr == value,
+        'lt': lambda attr, value: attr < value,
+        'lte': lambda attr, value: attr <= value,
+        'gt': lambda attr, value: attr > value,
+        'gte': lambda attr, value: attr >= value,
+        'in': lambda attr, value: attr.in_(value),
+        'like': lambda attr, value: attr.like(value),
+        'wild_like': lambda attr, value: attr.like(f'%{value}%'),
+        'contains': lambda attr, value: attr.contains(value)
+    }
+
     model = None
     default_order = 'id'
 
-    @classmethod
-    def query(cls, session, filters, order_by=None):
-        """
-        Filters this class's model class based on the tuples provided in the supplied filters list.  If order_by is not
-        supplied, the query is ordered by the class's default_order identifier.
-        :param session: The session that will be used to query the database.
-        :param filters: A list of tuples used to filter the model class.  The tuple order should be: (model_attribute,
-                        filter_expression_operator, filtered_value)
-        :param order_by: The model attribute that should be used to filter the query.
-        :return: A query of the class's model class filtered by the supplied filters list.
-        """
-        query = session.query(cls.model)
-        for tup in filters:
-            key, op, value = tup
-            col = getattr(cls.model, key, None)
-            if not col:
-                print('no column')
-                return None
-            if op == 'in':
-                if isinstance(value, list):
-                    f = col.in_(value)
-                else:
-                    f = col.in_(value.split(','))
-            else:
-                try:
-                    attr = list(filter(lambda e: hasattr(col, e % op), ['%s', '%s_', '__%s__']))[0] % op
-                except IndexError:
-                    print('attribute index error')
-                    return None
-                if value == 'null':
-                    value = None
-                f = getattr(col, attr)(value)
-                print(f)
-            query = query.filter(f)
+    session = None
 
+    def __init__(self):
+        self.custom_filter_dict = {}
+
+    def filter(self, session, filters, order_by=None, desc=False):
+        self.session = session
+        query = session.query(self.model)
+        for tup in filters:
+            key, operator, value = tup
+            attr = getattr(self.model, key, None)
+            if not attr:
+                query = self.custom_filter(query, key, operator, value)
+                continue
+            if operator == 'in':
+                if not isinstance(value, list):
+                    value = value.split(',')
+            try:
+                f = self.op_map[operator](attr, value)
+                query = query.filter(f)
+            except Exception as e:
+                print(e)
         if order_by is None:
-            order_by = cls.default_order
+            order_by = self.default_order
+        if desc:
+            order_by = descending(order_by)
         return query.order_by(order_by)
+
+    def custom_filter(self, query, attr, operator, value):
+        try:
+            return self.custom_filter_dict[attr](query, operator, value)
+        except KeyError:
+            return query
 
 
 class RedditObjectListFilter(Filter):
@@ -67,15 +74,43 @@ class RedditObjectFilter(Filter):
     model = RedditObject
     default_order = 'name'
 
-    # custom_queries = {
-    #     'score': lambda op, value:
-    # }
-    #
+    def __init__(self):
+        super().__init__()
+        self.custom_filter_dict = {
+            'score': self.post_score_filter,
+            'post_count': self.post_count_filter,
+            'content_count': self.content_count_filter,
+            'comment_count': self.comment_count_filter,
+        }
 
-    @classmethod
-    def score_filter(cls, session, query, operator, value):
-        scores = session.query(func.sum(Post.score)).label('score').group_by(Post.significant_reddit_object_id).subquery()
-        query = query.filter(getattr(cls.model, 'score')(value))
+    def post_score_filter(self, query, operator, value):
+        posts = self.session.query(Post.significant_reddit_object_id, func.sum(Post.score).label('total_score'))\
+            .group_by(Post.significant_reddit_object_id).subquery()
+        f = self.op_map[operator](posts.c.total_score, value)
+
+        query = query.outerjoin(posts, RedditObject.id == posts.c.significant_reddit_object_id).filter(f)
+        return query
+
+    def post_count_filter(self, query, operator, value):
+        posts = self.session.query(Post.significant_reddit_object_id, func.count(Post.id).label('post_count'))\
+            .group_by(Post.significant_reddit_object_id).subquery()
+        f = self.op_map[operator](posts.c.post_count, value)
+        query = query.outerjoin(posts, RedditObject.id == posts.c.significant_reddit_object_id).filter(f)
+        return query
+
+    def content_count_filter(self, query, operator, value):
+        content = self.session.query(Post.significant_reddit_object_id, func.count(Content.id).label('content_count'))\
+            .join(Post).group_by(Post.significant_reddit_object_id).subquery()
+        f = self.op_map[operator](content.c.content_count, value)
+        query = query.outerjoin(content, RedditObject.id == content.c.significant_reddit_object_id).filter(f)
+        return query
+
+    def comment_count_filter(self, query, operator, value):
+        comments = self.session.query(Post.significant_reddit_object_id, func.count(Comment.id).label('comment_count'))\
+            .join(Post).group_by(Post.significant_reddit_object_id).subquery()
+        f = self.op_map[operator](comments.c.comment_count, value)
+        query = query.outerjoin(comments, RedditObject.id == comments.c.significant_reddit_object_id).filter(f)
+        return query
 
 
 class DownloadSessionFilter(Filter):
