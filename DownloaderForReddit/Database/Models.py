@@ -33,7 +33,7 @@ class ListAssociation(BaseModel):
 
     __tablename__ = 'reddit_object_list_association'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     reddit_object_list_id = Column(ForeignKey('reddit_object_list.id'))
     reddit_object_list = relationship('RedditObjectList', backref=backref('list_subscriptions',
                                                                           cascade='all, delete-orphan'))
@@ -46,7 +46,7 @@ class RedditObjectList(BaseModel):
 
     __tablename__ = 'reddit_object_list'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     date_created = Column(DateTime, default=datetime.now())
     list_type = Column(String, nullable=False)
@@ -117,7 +117,7 @@ class RedditObject(BaseModel):
 
     __tablename__ = 'reddit_object'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     date_created = Column(DateTime, nullable=True)
     post_limit = Column(SmallInteger, default=25)
@@ -263,7 +263,7 @@ class User(RedditObject):
 
     __tablename__ = 'user'
 
-    id = Column(ForeignKey('reddit_object.id'), primary_key=True)
+    id = Column(ForeignKey('reddit_object.id'), primary_key=True, autoincrement=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'USER',
@@ -274,7 +274,7 @@ class Subreddit(RedditObject):
 
     __tablename__ = 'subreddit'
 
-    id = Column(ForeignKey('reddit_object.id'), primary_key=True)
+    id = Column(ForeignKey('reddit_object.id'), primary_key=True, autoincrement=True)
 
     __mapper_args__ = {
         'polymorphic_identity': 'SUBREDDIT',
@@ -285,7 +285,7 @@ class DownloadSession(BaseModel):
 
     __tablename__ = 'download_session'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, nullable=True)
     start_time = Column(DateTime, nullable=True)
     end_time = Column(DateTime, nullable=True)
@@ -346,7 +346,7 @@ class Post(BaseModel):
 
     __tablename__ = 'post'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String)
     date_posted = Column(DateTime)
     domain = Column(String)
@@ -404,7 +404,7 @@ class Comment(BaseModel):
 
     __tablename__ = 'comment'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     body = Column(String)
     body_html = Column(String)
     score = Column(Integer)
@@ -463,7 +463,7 @@ class Content(BaseModel):
 
     __tablename__ = 'content'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String)
     download_title = Column(String, nullable=True)
     extension = Column(String)

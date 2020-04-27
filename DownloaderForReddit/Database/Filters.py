@@ -2,8 +2,7 @@ from abc import ABC
 from sqlalchemy.sql import func
 from sqlalchemy import desc as descending
 
-from .DatabaseHandler import DatabaseHandler
-from .Models import RedditObjectList, RedditObject, DownloadSession, Post, Content, Comment
+from .Models import RedditObjectList, RedditObject, DownloadSession, Post, Content, Comment, ListAssociation
 
 
 class Filter(ABC):
@@ -33,9 +32,10 @@ class Filter(ABC):
     def __init__(self):
         self.custom_filter_dict = {}
 
-    def filter(self, session, filters, order_by=None, desc=False):
+    def filter(self, session, *filters, query=None, order_by=None, desc=False):
         self.session = session
-        query = session.query(self.model)
+        if query is None:
+            query = session.query(self.model)
         for tup in filters:
             key, operator, value = tup
             attr = getattr(self.model, key, None)
@@ -68,6 +68,20 @@ class RedditObjectListFilter(Filter):
     model = RedditObjectList
     default_order = 'name'
 
+    def __init__(self):
+        super().__init__()
+        self.custom_filter_dict = {
+            'reddit_object_count': self.reddit_object_count_filter,
+        }
+
+    def reddit_object_count_filter(self, query, operator, value):
+        ros = self.session.query(ListAssociation.reddit_object_list_id,
+                                 func.count(ListAssociation.reddit_object_id).label('ro_count'))\
+            .group_by(ListAssociation.reddit_object_list_id).subquery()
+        f = self.op_map[operator](ros.c.ro_count, value)
+        query = query.outerjoin(ros, RedditObjectList.id == ros.c.reddit_object_list_id).filter(f)
+        return query
+
 
 class RedditObjectFilter(Filter):
 
@@ -77,10 +91,12 @@ class RedditObjectFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_dict = {
-            'score': self.post_score_filter,
+            'post_score': self.post_score_filter,
             'post_count': self.post_count_filter,
-            'content_count': self.content_count_filter,
+            'comment_score': self.comment_score_filter,
             'comment_count': self.comment_count_filter,
+            'content_count': self.content_count_filter,
+            'download_count': self.download_count_filter,
         }
 
     def post_score_filter(self, query, operator, value):
@@ -98,11 +114,11 @@ class RedditObjectFilter(Filter):
         query = query.outerjoin(posts, RedditObject.id == posts.c.significant_reddit_object_id).filter(f)
         return query
 
-    def content_count_filter(self, query, operator, value):
-        content = self.session.query(Post.significant_reddit_object_id, func.count(Content.id).label('content_count'))\
+    def comment_score_filter(self, query, operator, value):
+        comments = self.session.query(Post.significant_reddit_object_id, func.sum(Comment.score).label('total_score'))\
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](content.c.content_count, value)
-        query = query.outerjoin(content, RedditObject.id == content.c.significant_reddit_object_id).filter(f)
+        f = self.op_map[operator](comments.c.total_score, value)
+        query = query.outerjoin(comments, RedditObject.id == comments.c.significant_reddit_object_id).filter(f)
         return query
 
     def comment_count_filter(self, query, operator, value):
@@ -110,6 +126,21 @@ class RedditObjectFilter(Filter):
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
         f = self.op_map[operator](comments.c.comment_count, value)
         query = query.outerjoin(comments, RedditObject.id == comments.c.significant_reddit_object_id).filter(f)
+        return query
+
+    def content_count_filter(self, query, operator, value):
+        content = self.session.query(Post.significant_reddit_object_id, func.count(Content.id).label('content_count'))\
+            .join(Post).group_by(Post.significant_reddit_object_id).subquery()
+        f = self.op_map[operator](content.c.content_count, value)
+        query = query.outerjoin(content, RedditObject.id == content.c.significant_reddit_object_id).filter(f)
+        return query
+
+    def download_count_filter(self, query, operator, value):
+        s = self.session.query(Post.significant_reddit_object_id,
+                               func.count(Post.download_session_id.distinct()).label('dl_count'))\
+            .group_by(Post.significant_reddit_object_id).subquery()
+        f = self.op_map[operator](s.c.dl_count, value)
+        query = query.outerjoin(s, RedditObject.id == s.c.significant_reddit_object_id).filter(f)
         return query
 
 
