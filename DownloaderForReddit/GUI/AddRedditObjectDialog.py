@@ -1,7 +1,7 @@
 import os
 import logging
 from PyQt5.QtWidgets import QDialog, QFileDialog, QApplication
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
 
 from ..GUI_Resources.AddRedditObjectDialog_auto import Ui_AddRedditObjectDialog
 from ..Utils import Injector, SystemUtil
@@ -66,7 +66,7 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
 
     def get_import_file_path(self):
         file_path = QFileDialog.getOpenFileName(self, 'Select Import File', SystemUtil.get_data_directory(),
-                                                          'Import File (*.txt, *.json)')[0]
+                                                'Import File (*.txt, *.json)')[0]
         if os.path.isfile(file_path):
             return file_path
         else:

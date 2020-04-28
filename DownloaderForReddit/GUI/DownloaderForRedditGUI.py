@@ -42,6 +42,7 @@ from ..GUI.Messages import Message
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.DownloadSessionDialog import DownloadSessionDialog
+from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..Core.DownloadRunner import DownloadRunner
 from ..Database.Models import User, Subreddit, RedditObject, RedditObjectList
@@ -164,9 +165,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         self.user_list_model = RedditObjectListModel('USER')
         self.user_list_model.reddit_object_added.connect(self.check_new_object_for_download)
+        self.user_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.user_list_view.setModel(self.user_list_model)
         self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
         self.subreddit_list_model.reddit_object_added.connect(self.check_new_object_for_download)
+        self.subreddit_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.subreddit_list_view.setModel(self.subreddit_list_model)
 
         self.load_state()
@@ -729,8 +732,19 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             Message.invalid_file_path(self)
             return None
 
-    def check_existing_object_for_download(self, *existing_names):
-        pass
+    def check_existing_object_for_download(self, existing_tuple: tuple):
+        """
+        Called when existing names are added to a list.  Takes a tuple containing the list type, list of existing id's,
+        and a list of existing names.  If the global settings indicate to download reddit objects on add, a prompt asks
+        the user if they wish to download the existing users, and their response is handled appropriately.
+        :param existing_tuple: A tuple: (reddit_object_type, reddit_object_id_list, reddit_object_name_list).
+        """
+        if self.settings_manager.download_on_add:
+            ro_type, id_list, name_list = existing_tuple
+            dialog = ExistingRedditObjectAddDialog(ro_type, *name_list)
+            rep = dialog.exec_()
+            if rep:
+                self.add_to_download(*id_list)
 
     def check_new_object_for_download(self, reddit_object_id):
         if self.settings_manager.download_on_add:

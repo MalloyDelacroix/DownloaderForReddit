@@ -12,6 +12,7 @@ from ..Database.Models import RedditObject, RedditObjectList
 class RedditObjectListModel(QAbstractListModel):
 
     reddit_object_added = pyqtSignal(int)
+    existing_object_added = pyqtSignal(tuple)
 
     def __init__(self, list_type):
         """
@@ -105,6 +106,7 @@ class RedditObjectListModel(QAbstractListModel):
         :param name_list: A list of names to be validated, made into reddit objects, and added to the current reddit
                           object list.
         """
+        name_list = self.check_existing(name_list)
         self.validating = True
         self.validation_thread = QThread()
         self.validator = ObjectValidator(name_list, self.list_type, list_defaults=self.list.get_default_dict())
@@ -116,6 +118,25 @@ class RedditObjectListModel(QAbstractListModel):
         self.validation_thread.finished.connect(self.validation_thread.deleteLater)
         self.validator.moveToThread(self.validation_thread)
         self.validation_thread.start()
+
+    def check_existing(self, name_list):
+        """
+        Checks the supplied list of names for names that already exist in the database.  If duplicate names are found,
+        the existing_object_added signal is emitted and the names are removed from the list.
+        :param name_list: A list of names that are to be checked for duplication in the database.
+        :return: The supplied list of names with any duplicate names removed.
+        """
+        existing_ids = []
+        existing_names = []
+        for name in name_list:
+            ro = self.session.query(RedditObject).filter(func.lower(RedditObject.name) == name.lower()).first()
+            if ro is not None:
+                existing_ids.append(ro.id)
+                existing_names.append(ro.name)
+            name_list.remove(name)
+        if len(existing_names) > 0:
+            self.existing_object_added.emit((self.list_type, existing_ids, existing_names))
+        return name_list
 
     def add_validated_reddit_object(self, ro_id):
         reddit_object = self.session.query(RedditObject).get(ro_id)

@@ -8,17 +8,18 @@ class ExistingRedditObjectAddDialog(QDialog):
     list in which it already exists is made.
     """
 
-    def __init__(self, object_name, object_type):
+    def __init__(self, object_type, *args):
         QDialog.__init__(self)
-        self.object_name = object_name
-        self.object_type = object_type
+        self.object_type = object_type.lower()
+        self.multiple = len(args) > 1
 
         self.label = QLabel(
-            f'{self.object_name} is already in the list.\n'
-            f'Would you like to run a download for this {self.object_type.lower()}'
+            f'{", ".join(args)} {"are" if self.multiple else "is"} already in the list.\n'
+            f'Would you like to run a download for {"these" if self.multiple else "this"} '
+            f'{self.object_type} {"s" if self.multiple else ""}?'
         )
 
-        self.download_button = QPushButton(f'Download {self.object_type.lower()}')
+        self.download_button = QPushButton(f'Download {self.object_type.title()}{"s" if self.multiple else ""}')
         self.close_button = QPushButton('Close')
         self.download_button.clicked.connect(self.accept)
         self.close_button.clicked.connect(self.close)
