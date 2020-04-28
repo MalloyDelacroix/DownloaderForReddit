@@ -175,13 +175,12 @@ def epoch_to_str(epoch_time):
     return epoch_to_datetime(epoch_time).strftime('%m/%d/%Y %I:%M %p')
 
 
-def get_duration_str(start, end):
+def get_duration_str(duration):
     """
     Calculates the duration of seconds between the supplied end and start times and returns the value in a human
     readable format with hour, min, second representation.
     """
-    seconds = end - start
-    min_, sec = divmod(seconds, 60)
+    min_, sec = divmod(duration, 60)
     hour, min_ = divmod(min_, 60)
 
     time_string = ''

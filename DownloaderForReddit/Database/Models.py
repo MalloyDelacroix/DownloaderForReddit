@@ -289,6 +289,7 @@ class DownloadSession(BaseModel):
     name = Column(String, nullable=True)
     start_time = Column(DateTime, nullable=True)
     end_time = Column(DateTime, nullable=True)
+    duration = Column(Integer, nullable=True)
     extraction_thread_count = Column(Integer, nullable=True)
     download_thread_count = Column(Integer, nullable=True)
 
@@ -304,15 +305,11 @@ class DownloadSession(BaseModel):
         return self.get_display_date(self.end_time)
 
     @property
-    def duration(self):
+    def duration_display(self):
         try:
-            return SystemUtil.get_duration_str(self.start_time.timestamp(), self.end_time.timestamp())
+            return SystemUtil.get_duration_str(self.duration)
         except AttributeError:
             return 'Never finished'
-
-    @property
-    def duration_epoch(self):
-        return self.start_time.timestamp() - self.end_time.timestamp()
 
     def get_session_users(self):
         pass
