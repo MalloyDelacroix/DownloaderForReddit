@@ -1,7 +1,7 @@
 import traceback
 from abc import ABC
 from sqlalchemy.sql import func
-from sqlalchemy import and_, or_
+from sqlalchemy import or_
 from sqlalchemy import desc as descending
 
 from .Models import RedditObjectList, RedditObject, DownloadSession, Post, Content, Comment, ListAssociation
@@ -52,9 +52,20 @@ class Filter(ABC):
                 f = self.op_map[operator](attr, value)
                 query = query.filter(f)
             except Exception as e:
-                print(e)
+                traceback.print_exc()
+        query = self.order_query(query, order_by, desc)
+        return query
+
+    def order_query(self, query, order, desc):
+        if order is None:
+            order = self.default_order
+        order_by = getattr(self.model, order, None)
         if order_by is None:
-            order_by = self.default_order
+            try:
+                query, order_by = self.order_map[order](query)
+            except KeyError:
+                print('key error')
+                order_by = self.default_order
         if desc:
             order_by = descending(order_by)
         return query.order_by(order_by)
@@ -73,17 +84,51 @@ class RedditObjectListFilter(Filter):
 
     def __init__(self):
         super().__init__()
-        self.custom_filter_dict = {
-            'reddit_object_count': self.reddit_object_count_filter,
+        self.custom_filter_map = {
+            'reddit_object_count': self.filter_reddit_object_count,
+            'total_score': self.filter_total_score,
         }
 
-    def reddit_object_count_filter(self, query, operator, value):
-        ros = self.session.query(ListAssociation.reddit_object_list_id,
-                                 func.count(ListAssociation.reddit_object_id).label('ro_count'))\
+        self.order_map = {
+            'reddit_object_count': self.order_by_reddit_object_count,
+            'total_score': self.order_by_total_score,
+        }
+
+    def get_reddit_object_count_sub(self):
+        return self.session.query(ListAssociation.reddit_object_list_id,
+                                 func.count(ListAssociation.reddit_object_id).label('ro_count')) \
             .group_by(ListAssociation.reddit_object_list_id).subquery()
-        f = self.op_map[operator](ros.c.ro_count, value)
-        query = query.outerjoin(ros, RedditObjectList.id == ros.c.reddit_object_list_id).filter(f)
+
+    def get_total_score_sub(self):
+        return self.session.query(ListAssociation.reddit_object_list_id, Post.significant_reddit_object_id,
+                                  func.sum(Post.score).label('total_score'))\
+            .join(Post, Post.significant_reddit_object_id == ListAssociation.reddit_object_id)\
+            .group_by(ListAssociation.reddit_object_list_id).subquery()
+
+    def join_query(self, query, sub):
+        return query.outerjoin(sub, RedditObjectList.id == sub.c.reddit_object_list_id)
+
+    def filter_reddit_object_count(self, query, operator, value):
+        sub = self.get_reddit_object_count_sub()
+        f = self.op_map[operator](sub.c.ro_count, value)
+        query = self.join_query(query, sub).filter(f)
         return query
+
+    def filter_total_score(self, query, operator, value):
+        sub = self.get_total_score_sub()
+        f = self.op_map[operator](sub.c.total_score, value)
+        query = self.join_query(query, sub).filter(f)
+        return query
+
+    def order_by_reddit_object_count(self, query):
+        sub = self.get_reddit_object_count_sub()
+        query = self.join_query(query, sub)
+        return query, sub.c.ro_count
+
+    def order_by_total_score(self, query):
+        sub = self.get_total_score_sub()
+        query = self.join_query(query, sub)
+        return query, sub.c.total_score
 
 
 class RedditObjectFilter(Filter):
@@ -93,58 +138,135 @@ class RedditObjectFilter(Filter):
 
     def __init__(self):
         super().__init__()
-        self.custom_filter_dict = {
-            'post_score': self.post_score_filter,
-            'post_count': self.post_count_filter,
-            'comment_score': self.comment_score_filter,
-            'comment_count': self.comment_count_filter,
-            'content_count': self.content_count_filter,
-            'download_count': self.download_count_filter,
+        self.custom_filter_map = {
+            'post_score': self.filter_post_score,
+            'post_count': self.filter_post_count,
+            'comment_score': self.filter_comment_score,
+            'comment_count': self.filter_comment_count,
+            'content_count': self.filter_content_count,
+            'download_count': self.filter_download_count,
+            'last_post_date': self.filter_last_post_date,
         }
 
-    def post_score_filter(self, query, operator, value):
-        posts = self.session.query(Post.significant_reddit_object_id, func.sum(Post.score).label('total_score'))\
+        self.order_map = {
+            'post_score': self.order_by_score,
+            'post_count': self.order_by_post_count,
+            'comment_score': self.order_by_comment_score,
+            'comment_count': self.order_by_comment_count,
+            'content_count': self.order_by_content_count,
+            'download_count': self.order_by_download_count,
+            'last_post_date': self.order_by_last_post_date,
+        }
+
+    def get_score_sum_sub(self):
+        return self.session.query(Post.significant_reddit_object_id, func.sum(Post.score).label('total_score')) \
             .group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](posts.c.total_score, value)
 
-        query = query.outerjoin(posts, RedditObject.id == posts.c.significant_reddit_object_id).filter(f)
-        return query
-
-    def post_count_filter(self, query, operator, value):
-        posts = self.session.query(Post.significant_reddit_object_id, func.count(Post.id).label('post_count'))\
+    def get_post_count_sub(self):
+        return self.session.query(Post.significant_reddit_object_id, func.count(Post.id).label('post_count'))\
             .group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](posts.c.post_count, value)
-        query = query.outerjoin(posts, RedditObject.id == posts.c.significant_reddit_object_id).filter(f)
-        return query
 
-    def comment_score_filter(self, query, operator, value):
-        comments = self.session.query(Post.significant_reddit_object_id, func.sum(Comment.score).label('total_score'))\
+    def get_comment_score_sub(self):
+        return self.session.query(Post.significant_reddit_object_id, func.sum(Comment.score).label('total_score'))\
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](comments.c.total_score, value)
-        query = query.outerjoin(comments, RedditObject.id == comments.c.significant_reddit_object_id).filter(f)
-        return query
 
-    def comment_count_filter(self, query, operator, value):
-        comments = self.session.query(Post.significant_reddit_object_id, func.count(Comment.id).label('comment_count'))\
+    def get_comment_count_sub(self):
+        return self.session.query(Post.significant_reddit_object_id, func.count(Comment.id).label('comment_count'))\
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](comments.c.comment_count, value)
-        query = query.outerjoin(comments, RedditObject.id == comments.c.significant_reddit_object_id).filter(f)
-        return query
 
-    def content_count_filter(self, query, operator, value):
-        content = self.session.query(Post.significant_reddit_object_id, func.count(Content.id).label('content_count'))\
+    def get_content_count_sub(self):
+        return self.session.query(Post.significant_reddit_object_id, func.count(Content.id).label('content_count')) \
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](content.c.content_count, value)
-        query = query.outerjoin(content, RedditObject.id == content.c.significant_reddit_object_id).filter(f)
-        return query
 
-    def download_count_filter(self, query, operator, value):
-        s = self.session.query(Post.significant_reddit_object_id,
-                               func.count(Post.download_session_id.distinct()).label('dl_count'))\
+    def get_download_count_sub(self):
+        return self.session.query(Post.significant_reddit_object_id,
+                                  func.count(Post.download_session_id.distinct()).label('dl_count')) \
             .group_by(Post.significant_reddit_object_id).subquery()
-        f = self.op_map[operator](s.c.dl_count, value)
-        query = query.outerjoin(s, RedditObject.id == s.c.significant_reddit_object_id).filter(f)
+
+    def get_last_post_date_sub(self):
+        return self.session.query(Post.significant_reddit_object_id,
+                                  func.max(Post.date_posted).label('last_post_date'))\
+            .group_by(Post.significant_reddit_object_id).subquery()
+
+    def join_queries(self, query, sub):
+        return query.outerjoin(sub, RedditObject.id == sub.c.significant_reddit_object_id)
+
+    def filter_post_score(self, query, operator, value):
+        sub = self.get_score_sum_sub()
+        f = self.op_map[operator](sub.c.total_score, value)
+        query = self.join_queries(query, sub).filter(f)
         return query
+
+    def filter_post_count(self, query, operator, value):
+        sub = self.get_post_count_sub()
+        f = self.op_map[operator](sub.c.post_count, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def filter_comment_score(self, query, operator, value):
+        sub = self.get_comment_score_sub()
+        f = self.op_map[operator](sub.c.total_score, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def filter_comment_count(self, query, operator, value):
+        sub = self.get_comment_count_sub()
+        f = self.op_map[operator](sub.c.comment_count, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def filter_content_count(self, query, operator, value):
+        sub = self.get_content_count_sub()
+        f = self.op_map[operator](sub.c.content_count, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def filter_download_count(self, query, operator, value):
+        sub = self.get_download_count_sub()
+        f = self.op_map[operator](sub.c.dl_count, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def filter_last_post_date(self, query, operator, value):
+        sub = self.get_last_post_date_sub()
+        f = self.op_map[operator](sub.c.last_post_date, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def order_by_score(self, query):
+        sub = self.get_score_sum_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.total_score
+
+    def order_by_post_count(self, query):
+        sub = self.get_post_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.post_count
+
+    def order_by_comment_score(self, query):
+        sub = self.get_comment_score_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.comment_score
+
+    def order_by_comment_count(self, query):
+        sub = self.get_comment_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.comment_count
+
+    def order_by_content_count(self, query):
+        sub = self.get_content_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.content_count
+
+    def order_by_download_count(self, query):
+        sub = self.get_download_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.dl_count
+
+    def order_by_last_post_date(self, query):
+        sub = self.get_last_post_date_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.last_post_date
 
 
 class DownloadSessionFilter(Filter):
@@ -154,41 +276,83 @@ class DownloadSessionFilter(Filter):
 
     def __init__(self):
         super().__init__()
-        self.custom_filter_dict = {
-            'reddit_object_count': self.reddit_object_count_filter,
-            'post_count': self.post_count_filter,
-            'comment_count': self.comment_count_filter,
-            'content_count': self.content_count_filter,
+        self.custom_filter_map = {
+            'reddit_object_count': self.filter_reddit_object_count,
+            'post_count': self.filter_post_count,
+            'comment_count': self.filter_comment_count,
+            'content_count': self.filter_content_count,
         }
 
-    def reddit_object_count_filter(self, query, operator, value):
-        ros = self.session.query(Post.download_session_id,
+        self.order_map = {
+            'reddit_object_count': self.order_by_reddit_object_count,
+            'post_count': self.order_by_post_count,
+            'comment_count': self.order_by_comment_count,
+            'content_count': self.order_by_content_count,
+        }
+
+    def get_reddit_object_count_sub(self):
+        return self.session.query(Post.download_session_id,
                                  func.count(Post.significant_reddit_object_id.distinct()).label('ro_count'))\
             .group_by(Post.download_session_id).subquery()
-        f = self.op_map[operator](ros.c.ro_count, value)
-        query = query.outerjoin(ros, DownloadSession.id == ros.c.download_session_id).filter(f)
-        return query
 
-    def post_count_filter(self, query, operator, value):
-        posts = self.session.query(Post.download_session_id, func.count(Post.id).label('post_count')) \
+    def get_post_count_sub(self):
+        return self.session.query(Post.download_session_id, func.count(Post.id).label('post_count')) \
             .group_by(Post.download_session_id).subquery()
-        f = self.op_map[operator](posts.c.post_count, value)
-        query = query.outerjoin(posts, DownloadSession.id == posts.c.download_session_id).filter(f)
+
+    def get_comment_count_sub(self):
+        return self.session.query(Post.download_session_id, func.count(Comment.id).label('comment_count')) \
+            .join(Post).group_by(Post.download_session_id).subquery()
+
+    def get_content_count_sub(self):
+        return self.session.query(Post.download_session_id, func.count(Content.id).label('content_count')) \
+            .join(Post).group_by(Post.download_session_id).subquery()
+
+    def join_queries(self, query, sub):
+        return query.outerjoin(sub, DownloadSession.id == sub.c.download_session_id)
+
+    def filter_reddit_object_count(self, query, operator, value):
+        sub = self.get_reddit_object_count_sub()
+        f = self.op_map[operator](sub.c.ro_count, value)
+        query = self.join_queries(query, sub).filter(f)
         return query
 
-    def comment_count_filter(self, query, operator, value):
-        comments = self.session.query(Post.download_session_id, func.count(Comment.id).label('comment_count')) \
-            .join(Post).group_by(Post.download_session_id).subquery()
-        f = self.op_map[operator](comments.c.comment_count, value)
-        query = query.outerjoin(comments, DownloadSession.id == comments.c.download_session_id).filter(f)
+    def filter_post_count(self, query, operator, value):
+        sub = self.get_post_count_sub()
+        f = self.op_map[operator](sub.c.post_count, value)
+        query = self.join_queries(query, sub).filter(f)
         return query
 
-    def content_count_filter(self, query, operator, value):
-        content = self.session.query(Post.download_session_id, func.count(Content.id).label('content_count')) \
-            .join(Post).group_by(Post.download_session_id).subquery()
-        f = self.op_map[operator](content.c.content_count, value)
-        query = query.outerjoin(content, DownloadSession.id == content.c.download_session_id).filter(f)
+    def filter_comment_count(self, query, operator, value):
+        sub = self.get_comment_count_sub()
+        f = self.op_map[operator](sub.c.comment_count, value)
+        query = self.join_queries(query, sub).filter(f)
         return query
+
+    def filter_content_count(self, query, operator, value):
+        sub = self.get_content_count_sub()
+        f = self.op_map[operator](sub.c.content_count, value)
+        query = self.join_queries(query, sub).filter(f)
+        return query
+
+    def order_by_reddit_object_count(self, query):
+        sub = self.get_reddit_object_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.ro_count
+
+    def order_by_post_count(self, query):
+        sub = self.get_post_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.post_count
+
+    def order_by_comment_count(self, query):
+        sub = self.get_comment_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.comment_count
+
+    def order_by_content_count(self, query):
+        sub = self.get_content_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.content_count
 
 
 class PostFilter(Filter):
@@ -198,24 +362,43 @@ class PostFilter(Filter):
 
     def __init__(self):
         super().__init__()
-        self.custom_filter_dict = {
+        self.custom_filter_map = {
             'comment_count': self.comment_count_filter,
             'content_count': self.content_count_filter,
         }
 
-    def comment_count_filter(self, query, operator, value):
-        comments = self.session.query(Comment.post_id, func.count(Comment.id).label('comment_count'))\
+    def get_comment_count_sub(self):
+        return self.session.query(Comment.post_id, func.count(Comment.id).label('comment_count'))\
             .group_by(Comment.post_id).subquery()
-        f = self.op_map[operator](comments.c.comment_count, value)
-        query = query.outerjoin(comments, Post.id == comments.c.post_id).filter(f)
+
+    def get_content_count_sub(self):
+        return self.session.query(Content.post_id, func.count(Content.id).label('content_count'))\
+            .group_by(Content.post_id).subquery()
+
+    def join_queries(self, query, sub):
+        return query.outerjoin(sub, Post.id == sub.c.post_id)
+
+    def comment_count_filter(self, query, operator, value):
+        sub = self.get_comment_count_sub()
+        f = self.op_map[operator](sub.c.comment_count, value)
+        query = self.join_queries(query, sub).filter(f)
         return query
 
     def content_count_filter(self, query, operator, value):
-        content = self.session.query(Content.post_id, func.count(Content.id).label('content_count'))\
-            .group_by(Content.post_id).subquery()
-        f = self.op_map[operator](content.c.content_count, value)
-        query = query.outerjoin(content, Post.id == content.c.post_id).filter(f)
+        sub = self.get_content_count_sub()
+        f = self.op_map[operator](sub.c.content_count, value)
+        query = self.join_queries(query, sub).filter(f)
         return query
+
+    def order_by_comment_count(self, query):
+        sub = self.get_comment_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.comment_count
+
+    def order_by_content_count(self, query):
+        sub = self.get_content_count_sub()
+        query = self.join_queries(query, sub)
+        return query, sub.c.content_count
 
 
 class ContentFilter(Filter):
@@ -225,32 +408,47 @@ class ContentFilter(Filter):
 
     def __init__(self):
         super().__init__()
-        self.custom_filter_dict = {
-            'post_score': self.post_score_filter,
-            'post_date': self.post_date_filter,
-            'nsfw': self.nsfw_filter,
-            'domain': self.domain_filter,
+        self.custom_filter_map = {
+            'post_score': self.filter_post_score,
+            'post_date': self.filter_date_posted,
+            'nsfw': self.filter_nsfw,
+            'domain': self.filter_domain,
         }
 
-    def post_score_filter(self, query, operator, value):
+        self.order_map = {
+            'post_score': self.order_by_post_score,
+            'post_date': self.order_by_date_posted,
+            'domain': self.order_by_domain,
+        }
+
+    def filter_post_score(self, query, operator, value):
         f = self.op_map[operator](Post.score, value)
         query = query.join(Post).filter(f)
         return query
 
-    def post_date_filter(self, query, operator, value):
+    def filter_date_posted(self, query, operator, value):
         f = self.op_map[operator](Post.date_posted, value)
         query = query.join(Post).filter(f)
         return query
 
-    def nsfw_filter(self, query, operator, value):
+    def filter_nsfw(self, query, operator, value):
         f = self.op_map[operator](Post.nsfw, value)
         query = query.join(Post).filter(f)
         return query
 
-    def domain_filter(self, query, operator, value):
+    def filter_domain(self, query, operator, value):
         f = self.op_map[operator](Post.domain, value)
         query = query.join(Post).filter(f)
         return query
+
+    def order_by_post_score(self, query):
+        return query.join(Post), Post.score
+
+    def order_by_date_posted(self, query):
+        return query.join(Post), Post.date_posted
+
+    def order_by_domain(self, query):
+        return query.join(Post), Post.domain
 
 
 class CommentFilter(Filter):
@@ -266,6 +464,11 @@ class CommentFilter(Filter):
             'nsfw': self.nsfw_filter,
         }
 
+        self.order_map = {
+            'post_score': self.order_by_post_score,
+            'post_date': self.order_by_post_date,
+        }
+
     def post_score_filter(self, query, operator, value):
         f = self.op_map[operator](Post.score, value)
         query = query.join(Post).filter(f)
@@ -280,3 +483,9 @@ class CommentFilter(Filter):
         f = self.op_map[operator](Post.nsfw, value)
         query = query.join(Post).filter(f)
         return query
+
+    def order_by_post_score(self, query):
+        return query.join(Post), Post.score
+
+    def order_by_post_date(self, query):
+        return query.join(Post), Post.date_posted
