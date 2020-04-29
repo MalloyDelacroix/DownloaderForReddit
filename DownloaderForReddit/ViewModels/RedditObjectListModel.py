@@ -133,7 +133,8 @@ class RedditObjectListModel(QAbstractListModel):
             if ro is not None:
                 existing_ids.append(ro.id)
                 existing_names.append(ro.name)
-            name_list.remove(name)
+                if self.list.reddit_objects.contains(ro):
+                    name_list.remove(name)
         if len(existing_names) > 0:
             self.existing_object_added.emit((self.list_type, existing_ids, existing_names))
         return name_list
