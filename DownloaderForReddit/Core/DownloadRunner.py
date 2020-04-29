@@ -220,7 +220,7 @@ class DownloadRunner(QObject):
     def get_user_submissions(self, user_id, session=None):
         if session is None:
             with self.db.get_scoped_session() as session:
-                self.get_user_submissions(user_id, session=session)
+                return self.get_user_submissions(user_id, session=session)
         user = session.query(User).get(user_id)
         redditor = self.validate_user(user)
 
@@ -239,7 +239,7 @@ class DownloadRunner(QObject):
     def get_subreddit_submissions(self, subreddit_id, session=None):
         if session is None:
             with self.db.get_scoped_session() as session:
-                self.get_subreddit_submissions(subreddit_id, session=session)
+                return self.get_subreddit_submissions(subreddit_id, session=session)
         subreddit = session.query(Subreddit).get(subreddit_id)
         sub = self.validate_subreddit(subreddit)
 
