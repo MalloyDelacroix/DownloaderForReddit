@@ -46,7 +46,7 @@ from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..Core.DownloadRunner import DownloadRunner
 from ..Database.Models import User, Subreddit, RedditObject, RedditObjectList
-from ..Database.ModelEnums import RedditObjectSortMethod
+from ..Database.Filters import RedditObjectFilter
 from ..Utils.UpdaterChecker import UpdateChecker
 from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter
@@ -89,8 +89,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if geom['x'] != 0 and geom['y'] != 0:
             self.move(geom['x'], geom['y'])
         self.horz_splitter.setSizes(self.settings_manager.horizontal_splitter_state)
-        self.list_sort_method = self.settings_manager.list_sort_method
         self.list_order_method = self.settings_manager.list_order_method
+        self.order_list_desc = self.settings_manager.order_list_desc
 
         if self.settings_manager.download_radio_state == 'USER':
             self.download_users_radio.setChecked(True)
@@ -121,12 +121,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # self.sort_list_by_post_count_menu_item.triggered.connect(lambda: self.set_list_sort_method(2))
         self.setup_list_sort_menu()
 
-        self.list_view_order = QActionGroup(self)
-        self.list_view_order.addAction(self.sort_list_ascending_menu_item)
-        self.list_view_order.addAction(self.sort_list_descending_menu_item)
-        self.sort_list_ascending_menu_item.triggered.connect(lambda: self.set_list_order_method(0))
-        self.sort_list_descending_menu_item.triggered.connect(lambda: self.set_list_order_method(1))
-        self.set_view_menu_items_checked()
+        self.list_view_order_group = QActionGroup(self)
+        self.list_view_order_group.addAction(self.sort_list_ascending_menu_item)
+        self.list_view_order_group.addAction(self.sort_list_descending_menu_item)
+        self.sort_list_ascending_menu_item.triggered.connect(lambda: self.set_list_order(desc=False))
+        self.sort_list_descending_menu_item.triggered.connect(lambda: self.set_list_order(desc=True))
+        self.sort_list_ascending_menu_item.setChecked(not self.order_list_desc)
+        self.sort_list_descending_menu_item.setChecked(self.order_list_desc)
 
         self.download_session_menu_item.triggered.connect(self.open_download_sessions_dialog)
         # endregion
@@ -163,11 +164,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         # endregion
 
-        self.user_list_model = RedditObjectListModel('USER')
+        self.user_list_model = RedditObjectListModel('USER', self.list_order_method, self.order_list_desc)
         self.user_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.user_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.user_list_view.setModel(self.user_list_model)
-        self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
+        self.subreddit_list_model = RedditObjectListModel('SUBREDDIT', self.list_order_method, self.order_list_desc)
         self.subreddit_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.subreddit_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.subreddit_list_view.setModel(self.subreddit_list_model)
@@ -176,6 +177,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         self.refresh_user_count()
         self.refresh_subreddit_count()
+
+        self.user_list_search_edit.editingFinished.connect(
+            lambda: self.user_list_model.search_list(self.user_list_search_edit.text()))
+        self.subreddit_list_search_edit.editingFinished.connect(
+            lambda: self.subreddit_list_model.search_list(self.subreddit_list_search_edit.text()))
 
         self.download_button.clicked.connect(self.run_full_download)
         self.soft_stop_download_button.clicked.connect(lambda: self.stop_download_signal.emit(False))
@@ -224,12 +230,12 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)
-        for value in RedditObjectSortMethod:
-            item = self.list_sort_menu_item.addAction(value.display_name.title(),
-                                                      lambda sort_method=value: self.set_list_sort_method(sort_method))
+        for field in RedditObjectFilter.get_order_fields():
+            text = field.replace('_', ' ').title()
+            item = self.list_sort_menu_item.addAction(text, lambda value=field: self.set_list_order(order_by=value))
             list_view_group.addAction(item)
             item.setCheckable(True)
-            item.setChecked(value == self.list_sort_method)
+            item.setChecked(field == self.list_order_method)
 
     def get_selected_single_user(self):
         """
@@ -530,7 +536,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 self.user_lists_combo.removeItem(self.user_lists_combo.currentIndex())
                 if self.user_lists_combo.currentText() != '':
                     self.user_list_model.set_list(self.user_lists_combo.currentText())
-                    self.user_list_model.sort_list(self.list_sort_method, self.list_order_method)
+                    self.user_list_model.sort_list(self.list_order_method, self.order_list_desc)
                 self.refresh_user_count()
                 self.logger.info('User list removed', extra={'list_name': current_user_list,
                                                              'previous_list_size': list_size})
@@ -542,7 +548,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """Changes the user list model based on the user_list_combo"""
         new_list_name = self.user_lists_combo.currentText()
         self.user_list_model.set_list(new_list_name)
-        self.user_list_model.sort_list(self.list_sort_method, self.list_order_method)
+        self.user_list_model.sort_list(self.list_order_method, self.order_list_desc)
         self.refresh_user_count()
         self.logger.info('User list changed to: %s' % new_list_name)
 
@@ -587,7 +593,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 self.subreddit_list_combo.removeItem(self.subreddit_list_combo.currentIndex())
                 if self.subreddit_list_combo.currentText() != '':
                     self.subreddit_list_model.set_list(self.subreddit_list_combo.currentText())
-                    self.subreddit_list_model.sort_list(self.list_sort_method, self.list_order_method)
+                    self.subreddit_list_model.sort_list(self.list_order_method, self.order_list_desc)
                 self.refresh_subreddit_count()
                 self.logger.info('Subreddit list removed', extra={'list_name': current_sub_list,
                                                                   'previous_list_size': list_size})
@@ -598,7 +604,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def change_subreddit_list(self):
         new_list_name = self.subreddit_list_combo.currentText()
         self.subreddit_list_model.set_list(new_list_name)
-        self.subreddit_list_model.sort_list(self.list_sort_method, self.list_order_method)
+        self.subreddit_list_model.sort_list(self.list_order_method, self.order_list_desc)
         self.refresh_subreddit_count()
 
     def export_subreddit_list_to_text(self):
@@ -929,31 +935,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             subreddit_count = 0
         self.subreddit_count_label.setText(str(subreddit_count))
 
-    def set_list_sort_method(self, method):
-        self.list_sort_method = method
-        self.change_list_sort_method()
-        # TODO: set sort order in model filter
-
-    def set_list_order_method(self, method):
-        self.list_order_method = method
-        self.change_list_sort_method()
-
-    def change_list_sort_method(self):
+    def set_list_order(self, order_by=None, desc=None):
         """Applies the sort and order function to each list model"""
-        self.user_list_model.sort_list(self.list_sort_method, self.list_order_method)
-        self.subreddit_list_model.sort_list(self.list_sort_method, self.list_order_method)
-
-    def set_view_menu_items_checked(self):
-        """A dispatch table to set the correct view menu item checked"""
-        pass
-        # TODO: fix sorting
-        # view_sort_dict = {0: self.sort_list_by_name_menu_item,
-        #                   1: self.sort_list_by_date_added_menu_item,
-        #                   2: self.sort_list_by_post_count_menu_item}
-        # view_order_dict = {0: self.sort_list_ascending_menu_item,
-        #                    1: self.sort_list_descending_menu_item}
-        # view_sort_dict[self.list_sort_method].setChecked(True)
-        # view_order_dict[self.list_order_method].setChecked(True)
+        if order_by is not None:
+            self.list_order_method = order_by
+        if desc is not None:
+            self.order_list_desc = desc
+        self.user_list_model.sort_list(self.list_order_method, self.order_list_desc)
+        self.subreddit_list_model.sort_list(self.list_order_method, self.order_list_desc)
 
     def closeEvent(self, QCloseEvent):
         self.close()
@@ -973,8 +962,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.settings_manager.main_window_geom['x'] = self.x()
         self.settings_manager.main_window_geom['y'] = self.y()
         self.settings_manager.horizontal_splitter_state = self.horz_splitter.sizes()
-        self.settings_manager.list_sort_method = self.list_sort_method
         self.settings_manager.list_order_method = self.list_order_method
+        self.settings_manager.order_list_desc = self.order_list_desc
         self.settings_manager.current_user_list = self.user_lists_combo.currentText()
         self.settings_manager.current_subreddit_list = self.subreddit_list_combo.currentText()
 

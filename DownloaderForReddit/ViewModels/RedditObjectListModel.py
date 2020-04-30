@@ -7,6 +7,7 @@ from sqlalchemy import func
 from ..Core.RedditObjectCreator import RedditObjectCreator
 from ..Utils import Injector
 from ..Database.Models import RedditObject, RedditObjectList
+from ..Database.Filters import RedditObjectFilter
 
 
 class RedditObjectListModel(QAbstractListModel):
@@ -14,7 +15,7 @@ class RedditObjectListModel(QAbstractListModel):
     reddit_object_added = pyqtSignal(int)
     existing_object_added = pyqtSignal(tuple)
 
-    def __init__(self, list_type):
+    def __init__(self, list_type, order_by, order_desc):
         """
         A list model that holds a list of reddit objects to display.  Handles calls to the database made through the
         GUI.
@@ -32,6 +33,9 @@ class RedditObjectListModel(QAbstractListModel):
         self.validator = None
         self.validation_thread = None
         self.validating = False
+
+        self.order_by = order_by
+        self.order_desc = order_desc
 
         # TODO: add waiting overlay to list while waiting on objects to validate
 
@@ -66,17 +70,31 @@ class RedditObjectListModel(QAbstractListModel):
                 .one()
             self.reddit_objects = self.list.reddit_objects
             self.row_count = self.list.reddit_objects.count()
-            self.refresh()
-            # TODO: sort list here
+            self.sort_list()
         except NoResultFound:
             pass
 
-    def sort_list(self, method, order):
-        try:
-            # TODO: map this to user selectable sort methods
-            self.reddit_objects = self.list.reddit_objects.order_by(RedditObject.name)
-        except AttributeError:
-            pass
+    def sort_list(self, order=None, desc=None):
+        if order is None:
+            order = self.order_by
+        if desc is None:
+            desc = self.order_desc
+        f = RedditObjectFilter()
+        self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc)
+        self.order_by = order
+        self.order_desc = desc
+        self.refresh()
+
+    def search_list(self, term):
+        f = RedditObjectFilter()
+        if term is not None and term != '':
+            self.reddit_objects = f.filter(self.session, ('name', 'wild_like', term), query=self.list.reddit_objects,
+                                           order_by=self.order_by,
+                                           desc=self.order_desc)
+        else:
+            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=self.order_by,
+                                           desc=self.order_desc)
+        self.refresh()
 
     def check_name(self, name):
         """
