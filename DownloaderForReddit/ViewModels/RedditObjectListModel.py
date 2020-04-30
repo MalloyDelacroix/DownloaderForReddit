@@ -15,7 +15,7 @@ class RedditObjectListModel(QAbstractListModel):
     reddit_object_added = pyqtSignal(int)
     existing_object_added = pyqtSignal(tuple)
 
-    def __init__(self, list_type, order_by, order_desc):
+    def __init__(self, list_type):
         """
         A list model that holds a list of reddit objects to display.  Handles calls to the database made through the
         GUI.
@@ -33,9 +33,6 @@ class RedditObjectListModel(QAbstractListModel):
         self.validator = None
         self.validation_thread = None
         self.validating = False
-
-        self.order_by = order_by
-        self.order_desc = order_desc
 
         # TODO: add waiting overlay to list while waiting on objects to validate
 
@@ -68,32 +65,28 @@ class RedditObjectListModel(QAbstractListModel):
                 .filter(RedditObjectList.name == list_name)\
                 .filter(RedditObjectList.list_type == self.list_type)\
                 .one()
-            self.reddit_objects = self.list.reddit_objects
             self.row_count = self.list.reddit_objects.count()
             self.sort_list()
         except NoResultFound:
             pass
 
-    def sort_list(self, order=None, desc=None):
-        if order is None:
-            order = self.order_by
-        if desc is None:
-            desc = self.order_desc
+    def sort_list(self):
+        order = self.settings_manager.list_order_method
+        desc = self.settings_manager.order_list_desc
         f = RedditObjectFilter()
         self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc)
-        self.order_by = order
-        self.order_desc = desc
         self.refresh()
 
     def search_list(self, term):
         f = RedditObjectFilter()
         if term is not None and term != '':
             self.reddit_objects = f.filter(self.session, ('name', 'wild_like', term), query=self.list.reddit_objects,
-                                           order_by=self.order_by,
-                                           desc=self.order_desc)
+                                           order_by=self.settings_manager.list_order_method,
+                                           desc=self.settings_manager.list_order_method)
         else:
-            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=self.order_by,
-                                           desc=self.order_desc)
+            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
+                                           order_by=self.settings_manager.list_order_method,
+                                           desc=self.settings_manager.list_order_method)
         self.refresh()
 
     def check_name(self, name):
