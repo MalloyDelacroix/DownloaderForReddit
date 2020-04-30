@@ -125,26 +125,28 @@ class SettingsManager:
                                                                      [181, 565])
         # endregion
 
-        # region Download Sessions Dialog
-        download_session_dialog_geom = {
+        # region Database View Dialog
+        database_view_geom = {
             'width': 1690,
             'height': 920,
             'x': 0,
             'y': 0
         }
-        self.dls_dialog_geom = self.get('download_session_dialog', 'dls_dialog_geom',
-                                        download_session_dialog_geom)
-        self.dls_dialog_show_reddit_objects = self.get('download_session_dialog', 'dls_dialog_show_reddit_objects',
-                                                       True)
-        self.dls_dialog_show_posts = self.get('download_session_dialog', 'dls_dialog_show_posts', True)
-        self.dls_dialog_show_content = self.get('download_session_dialog', 'dls_dialog_show_content', True)
-        self.dls_dialog_show_comments = self.get('download_session_dialog', 'dls_dialog_show_comments', True)
-        self.dls_dialog_splitter_position = self.get('download_session_dialog', 'dls_dialog_splitter_position',
-                                                     [330, 330, 330, 330, 330])
-        self.dls_dialog_post_text_font = self.get('download_session_dialog', 'dls_dialog_post_text_font', 'Times')
-        self.dls_dialog_post_text_font_size = self.get('download_session_dialog', 'dls_dialog_post_text_font_size', 10)
-        self.dls_dialog_icon_size = self.get('download_session_dialog', 'dls_dialog_icon_size', 250)
-        self.default_dls_post_headers = {
+        self.database_view_geom = self.get('database_view', 'database_view_geom',
+                                           database_view_geom)
+        self.database_view_show_reddit_objects = self.get('database_view',
+                                                          'database_view_show_reddit_objects', True)
+        self.database_view_focus_model = self.get('download_view', 'model_focus', 'REDDIT_OBJECT')
+        self.database_view_show_posts = self.get('database_view', 'database_view_show_posts', True)
+        self.database_view_show_content = self.get('database_view', 'database_view_show_content', True)
+        self.database_view_show_comments = self.get('database_view', 'database_view_show_comments', True)
+        self.database_view_splitter_position = self.get('database_view', 'database_view_splitter_position',
+                                                        [330, 330, 330, 330, 330])
+        self.database_view_post_text_font = self.get('database_view', 'database_view_post_text_font', 'Times')
+        self.database_view_post_text_font_size = self.get('database_view', 'database_view_post_text_font_size',
+                                                          10)
+        self.database_view_icon_size = self.get('database_view', 'database_view_icon_size', 250)
+        self.default_database_view_post_headers = {
             'title': True,
             'date_posted': True,
             'score': True,
@@ -156,9 +158,9 @@ class SettingsManager:
             'subreddit': True,
             'nsfw': True
         }
-        self.dls_post_table_headers = self.get('download_session_dialog', 'dls_post_table_headers',
-                                               self.default_dls_post_headers)
-        self.default_dls_comment_headers = {
+        self.database_view_post_table_headers = self.get('database_view', 'database_view_post_table_headers',
+                                                         self.default_database_view_post_headers)
+        self.default_database_view_comment_headers = {
             'author': True,
             'id': False,
             'body': True,
@@ -168,8 +170,9 @@ class SettingsManager:
             'reddit_id': False,
             'date_posted': True,
         }
-        self.dls_comment_tree_headers = self.get('download_session_dialog', 'dls_comment_tree_headers',
-                                                 self.default_dls_comment_headers)
+        self.database_view_comment_tree_headers = self.get('database_view',
+                                                           'database_view_comment_tree_headers',
+                                                           self.default_database_view_comment_headers)
         # endregion
 
         # region Misc Dialogs

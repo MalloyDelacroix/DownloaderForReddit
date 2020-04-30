@@ -24,6 +24,10 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
         super().__init__()
         self.sessions = []
 
+    def set_data(self, data):
+        self.sessions = data
+        self.refresh()
+
     def get_item(self, row):
         return self.sessions[row]
 

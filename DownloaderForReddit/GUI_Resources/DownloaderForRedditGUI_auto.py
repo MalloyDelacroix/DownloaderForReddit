@@ -273,6 +273,8 @@ class Ui_MainWindow(object):
         self.sort_list_by_date_created_menu_item.setObjectName("sort_list_by_date_created_menu_item")
         self.sort_list_by_score_menu_item = QtWidgets.QAction(MainWindow)
         self.sort_list_by_score_menu_item.setObjectName("sort_list_by_score_menu_item")
+        self.database_view_menu_item = QtWidgets.QAction(MainWindow)
+        self.database_view_menu_item.setObjectName("database_view_menu_item")
         self.file_menu.addAction(self.open_settings_menu_item)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.open_data_directory_menu_item)
@@ -308,6 +310,7 @@ class Ui_MainWindow(object):
         self.view_menu.addAction(self.list_order_menu_item.menuAction())
         self.view_menu.addSeparator()
         self.view_menu.addAction(self.download_session_menu_item)
+        self.view_menu.addAction(self.database_view_menu_item)
         self.menuDownload.addAction(self.download_user_list_menu_item)
         self.menuDownload.addAction(self.download_subreddit_list_menu_item)
         self.menuDownload.addAction(self.download_user_list_constrained_menu_item)
@@ -402,4 +405,5 @@ class Ui_MainWindow(object):
         self.sort_list_by_date_created_menu_item.setText(_translate("MainWindow", "Date Created"))
         self.sort_list_by_date_created_menu_item.setToolTip(_translate("MainWindow", "Sort reddit objects by the date that the item was created on reddit"))
         self.sort_list_by_score_menu_item.setText(_translate("MainWindow", "Total Score"))
+        self.database_view_menu_item.setText(_translate("MainWindow", "Database View"))
 

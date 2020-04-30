@@ -374,6 +374,7 @@
     <addaction name="list_order_menu_item"/>
     <addaction name="separator"/>
     <addaction name="download_session_menu_item"/>
+    <addaction name="database_view_menu_item"/>
    </widget>
    <widget class="QMenu" name="menuDownload">
     <property name="title">
@@ -615,6 +616,11 @@
   <action name="sort_list_by_score_menu_item">
    <property name="text">
     <string>Total Score</string>
+   </property>
+  </action>
+  <action name="database_view_menu_item">
+   <property name="text">
+    <string>Database View</string>
    </property>
   </action>
  </widget>

@@ -21,20 +21,20 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.db = Injector.get_database_handler()
         self.session = self.db.get_session()
 
-        geom = self.settings_manager.dls_dialog_geom
+        geom = self.settings_manager.database_view_geom
         self.resize(geom['width'], geom['height'])
         if geom['x'] != 0 and geom['y'] != 0:
             self.move(geom['x'], geom['y'])
-        self.splitter.setSizes(self.settings_manager.dls_dialog_splitter_position)
+        self.splitter.setSizes(self.settings_manager.database_view_splitter_position)
 
-        self.show_reddit_objects_checkbox.setChecked(self.settings_manager.dls_dialog_show_reddit_objects)
-        self.show_posts_checkbox.setChecked(self.settings_manager.dls_dialog_show_posts)
-        self.show_content_checkbox.setChecked(self.settings_manager.dls_dialog_show_content)
-        self.show_comments_checkbox.setChecked(self.settings_manager.dls_dialog_show_comments)
+        self.show_reddit_objects_checkbox.setChecked(self.settings_manager.database_view_show_reddit_objects)
+        self.show_posts_checkbox.setChecked(self.settings_manager.database_view_show_posts)
+        self.show_content_checkbox.setChecked(self.settings_manager.database_view_show_content)
+        self.show_comments_checkbox.setChecked(self.settings_manager.database_view_show_comments)
 
-        self.post_text_font_size = self.settings_manager.dls_dialog_post_text_font_size
-        self.post_text_font = QFont(self.settings_manager.dls_dialog_post_text_font, self.post_text_font_size)
-        self.icon_size = self.settings_manager.dls_dialog_icon_size
+        self.post_text_font_size = self.settings_manager.database_view_post_text_font_size
+        self.post_text_font = QFont(self.settings_manager.database_view_post_text_font, self.post_text_font_size)
+        self.icon_size = self.settings_manager.database_view_icon_size
 
         self.current_download_session = None
         self.current_reddit_object = None
@@ -64,8 +64,8 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
 
         self.post_text_browser.setVisible(False)
-        font = QFont(self.settings_manager.dls_dialog_post_text_font,
-                     self.settings_manager.dls_dialog_post_text_font_size)
+        font = QFont(self.settings_manager.database_view_post_text_font,
+                     self.settings_manager.database_view_post_text_font_size)
         self.post_text_browser.setFont(font)
 
         self.show_reddit_objects_checkbox.stateChanged.connect(self.toggle_reddit_object_view)
@@ -85,7 +85,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         post_headers.setContextMenuPolicy(Qt.CustomContextMenu)
         post_headers.customContextMenuRequested.connect(self.post_headers_context_menu)
         post_headers.setSectionsMovable(True)
-        for key, value in self.settings_manager.dls_post_table_headers.items():
+        for key, value in self.settings_manager.database_view_post_table_headers.items():
             index = self.post_model.headers.index(key)
             post_headers.setSectionHidden(index, not value)
 
@@ -99,7 +99,7 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
         comment_headers.setSectionsMovable(True)
         comment_headers.setContextMenuPolicy(Qt.CustomContextMenu)
         comment_headers.customContextMenuRequested.connect(self.comment_header_context_menu)
-        for key, value in self.settings_manager.dls_comment_tree_headers.items():
+        for key, value in self.settings_manager.database_view_comment_tree_headers.items():
             index = self.comment_tree_model.headers.index(key)
             comment_headers.setSectionHidden(index, not value)
 
@@ -122,13 +122,13 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             item = menu.addAction(value.replace('_', ' ').replace(' display', '').title())
             item.triggered.connect(lambda x, header=value: self.toggle_post_table_header(header))
             item.setCheckable(True)
-            item.setChecked(self.settings_manager.dls_post_table_headers[value])
+            item.setChecked(self.settings_manager.database_view_post_table_headers[value])
         menu.exec_(QCursor.pos())
 
     def toggle_post_table_header(self, header):
         index = self.post_model.headers.index(header)
-        visible = self.settings_manager.dls_post_table_headers[header]
-        self.settings_manager.dls_post_table_headers[header] = not visible
+        visible = self.settings_manager.database_view_post_table_headers[header]
+        self.settings_manager.database_view_post_table_headers[header] = not visible
         # sets the table header visibility to the opposite of what visible originally was
         self.post_table_view.horizontalHeader().setSectionHidden(index, visible)
 
@@ -208,13 +208,13 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
             item = menu.addAction(value.replace('_', ' ').title())
             item.triggered.connect(lambda x, header=value: self.toggle_comment_tree_headers(header))
             item.setCheckable(True)
-            item.setChecked(self.settings_manager.dls_comment_tree_headers[value])
+            item.setChecked(self.settings_manager.database_view_comment_tree_headers[value])
         menu.exec_(QCursor.pos())
 
     def toggle_comment_tree_headers(self, header):
         index = self.comment_tree_model.headers.index(header)
-        visible = self.settings_manager.dls_comment_tree_headers[header]
-        self.settings_manager.dls_comment_tree_headers[header] = not visible
+        visible = self.settings_manager.database_view_comment_tree_headers[header]
+        self.settings_manager.database_view_comment_tree_headers[header] = not visible
         # sets the header visibility to the opposite of what it originally was
         self.comment_tree_view.header().setSectionHidden(index, visible)
 
@@ -388,18 +388,18 @@ class DownloadSessionDialog(QDialog, Ui_DownloadSessionDialog):
                 self.post_table_view.resizeColumnToContents(self.post_model.headers.index(col))
 
     def closeEvent(self, event):
-        self.settings_manager.dls_dialog_show_reddit_objects = self.show_reddit_objects_checkbox.isChecked()
-        self.settings_manager.dls_dialog_show_posts = self.show_posts_checkbox.isChecked()
-        self.settings_manager.dls_dialog_show_content = self.show_content_checkbox.isChecked()
-        self.settings_manager.dls_dialog_show_comments = self.show_comments_checkbox.isChecked()
-        self.settings_manager.dls_dialog_post_text_font = self.post_text_font.family()
-        self.settings_manager.dls_dialog_post_text_font_size = self.post_text_font_size
-        self.settings_manager.dls_dialog_icon_size = self.icon_size
-        self.settings_manager.dls_dialog_geom['width'] = self.width()
-        self.settings_manager.dls_dialog_geom['height'] = self.height()
-        self.settings_manager.dls_dialog_geom['x'] = self.x()
-        self.settings_manager.dls_dialog_geom['y'] = self.y()
-        self.settings_manager.dls_dialog_splitter_position = self.splitter.sizes()
+        self.settings_manager.database_view_show_reddit_objects = self.show_reddit_objects_checkbox.isChecked()
+        self.settings_manager.database_view_show_posts = self.show_posts_checkbox.isChecked()
+        self.settings_manager.database_view_show_content = self.show_content_checkbox.isChecked()
+        self.settings_manager.database_view_show_comments = self.show_comments_checkbox.isChecked()
+        self.settings_manager.database_view_post_text_font = self.post_text_font.family()
+        self.settings_manager.database_view_post_text_font_size = self.post_text_font_size
+        self.settings_manager.database_view_icon_size = self.icon_size
+        self.settings_manager.database_view_geom['width'] = self.width()
+        self.settings_manager.database_view_geom['height'] = self.height()
+        self.settings_manager.database_view_geom['x'] = self.x()
+        self.settings_manager.database_view_geom['y'] = self.y()
+        self.settings_manager.database_view_splitter_position = self.splitter.sizes()
         super().closeEvent(event)
 
     def set_first_session_index(self):

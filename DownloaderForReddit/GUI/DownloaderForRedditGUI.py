@@ -42,6 +42,7 @@ from ..GUI.Messages import Message
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
 from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.DownloadSessionDialog import DownloadSessionDialog
+from ..GUI.database_views.DatabaseDialog import DatabaseDialog
 from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
 from ..GUI.FfmpegInfoDialog import FfmpegInfoDialog
 from ..Core.DownloadRunner import DownloadRunner
@@ -121,6 +122,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.sort_list_descending_menu_item.setChecked(self.settings_manager.order_list_desc)
 
         self.download_session_menu_item.triggered.connect(self.open_download_sessions_dialog)
+        self.database_view_menu_item.triggered.connect(self.open_database_view_dialog)
         # endregion
 
         # region Lists Menu
@@ -751,6 +753,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         dialog = DownloadSessionDialog()
         dialog.show()
         dialog.exec_()
+
+    def open_database_view_dialog(self):
+        self.database_dialog = DatabaseDialog()
+        self.database_dialog.show()
 
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
