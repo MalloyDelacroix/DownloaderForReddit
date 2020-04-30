@@ -330,6 +330,12 @@ class DownloadSession(BaseModel):
         return session.query(RedditObject).filter(RedditObject.id.in_(subquery))
 
 
+@event.listens_for(DownloadSession.end_time, 'set')
+def set_download_session_duration(target, value, oldValue, initiator):
+    print('setting duration')
+    target.duration = value.timestamp() - target.start_time.timestamp()
+
+
 @event.listens_for(DownloadSession, 'before_insert')
 def set_download_session_name(mapper, connection, target):
     try:
