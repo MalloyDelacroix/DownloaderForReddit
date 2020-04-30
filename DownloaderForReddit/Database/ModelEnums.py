@@ -29,19 +29,6 @@ class LimitOperator(DisplayableEnum):
     GREATER_THAN = 1
 
 
-class RedditObjectSortMethod(DisplayableEnum):
-
-    ID = 1
-    NAME = 2
-    SCORE = 3
-    POST_COUNT = 4
-    CONTENT_COUNT = 5
-    DATE_ADDED = 6
-    DATE_CREATED = 7
-    LAST_DOWNLOAD = 8
-    LAST_POST_DATE = 9
-
-
 class PostSortMethod(DisplayableEnum):
 
     NEW = 1

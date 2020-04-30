@@ -106,8 +106,8 @@ class SettingsManager:
         }
         self.main_window_geom = self.get('main_window_gui', 'main_window_geom', main_window_geom)
         self.horizontal_splitter_state = self.get('main_window_gui', 'horizontal_splitter_state', [228, 258, 624])
-        self.list_sort_method = self.get('main_window_gui', 'list_sort_method', 2, container=RedditObjectSortMethod)
-        self.list_order_method = self.get('main_window_gui', 'list_order_method', 2, container=RedditObjectSortMethod)
+        self.list_order_method = self.get('main_window_gui', 'list_order_method', 'name')
+        self.order_list_desc = self.get('main_window_gui', 'order_list_desc', False)
         self.download_radio_state = self.get('main_window_gui', 'download_radio_state', 'USER')
         # endregion
 
