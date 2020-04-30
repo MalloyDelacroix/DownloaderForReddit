@@ -28,8 +28,39 @@ class Filter(ABC):
 
     model = None
     default_order = 'id'
+    filter_include = []
+    filter_exclude = []
+    order_by_include = []
+    order_by_exclude = []
 
     session = None
+
+    @classmethod
+    def get_filter_fields(cls):
+        if len(cls.filter_include) == 0 or 'all' in cls.filter_include:
+            cls.filter_include = cls.model.__table__.columns.keys()
+            for x in cls.filter_exclude:
+                cls.remove_item(cls.filter_include, x)
+            cls.remove_item(cls.filter_include, 'all')
+        cls.filter_include.sort()
+        return cls.filter_include
+
+    @classmethod
+    def get_order_fields(cls):
+        if len(cls.order_by_include) == 0 or 'all' in cls.order_by_include:
+            cls.order_by_include.extend(cls.model.__table__.columns.keys())
+            for x in cls.order_by_exclude:
+                cls.remove_item(cls.order_by_include, x)
+            cls.remove_item(cls.order_by_include, 'all')
+        cls.order_by_include.sort()
+        return cls.order_by_include
+
+    @staticmethod
+    def remove_item(item_list, item):
+        try:
+            item_list.remove(item)
+        except ValueError:
+            pass
 
     def __init__(self):
         self.custom_filter_map = {}
@@ -81,6 +112,9 @@ class RedditObjectListFilter(Filter):
 
     model = RedditObjectList
     default_order = 'name'
+    filter_include = ['all', 'reddit_object_count', 'total_score']
+    filter_exclude = ['post_score_limit_operator', 'comment_score_limit_operator']
+    order_by_include = ['name', 'date_created', 'list_type', 'reddit_object_count', 'total_score', 'date_limit']
 
     def __init__(self):
         super().__init__()
@@ -135,6 +169,12 @@ class RedditObjectFilter(Filter):
 
     model = RedditObject
     default_order = 'name'
+    filter_include = ['all', 'post_score', 'post_count', 'comment_score', 'comment_count', 'download_count',
+                      'last_post_date']
+    filter_exclude = ['post_score_limit_operator', 'comment_score_limit_operator', 'lists']
+    order_by_include = ['id', 'name', 'last_download', 'date_added', 'absolute_date_limit', 'date_created',
+                        'post_score', 'post_count', 'content_count', 'comment_count', 'download_count',
+                        'last_post_date']
 
     def __init__(self):
         super().__init__()
@@ -273,6 +313,12 @@ class DownloadSessionFilter(Filter):
 
     model = DownloadSession
     default_order = 'id'
+    included = 'all', 'reddit_object_count', 'post_count', 'comment_count', 'content_count'
+    excluded = ['extraction_thread_count', 'download_thread_count']
+    filter_include = included
+    filter_exclude = excluded
+    order_by_include = included
+    order_by_exclude = excluded
 
     def __init__(self):
         super().__init__()
@@ -359,6 +405,12 @@ class PostFilter(Filter):
 
     model = Post
     default_order = 'title'
+    include = ['all', 'comment_count', 'content_count']
+    exclude = ['author_id', 'subreddit_id', 'significant_reddit_object_id', 'download_session_id']
+    filter_include = include
+    filter_exclude = exclude
+    order_by_include = include
+    order_by_exclude = exclude
 
     def __init__(self):
         super().__init__()
@@ -401,10 +453,62 @@ class PostFilter(Filter):
         return query, sub.c.content_count
 
 
+class CommentFilter(Filter):
+
+    model = Comment
+    default_order = 'id'
+    include = ['all', 'post_score', 'post_date', 'nsfw']
+    exclude = ['author_id', 'subreddit_id', 'post_id', 'download_session_id']
+    filter_include = include
+    filter_exclude = exclude
+    order_by_include = include
+    order_by_exclude = exclude
+
+    def __init__(self):
+        super().__init__()
+        self.custom_filter_map = {
+            'post_score': self.post_score_filter,
+            'post_date': self.post_date_filter,
+            'nsfw': self.nsfw_filter,
+        }
+
+        self.order_map = {
+            'post_score': self.order_by_post_score,
+            'post_date': self.order_by_post_date,
+        }
+
+    def post_score_filter(self, query, operator, value):
+        f = self.op_map[operator](Post.score, value)
+        query = query.join(Post).filter(f)
+        return query
+
+    def post_date_filter(self, query, operator, value):
+        f = self.op_map[operator](Post.date_posted, value)
+        query = query.join(Post).filter(f)
+        return query
+
+    def nsfw_filter(self, query, operator, value):
+        f = self.op_map[operator](Post.nsfw, value)
+        query = query.join(Post).filter(f)
+        return query
+
+    def order_by_post_score(self, query):
+        return query.join(Post), Post.score
+
+    def order_by_post_date(self, query):
+        return query.join(Post), Post.date_posted
+
+
 class ContentFilter(Filter):
 
     model = Content
     default_order = 'title'
+    include = ['all', 'post_score', 'post_date', 'nsfw', 'domain']
+    exclude = ['user_id', 'subreddit_id', 'post_id', 'comment_id', 'download_session_id']
+    filter_include = include
+    filter_exclude = exclude
+    order_by_include = include
+    order_by_exclude = exclude
 
     def __init__(self):
         super().__init__()
@@ -449,43 +553,3 @@ class ContentFilter(Filter):
 
     def order_by_domain(self, query):
         return query.join(Post), Post.domain
-
-
-class CommentFilter(Filter):
-
-    model = Comment
-    default_order = 'id'
-
-    def __init__(self):
-        super().__init__()
-        self.custom_filter_map = {
-            'post_score': self.post_score_filter,
-            'post_date': self.post_date_filter,
-            'nsfw': self.nsfw_filter,
-        }
-
-        self.order_map = {
-            'post_score': self.order_by_post_score,
-            'post_date': self.order_by_post_date,
-        }
-
-    def post_score_filter(self, query, operator, value):
-        f = self.op_map[operator](Post.score, value)
-        query = query.join(Post).filter(f)
-        return query
-
-    def post_date_filter(self, query, operator, value):
-        f = self.op_map[operator](Post.date_posted, value)
-        query = query.join(Post).filter(f)
-        return query
-
-    def nsfw_filter(self, query, operator, value):
-        f = self.op_map[operator](Post.nsfw, value)
-        query = query.join(Post).filter(f)
-        return query
-
-    def order_by_post_score(self, query):
-        return query.join(Post), Post.score
-
-    def order_by_post_date(self, query):
-        return query.join(Post), Post.date_posted
