@@ -14,8 +14,11 @@ class DatabaseHandler:
     database_url = f'sqlite:///{database_path}'
     base = declarative_base()
 
-    def __init__(self):
-        self.engine = sqlalchemy.create_engine(self.database_url)
+    def __init__(self, *, in_memory=False):
+        if not in_memory:
+            self.engine = sqlalchemy.create_engine(self.database_url)
+        else:
+            self.engine = sqlalchemy.create_engine('sqlite:///:memory:')
         self.base.metadata.create_all(self.engine)
 
         # session_factory = sessionmaker(bind=self.engine)

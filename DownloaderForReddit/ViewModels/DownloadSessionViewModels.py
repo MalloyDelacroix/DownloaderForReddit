@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QColor
 
 from ..Utils import Injector
 
@@ -28,6 +28,9 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
         self.sessions = data
         self.refresh()
 
+    def contains(self, item):
+        return item in self.sessions
+
     def get_item(self, row):
         return self.sessions[row]
 
@@ -53,6 +56,9 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
     def __init__(self):
         super().__init__()
         self.reddit_object_list = []
+
+    def contains(self, item):
+        return item in self.reddit_object_list
 
     def get_item(self, row):
         return self.reddit_object_list[row]
@@ -90,6 +96,9 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         self.posts = []
         self.headers = ['title', 'date_posted', 'score', 'self_post', 'text', 'url', 'domain', 'author',
                         'subreddit', 'nsfw']
+
+    def contains(self, item):
+        return item in self.posts
 
     def get_item(self, row):
         return self.posts[row]
@@ -140,6 +149,9 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         self.content_list = []
         self.pixmap_map = {}
 
+    def contains(self, item):
+        return item in self.content_list
+
     def get_item(self, row):
         return self.content_list[row]
 
@@ -169,7 +181,10 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         except KeyError:
             pixmap = QPixmap(content.get_full_file_path()).scaled(QSize(500, 500), Qt.KeepAspectRatio)
             self.pixmap_map[content.id] = pixmap
-        return QIcon(pixmap)
+        icon = QIcon()
+        icon.addPixmap(pixmap, QIcon.Normal)
+        icon.addPixmap(pixmap, QIcon.Selected)
+        return icon
 
 
 class CommentTreeModel(QAbstractItemModel, CustomItemModel):
@@ -179,6 +194,10 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
         self.headers = ['author', 'id', 'subreddit', 'body', 'body_html', 'score', 'date_posted', 'reddit_id']
         self.top_level_comments = []
         self.root = TreeItem(None, None)
+
+    def contains(self, item):
+        # return item in
+        return False
 
     def set_data(self, top_level_comments):
         self.top_level_comments.clear()

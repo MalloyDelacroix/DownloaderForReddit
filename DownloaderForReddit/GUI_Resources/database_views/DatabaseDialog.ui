@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Database</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -214,6 +217,9 @@
          </item>
          <item>
           <widget class="QListView" name="content_list_view">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
            <property name="editTriggers">
             <set>QAbstractItemView::NoEditTriggers</set>
            </property>
@@ -248,6 +254,9 @@
             <number>10</number>
            </property>
            <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="selectionRectVisible">
             <bool>true</bool>
            </property>
           </widget>

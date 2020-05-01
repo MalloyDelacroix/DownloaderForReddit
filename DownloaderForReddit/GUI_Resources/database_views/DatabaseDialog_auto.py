@@ -12,6 +12,7 @@ class Ui_DatabaseDialog(object):
     def setupUi(self, DatabaseDialog):
         DatabaseDialog.setObjectName("DatabaseDialog")
         DatabaseDialog.resize(1698, 981)
+        DatabaseDialog.setStyleSheet("")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout(DatabaseDialog)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout()
@@ -133,6 +134,7 @@ class Ui_DatabaseDialog(object):
         self.content_sort_combo.setObjectName("content_sort_combo")
         self.verticalLayout_4.addWidget(self.content_sort_combo)
         self.content_list_view = QtWidgets.QListView(self.content_widget)
+        self.content_list_view.setStyleSheet("")
         self.content_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.content_list_view.setIconSize(QtCore.QSize(0, 0))
         self.content_list_view.setFlow(QtWidgets.QListView.LeftToRight)
@@ -142,6 +144,7 @@ class Ui_DatabaseDialog(object):
         self.content_list_view.setViewMode(QtWidgets.QListView.IconMode)
         self.content_list_view.setBatchSize(10)
         self.content_list_view.setWordWrap(True)
+        self.content_list_view.setSelectionRectVisible(True)
         self.content_list_view.setObjectName("content_list_view")
         self.verticalLayout_4.addWidget(self.content_list_view)
         self.comment_widget = QtWidgets.QWidget(self.splitter)

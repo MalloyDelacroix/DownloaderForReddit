@@ -134,9 +134,11 @@ class SettingsManager:
         }
         self.database_view_geom = self.get('database_view', 'database_view_geom',
                                            database_view_geom)
+        self.database_view_focus_model = self.get('download_view', 'database_view_focus_model', 'REDDIT_OBJECT')
+        self.database_view_show_download_sessions = self.get('database_view', 'database_view_show_download_sessions',
+                                                             True)
         self.database_view_show_reddit_objects = self.get('database_view',
                                                           'database_view_show_reddit_objects', True)
-        self.database_view_focus_model = self.get('download_view', 'model_focus', 'REDDIT_OBJECT')
         self.database_view_show_posts = self.get('database_view', 'database_view_show_posts', True)
         self.database_view_show_content = self.get('database_view', 'database_view_show_content', True)
         self.database_view_show_comments = self.get('database_view', 'database_view_show_comments', True)

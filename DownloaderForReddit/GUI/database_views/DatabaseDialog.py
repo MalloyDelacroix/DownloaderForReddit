@@ -25,6 +25,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.db = Injector.get_database_handler()
         self.session = self.db.get_session()
 
+        self.setup_call_list = []
+
         geom = self.settings_manager.database_view_geom
         self.resize(geom['width'], geom['height'])
         if geom['x'] != 0 and geom['y'] != 0:
@@ -33,6 +35,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         self.filter = FilterWidget()
 
+        self.show_download_sessions_checkbox.setChecked(self.settings_manager.database_view_show_download_sessions)
         self.show_reddit_objects_checkbox.setChecked(self.settings_manager.database_view_show_reddit_objects)
         self.show_posts_checkbox.setChecked(self.settings_manager.database_view_show_posts)
         self.show_content_checkbox.setChecked(self.settings_manager.database_view_show_content)
@@ -82,6 +85,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.download_session_list_view.selectionModel().selectionChanged.connect(self.set_current_download_session)
         self.reddit_object_list_view.selectionModel().selectionChanged.connect(self.set_current_reddit_object)
         self.post_table_view.selectionModel().selectionChanged.connect(self.set_current_post)
+        self.content_list_view.selectionModel().selectionChanged.connect(self.set_current_content)
+        self.comment_tree_view.selectionModel().selectionChanged.connect(self.set_current_comment)
+
         self.content_list_view.doubleClicked.connect(self.open_selected_content)
 
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -122,6 +128,16 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             'COMMENT': self.comment_focus_radio
         }
         self.focus_map[self.settings_manager.database_view_focus_model].setChecked(True)
+
+    def check_call_list(self, call):
+        contains = call in self.setup_call_list
+        if not contains:
+            self.setup_call_list.append(call)
+        return contains
+
+    @property
+    def cascade(self):
+        return len(self.setup_call_list) == 0
 
     @property
     def download_session_focus(self):
@@ -299,21 +315,18 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def toggle_reddit_object_view(self):
         if self.show_reddit_objects_checkbox.isChecked():
             self.reddit_object_widget.setVisible(True)
-            self.set_reddit_object_data()
-            self.set_first_reddit_object_index()
+            self.setup_reddit_objects()
         else:
             self.reddit_object_widget.setVisible(False)
             if self.show_posts_checkbox.isChecked():
-                self.set_post_data()
-                self.set_first_post_index()
+                self.setup_posts()
             else:
-                self.set_content_data()
+                self.setup_content()
 
     def toggle_post_view(self):
         if self.show_posts_checkbox.isChecked():
             self.post_widget.setVisible(True)
-            self.set_post_data()
-            self.set_first_post_index()
+            self.setup_posts()
         else:
             self.post_widget.setVisible(False)
             self.set_content_data()
@@ -369,120 +382,92 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.session.commit()
                 self.download_session_model.refresh()
 
-    def initial_setup(self):
-        if self.download_session_focus:
+    def setup_download_sessions(self):
+        self.set_download_session_data()
+        self.set_first_download_session_index()
+
+    def setup_reddit_objects(self):
+        self.set_reddit_object_data()
+        self.set_first_reddit_object_index()
+
+    def setup_posts(self):
+        self.set_post_data()
+        self.set_first_post_index()
+
+    def setup_content(self):
+        self.set_content_data()
+        self.set_first_content_index()
+
+    def setup_comments(self):
+        self.set_comment_data()
+        self.set_first_comment_index()
+
+    def cascade_setup(self):
+        if not self.download_session_focus and not self.check_call_list('DOWNLOAD_SESSION'):
             self.setup_download_sessions()
-        elif self.reddit_object_focus:
+        if not self.reddit_object_focus and not self.check_call_list('REDDIT_OBJECT'):
             self.setup_reddit_objects()
-        elif self.post_focus:
+        if not self.post_focus and not self.check_call_list('POST'):
             self.setup_posts()
-        elif self.content_focus:
+        if not self.content_focus and not self.check_call_list('CONTENT'):
             self.setup_content()
-        elif self.comment_focus:
+        if not self.comment_focus and not self.check_call_list('COMMENT'):
             self.setup_comments()
 
-    def setup_download_sessions(self, set_data=True):
-        self.set_download_session_data()
-        self.set_first_download_session_index(set_data)
-
-    def setup_reddit_objects(self, set_data=True):
-        self.set_reddit_object_data()
-        self.set_first_reddit_object_index(set_data)
-
-    def setup_posts(self, set_data=True):
-        self.set_post_data()
-        self.set_first_post_index(set_data)
-
-    def setup_content(self, set_data=True):
-        self.set_content_data()
-        self.set_first_content_index(set_data)
-
-    def setup_comments(self, set_data=True):
-        self.set_comment_data()
-        self.set_first_comment_index(set_data)
-
-    def setup_data(self, caller):
-        if self.download_session_focus:
-            if self.show_reddit_objects and caller != 'REDDIT_OBJECT':
-                self.setup_reddit_objects(False)
-            elif self.show_posts:
-                self.setup_posts(False)
-            elif self.show_content:
-                self.setup_content(False)
-            elif self.show_comments:
-                self.setup_comments(False)
-        elif self.reddit_object_focus:
-            if self.show_download_sessions:
-                self.setup_download_sessions(False)
-            elif self.show_posts:
-                self.setup_posts(False)
-            elif self.show_content:
-                self.setup_content(False)
-            elif self.show_comments:
-                self.setup_comments(False)
-        elif self.post_focus:
-            if self.show_download_sessions:
-                self.setup_download_sessions(False)
-            elif self.show_reddit_objects:
-                self.setup_reddit_objects(False)
-            elif self.show_content:
-                self.setup_content(False)
-            elif self.show_comments:
-                self.setup_comments(False)
-        elif self.content_focus:
-            if self.show_download_sessions:
-                self.setup_download_sessions(False)
-            elif self.show_reddit_objects:
-                self.setup_reddit_objects(False)
-            elif self.show_posts:
-                self.setup_posts(False)
-            elif self.show_comments:
-                self.setup_comments(False)
-        elif self.comment_focus:
-            if self.show_download_sessions:
-                self.setup_download_sessions(False)
-            elif self.show_reddit_objects:
-                self.setup_reddit_objects(False)
-            elif self.show_posts:
-                self.setup_posts(False)
-            elif self.show_content:
-                self.setup_content(False)
-
-    def set_current_download_session(self, set_data=True):
+    def set_current_download_session(self):
         if self.show_download_sessions:
-            self.current_download_session = \
-                self.download_session_model.get_item(self.download_session_list_view.currentIndex().row())
-            if set_data:
-                self.setup_data()
+            try:
+                self.current_download_session = \
+                    self.download_session_model.get_item(self.download_session_list_view.currentIndex().row())
+            except IndexError:
+                self.current_download_session = None
+            if self.cascade:
+                self.setup_call_list.append('DOWNLOAD_SESSION')
+                self.cascade_setup()
+                self.setup_call_list.clear()
 
-    def set_current_reddit_object(self, set_data=True):
+    def set_current_reddit_object(self):
         if self.show_reddit_objects:
-            self.current_reddit_object = \
-                self.reddit_object_model.get_item(self.reddit_object_list_view.currentIndex().row())
-            if set_data:
-                self.setup_data()
+            try:
+                self.current_reddit_object = \
+                    self.reddit_object_model.get_item(self.reddit_object_list_view.currentIndex().row())
+            except IndexError:
+                self.current_reddit_object = None
+            if self.cascade:
+                self.setup_call_list.append('REDDIT_OBJECT')
+                self.cascade_setup()
+                self.setup_call_list.clear()
 
-    def set_current_post(self, set_data=True):
+    def set_current_post(self):
         if self.show_posts:
-            self.current_post = \
-                self.post_model.get_item(self.post_table_view.currentIndex().row())
-            if set_data:
-                self.setup_data()
+            try:
+                self.current_post = self.post_model.get_item(self.post_table_view.currentIndex().row())
+            except IndexError:
+                self.current_post = None
+            if self.cascade:
+                self.setup_call_list.append('POST')
+                self.cascade_setup()
+                self.setup_call_list.clear()
 
-    def set_current_comment(self, set_data=True):
+    def set_current_comment(self):
         if self.show_comments:
             # self.current_comment = \
             #     self.comment_tree_model.get_item()
-            if set_data:
-                print('TODO: setup current comment')
-                self.setup_data()
+            if self.cascade:
+                self.setup_call_list.append('COMMENT')
+                self.cascade_setup()
+                self.setup_call_list.clear()
 
-    def set_current_content(self, set_data=True):
+    def set_current_content(self):
         if self.show_content:
-            self.current_content = \
-                self.content_model.get_item(self.content_list_view.currentIndex().row())
-            if set_data:
-                self.setup_data()
+            try:
+                self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
+            except IndexError:
+                self.current_content = None
+            if self.cascade:
+                self.setup_call_list.append('CONTENT')
+                self.cascade_setup()
+                self.setup_call_list.clear()
 
     def set_download_session_data(self):
         f = DownloadSessionFilter()
@@ -504,7 +489,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def set_reddit_object_data(self):
         f = RedditObjectFilter()
         filter_tups = self.filter.filter(RedditObject)
-        query = self.session.query(RedditObject)
+        query = self.session.query(RedditObject).filter(RedditObject.significant == True)
         if self.download_session_focus:
             subquery = self.session.query(Post.significant_reddit_object_id)\
                 .filter(Post.download_session_id == self.current_download_session.id)
@@ -526,12 +511,39 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             if self.show_download_sessions:
                 query = query.filter(Post.download_session_id == self.current_download_session.id)
             if self.show_reddit_objects:
-                query.filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
+                query = query.filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
         elif self.content_focus:
             query = query.filter(Post.id == self.current_content.post_id)
         elif self.comment_focus:
             query = query.filter(Post.id == self.current_comment.post_id)
         self.post_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.post_order).all())
+
+    def set_content_data(self):
+        f = ContentFilter()
+        filter_tups = self.filter.filter(Content)
+        query = self.session.query(Content)
+        if self.download_session_focus:
+            query = query.filter(Content.download_session_id == self.current_download_session.id)
+            if self.show_posts:
+                query = query.filter(Content.post_id == self.current_post.id)
+            elif self.show_reddit_objects:
+                posts = self.session.query(Post.id) \
+                    .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
+                query = query.fitler(Content.post_id.in_(posts))
+        elif self.reddit_object_focus:
+            posts = self.session.query(Post.id) \
+                .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
+            query = query.filter(Content.post_id.in_(posts))
+            if self.show_posts:
+                query = query.filter(Content.post_id == self.current_post.id)
+            elif self.show_download_sessions:
+                query = query.filter(Content.download_session_id == self.current_download_session.id)
+        elif self.post_focus:
+            query = query.filter(Content.post_id == self.current_post.id)
+        elif self.comment_focus:
+            query = query.filter(Content.comment_id == self.current_comment)
+        self.content_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.content_order)
+                                    .all())
 
     def set_comment_data(self):
         f = CommentFilter()
@@ -539,85 +551,63 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         query = self.session.query(Comment)
         if self.download_session_focus:
             if self.show_posts:
-                query.filter(Comment.post_id == self.current_post.id)
+                query = query.filter(Comment.post_id == self.current_post.id)
             elif self.show_reddit_objects:
                 posts = self.session.query(Post.id)\
                     .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
-                query.filter(Comment.post_id.in_(posts))
+                query = query.filter(Comment.post_id.in_(posts))
             else:
-                query.filter(Comment.download_session_id == self.current_download_session.id)
+                query = query.filter(Comment.download_session_id == self.current_download_session.id)
         if self.reddit_object_focus:
             if self.show_posts:
-                query.filter(Comment.post_id == self.current_post.id)
+                query = query.filter(Comment.post_id == self.current_post.id)
             elif self.show_reddit_objects:
                 posts = self.session.query(Post.id) \
                     .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
-                query.filter(Comment.post_id.in_(posts))
+                query = query.filter(Comment.post_id.in_(posts))
         elif self.post_focus:
-            query.filter(Comment.post_id == self.current_post.id)
+            query = query.filter(Comment.post_id == self.current_post.id)
         elif self.content_focus:
-            query.filter(Comment.post_id == self.current_content.comment_id)
+            query = query.filter(Comment.post_id == self.current_content.comment_id)
         self.comment_tree_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.comment_order)\
                                          .all())
 
-    def set_content_data(self):
-        f = ContentFilter()
-        filter_tups = self.filter.filter(Content)
-        query = self.session.query(Content)
-        if self.download_session_focus:
-            query.filter(Content.download_session_id == self.current_download_session.id)
-            if self.show_posts:
-                query.filter(Content.post_id == self.current_post.id)
-            elif self.show_reddit_objects:
-                posts = self.session.query(Post.id) \
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
-                query.fitler(Content.post_id.in_(posts))
-        elif self.reddit_object_focus:
-            posts = self.session.query(Post.id) \
-                .filter(Post.significant_reddit_object_id == self.current_reddit_object.id)
-            query.filter(Content.post_id.in_(posts))
-            if self.show_posts:
-                query.filter(Content.post_id == self.current_post.id)
-            elif self.show_download_sessions:
-                query.filter(Content.download_session_id == self.current_download_session.id)
-        elif self.post_focus:
-            query.filter(Content.post_id == self.current_post.id)
-        elif self.comment_focus:
-            query.filter(Content.comment_id == self.current_comment)
-        self.content_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.content_order)
-                                    .all())
+    def set_first_download_session_index(self):
+        if not self.download_session_model.contains(self.current_download_session):
+            first_index = self.download_session_model.createIndex(0, 0)
+            if self.download_session_list_view.currentIndex() != first_index:
+                self.download_session_list_view.setCurrentIndex(first_index)
+            else:
+                self.set_current_download_session()
 
-    def set_first_download_session_index(self, set_data=True):
-        first_index = self.download_session_model.createIndex(0, 0)
-        if self.download_session_list_view.currentIndex() != first_index:
-            self.download_session_list_view.setCurrentIndex(first_index)
-        else:
-            self.set_current_download_session(set_data)
+    def set_first_reddit_object_index(self):
+        if not self.reddit_object_model.contains(self.current_reddit_object):
+            first_index = self.reddit_object_model.createIndex(0, 0)
+            if self.reddit_object_list_view.currentIndex() != first_index:
+                self.reddit_object_list_view.setCurrentIndex(first_index)
+            else:
+                self.set_current_reddit_object()
 
-    def set_first_reddit_object_index(self, set_data=True):
-        first_index = self.reddit_object_model.createIndex(0, 0)
-        if self.reddit_object_list_view.currentIndex() != first_index:
-            self.reddit_object_list_view.setCurrentIndex(first_index)
-        else:
-            self.set_current_reddit_object(set_data)
+    def set_first_post_index(self):
+        if not self.post_model.contains(self.current_post):
+            first_index = self.post_model.createIndex(0, 0)
+            if self.post_table_view.currentIndex() != first_index:
+                self.post_table_view.setCurrentIndex(first_index)
+            else:
+                self.set_current_post()
 
-    def set_first_post_index(self, set_data=True):
-        first_index = self.post_model.createIndex(0, 0)
-        if self.post_table_view.currentIndex() != first_index:
-            self.post_table_view.setCurrentIndex(first_index)
-        else:
-            self.set_current_post(set_data)
+    def set_first_content_index(self):
+        if not self.content_model.contains(self.current_content):
+            first_index = self.content_model.createIndex(0, 0)
+            if self.content_list_view.currentIndex() != first_index:
+                self.content_list_view.setCurrentIndex(first_index)
+            else:
+                self.set_current_content()
 
-    def set_first_content_index(self, set_data=True):
-        first_index = self.content_model.createIndex(0, 0)
-        if self.content_list_view.currentIndex() != first_index:
-            self.content_list_view.setCurrentIndex(first_index)
-        else:
-            self.set_current_content(set_data)
-
-    def set_first_comment_index(self, set_data=True):
-        first_index = self.comment_tree_model.createIndex(0, 0)
-        if self.comment_tree_view.currentIndex() != first_index:
-            self.comment_tree_view.setCurrentIndex(first_index)
-        else:
-            self.set_current_comment(set_data)
+    def set_first_comment_index(self):
+        if not self.comment_tree_model.contains(self.current_comment):
+            first_index = self.comment_tree_model.createIndex(0, 0)
+            if self.comment_tree_view.currentIndex() != first_index:
+                self.comment_tree_view.setCurrentIndex(first_index)
+            else:
+                self.set_current_comment()
