@@ -313,7 +313,7 @@ class DownloadSessionFilter(Filter):
 
     model = DownloadSession
     default_order = 'id'
-    included = 'all', 'reddit_object_count', 'post_count', 'comment_count', 'content_count'
+    included = ['all', 'reddit_object_count', 'post_count', 'comment_count', 'content_count']
     excluded = ['extraction_thread_count', 'download_thread_count']
     filter_include = included
     filter_exclude = excluded
@@ -417,6 +417,11 @@ class PostFilter(Filter):
         self.custom_filter_map = {
             'comment_count': self.comment_count_filter,
             'content_count': self.content_count_filter,
+        }
+
+        self.order_map = {
+            'comment_count': self.order_by_comment_count,
+            'content_count': self.order_by_content_count,
         }
 
     def get_comment_count_sub(self):
