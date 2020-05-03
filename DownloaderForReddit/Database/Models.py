@@ -47,7 +47,7 @@ class RedditObjectList(BaseModel):
     __tablename__ = 'reddit_object_list'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String)
+    name = Column(String(collation='NOCASE'))
     date_created = Column(DateTime, default=datetime.now())
     list_type = Column(String, nullable=False)
     reddit_objects = relationship('RedditObject', secondary='reddit_object_list_association', lazy='dynamic')
@@ -118,7 +118,7 @@ class RedditObject(BaseModel):
     __tablename__ = 'reddit_object'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String)
+    name = Column(String(collation='NOCASE'))
     date_created = Column(DateTime, nullable=True)
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
@@ -286,7 +286,7 @@ class DownloadSession(BaseModel):
     __tablename__ = 'download_session'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String, nullable=True)
+    name = Column(String(collation='NOCASE'), nullable=True)
     start_time = Column(DateTime, nullable=True)
     end_time = Column(DateTime, nullable=True)
     duration = Column(Integer, nullable=True)
@@ -350,12 +350,12 @@ class Post(BaseModel):
     __tablename__ = 'post'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String)
+    title = Column(String(collation='NOCASE'))
     date_posted = Column(DateTime)
-    domain = Column(String)
+    domain = Column(String(collation='NOCASE'))
     score = Column(Integer)
     nsfw = Column(Boolean, default=False)
-    reddit_id = Column(String, unique=True)
+    reddit_id = Column(String(collation='NOCASE'), unique=True)
     url = Column(String)
 
     is_self = Column(Boolean, default=False)
@@ -413,7 +413,7 @@ class Comment(BaseModel):
     score = Column(Integer)
     date_added = Column(DateTime, default=datetime.now())
     date_posted = Column(DateTime)
-    reddit_id = Column(String, unique=True)
+    reddit_id = Column(String(collation='NOCASE'), unique=True)
 
     extracted = Column(Boolean, default=False)
     has_content = Column(Boolean, default=False)
@@ -467,11 +467,11 @@ class Content(BaseModel):
     __tablename__ = 'content'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String)
-    download_title = Column(String, nullable=True)
-    extension = Column(String)
-    url = Column(String)
-    directory_path = Column(String, nullable=True)
+    title = Column(String(collation='NOCASE'))
+    download_title = Column(String(collation='NOCASE'), nullable=True)
+    extension = Column(String(collation='NOCASE'))
+    url = Column(String(collation='NOCASE'))
+    directory_path = Column(String(collation='NOCASE'), nullable=True)
 
     downloaded = Column(Boolean, default=False)
     download_date = Column(DateTime, nullable=True)
