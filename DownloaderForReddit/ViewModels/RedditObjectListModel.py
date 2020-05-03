@@ -71,11 +71,15 @@ class RedditObjectListModel(QAbstractListModel):
             pass
 
     def sort_list(self):
-        order = self.settings_manager.list_order_method
-        desc = self.settings_manager.order_list_desc
-        f = RedditObjectFilter()
-        self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc)
-        self.refresh()
+        try:
+            order = self.settings_manager.list_order_method
+            desc = self.settings_manager.order_list_desc
+            f = RedditObjectFilter()
+            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc)
+            self.refresh()
+        except AttributeError:
+            # AttributeError indicates that no list is set for this view model
+            pass
 
     def search_list(self, term):
         f = RedditObjectFilter()
