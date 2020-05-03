@@ -148,6 +148,14 @@ class SettingsManager:
         self.database_view_post_text_font_size = self.get('database_view', 'database_view_post_text_font_size',
                                                           10)
         self.database_view_icon_size = self.get('database_view', 'database_view_icon_size', 250)
+
+        self.database_view_download_session_order = self.get('database_view', 'database_view_download_session_order',
+                                                             'id')
+        self.database_view_reddit_object_order = self.get('database_view', 'database_view_reddit_object_order', 'name')
+        self.database_view_post_order = self.get('database_view', 'database_view_post_order', 'title')
+        self.database_view_content_order = self.get('database_view', 'database_view_content_order', 'title')
+        self.database_view_comment_order = self.get('database_view', 'database_view_comment_order', 'id')
+
         self.default_database_view_post_headers = {
             'title': True,
             'date_posted': True,

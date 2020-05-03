@@ -34,6 +34,9 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
     def get_item(self, row):
         return self.sessions[row]
 
+    def get_item_index(self, item):
+        return self.createIndex(self.sessions.index(item), 0)
+
     def rowCount(self, parent=None, *args, **kwargs):
         return len(self.sessions)
 
@@ -62,6 +65,9 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
 
     def get_item(self, row):
         return self.reddit_object_list[row]
+
+    def get_item_index(self, item):
+        return self.createIndex(self.reddit_object_list.index(item), 0)
 
     def set_data(self, data):
         self.reddit_object_list = data
@@ -102,6 +108,9 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
 
     def get_item(self, row):
         return self.posts[row]
+
+    def get_item_index(self, item):
+        return self.createIndex(self.posts.index(item), 0)
 
     def set_data(self, data):
         self.posts.clear()
@@ -155,6 +164,9 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
     def get_item(self, row):
         return self.content_list[row]
 
+    def get_item_index(self, item):
+        return self.createIndex(self.content_list.index(item), 0)
+
     def set_data(self, data):
         self.pixmap_map.clear()
         self.content_list.clear()
@@ -198,6 +210,10 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
     def contains(self, item):
         # return item in
         return False
+
+    def get_item_index(self, item):
+        # TODO: correct this
+        return 0
 
     def set_data(self, top_level_comments):
         self.top_level_comments.clear()

@@ -15,6 +15,21 @@ from DownloaderForReddit.Utils import Injector, SystemUtil
 from .FilterWidget import FilterWidget
 
 
+def hold_setup(method):
+    def set_hold(instance):
+        instance.hold_setup = True
+        method(instance)
+        instance.hold_setup = False
+    return set_hold
+
+
+def check_hold(method):
+    def check(instance, **kwargs):
+        if not instance.hold_setup or kwargs.get('override_hold', False):
+            method(instance)
+    return check
+
+
 class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def __init__(self):
@@ -24,6 +39,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.settings_manager = Injector.get_settings_manager()
         self.db = Injector.get_database_handler()
         self.session = self.db.get_session()
+        self.hold_setup = False
 
         self.setup_call_list = []
 
@@ -40,6 +56,34 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.show_posts_checkbox.setChecked(self.settings_manager.database_view_show_posts)
         self.show_content_checkbox.setChecked(self.settings_manager.database_view_show_content)
         self.show_comments_checkbox.setChecked(self.settings_manager.database_view_show_comments)
+
+        for x in DownloadSessionFilter.get_order_fields():
+            self.download_session_sort_combo.addItem(x.replace('_', ' ').title(), x)
+        for x in RedditObjectFilter.get_order_fields():
+            self.reddit_object_sort_combo.addItem(x.replace('_', ' ').title(), x)
+        for x in PostFilter.get_order_fields():
+            self.post_sort_combo.addItem(x.replace('_', ' ').title(), x)
+        for x in ContentFilter.get_order_fields():
+            self.content_sort_combo.addItem(x.replace('_', ' ').title(), x)
+        for x in CommentFilter.get_order_fields():
+            self.comment_sort_combo.addItem(x.replace('_', ' ').title(), x)
+
+        self.download_session_sort_combo.setCurrentText(
+            self.settings_manager.database_view_download_session_order.replace('_', ' ').title())
+        self.reddit_object_sort_combo.setCurrentText(
+            self.settings_manager.database_view_reddit_object_order.replace('_', ' ').title())
+        self.post_sort_combo.setCurrentText(
+            self.settings_manager.database_view_post_order.replace('_', ' ').title())
+        self.content_sort_combo.setCurrentText(
+            self.settings_manager.database_view_content_order.replace('_', ' ').title())
+        self.comment_sort_combo.setCurrentText(
+            self.settings_manager.database_view_comment_order.replace('_', ' ').title())
+
+        self.download_session_sort_combo.currentIndexChanged.connect(self.change_download_session_sort)
+        self.reddit_object_sort_combo.currentIndexChanged.connect(self.change_reddit_object_sort)
+        self.post_sort_combo.currentIndexChanged.connect(self.change_post_sort)
+        self.content_sort_combo.currentIndexChanged.connect(self.change_content_sort)
+        self.comment_sort_combo.currentIndexChanged.connect(self.change_comment_sort)
 
         self.icon_size = self.settings_manager.database_view_icon_size
 
@@ -346,6 +390,39 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.set_comment_data()
         self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
 
+    @hold_setup
+    def change_download_session_sort(self):
+        self.set_download_session_data(override_hold=True)
+        self.download_session_list_view.setCurrentIndex(
+            self.download_session_model.get_item_index(self.current_download_session))
+        self.settings_manager.database_view_download_session_order = \
+            self.download_session_sort_combo.currentData(Qt.UserRole)
+
+    @hold_setup
+    def change_reddit_object_sort(self):
+        self.set_reddit_object_data(override_hold=True)
+        self.reddit_object_list_view.setCurrentIndex(
+            self.reddit_object_model.get_item_index(self.current_reddit_object))
+        self.settings_manager.database_view_reddit_object_order = \
+            self.reddit_object_sort_combo.currentData(Qt.UserRole)
+
+    @hold_setup
+    def change_post_sort(self):
+        self.set_post_data(override_hold=True)
+        self.reddit_object_list_view.setCurrentIndex(self.post_model.get_item_index(self.current_post))
+        self.settings_manager.database_view_post_order = self.post_sort_combo.currentData(Qt.UserRole)
+
+    @hold_setup
+    def change_content_sort(self):
+        self.set_content_data(override_hold=True)
+        self.content_list_view.setCurrentIndex(self.content_model.get_item_index(self.current_content))
+        self.settings_manager.database_view_content_order = self.content_sort_combo.currentData(Qt.UserRole)
+
+    @hold_setup
+    def change_comment_sort(self):
+        # TODO: figure out how best to order this
+        self.settings_manager.database_view_comment_order = self.comment_sort_combo.currentData(Qt.UserRole)
+
     def set_content_icon_size(self, size=None):
         if size is None:
             size = self.icon_size
@@ -465,6 +542,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.cascade_setup()
                 self.setup_call_list.clear()
 
+    @check_hold
     def set_download_session_data(self):
         f = DownloadSessionFilter()
         filter_tups = self.filter.filter(DownloadSession)
@@ -482,6 +560,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.download_session_model.set_data(f.filter(self.session, *filter_tups, query=query,
                                                       order_by=self.download_session_order).all())
 
+    @check_hold
     def set_reddit_object_data(self):
         f = RedditObjectFilter()
         filter_tups = self.filter.filter(RedditObject)
@@ -499,6 +578,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.reddit_object_model.set_data(f.filter(self.session, *filter_tups, query=query,
                                                    order_by=self.reddit_object_order).all())
 
+    @check_hold
     def set_post_data(self):
         f = PostFilter()
         filter_tups = self.filter.filter(Post)
@@ -514,6 +594,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Post.id == self.current_comment.post_id)
         self.post_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.post_order).all())
 
+    @check_hold
     def set_content_data(self):
         f = ContentFilter()
         filter_tups = self.filter.filter(Content)
@@ -541,6 +622,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.content_order)
                                     .all())
 
+    @check_hold
     def set_comment_data(self):
         f = CommentFilter()
         filter_tups = self.filter.filter(Comment)
