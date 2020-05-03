@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'DatabaseDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_DatabaseDialog(object):
     def setupUi(self, DatabaseDialog):
@@ -121,7 +123,7 @@ class Ui_DatabaseDialog(object):
         self.post_table_view.setGridStyle(QtCore.Qt.NoPen)
         self.post_table_view.setObjectName("post_table_view")
         self.post_table_view.horizontalHeader().setCascadingSectionResizes(False)
-        self.post_text_browser = QtWidgets.QTextBrowser(self.post_splitter)
+        self.post_text_browser = PostTextBrowser(self.post_splitter)
         self.post_text_browser.setOpenExternalLinks(True)
         self.post_text_browser.setObjectName("post_text_browser")
         self.verticalLayout_3.addWidget(self.post_splitter)
@@ -180,4 +182,4 @@ class Ui_DatabaseDialog(object):
         self.show_content_checkbox.setText(_translate("DatabaseDialog", "Show content"))
         self.show_comments_checkbox.setText(_translate("DatabaseDialog", "Show comments"))
         self.filter_button.setText(_translate("DatabaseDialog", "Filter"))
-
+from DownloaderForReddit.GUI.database_views.PostTextBrowser import PostTextBrowser

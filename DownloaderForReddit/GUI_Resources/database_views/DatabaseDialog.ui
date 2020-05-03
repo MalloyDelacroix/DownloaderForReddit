@@ -201,7 +201,7 @@
              <bool>false</bool>
             </attribute>
            </widget>
-           <widget class="QTextBrowser" name="post_text_browser">
+           <widget class="PostTextBrowser" name="post_text_browser">
             <property name="openExternalLinks">
              <bool>true</bool>
             </property>
@@ -283,6 +283,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PostTextBrowser</class>
+   <extends>QTextBrowser</extends>
+   <header>DownloaderForReddit/GUI/database_views/PostTextBrowser</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

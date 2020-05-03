@@ -1,12 +1,12 @@
 import logging
-from PyQt5.QtWidgets import (QMenu, QWidgetAction, QInputDialog, QFontComboBox, QComboBox, QActionGroup,
-                             QWidget, QHBoxLayout, QLabel)
+from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QCursor, QFont
+from PyQt5.QtGui import QCursor
 
 from DownloaderForReddit.Database.Models import DownloadSession, RedditObject, Post, Content, Comment
 from DownloaderForReddit.Database.Filters import (DownloadSessionFilter, RedditObjectListFilter, RedditObjectFilter,
                                                   PostFilter, CommentFilter, ContentFilter)
+from DownloaderForReddit.GUI.BlankDialog import BlankDialog
 from DownloaderForReddit.GUI_Resources.database_views.DatabaseDialog_auto import Ui_DatabaseDialog
 from DownloaderForReddit.ViewModels.DownloadSessionViewModels import (DownloadSessionModel, RedditObjectModel,
                                                                       PostTableModel, ContentListModel,
@@ -41,8 +41,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.show_content_checkbox.setChecked(self.settings_manager.database_view_show_content)
         self.show_comments_checkbox.setChecked(self.settings_manager.database_view_show_comments)
 
-        self.post_text_font_size = self.settings_manager.database_view_post_text_font_size
-        self.post_text_font = QFont(self.settings_manager.database_view_post_text_font, self.post_text_font_size)
         self.icon_size = self.settings_manager.database_view_icon_size
 
         self.current_download_session = None
@@ -73,9 +71,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
 
         self.post_text_browser.setVisible(False)
-        font = QFont(self.settings_manager.database_view_post_text_font,
-                     self.settings_manager.database_view_post_text_font_size)
-        self.post_text_browser.setFont(font)
+        self.post_text_browser.attach_signal.connect(self.attach_post_text_browser)
+        self.post_text_browser.detach_signal.connect(self.detach_post_text_browser)
 
         self.show_reddit_objects_checkbox.stateChanged.connect(self.toggle_reddit_object_view)
         self.show_posts_checkbox.stateChanged.connect(self.toggle_post_view)
@@ -100,9 +97,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         for key, value in self.settings_manager.database_view_post_table_headers.items():
             index = self.post_model.headers.index(key)
             post_headers.setSectionHidden(index, not value)
-
-        self.post_text_browser.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.post_text_browser.customContextMenuRequested.connect(self.post_text_browser_context_menu)
 
         self.content_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.content_list_view.customContextMenuRequested.connect(self.content_view_context_menu)
@@ -219,46 +213,24 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             item.setChecked(self.settings_manager.database_view_post_table_headers[value])
         menu.exec_(QCursor.pos())
 
+    def attach_post_text_browser(self):
+        self.post_splitter.addWidget(self.post_text_browser)
+        self.post_text_browser.stand_alone = False
+
+    def detach_post_text_browser(self):
+        dialog = BlankDialog(parent=self)
+        dialog.add_widgets(self.post_text_browser)
+        dialog.closing.connect(self.post_text_browser.handle_dialog_movement)
+        dialog.setWhatsThis('Displays the text from the selected post.  Close dialog to re-attach text box.')
+        dialog.show()
+        self.post_text_browser.stand_alone = True
+
     def toggle_post_table_header(self, header):
         index = self.post_model.headers.index(header)
         visible = self.settings_manager.database_view_post_table_headers[header]
         self.settings_manager.database_view_post_table_headers[header] = not visible
         # sets the table header visibility to the opposite of what visible originally was
         self.post_table_view.horizontalHeader().setSectionHidden(index, visible)
-
-    def post_text_browser_context_menu(self):
-        menu = QMenu()
-        font_box = QFontComboBox()
-        font_box.setCurrentFont(self.post_text_font)
-        font_box.currentFontChanged.connect(lambda: self.set_post_text_font(font=font_box.currentFont()))
-        font_box.currentFontChanged.connect(menu.close)
-        font_box_label = QLabel('Font:')
-        layout = QHBoxLayout()
-        layout.addWidget(font_box_label)
-        layout.addWidget(font_box)
-        font_box_widget = QWidget(self)
-        font_box_widget.setLayout(layout)
-        font_box_item = QWidgetAction(self)
-        font_box_item.setDefaultWidget(font_box_widget)
-
-        font_size_box = QComboBox()
-        font_size_box.addItems(str(x) for x in range(4, 30))
-        font_size_box.setCurrentText(str(self.post_text_font_size))
-        font_size_label = QLabel('Font Size:')
-        size_layout = QHBoxLayout()
-        size_layout.addWidget(font_size_label)
-        size_layout.addWidget(font_size_box)
-        font_size_widget = QWidget(self)
-        font_size_widget.setLayout(size_layout)
-        font_size_box.currentIndexChanged.connect(lambda:
-                                                  self.set_post_text_font(size=int(font_size_box.currentText())))
-        font_size_box.currentIndexChanged.connect(menu.close)
-        font_size_item = QWidgetAction(self)
-        font_size_item.setDefaultWidget(font_size_widget)
-
-        menu.addAction(font_box_item)
-        menu.addAction(font_size_item)
-        menu.exec_(QCursor.pos())
 
     def content_view_context_menu(self):
         menu = QMenu()
@@ -338,24 +310,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def toggle_comment_view(self):
         self.set_comment_data()
         self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
-
-    def set_post_text_font(self, font=None, size=None):
-        """
-        Sets the font and size of the post text browser.
-        :param font: The font that the post text browser should be set to display.
-        :param size: The size of the font for the post text browser
-        """
-        if font is not None:
-            self.post_text_font = font
-            font.setPointSize(self.post_text_font_size)
-            self.post_text_font = font
-            self.post_text_browser.setFont(font)
-        if size is not None:
-            self.post_text_font_size = size
-            font = self.post_text_browser.font()
-            font.setPointSize(size)
-            self.post_text_font = font
-            self.post_text_browser.setFont(font)
 
     def set_content_icon_size(self, size=None):
         if size is None:
@@ -442,6 +396,13 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_posts:
             try:
                 self.current_post = self.post_model.get_item(self.post_table_view.currentIndex().row())
+                if self.current_post.text_html is not None and self.current_post.text_html != '':
+                    self.post_text_browser.setVisible(True)
+                    self.post_text_browser.setHtml(self.current_post.text_html)
+                else:
+                    if not self.post_text_browser.stand_alone:
+                        self.post_text_browser.setVisible(False)
+                    self.post_text_browser.clear()
             except IndexError:
                 self.current_post = None
             if self.cascade:
