@@ -113,7 +113,9 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         return self.createIndex(self.posts.index(item), 0)
 
     def set_data(self, data):
+        self.beginRemoveRows(QModelIndex(), 0, len(self.posts))
         self.posts.clear()
+        self.endRemoveRows()
         self.beginInsertRows(QModelIndex(), 0, len(data))
         self.posts = data
         self.endInsertRows()
@@ -169,7 +171,9 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
 
     def set_data(self, data):
         self.pixmap_map.clear()
+        self.beginRemoveRows(QModelIndex(), 0, len(self.content_list))
         self.content_list.clear()
+        self.endRemoveRows()
         self.beginInsertRows(QModelIndex(), 0, len(data) - 1)
         self.content_list = data
         self.endInsertRows()
