@@ -151,10 +151,17 @@ class SettingsManager:
 
         self.database_view_download_session_order = self.get('database_view', 'database_view_download_session_order',
                                                              'id')
+        self.database_view_download_session_desc_order = self.get('database_view',
+                                                                  'database_view_download_session_desc_order', False)
         self.database_view_reddit_object_order = self.get('database_view', 'database_view_reddit_object_order', 'name')
+        self.database_view_reddit_object_desc_order = self.get('databae_view', 'database_view_reddit_object_desc_order',
+                                                               False)
         self.database_view_post_order = self.get('database_view', 'database_view_post_order', 'title')
+        self.database_view_post_desc_order = self.get('database_view', 'database_view_post_desc_order', False)
         self.database_view_content_order = self.get('database_view', 'database_view_content_order', 'title')
+        self.database_view_content_desc_order = self.get('database_view', 'database_view_content_desc_order', False)
         self.database_view_comment_order = self.get('database_view', 'database_view_comment_order', 'id')
+        self.database_view_comment_desc_order = self.get('database_view', 'database_view_comment_desc_order', False)
 
         self.default_database_view_post_headers = {
             'title': True,

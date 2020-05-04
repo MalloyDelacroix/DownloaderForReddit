@@ -79,11 +79,25 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.comment_sort_combo.setCurrentText(
             self.settings_manager.database_view_comment_order.replace('_', ' ').title())
 
+        self.download_session_desc_sort_checkbox.setChecked(
+            self.settings_manager.database_view_download_session_desc_order)
+        self.reddit_object_desc_sort_checkbox.setChecked(
+            self.settings_manager.database_view_reddit_object_desc_order)
+        self.post_desc_sort_checkbox.setChecked(self.settings_manager.database_view_post_desc_order)
+        self.content_desc_sort_checkbox.setChecked(self.settings_manager.database_view_content_desc_order)
+        self.comment_desc_sort_checkbox.setChecked(self.settings_manager.database_view_comment_desc_order)
+
         self.download_session_sort_combo.currentIndexChanged.connect(self.change_download_session_sort)
         self.reddit_object_sort_combo.currentIndexChanged.connect(self.change_reddit_object_sort)
         self.post_sort_combo.currentIndexChanged.connect(self.change_post_sort)
         self.content_sort_combo.currentIndexChanged.connect(self.change_content_sort)
         self.comment_sort_combo.currentIndexChanged.connect(self.change_comment_sort)
+
+        self.download_session_desc_sort_checkbox.toggled.connect(self.change_download_session_sort)
+        self.reddit_object_desc_sort_checkbox.toggled.connect(self.change_reddit_object_sort)
+        self.post_desc_sort_checkbox.toggled.connect(self.change_post_sort)
+        self.content_desc_sort_checkbox.toggled.connect(self.change_content_sort)
+        self.comment_desc_sort_checkbox.toggled.connect(self.change_comment_sort)
 
         self.icon_size = self.settings_manager.database_view_icon_size
 
@@ -222,20 +236,40 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         return self.download_session_sort_combo.currentData(Qt.UserRole)
 
     @property
+    def download_session_desc(self):
+        return self.download_session_desc_sort_checkbox.isChecked()
+
+    @property
     def reddit_object_order(self):
         return self.reddit_object_sort_combo.currentData(Qt.UserRole)
+
+    @property
+    def reddit_object_desc(self):
+        return self.reddit_object_desc_sort_checkbox.isChecked()
 
     @property
     def post_order(self):
         return self.post_sort_combo.currentData(Qt.UserRole)
 
     @property
+    def post_desc(self):
+        return self.post_desc_sort_checkbox.isChecked()
+
+    @property
     def comment_order(self):
         return self.comment_sort_combo.currentData(Qt.UserRole)
 
     @property
+    def comment_desc(self):
+        return self.comment_desc_sort_checkbox.isChecked()
+
+    @property
     def content_order(self):
         return self.content_sort_combo.currentData(Qt.UserRole)
+
+    @property
+    def content_desc(self):
+        return self.content_desc_sort_checkbox.isChecked()
 
     @property
     def current_download_session_id(self):
@@ -512,7 +546,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                     self.post_text_browser.setVisible(True)
                     self.post_text_browser.setHtml(self.current_post.text_html)
                 else:
-                    if not self.post_text_browser.stand_alone:
+                    if not self.post_text_browser.stand_alone and self.post_text_browser.isVisible():
                         self.post_text_browser.setVisible(False)
                     self.post_text_browser.clear()
             except IndexError:
@@ -558,7 +592,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         elif self.comment_focus:
             query = query.filter(DownloadSession.id == self.current_comment.download_session_id)
         self.download_session_model.set_data(f.filter(self.session, *filter_tups, query=query,
-                                                      order_by=self.download_session_order).all())
+                                                      order_by=self.download_session_order,
+                                                      desc=self.download_session_desc).all())
 
     @check_hold
     def set_reddit_object_data(self):
@@ -576,7 +611,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         elif self.comment_focus:
             query = query.filter(RedditObject.id == self.current_comment.post.significant_reddit_object_id)
         self.reddit_object_model.set_data(f.filter(self.session, *filter_tups, query=query,
-                                                   order_by=self.reddit_object_order).all())
+                                                   order_by=self.reddit_object_order,
+                                                   desc=self.reddit_object_desc).all())
 
     @check_hold
     def set_post_data(self):
@@ -592,7 +628,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Post.id == self.current_content.post_id)
         elif self.comment_focus:
             query = query.filter(Post.id == self.current_comment.post_id)
-        self.post_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.post_order).all())
+        self.post_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.post_order,
+                                          desc=self.post_desc).all())
 
     @check_hold
     def set_content_data(self):
@@ -619,8 +656,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Content.post_id == self.current_post_id)
         elif self.comment_focus:
             query = query.filter(Content.comment_id == self.current_comment)
-        self.content_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.content_order)
-                                    .all())
+        self.content_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.content_order,
+                                             desc=self.content_desc).all())
 
     @check_hold
     def set_comment_data(self):
@@ -648,7 +685,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         elif self.content_focus:
             query = query.filter(Comment.post_id == self.current_content.comment_id)
         self.comment_tree_model.set_data(f.filter(self.session, *filter_tups, query=query,
-                                                  order_by=self.comment_order).all())
+                                                  order_by=self.comment_order, desc=self.comment_desc).all())
 
     def set_first_download_session_index(self):
         if not self.download_session_model.contains(self.current_download_session):
