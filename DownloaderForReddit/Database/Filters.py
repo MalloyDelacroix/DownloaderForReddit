@@ -4,7 +4,8 @@ from sqlalchemy.sql import func
 from sqlalchemy import or_
 from sqlalchemy import desc as descending
 
-from .Models import RedditObjectList, RedditObject, DownloadSession, Post, Content, Comment, ListAssociation
+from .Models import (RedditObjectList, RedditObject, User, Subreddit, DownloadSession, Post, Content, Comment,
+                     ListAssociation)
 
 
 class Filter(ABC):
@@ -405,7 +406,7 @@ class PostFilter(Filter):
 
     model = Post
     default_order = 'title'
-    include = ['all', 'comment_count', 'content_count']
+    include = ['all', 'author_name', 'subreddit_name', 'comment_count', 'content_count']
     exclude = ['author_id', 'subreddit_id', 'significant_reddit_object_id', 'download_session_id']
     filter_include = include
     filter_exclude = exclude
@@ -415,11 +416,15 @@ class PostFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'comment_count': self.comment_count_filter,
-            'content_count': self.content_count_filter,
+            'comment_count': self.filter_comment_count,
+            'content_count': self.filter_content_count,
+            'author_name': self.filter_author_name,
+            'subreddit_name': self.filter_subreddit_name,
         }
 
         self.order_map = {
+            'author_name': self.order_by_author_name,
+            'subreddit_name': self.order_by_subreddit_name,
             'comment_count': self.order_by_comment_count,
             'content_count': self.order_by_content_count,
         }
@@ -435,17 +440,33 @@ class PostFilter(Filter):
     def join_queries(self, query, sub):
         return query.outerjoin(sub, Post.id == sub.c.post_id)
 
-    def comment_count_filter(self, query, operator, value):
+    def filter_comment_count(self, query, operator, value):
         sub = self.get_comment_count_sub()
         f = self.op_map[operator](sub.c.comment_count, value)
         query = self.join_queries(query, sub).filter(f)
         return query
 
-    def content_count_filter(self, query, operator, value):
+    def filter_content_count(self, query, operator, value):
         sub = self.get_content_count_sub()
         f = self.op_map[operator](sub.c.content_count, value)
         query = self.join_queries(query, sub).filter(f)
         return query
+
+    def filter_author_name(self, query, operator, value):
+        f = self.op_map[operator](User.name, value)
+        return query.join(User, User.id == Post.author_id).filter(f)
+
+    def filter_subreddit_name(self, query, operator, value):
+        f = self.op_map[operator](Subreddit.name, value)
+        return query.join(Subreddit, Subreddit.id == Post.subreddit_id).filter(f)
+
+    def order_by_author_name(self, query):
+        query = query.join(User, User.id == Post.author_id)
+        return query, User.name
+
+    def order_by_subreddit_name(self, query):
+        query = query.join(Subreddit, Subreddit.id == Post.subreddit_id)
+        return query, Subreddit.name
 
     def order_by_comment_count(self, query):
         sub = self.get_comment_count_sub()
@@ -462,7 +483,7 @@ class CommentFilter(Filter):
 
     model = Comment
     default_order = 'id'
-    include = ['all', 'post_score', 'post_date', 'nsfw']
+    include = ['all', 'post_score', 'post_date', 'nsfw', 'author_name', 'subreddit_name']
     exclude = ['author_id', 'subreddit_id', 'post_id', 'download_session_id']
     filter_include = include
     filter_exclude = exclude
@@ -472,29 +493,43 @@ class CommentFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'post_score': self.post_score_filter,
-            'post_date': self.post_date_filter,
-            'nsfw': self.nsfw_filter,
+            'post_score': self.filter_post_score,
+            'post_date': self.filter_post_date,
+            'nsfw': self.filter_nsfw,
+            'author_name': self.filter_author_name,
+            'subreddit_name': self.filter_subreddit_name,
         }
 
         self.order_map = {
             'post_score': self.order_by_post_score,
             'post_date': self.order_by_post_date,
+            'author_name': self.order_by_author_name,
+            'subreddit_name': self.order_by_subreddit_name,
         }
 
-    def post_score_filter(self, query, operator, value):
+    def filter_post_score(self, query, operator, value):
         f = self.op_map[operator](Post.score, value)
         query = query.join(Post).filter(f)
         return query
 
-    def post_date_filter(self, query, operator, value):
+    def filter_post_date(self, query, operator, value):
         f = self.op_map[operator](Post.date_posted, value)
         query = query.join(Post).filter(f)
         return query
 
-    def nsfw_filter(self, query, operator, value):
+    def filter_nsfw(self, query, operator, value):
         f = self.op_map[operator](Post.nsfw, value)
         query = query.join(Post).filter(f)
+        return query
+
+    def filter_author_name(self, query, operator, value):
+        f = self.op_map[operator](User.name, value)
+        query = query.join(User, User.id == Comment.author_id).filter(f)
+        return query
+
+    def filter_subreddit_name(self, query, operator, value):
+        f = self.op_map[operator](Subreddit.name, value)
+        query = query.join(Subreddit, Subreddit.id == Comment.subreddit_id).filter(f)
         return query
 
     def order_by_post_score(self, query):
@@ -503,12 +538,18 @@ class CommentFilter(Filter):
     def order_by_post_date(self, query):
         return query.join(Post), Post.date_posted
 
+    def order_by_author_name(self, query):
+        return query.join(User, User.id == Comment.author_id), User.name
+
+    def order_by_subreddit_name(self, query):
+        return query.join(Subreddit, Subreddit.id == Comment.subreddit_id), Subreddit.name
+
 
 class ContentFilter(Filter):
 
     model = Content
     default_order = 'title'
-    include = ['all', 'post_score', 'post_date', 'nsfw', 'domain']
+    include = ['all', 'post_score', 'post_date', 'nsfw', 'domain', 'author_name', 'subreddit_name']
     exclude = ['user_id', 'subreddit_id', 'post_id', 'comment_id', 'download_session_id']
     filter_include = include
     filter_exclude = exclude
@@ -522,12 +563,16 @@ class ContentFilter(Filter):
             'post_date': self.filter_date_posted,
             'nsfw': self.filter_nsfw,
             'domain': self.filter_domain,
+            'author_name': self.filter_author_name,
+            'subreddit_name': self.filter_subreddit_name,
         }
 
         self.order_map = {
             'post_score': self.order_by_post_score,
             'post_date': self.order_by_date_posted,
             'domain': self.order_by_domain,
+            'author_name': self.order_by_author_name,
+            'subreddit_name': self.order_by_subreddit_name,
         }
 
     def filter_post_score(self, query, operator, value):
@@ -550,6 +595,16 @@ class ContentFilter(Filter):
         query = query.join(Post).filter(f)
         return query
 
+    def filter_author_name(self, query, operator, value):
+        f = self.op_map[operator](User.name, value)
+        query = query.join(User, User.id == Content.user_id).filter(f)
+        return query
+
+    def filter_subreddit_name(self, query, operator, value):
+        f = self.op_map[operator](Subreddit.name, value)
+        query = query.join(Subreddit, Subreddit.id == Content.subreddit_id).filter(f)
+        return query
+
     def order_by_post_score(self, query):
         return query.join(Post), Post.score
 
@@ -558,3 +613,9 @@ class ContentFilter(Filter):
 
     def order_by_domain(self, query):
         return query.join(Post), Post.domain
+
+    def order_by_author_name(self, query):
+        return query.join(User, User.id == Content.user_id), User.name
+
+    def order_by_subreddit_name(self, query):
+        return query.join(Subreddit, Subreddit.id == Content.subreddit_id), Subreddit.name
