@@ -117,6 +117,16 @@ class TestImgurExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/fb2yRj0.jpg', content.make_filename())
         self.assertTrue(len(ie.failed_extract_posts) == 0)
 
+    def test_extract_question(self):
+        post = MockObjects.get_generic_mock_post()
+        post.url = 'https://imgur.com/fb2yRj0.jpg?1'
+
+        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie.extract_direct_link()
+
+        content = ie.extracted_content[0]
+        self.assertEqual('https://imgur.com/fb2yRj0.jpg', content.url)
+
     def test_extract_direct_gif(self):
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://i.imgur.com/mOlfhY3.gif'
