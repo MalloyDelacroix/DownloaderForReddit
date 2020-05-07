@@ -144,7 +144,6 @@ class RedditObject(BaseModel):
     absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
     date_limit = Column(DateTime, nullable=True)
     download_enabled = Column(Boolean, default=True)
-    last_download = Column(DateTime, nullable=True)
     significant = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
     inactive_date = Column(DateTime, nullable=True)
@@ -183,6 +182,11 @@ class RedditObject(BaseModel):
     @property
     def date_limit_display(self):
         return self.get_display_date(self.date_limit)
+
+    @property
+    def last_download(self):
+        return self.get_session().query(func.max(Content.download_date)).join(Post)\
+            .filter(Post.significant_reddit_object_id == self.id).first()[0]
 
     @property
     def last_download_display(self):
