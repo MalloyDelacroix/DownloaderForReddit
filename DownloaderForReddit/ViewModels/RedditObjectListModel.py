@@ -49,6 +49,7 @@ class RedditObjectListModel(QAbstractListModel):
         creator = RedditObjectCreator(list_type)
         ro_list = creator.create_reddit_object_list(list_name)
         if ro_list is not None:
+            self.session.add(ro_list)
             self.list = ro_list
             self.reddit_objects = self.list.reddit_objects
             self.row_count = self.list.reddit_objects.count()
