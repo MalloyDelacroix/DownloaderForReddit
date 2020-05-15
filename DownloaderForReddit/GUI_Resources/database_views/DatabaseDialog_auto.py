@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'DatabaseDialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_DatabaseDialog(object):
     def setupUi(self, DatabaseDialog):
@@ -151,10 +153,10 @@ class Ui_DatabaseDialog(object):
         self.post_desc_sort_checkbox.setObjectName("post_desc_sort_checkbox")
         self.horizontalLayout_7.addWidget(self.post_desc_sort_checkbox)
         self.verticalLayout_3.addLayout(self.horizontalLayout_7)
-        self.splitter_2 = QtWidgets.QSplitter(self.post_widget)
-        self.splitter_2.setOrientation(QtCore.Qt.Vertical)
-        self.splitter_2.setObjectName("splitter_2")
-        self.post_table_view = QtWidgets.QTableView(self.splitter_2)
+        self.post_text_splitter = QtWidgets.QSplitter(self.post_widget)
+        self.post_text_splitter.setOrientation(QtCore.Qt.Vertical)
+        self.post_text_splitter.setObjectName("post_text_splitter")
+        self.post_table_view = QtWidgets.QTableView(self.post_text_splitter)
         self.post_table_view.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
         self.post_table_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.post_table_view.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
@@ -163,10 +165,10 @@ class Ui_DatabaseDialog(object):
         self.post_table_view.setGridStyle(QtCore.Qt.NoPen)
         self.post_table_view.setObjectName("post_table_view")
         self.post_table_view.horizontalHeader().setCascadingSectionResizes(False)
-        self.post_text_browser = PostTextBrowser(self.splitter_2)
+        self.post_text_browser = PostTextBrowser(self.post_text_splitter)
         self.post_text_browser.setOpenExternalLinks(True)
         self.post_text_browser.setObjectName("post_text_browser")
-        self.verticalLayout_3.addWidget(self.splitter_2)
+        self.verticalLayout_3.addWidget(self.post_text_splitter)
         self.content_widget = QtWidgets.QWidget(self.splitter)
         self.content_widget.setObjectName("content_widget")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.content_widget)
@@ -198,7 +200,7 @@ class Ui_DatabaseDialog(object):
         self.content_list_view.setLayoutMode(QtWidgets.QListView.Batched)
         self.content_list_view.setGridSize(QtCore.QSize(0, 0))
         self.content_list_view.setViewMode(QtWidgets.QListView.IconMode)
-        self.content_list_view.setBatchSize(10)
+        self.content_list_view.setBatchSize(2)
         self.content_list_view.setWordWrap(True)
         self.content_list_view.setSelectionRectVisible(True)
         self.content_list_view.setObjectName("content_list_view")
@@ -225,10 +227,15 @@ class Ui_DatabaseDialog(object):
         self.comment_desc_sort_checkbox.setObjectName("comment_desc_sort_checkbox")
         self.horizontalLayout_9.addWidget(self.comment_desc_sort_checkbox)
         self.verticalLayout_5.addLayout(self.horizontalLayout_9)
-        self.comment_tree_view = QtWidgets.QTreeView(self.comment_widget)
+        self.comment_text_splitter = QtWidgets.QSplitter(self.comment_widget)
+        self.comment_text_splitter.setOrientation(QtCore.Qt.Vertical)
+        self.comment_text_splitter.setObjectName("comment_text_splitter")
+        self.comment_tree_view = QtWidgets.QTreeView(self.comment_text_splitter)
         self.comment_tree_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.comment_tree_view.setObjectName("comment_tree_view")
-        self.verticalLayout_5.addWidget(self.comment_tree_view)
+        self.comment_text_browser = PostTextBrowser(self.comment_text_splitter)
+        self.comment_text_browser.setObjectName("comment_text_browser")
+        self.verticalLayout_5.addWidget(self.comment_text_splitter)
         self.verticalLayout_6.addWidget(self.splitter)
         self.verticalLayout_7.addLayout(self.verticalLayout_6)
 
@@ -255,5 +262,4 @@ class Ui_DatabaseDialog(object):
         self.post_desc_sort_checkbox.setText(_translate("DatabaseDialog", "desc."))
         self.content_desc_sort_checkbox.setText(_translate("DatabaseDialog", "desc."))
         self.comment_desc_sort_checkbox.setText(_translate("DatabaseDialog", "desc."))
-
 from DownloaderForReddit.GUI.database_views.PostTextBrowser import PostTextBrowser

@@ -243,7 +243,7 @@
           </layout>
          </item>
          <item>
-          <widget class="QSplitter" name="splitter_2">
+          <widget class="QSplitter" name="post_text_splitter">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -343,7 +343,7 @@
             <enum>QListView::IconMode</enum>
            </property>
            <property name="batchSize">
-            <number>10</number>
+            <number>2</number>
            </property>
            <property name="wordWrap">
             <bool>true</bool>
@@ -384,10 +384,16 @@
           </layout>
          </item>
          <item>
-          <widget class="QTreeView" name="comment_tree_view">
-           <property name="editTriggers">
-            <set>QAbstractItemView::NoEditTriggers</set>
+          <widget class="QSplitter" name="comment_text_splitter">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
+           <widget class="QTreeView" name="comment_tree_view">
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
+            </property>
+           </widget>
+           <widget class="PostTextBrowser" name="comment_text_browser"/>
           </widget>
          </item>
         </layout>

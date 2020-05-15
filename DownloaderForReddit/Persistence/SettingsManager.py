@@ -85,6 +85,14 @@ class SettingsManager:
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
         # endregion
 
+        # region Database
+        self.download_session_query_limit = self.get('database', 'download_session_query_limit', 50)
+        self.reddit_object_query_limit = self.get('database', 'reddit_object_query_limit', 50)
+        self.post_query_limit = self.get('database', 'post_query_limit', 50)
+        self.content_query_limit = self.get('database', 'content_query_limit', 10)
+        self.comment_query_limit = self.get('database', 'comment_query_limit', 60)
+        # endregion
+
         # region Notification Defaults
         self.do_not_notify_update = self.get('notification_defaults', 'do_not_notify_update', True)
         self.auto_display_failed_downloads = self.get('notification_defaults', 'auto_display_failed_downloads', True)

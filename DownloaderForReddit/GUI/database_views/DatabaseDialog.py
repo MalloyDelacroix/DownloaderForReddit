@@ -25,8 +25,8 @@ def hold_setup(method):
 
 def check_hold(method):
     def check(instance, **kwargs):
-        if not instance.hold_setup or kwargs.get('override_hold', False):
-            method(instance)
+        if not instance.hold_setup or kwargs.pop('override_hold', False):
+            method(instance, **kwargs)
     return check
 
 
@@ -119,9 +119,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.set_content_icon_size()
         self.content_model = ContentListModel()
         self.content_list_view.setModel(self.content_model)
+        self.content_list_view.setBatchSize(2)
 
         self.comment_tree_model = CommentTreeModel()
         self.comment_tree_view.setModel(self.comment_tree_model)
+        self.comment_tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
         self.reddit_object_widget.setVisible(self.show_reddit_objects_checkbox.isChecked())
         self.post_widget.setVisible(self.show_posts_checkbox.isChecked())
@@ -131,6 +133,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.post_text_browser.setVisible(False)
         self.post_text_browser.attach_signal.connect(self.attach_post_text_browser)
         self.post_text_browser.detach_signal.connect(self.detach_post_text_browser)
+
+        self.comment_text_browser.setVisible(False)
+        self.comment_text_browser.attach_signal.connect(self.attach_comment_text_browser)
+        self.comment_text_browser.detach_signal.connect(self.detach_comment_text_browser)
 
         self.show_reddit_objects_checkbox.stateChanged.connect(self.toggle_reddit_object_view)
         self.show_posts_checkbox.stateChanged.connect(self.toggle_post_view)
@@ -180,6 +186,20 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             'COMMENT': self.comment_focus_radio
         }
         self.focus_map[self.settings_manager.database_view_focus_model].setChecked(True)
+
+        self.download_session_list_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
+            self.download_session_list_view.verticalScrollBar(), self.download_session_model,
+            self.set_download_session_data
+        ))
+        self.reddit_object_list_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
+            self.reddit_object_list_view.verticalScrollBar(), self.reddit_object_model, self.set_reddit_object_data
+        ))
+        self.post_table_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
+            self.post_table_view.verticalScrollBar(), self.post_model, self.set_post_data
+        ))
+        self.content_list_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
+            self.content_list_view.verticalScrollBar(), self.content_model, self.set_content_data, 80
+        ))
 
     def check_call_list(self, call):
         contains = call in self.setup_call_list
@@ -310,7 +330,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu = QMenu()
         try:
             dl_session = \
-                self.download_session_model.sessions[self.download_session_list_view.selectedIndexes()[0].row()]
+                self.download_session_model.get_item(self.download_session_list_view.selectedIndexes()[0].row())
         except:
             dl_session = None
         rename = menu.addAction('Rename Session', lambda: self.rename_download_session(dl_session))
@@ -327,7 +347,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.exec_(QCursor.pos())
 
     def attach_post_text_browser(self):
-        self.post_splitter.addWidget(self.post_text_browser)
+        self.post_text_splitter.addWidget(self.post_text_browser)
         self.post_text_browser.stand_alone = False
 
     def detach_post_text_browser(self):
@@ -337,6 +357,18 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         dialog.setWhatsThis('Displays the text from the selected post.  Close dialog to re-attach text box.')
         dialog.show()
         self.post_text_browser.stand_alone = True
+
+    def attach_comment_text_browser(self):
+        self.comment_text_splitter.addWidget(self.comment_text_browser)
+        self.comment_text_browser.stand_alone = False
+
+    def detach_comment_text_browser(self):
+        dialog = BlankDialog(parent=self)
+        dialog.add_widgets(self.comment_text_browser)
+        dialog.closing.connect(self.comment_text_browser.handle_dialog_movement)
+        dialog.setWhatsThis('Displays the text from the selected comment.  Close dialog to re-attach text box.')
+        dialog.show()
+        self.comment_text_browser.stand_alone = True
 
     def toggle_post_table_header(self, header):
         index = self.post_model.headers.index(header)
@@ -348,7 +380,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def content_view_context_menu(self):
         menu = QMenu()
         try:
-            content = self.content_model.content_list[self.content_list_view.selectedIndexes()[0].row()]
+            content = self.content_model.get_item(self.content_list_view.selectedIndexes()[0].row())
         except:
             content = None
 
@@ -471,7 +503,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.set_content_icon_size(size)
 
     def open_selected_content(self):
-        content = self.content_model.content_list[self.content_list_view.selectedIndexes()[0].row()]
+        content = self.content_model.get_item(self.content_list_view.selectedIndexes()[0].row())
         SystemUtil.open_in_system(content.get_full_file_path())
 
     def rename_download_session(self, dl_session):
@@ -558,8 +590,17 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def set_current_comment(self):
         if self.show_comments:
-            # self.current_comment = \
-            #     self.comment_tree_model.get_item()
+            try:
+                self.current_comment = self.comment_tree_model.get_item(self.comment_tree_view.currentIndex())
+                if self.current_comment.body_html is not None and self.current_comment.body_html != '':
+                    self.comment_text_browser.setVisible(True)
+                    self.comment_text_browser.setHtml(self.current_comment.body_html)
+                else:
+                    if not self.comment_text_browser.stand_alone and self.comment_text_browser.isVisible():
+                        self.comment_text_browser.setVisible(False)
+                    self.comment_text_browser.clear()
+            except IndexError:
+                self.current_comment = None
             if self.cascade:
                 self.setup_call_list.append('COMMENT')
                 self.cascade_setup()
@@ -577,7 +618,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.setup_call_list.clear()
 
     @check_hold
-    def set_download_session_data(self):
+    def set_download_session_data(self, extend=False):
         f = DownloadSessionFilter()
         filter_tups = self.filter.filter(DownloadSession)
         query = self.session.query(DownloadSession)
@@ -591,12 +632,15 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(DownloadSession.id == self.current_content.download_session_id)
         elif self.comment_focus:
             query = query.filter(DownloadSession.id == self.current_comment.download_session_id)
-        self.download_session_model.set_data(f.filter(self.session, *filter_tups, query=query,
-                                                      order_by=self.download_session_order,
-                                                      desc=self.download_session_desc).all())
+        final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.download_session_order,
+                                desc=self.download_session_desc)
+        if not extend:
+            self.download_session_model.set_data(final_query)
+        else:
+            self.download_session_model.load_next_page(final_query)
 
     @check_hold
-    def set_reddit_object_data(self):
+    def set_reddit_object_data(self, extend=False):
         f = RedditObjectFilter()
         filter_tups = self.filter.filter(RedditObject)
         query = self.session.query(RedditObject).filter(RedditObject.significant == True)
@@ -610,12 +654,15 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(RedditObject.id == self.current_content.post.significant_reddit_object_id)
         elif self.comment_focus:
             query = query.filter(RedditObject.id == self.current_comment.post.significant_reddit_object_id)
-        self.reddit_object_model.set_data(f.filter(self.session, *filter_tups, query=query,
-                                                   order_by=self.reddit_object_order,
-                                                   desc=self.reddit_object_desc).all())
+        final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.reddit_object_order,
+                               desc=self.reddit_object_desc)
+        if not extend:
+            self.reddit_object_model.set_data(final_query)
+        else:
+            self.reddit_object_model.load_next_page(final_query)
 
     @check_hold
-    def set_post_data(self):
+    def set_post_data(self, extend=False):
         f = PostFilter()
         filter_tups = self.filter.filter(Post)
         query = self.session.query(Post)
@@ -628,11 +675,15 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Post.id == self.current_content.post_id)
         elif self.comment_focus:
             query = query.filter(Post.id == self.current_comment.post_id)
-        self.post_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.post_order,
-                                          desc=self.post_desc).all())
+        final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.post_order,
+                               desc=self.post_desc)
+        if not extend:
+            self.post_model.set_data(final_query)
+        else:
+            self.post_model.load_next_page(final_query)
 
     @check_hold
-    def set_content_data(self):
+    def set_content_data(self, extend=False):
         f = ContentFilter()
         filter_tups = self.filter.filter(Content)
         query = self.session.query(Content)
@@ -643,7 +694,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             elif self.show_reddit_objects:
                 posts = self.session.query(Post.id) \
                     .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
-                query = query.fitler(Content.post_id.in_(posts))
+                query = query.filter(Content.post_id.in_(posts))
         elif self.reddit_object_focus:
             posts = self.session.query(Post.id) \
                 .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
@@ -656,11 +707,15 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Content.post_id == self.current_post_id)
         elif self.comment_focus:
             query = query.filter(Content.comment_id == self.current_comment)
-        self.content_model.set_data(f.filter(self.session, *filter_tups, query=query, order_by=self.content_order,
-                                             desc=self.content_desc).all())
+        final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.content_order,
+                               desc=self.content_desc)
+        if not extend:
+            self.content_model.set_data(final_query)
+        else:
+            self.content_model.load_next_page(final_query)
 
     @check_hold
-    def set_comment_data(self):
+    def set_comment_data(self, extend=False):
         f = CommentFilter()
         filter_tups = self.filter.filter(Comment)
         query = self.session.query(Comment)
@@ -684,8 +739,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Comment.post_id == self.current_post_id)
         elif self.content_focus:
             query = query.filter(Comment.post_id == self.current_content.comment_id)
-        self.comment_tree_model.set_data(f.filter(self.session, *filter_tups, query=query,
-                                                  order_by=self.comment_order, desc=self.comment_desc).all())
+        final_query = f.filter(self.session, *filter_tups, query=query,
+                                                  order_by=self.comment_order, desc=self.comment_desc)
+        if not extend:
+            self.comment_tree_model.set_data(final_query)
+        else:
+            self.comment_tree_model.load_next_page(query)
 
     def set_first_download_session_index(self):
         if not self.download_session_model.contains(self.current_download_session):
@@ -726,3 +785,37 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.comment_tree_view.setCurrentIndex(first_index)
             else:
                 self.set_current_comment()
+
+    def monitor_scrollbar(self, bar, model, load_method, load_percentage=90):
+        value = bar.value()
+        p = (value / bar.maximum()) * 100
+        if p >= load_percentage and model.has_next_page and not model.loading:
+            load_method(extend=True)
+
+    def closeEvent(self, event):
+        self.settings_manager.database_view_geom['width'] = self.width()
+        self.settings_manager.database_view_geom['height'] = self.height()
+        self.settings_manager.database_view_geom['x'] = self.x()
+        self.settings_manager.database_view_geom['y'] = self.y()
+        self.settings_manager.database_view_splitter_position = self.splitter.sizes()
+        self.settings_manager.database_view_icon_size = self.icon_size
+        for key, value in self.focus_map.items():
+            if value.isChecked():
+                self.settings_manager.database_view_focus_model = key
+                break
+        self.settings_manager.database_view_show_download_sessions = self.show_download_sessions
+        self.settings_manager.database_view_show_reddit_objects = self.show_reddit_objects
+        self.settings_manager.database_view_show_posts = self.show_posts
+        self.settings_manager.database_view_show_content = self.show_content
+        self.settings_manager.database_view_show_comments = self.show_comments
+        self.settings_manager.database_view_download_session_order = self.download_session_order
+        self.settings_manager.database_view_reddit_object_order = self.reddit_object_order
+        self.settings_manager.database_view_post_order = self.post_order
+        self.settings_manager.database_view_content_order = self.content_order
+        self.settings_manager.database_view_comment_order = self.comment_order
+        self.settings_manager.database_view_download_session_desc_order = self.download_session_desc
+        self.settings_manager.database_view_reddit_object_desc_order = self.reddit_object_desc
+        self.settings_manager.database_view_post_desc_order = self.post_desc
+        self.settings_manager.database_view_content_desc_order = self.content_desc
+        self.settings_manager.database_view_comment_desc_order = self.comment_desc
+        super().closeEvent(event)

@@ -1,5 +1,5 @@
-from PyQt5.QtCore import QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant
-from PyQt5.QtGui import QPixmap, QIcon, QColor
+from PyQt5.QtCore import (QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant)
+from PyQt5.QtGui import QPixmap, QIcon
 
 from ..Utils import Injector
 
@@ -7,6 +7,56 @@ from ..Utils import Injector
 class CustomItemModel:
 
     settings_manager = Injector.get_settings_manager()
+    db = Injector.get_database_handler()
+
+    def __init__(self):
+        super().__init__()
+        self.limit = 50
+        self.headers = []
+        self.items = []
+        self.total_items = 0
+        self.loading = False
+
+    @property
+    def has_next_page(self):
+        return len(self.items) < self.total_items
+
+    def contains(self, item):
+        return item in self.items
+
+    def get_item(self, row):
+        return self.items[row]
+
+    def get_item_index(self, item):
+        try:
+            return self.createIndex(self.items.index(item), 0)
+        except ValueError:
+            return self.createIndex(0, 0)
+
+    def set_data(self, query):
+        self.total_items = query.count()
+        data = query.limit(self.limit).all()
+        self.beginRemoveRows(QModelIndex(), 0, len(self.items))
+        self.items.clear()
+        self.endRemoveRows()
+        self.beginInsertRows(QModelIndex(), 0, len(data))
+        self.items = data
+        self.endInsertRows()
+
+    def load_next_page(self, query):
+        if self.has_next_page and not self.loading:
+            self.loading = True
+            data = query.offset(len(self.items)).limit(self.limit).all()
+            self.beginInsertRows(QModelIndex(), 0, len(data))
+            self.items.extend(data)
+            self.endInsertRows()
+            self.loading = False
+
+    def rowCount(self, parent=None, *args, **kwargs):
+        return len(self.items)
+
+    def columnCount(self, parent=None, *args, **kwargs):
+        return len(self.headers)
 
     def refresh(self):
         """
@@ -22,29 +72,13 @@ class DownloadSessionModel(QAbstractListModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
-        self.sessions = []
-
-    def set_data(self, data):
-        self.sessions = data
-        self.refresh()
-
-    def contains(self, item):
-        return item in self.sessions
-
-    def get_item(self, row):
-        return self.sessions[row]
-
-    def get_item_index(self, item):
-        return self.createIndex(self.sessions.index(item), 0)
-
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self.sessions)
+        self.limit = self.settings_manager.download_session_query_limit
 
     def data(self, index, role=None):
         if role == Qt.DisplayRole:
-            return self.sessions[index.row()].name
+            return self.items[index.row()].name
         elif role == Qt.ToolTipRole:
-            session = self.sessions[index.row()]
+            session = self.items[index.row()]
             return f'Start time: {session.start_time_display}\n' \
                    f'End time: {session.end_time_display}\n' \
                    f'Duration: {session.duration}\n' \
@@ -58,27 +92,11 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
-        self.reddit_object_list = []
-
-    def contains(self, item):
-        return item in self.reddit_object_list
-
-    def get_item(self, row):
-        return self.reddit_object_list[row]
-
-    def get_item_index(self, item):
-        return self.createIndex(self.reddit_object_list.index(item), 0)
-
-    def set_data(self, data):
-        self.reddit_object_list = data
-        self.refresh()
-
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self.reddit_object_list)
+        self.limit = self.settings_manager.reddit_object_query_limit
 
     def data(self, index, role=None):
         if role == Qt.DisplayRole or role == Qt.EditRole:
-            return self.reddit_object_list[index.row()].name
+            return self.items[index.row()].name
         return None
 
 
@@ -99,45 +117,22 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
-        self.posts = []
+        self.limit = self.settings_manager.post_query_limit
         self.headers = ['title', 'date_posted', 'score', 'self_post', 'text', 'url', 'domain', 'author',
                         'subreddit', 'nsfw']
-
-    def contains(self, item):
-        return item in self.posts
-
-    def get_item(self, row):
-        return self.posts[row]
-
-    def get_item_index(self, item):
-        return self.createIndex(self.posts.index(item), 0)
-
-    def set_data(self, data):
-        self.beginRemoveRows(QModelIndex(), 0, len(self.posts))
-        self.posts.clear()
-        self.endRemoveRows()
-        self.beginInsertRows(QModelIndex(), 0, len(data))
-        self.posts = data
-        self.endInsertRows()
 
     def headerData(self, row, orientation, role=None):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 return self.headers[row].replace('_', ' ').title()
 
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self.posts)
-
-    def columnCount(self, parent=None, *args, **kwargs):
-        return len(self.headers)
-
     def data(self, index, role=None):
         col = index.column()
         if role == Qt.DisplayRole:
-            return self.header_map[self.headers[col]](self.posts[index.row()])
+            return self.header_map[self.headers[col]](self.items[index.row()])
         if role == Qt.ToolTipRole:
             if col != self.headers.index('text'):
-                return self.header_map[self.headers[col]](self.posts[index.row()])
+                return self.header_map[self.headers[col]](self.items[index.row()])
         return None
 
     def get_post_attribute(self, column, post):
@@ -147,59 +142,44 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
             return value.name
         return value
 
-    def refresh(self):
-        first = self.createIndex(0, 0)
-        second = self.createIndex(self.columnCount(), self.rowCount())
-        self.dataChanged.emit(first, second)
-
 
 class ContentListModel(QAbstractListModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
-        self.content_list = []
-        self.pixmap_map = {}
+        self.limit = self.settings_manager.content_query_limit
+        self.icon_map = {}
 
-    def contains(self, item):
-        return item in self.content_list
-
-    def get_item(self, row):
-        return self.content_list[row]
-
-    def get_item_index(self, item):
-        return self.createIndex(self.content_list.index(item), 0)
-
-    def set_data(self, data):
-        self.pixmap_map.clear()
-        self.beginRemoveRows(QModelIndex(), 0, len(self.content_list))
-        self.content_list.clear()
-        self.endRemoveRows()
-        self.beginInsertRows(QModelIndex(), 0, len(data) - 1)
-        self.content_list = data
-        self.endInsertRows()
-
-    def rowCount(self, parent=None, *args, **kwargs):
-        return len(self.content_list)
+    def set_data(self, query):
+        self.icon_map.clear()
+        super().set_data(query)
 
     def data(self, index, role=None):
         if role == Qt.DisplayRole:
-            return self.content_list[index.row()].title
+            return self.items[index.row()].title
         elif role == Qt.DecorationRole:
-            icon = self.get_icon(self.content_list[index.row()])
+            icon = self.get_icon(self.items[index.row()])
             return icon
         elif role == Qt.ToolTipRole:
-            return self.content_list[index.row()].title
+            return self.items[index.row()].title
         return None
 
     def get_icon(self, content):
+        """
+        Checks the icon map for an icon that matches the supplied content's id.  If one is not found, an icon is created
+        from the file at the contents file path and the icon is stored in the icon map before being returned.  This is
+        done so that new pixmaps do not have to be created for the content everytime the 'data' method is called.
+        :param content: The content for which an icon is requested.
+        :return: An icon to be displayed.
+        """
         try:
-            pixmap = self.pixmap_map[content.id]
+            icon = self.icon_map[content.id]
         except KeyError:
             pixmap = QPixmap(content.get_full_file_path()).scaled(QSize(500, 500), Qt.KeepAspectRatio)
-            self.pixmap_map[content.id] = pixmap
-        icon = QIcon()
-        icon.addPixmap(pixmap, QIcon.Normal)
-        icon.addPixmap(pixmap, QIcon.Selected)
+            icon = QIcon()
+            icon.addPixmap(pixmap, QIcon.Normal)
+            icon.addPixmap(pixmap, QIcon.Selected)
+            self.icon_map[content.id] = icon
         return icon
 
 
@@ -207,24 +187,57 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
+        # self.limit = self.settings_manager.comment_query_limit
+        self.limit = 10
         self.headers = ['author', 'id', 'subreddit', 'body', 'body_html', 'score', 'date_posted', 'reddit_id']
-        self.top_level_comments = []
         self.root = TreeItem(None, None)
 
     def contains(self, item):
-        # return item in
+        return self.cascade_contains(self.items, item)
+
+    def cascade_contains(self, searchable, item):
+        for x in searchable:
+            if x == item:
+                return True
+            else:
+                return self.cascade_contains(x.children, item)
         return False
 
     def get_item_index(self, item):
-        # TODO: correct this
-        return 0
+        return self.cascade_get_item_index(self.items, item)
 
-    def set_data(self, top_level_comments):
-        self.top_level_comments.clear()
-        self.root.clear()
-        self.top_level_comments = top_level_comments
-        for comment in top_level_comments:
+    def cascade_get_item_index(self, searchable, item):
+        for x in searchable:
+            if x == item:
+                return self.createIndex(searchable.index(item), 0, searchable)
+            else:
+                return self.cascade_get_item_index(x, item)
+
+    def get_item(self, index):
+        pass
+
+    def set_data(self, query):
+        self.total_items = query.count()
+        data = query.limit(self.limit).all()
+        self.beginRemoveRows(QModelIndex(), 0, len(self.items))
+        self.items.clear()
+        self.root = TreeItem(None, None)
+        self.endRemoveRows()
+        self.beginInsertRows(QModelIndex(), 0, len(data))
+        self.items = data
+        for comment in self.items:
             self.add_tree_item(comment, self.root)
+        self.endInsertRows()
+
+    def load_next_page(self, query):
+        if self.has_next_page and not self.loading:
+            self.loading = True
+            data = query.offset(len(self.items)).limit(self.limit).all()
+            self.beginInsertRows(QModelIndex(), 0, len(data))
+            self.items.extend(data)
+            for comment in data:
+                self.add_tree_item(comment, self.root)
+            self.endInsertRows()
 
     def add_tree_item(self, comment, parent):
         item = TreeItem(comment, parent)
