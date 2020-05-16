@@ -203,18 +203,27 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
                 return self.cascade_contains(x.children, item)
         return False
 
+    def get_first_index(self):
+        try:
+            return self.index(0, 0, QModelIndex())
+        except IndexError:
+            return self.createIndex(0, 0)
+
     def get_item_index(self, item):
-        return self.cascade_get_item_index(self.items, item)
+        return self.cascade_get_item_index(self.root, item)
 
     def cascade_get_item_index(self, searchable, item):
-        for x in searchable:
-            if x == item:
-                return self.createIndex(searchable.index(item), 0, searchable)
+        for x in searchable.children:
+            if x.data(0, Qt.UserRole) == item:
+                return self.createIndex(x.row(), 0, searchable)
             else:
                 return self.cascade_get_item_index(x, item)
 
     def get_item(self, index):
-        pass
+        try:
+            return index.internalPointer().data(0, Qt.UserRole)
+        except AttributeError:
+            return None
 
     def set_data(self, query):
         self.total_items = query.count()
@@ -255,11 +264,8 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
         if not index.isValid():
             return QVariant()
         item = index.internalPointer()
-        if role == Qt.DisplayRole or role == Qt.ToolTipRole:
+        if role == Qt.DisplayRole or role == Qt.ToolTipRole or role == Qt.UserRole:
             return item.data(index.column(), role)
-        elif role == Qt.UserRole:
-            if item:
-                return item.comment
         return QVariant()
 
     def headerData(self, column, orientation, role):
@@ -344,6 +350,8 @@ class TreeItem:
         if role == Qt.DisplayRole or role == Qt.ToolTipRole:
             header = self.headers[column]
             return self.header_map[header](self.comment)
+        elif role == Qt.UserRole:
+            return self.comment
         return QVariant(self.headers[column])
 
     def row(self):

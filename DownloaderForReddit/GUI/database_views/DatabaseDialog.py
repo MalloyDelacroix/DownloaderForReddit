@@ -599,8 +599,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                     if not self.comment_text_browser.stand_alone and self.comment_text_browser.isVisible():
                         self.comment_text_browser.setVisible(False)
                     self.comment_text_browser.clear()
-            except IndexError:
+            except (IndexError, AttributeError):
                 self.current_comment = None
+                self.comment_text_browser.setVisible(False)
+                self.comment_text_browser.clear()
             if self.cascade:
                 self.setup_call_list.append('COMMENT')
                 self.cascade_setup()
@@ -719,7 +721,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         f = CommentFilter()
         filter_tups = self.filter.filter(Comment)
         query = self.session.query(Comment)
-        if self.download_session_focus:
+        if self.download_session_focus or self.reddit_object_focus:
             if self.show_posts:
                 query = query.filter(Comment.post_id == self.current_post_id)
             elif self.show_reddit_objects:
@@ -728,19 +730,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 query = query.filter(Comment.post_id.in_(posts))
             else:
                 query = query.filter(Comment.download_session_id == self.current_download_session_id)
-        if self.reddit_object_focus:
-            if self.show_posts:
-                query = query.filter(Comment.post_id == self.current_post_id)
-            elif self.show_reddit_objects:
-                posts = self.session.query(Post.id) \
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
-                query = query.filter(Comment.post_id.in_(posts))
         elif self.post_focus:
             query = query.filter(Comment.post_id == self.current_post_id)
         elif self.content_focus:
             query = query.filter(Comment.post_id == self.current_content.comment_id)
-        final_query = f.filter(self.session, *filter_tups, query=query,
-                                                  order_by=self.comment_order, desc=self.comment_desc)
+        final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.comment_order,
+                               desc=self.comment_desc)
         if not extend:
             self.comment_tree_model.set_data(final_query)
         else:
@@ -780,7 +775,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def set_first_comment_index(self):
         if not self.comment_tree_model.contains(self.current_comment):
-            first_index = self.comment_tree_model.createIndex(0, 0)
+            first_index = self.comment_tree_model.get_first_index()
             if self.comment_tree_view.currentIndex() != first_index:
                 self.comment_tree_view.setCurrentIndex(first_index)
             else:
