@@ -567,6 +567,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.current_reddit_object = None
             if self.cascade:
                 self.setup_call_list.append('REDDIT_OBJECT')
+                if not self.reddit_object_focus:
+                    self.setup_call_list.append('DOWNLOAD_SESSION')
                 self.cascade_setup()
                 self.setup_call_list.clear()
 
@@ -585,6 +587,21 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.current_post = None
             if self.cascade:
                 self.setup_call_list.append('POST')
+                if not self.post_focus:
+                    self.setup_call_list.extend(['DOWNLOAD_SESSION', 'REDDIT_OBJECT'])
+                self.cascade_setup()
+                self.setup_call_list.clear()
+
+    def set_current_content(self):
+        if self.show_content:
+            try:
+                self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
+            except IndexError:
+                self.current_content = None
+            if self.cascade:
+                self.setup_call_list.append('CONTENT')
+                if not self.content_focus:
+                    self.setup_call_list.extend(['DOWNLOAD_SESSION', 'REDDIT_OBJECT', 'POST'])
                 self.cascade_setup()
                 self.setup_call_list.clear()
 
@@ -605,17 +622,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.comment_text_browser.clear()
             if self.cascade:
                 self.setup_call_list.append('COMMENT')
-                self.cascade_setup()
-                self.setup_call_list.clear()
-
-    def set_current_content(self):
-        if self.show_content:
-            try:
-                self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
-            except IndexError:
-                self.current_content = None
-            if self.cascade:
-                self.setup_call_list.append('CONTENT')
+                if not self.comment_focus:
+                    self.setup_call_list.extend(['DOWNLOAD_SESSION', 'REDDIT_OBJECT', 'POST', 'COMMENT'])
                 self.cascade_setup()
                 self.setup_call_list.clear()
 
