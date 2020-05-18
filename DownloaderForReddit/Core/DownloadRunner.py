@@ -269,7 +269,7 @@ class DownloadRunner(QObject):
             # stickied posts are taken first when getting submissions by new, even when they are not the newest
             # submissions.  So the first filter pass allows stickied posts through so they do not trip the date filter
             # before more recent posts are allowed through
-            if submission.stickied or passes_date_limit:
+            if (submission.pinned or submission.stickied) or passes_date_limit:
                 if passes_date_limit:
                     if (not self.filter_subreddits or submission.subreddit.display_name in self.validated_subreddits) \
                             and self.submission_filter.filter_submission(submission, reddit_object):
