@@ -16,7 +16,6 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = Injector.get_settings_manager()
-        self.db = Injector.get_database_handler()
         self.list_type = list_type
         self.list_name = list_name
         self.selected_objects = None
@@ -81,3 +80,4 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
             'y': self.y()
         }
         self.settings_manager.reddit_object_settings_dialog_splitter_state = self.splitter.sizes()
+        self.list_model.session.close()
