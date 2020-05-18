@@ -229,7 +229,16 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             self.date_limit_edit.setDisabled(date_limit is None)
             if date_limit is not None:
                 self.date_limit_edit.setDateTime(date_limit)
+            else:
+                self.set_absolute_date_limit()
         else:
             self.date_limit_checkbox.setChecked(False)
             self.date_limit_edit.setDisabled(False)
+            self.date_limit_edit.lineEdit().setText('-')
+
+    def set_absolute_date_limit(self):
+        absolute_date_limit = getattr(self.selected_objects[0], 'absolute_date_limit')
+        if all(getattr(x, 'absolute_date_limit') == absolute_date_limit for x in self.selected_objects):
+            self.date_limit_edit.setDateTime(absolute_date_limit)
+        else:
             self.date_limit_edit.lineEdit().setText('-')
