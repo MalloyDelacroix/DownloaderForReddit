@@ -1,11 +1,11 @@
 import logging
-from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, qApp
-from PyQt5.QtCore import QSize, Qt, QTimer
+from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor
 
 from DownloaderForReddit.Database.Models import DownloadSession, RedditObject, Post, Content, Comment
-from DownloaderForReddit.Database.Filters import (DownloadSessionFilter, RedditObjectListFilter, RedditObjectFilter,
-                                                  PostFilter, CommentFilter, ContentFilter)
+from DownloaderForReddit.Database.Filters import (DownloadSessionFilter, RedditObjectFilter, PostFilter, CommentFilter,
+                                                  ContentFilter)
 from DownloaderForReddit.GUI.BlankDialog import BlankDialog
 from DownloaderForReddit.GUI_Resources.database_views.DatabaseDialog_auto import Ui_DatabaseDialog
 from DownloaderForReddit.ViewModels.DownloadSessionViewModels import (DownloadSessionModel, RedditObjectModel,
@@ -119,9 +119,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.set_content_icon_size()
         self.content_model = ContentListModel()
         self.content_list_view.setModel(self.content_model)
-        self.content_list_view.setBatchSize(2)
+        self.content_list_view.setBatchSize(1)
         self.content_list_view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.content_list_view.verticalScrollBar().setSingleStep(20)
+        # self.content_list_view.setResizeMode(QListView.Fixed)
 
         self.comment_tree_model = CommentTreeModel()
         self.comment_tree_view.setModel(self.comment_tree_model)
@@ -144,6 +145,22 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.show_posts_checkbox.stateChanged.connect(self.toggle_post_view)
         self.show_content_checkbox.stateChanged.connect(self.toggle_content_view)
         self.show_comments_checkbox.stateChanged.connect(self.toggle_comment_view)
+
+        self.model_button_link_map = {
+            self.download_session_model: self.load_more_download_sessions_button,
+            self.reddit_object_model: self.load_more_reddit_objects_button,
+            self.post_model: self.load_more_posts_button,
+            self.content_model: self.load_more_content_button,
+            self.comment_tree_model: self.load_more_comments_button
+        }
+
+        self.infinite_scroll_map = {
+            self.download_session_model: self.settings_manager.database_view_download_session_infinite_scroll,
+            self.reddit_object_model: self.settings_manager.database_view_reddit_object_infinite_scroll,
+            self.post_model: self.settings_manager.database_view_post_infinite_scroll,
+            self.content_model: self.settings_manager.database_view_content_infinite_scroll,
+            self.comment_tree_model: self.settings_manager.database_view_comment_infinite_scroll
+        }
 
         self.download_session_list_view.selectionModel().selectionChanged.connect(self.set_current_download_session)
         self.reddit_object_list_view.selectionModel().selectionChanged.connect(self.set_current_reddit_object)
@@ -205,6 +222,20 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.comment_tree_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
             self.comment_tree_view.verticalScrollBar(), self.comment_tree_model, self.set_comment_data
         ))
+
+        self.load_more_download_sessions_button.clicked.connect(lambda: self.load_next_page(
+            self.download_session_model, self.set_download_session_data))
+        self.load_more_reddit_objects_button.clicked.connect(lambda: self.load_next_page(
+            self.reddit_object_model, self.set_reddit_object_data))
+        self.load_more_posts_button.clicked.connect(lambda: self.load_next_page(
+            self.post_model, self.set_post_data))
+        self.load_more_content_button.clicked.connect(lambda: self.load_next_page(
+            self.content_model, self.set_content_data))
+        self.load_more_comments_button.clicked.connect(lambda: self.load_next_page(
+            self.comment_tree_model, self.set_comment_data))
+
+        for model, button in self.model_button_link_map.items():
+            button.setVisible(model.has_next_page)
 
     def check_call_list(self, call):
         contains = call in self.setup_call_list
@@ -669,6 +700,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.download_session_model.set_data(final_query)
         else:
             self.download_session_model.load_next_page(final_query)
+        self.check_load_more_button(self.download_session_model)
 
     @check_hold
     def set_reddit_object_data(self, extend=False):
@@ -691,6 +723,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.reddit_object_model.set_data(final_query)
         else:
             self.reddit_object_model.load_next_page(final_query)
+        self.check_load_more_button(self.reddit_object_model)
 
     @check_hold
     def set_post_data(self, extend=False):
@@ -712,6 +745,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.post_model.set_data(final_query)
         else:
             self.post_model.load_next_page(final_query)
+        self.check_load_more_button(self.post_model)
 
     @check_hold
     def set_content_data(self, extend=False):
@@ -744,6 +778,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.content_model.set_data(final_query)
         else:
             self.content_model.load_next_page(final_query)
+        self.check_load_more_button(self.content_model)
 
     @check_hold
     def set_comment_data(self, extend=False):
@@ -769,15 +804,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.comment_tree_model.set_data(final_query)
         else:
             self.comment_tree_model.load_next_page(query)
-
-    def check_next_page_load(self, view, model, query):
-        # bar = view.verticalScrollBar()
-        # count = 0
-        # while bar.maximum() == 0 and model.has_next_page and count < 5:
-        #     model.load_next_page(query)
-        #     print(f'{view}: {bar.maximum()}')
-        #     count += 1
-        pass
+        self.check_load_more_button(self.comment_tree_model)
 
     def set_first_download_session_index(self):
         if not self.download_session_model.contains(self.current_download_session):
@@ -821,12 +848,20 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def monitor_scrollbar(self, bar, model, load_method, load_percentage=90):
         try:
-            value = bar.value()
-            p = (value / bar.maximum()) * 100
-            if p >= load_percentage and model.has_next_page and not model.loading:
-                load_method(extend=True)
+            if self.infinite_scroll_map[model]:
+                value = bar.value()
+                p = (value / bar.maximum()) * 100
+                if p >= load_percentage and model.has_next_page and not model.loading:
+                    load_method(extend=True)
         except ZeroDivisionError:
             pass
+
+    def load_next_page(self, model, load_method):
+        load_method(extend=True)
+        self.check_load_more_button(model)
+
+    def check_load_more_button(self, model):
+        self.model_button_link_map[model].setVisible(model.has_next_page)
 
     def closeEvent(self, event):
         self.settings_manager.database_view_geom['width'] = self.width()

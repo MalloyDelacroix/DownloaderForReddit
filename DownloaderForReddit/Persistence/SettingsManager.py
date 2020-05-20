@@ -171,6 +171,16 @@ class SettingsManager:
         self.database_view_comment_order = self.get('database_view', 'database_view_comment_order', 'id')
         self.database_view_comment_desc_order = self.get('database_view', 'database_view_comment_desc_order', False)
 
+        self.database_view_download_session_infinite_scroll = self.get(
+            'database_view', 'database_view_download_session_infinite_scroll', False)
+        self.database_view_reddit_object_infinite_scroll = self.get(
+            'database_view', 'database_view_reddit_object_infinite_scroll', False)
+        self.database_view_post_infinite_scroll = self.get('database_view', 'database_view_post_infinite_scroll', False)
+        self.database_view_content_infinite_scroll = self.get(
+            'database_view', 'database_view_content_infinite_scroll', False)
+        self.database_view_comment_infinite_scroll = self.get(
+            'database_view', 'database_view_comment_infinite_scroll', False)
+
         self.default_database_view_post_headers = {
             'title': True,
             'date_posted': True,
