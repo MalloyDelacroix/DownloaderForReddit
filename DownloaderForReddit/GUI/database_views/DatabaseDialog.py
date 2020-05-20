@@ -1,6 +1,6 @@
 import logging
-from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, qApp
+from PyQt5.QtCore import QSize, Qt, QTimer
 from PyQt5.QtGui import QCursor
 
 from DownloaderForReddit.Database.Models import DownloadSession, RedditObject, Post, Content, Comment
@@ -120,6 +120,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_model = ContentListModel()
         self.content_list_view.setModel(self.content_model)
         self.content_list_view.setBatchSize(2)
+        self.content_list_view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.content_list_view.verticalScrollBar().setSingleStep(20)
 
         self.comment_tree_model = CommentTreeModel()
         self.comment_tree_view.setModel(self.comment_tree_model)
@@ -199,6 +201,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         ))
         self.content_list_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
             self.content_list_view.verticalScrollBar(), self.content_model, self.set_content_data, 80
+        ))
+        self.comment_tree_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
+            self.comment_tree_view.verticalScrollBar(), self.comment_tree_model, self.set_comment_data
         ))
 
     def check_call_list(self, call):
@@ -459,34 +464,50 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @hold_setup
     def change_download_session_sort(self):
         self.set_download_session_data(override_hold=True)
-        self.download_session_list_view.setCurrentIndex(
-            self.download_session_model.get_item_index(self.current_download_session))
+        try:
+            self.download_session_list_view.setCurrentIndex(
+                self.download_session_model.get_item_index(self.current_download_session))
+        except TypeError:
+            pass
         self.settings_manager.database_view_download_session_order = \
             self.download_session_sort_combo.currentData(Qt.UserRole)
 
     @hold_setup
     def change_reddit_object_sort(self):
         self.set_reddit_object_data(override_hold=True)
-        self.reddit_object_list_view.setCurrentIndex(
-            self.reddit_object_model.get_item_index(self.current_reddit_object))
+        try:
+            self.reddit_object_list_view.setCurrentIndex(
+                self.reddit_object_model.get_item_index(self.current_reddit_object))
+        except TypeError:
+            pass
         self.settings_manager.database_view_reddit_object_order = \
             self.reddit_object_sort_combo.currentData(Qt.UserRole)
 
     @hold_setup
     def change_post_sort(self):
         self.set_post_data(override_hold=True)
-        self.reddit_object_list_view.setCurrentIndex(self.post_model.get_item_index(self.current_post))
+        try:
+            self.reddit_object_list_view.setCurrentIndex(self.post_model.get_item_index(self.current_post))
+        except TypeError:
+            pass
         self.settings_manager.database_view_post_order = self.post_sort_combo.currentData(Qt.UserRole)
 
     @hold_setup
     def change_content_sort(self):
         self.set_content_data(override_hold=True)
-        self.content_list_view.setCurrentIndex(self.content_model.get_item_index(self.current_content))
+        try:
+            self.content_list_view.setCurrentIndex(self.content_model.get_item_index(self.current_content))
+        except TypeError:
+            pass
         self.settings_manager.database_view_content_order = self.content_sort_combo.currentData(Qt.UserRole)
 
     @hold_setup
     def change_comment_sort(self):
-        # TODO: figure out how best to order this
+        self.set_comment_data(override_hold=True)
+        try:
+            self.comment_tree_view.setCurrentIndex(self.comment_tree_model.get_item_index(self.current_comment))
+        except TypeError:
+            pass
         self.settings_manager.database_view_comment_order = self.comment_sort_combo.currentData(Qt.UserRole)
 
     def set_content_icon_size(self, size=None):
@@ -716,7 +737,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         elif self.post_focus:
             query = query.filter(Content.post_id == self.current_post_id)
         elif self.comment_focus:
-            query = query.filter(Content.comment_id == self.current_comment)
+            query = query.filter(Content.comment_id == self.current_comment_id)
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.content_order,
                                desc=self.content_desc)
         if not extend:
@@ -748,6 +769,15 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.comment_tree_model.set_data(final_query)
         else:
             self.comment_tree_model.load_next_page(query)
+
+    def check_next_page_load(self, view, model, query):
+        # bar = view.verticalScrollBar()
+        # count = 0
+        # while bar.maximum() == 0 and model.has_next_page and count < 5:
+        #     model.load_next_page(query)
+        #     print(f'{view}: {bar.maximum()}')
+        #     count += 1
+        pass
 
     def set_first_download_session_index(self):
         if not self.download_session_model.contains(self.current_download_session):
@@ -790,10 +820,13 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.set_current_comment()
 
     def monitor_scrollbar(self, bar, model, load_method, load_percentage=90):
-        value = bar.value()
-        p = (value / bar.maximum()) * 100
-        if p >= load_percentage and model.has_next_page and not model.loading:
-            load_method(extend=True)
+        try:
+            value = bar.value()
+            p = (value / bar.maximum()) * 100
+            if p >= load_percentage and model.has_next_page and not model.loading:
+                load_method(extend=True)
+        except ZeroDivisionError:
+            pass
 
     def closeEvent(self, event):
         self.settings_manager.database_view_geom['width'] = self.width()
