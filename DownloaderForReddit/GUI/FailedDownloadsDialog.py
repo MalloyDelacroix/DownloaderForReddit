@@ -64,7 +64,7 @@ class FailedDownloadsDialog(QtWidgets.QDialog, Ui_failed_downloads_dialog):
         self.table_view.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.table_view.setColumnWidth(3, 215)
         self.table_view.horizontalHeader().setSectionResizeMode(5, QtWidgets.QHeaderView.Stretch)
-        self.table_view.clicked.connect(self.setup_detail_table)
+        self.table_view.selectionModel().selectionChanged.connect(self.setup_detail_table)
 
         self.table_view.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.table_view.customContextMenuRequested.connect(self.display_context_menu)
