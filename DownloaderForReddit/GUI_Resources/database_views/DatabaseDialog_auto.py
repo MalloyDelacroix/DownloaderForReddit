@@ -62,6 +62,8 @@ class Ui_DatabaseDialog(object):
         self.show_comments_checkbox.setObjectName("show_comments_checkbox")
         self.horizontalLayout.addWidget(self.show_comments_checkbox)
         self.horizontalLayout_4.addLayout(self.horizontalLayout)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem)
         self.filter_button = QtWidgets.QPushButton(self.model_focus_group_box)
         self.filter_button.setCheckable(True)
         self.filter_button.setObjectName("filter_button")

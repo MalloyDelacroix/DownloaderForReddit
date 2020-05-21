@@ -25,6 +25,12 @@
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetFixedSize</enum>
+     </property>
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
      <item row="0" column="0" colspan="2">
       <widget class="QLabel" name="label_4">
        <property name="font">
@@ -46,7 +52,14 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QComboBox" name="model_combo"/>
+      <widget class="QComboBox" name="model_combo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label">
@@ -57,6 +70,12 @@
      </item>
      <item row="2" column="1">
       <widget class="QComboBox" name="field_combo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
          <width>300</width>
@@ -73,7 +92,14 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QComboBox" name="operator_combo"/>
+      <widget class="QComboBox" name="operator_combo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="4" column="0">
       <widget class="QLabel" name="label_3">
@@ -84,16 +110,9 @@
      </item>
      <item row="4" column="1">
       <layout class="QVBoxLayout" name="value_layout">
-       <item>
-        <widget class="QLineEdit" name="value_line_edit">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
       </layout>
      </item>
      <item row="5" column="0" colspan="2">
@@ -115,6 +134,9 @@
      </property>
      <property name="movement">
       <enum>QListView::Static</enum>
+     </property>
+     <property name="resizeMode">
+      <enum>QListView::Adjust</enum>
      </property>
      <property name="spacing">
       <number>12</number>

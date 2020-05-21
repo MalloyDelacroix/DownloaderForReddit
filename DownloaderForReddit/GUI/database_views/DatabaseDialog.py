@@ -239,11 +239,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.filter_button.clicked.connect(self.toggle_filter)
 
         self.data_setup_filter_map = {
-            'DOWNLOAD_SESSION': self.set_download_session_data,
-            'REDDIT_OBJECT': self.set_reddit_object_data,
-            'POST': self.set_post_data,
-            'CONTENT': self.set_content_data,
-            'COMMENT': self.set_comment_data
+            'DOWNLOAD_SESSION': self.setup_download_sessions,
+            'REDDIT_OBJECT': self.setup_reddit_objects,
+            'POST': self.setup_posts,
+            'CONTENT': self.setup_content,
+            'COMMENT': self.setup_comments
         }
         self.filter_widget.filter_changed.connect(self.update_filtering)
 
