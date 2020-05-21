@@ -127,7 +127,11 @@
       </layout>
      </item>
      <item>
-      <layout class="QGridLayout" name="filter_layout"/>
+      <layout class="QGridLayout" name="filter_layout">
+       <item row="0" column="0">
+        <widget class="FilterWidget" name="filter_widget" native="true"/>
+       </item>
+      </layout>
      </item>
      <item>
       <widget class="QSplitter" name="splitter">
@@ -447,6 +451,12 @@
    <class>PostTextBrowser</class>
    <extends>QTextBrowser</extends>
    <header>DownloaderForReddit/GUI/database_views/PostTextBrowser</header>
+  </customwidget>
+  <customwidget>
+   <class>FilterWidget</class>
+   <extends>QWidget</extends>
+   <header>DownloaderForReddit/GUI/database_views/FilterWidget</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

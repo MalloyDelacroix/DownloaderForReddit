@@ -22,8 +22,7 @@ class Filter(ABC):
         'gt': lambda attr, value: attr > value,
         'gte': lambda attr, value: attr >= value,
         'in': lambda attr, value: attr.in_(value),
-        'like': lambda attr, value: attr.like(value),
-        'wild_like': lambda attr, value: attr.like(f'%{value}%'),
+        'like': lambda attr, value: attr.like(f'%{value}%'),
         'contains': lambda attr, value: attr.contains(value)
     }
 
@@ -606,13 +605,13 @@ class ContentFilter(Filter):
         return query
 
     def order_by_post_score(self, query):
-        return query.join(Post), Post.score
+        return query.join(Post, Post.id == Content.post_id), Post.score
 
     def order_by_date_posted(self, query):
-        return query.join(Post), Post.date_posted
+        return query.join(Post, Post.id == Content.post_id), Post.date_posted
 
     def order_by_domain(self, query):
-        return query.join(Post), Post.domain
+        return query.join(Post, Post.id == Content.post_id), Post.domain
 
     def order_by_author_name(self, query):
         return query.join(User, User.id == Content.user_id), User.name

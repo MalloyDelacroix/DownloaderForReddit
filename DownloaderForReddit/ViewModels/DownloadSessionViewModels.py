@@ -187,8 +187,7 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
 
     def __init__(self):
         super().__init__()
-        # self.limit = self.settings_manager.comment_query_limit
-        self.limit = 10
+        self.limit = self.settings_manager.comment_query_limit
         self.headers = ['author', 'id', 'subreddit', 'body', 'body_html', 'score', 'date_posted', 'reddit_id']
         self.root = TreeItem(None, None)
 

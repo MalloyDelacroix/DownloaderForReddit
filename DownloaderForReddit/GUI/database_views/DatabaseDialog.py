@@ -12,7 +12,6 @@ from DownloaderForReddit.ViewModels.DownloadSessionViewModels import (DownloadSe
                                                                       PostTableModel, ContentListModel,
                                                                       CommentTreeModel)
 from DownloaderForReddit.Utils import Injector, SystemUtil
-from .FilterWidget import FilterWidget
 
 
 def hold_setup(method):
@@ -48,8 +47,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if geom['x'] != 0 and geom['y'] != 0:
             self.move(geom['x'], geom['y'])
         self.splitter.setSizes(self.settings_manager.database_view_splitter_position)
-
-        self.filter = FilterWidget()
 
         self.show_download_sessions_checkbox.setChecked(self.settings_manager.database_view_show_download_sessions)
         self.show_reddit_objects_checkbox.setChecked(self.settings_manager.database_view_show_reddit_objects)
@@ -141,6 +138,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.comment_text_browser.attach_signal.connect(self.attach_comment_text_browser)
         self.comment_text_browser.detach_signal.connect(self.detach_comment_text_browser)
 
+        self.show_download_sessions_checkbox.stateChanged.connect(self.toggle_download_session_view)
         self.show_reddit_objects_checkbox.stateChanged.connect(self.toggle_reddit_object_view)
         self.show_posts_checkbox.stateChanged.connect(self.toggle_post_view)
         self.show_content_checkbox.stateChanged.connect(self.toggle_content_view)
@@ -236,6 +234,25 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         for model, button in self.model_button_link_map.items():
             button.setVisible(model.has_next_page)
+
+        self.filter_widget.setVisible(False)
+        self.filter_button.clicked.connect(self.toggle_filter)
+
+        self.data_setup_filter_map = {
+            'DOWNLOAD_SESSION': self.set_download_session_data,
+            'REDDIT_OBJECT': self.set_reddit_object_data,
+            'POST': self.set_post_data,
+            'CONTENT': self.set_content_data,
+            'COMMENT': self.set_comment_data
+        }
+        self.filter_widget.filter_changed.connect(self.update_filtering)
+
+    def toggle_filter(self):
+        self.filter_widget.setVisible(not self.filter_widget.isVisible())
+
+    def update_filtering(self, model_name):
+        data_setup_method = self.data_setup_filter_map[model_name]
+        data_setup_method()
 
     def check_call_list(self, call):
         contains = call in self.setup_call_list
@@ -465,32 +482,53 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         # sets the header visibility to the opposite of what it originally was
         self.comment_tree_view.header().setSectionHidden(index, visible)
 
+    def toggle_download_session_view(self):
+        self.download_session_widget.setVisible(self.show_download_sessions)
+        if self.show_download_sessions:
+            self.setup_download_sessions()
+        else:
+            if self.show_reddit_objects:
+                self.setup_reddit_objects()
+            elif self.show_posts:
+                self.setup_posts()
+            elif self.show_content:
+                self.setup_content()
+            elif self.show_comments:
+                self.setup_comments()
+
     def toggle_reddit_object_view(self):
-        if self.show_reddit_objects_checkbox.isChecked():
-            self.reddit_object_widget.setVisible(True)
+        self.reddit_object_widget.setVisible(self.show_reddit_objects)
+        if self.show_reddit_objects:
             self.setup_reddit_objects()
         else:
-            self.reddit_object_widget.setVisible(False)
-            if self.show_posts_checkbox.isChecked():
+            if self.show_posts:
                 self.setup_posts()
-            else:
+            elif self.show_content:
                 self.setup_content()
+            elif self.show_comments:
+                self.setup_comments()
 
     def toggle_post_view(self):
-        if self.show_posts_checkbox.isChecked():
-            self.post_widget.setVisible(True)
+        self.post_widget.setVisible(self.show_posts)
+        if self.show_posts:
             self.setup_posts()
         else:
-            self.post_widget.setVisible(False)
-            self.set_content_data()
+            if self.show_content:
+                self.setup_content()
+            elif self.show_comments:
+                self.setup_comments()
 
     def toggle_content_view(self):
-        self.set_content_data()
         self.content_widget.setVisible(self.show_content_checkbox.isChecked())
+        if self.show_content:
+            self.setup_content()
+        elif self.show_comments:
+            self.setup_comments()
 
     def toggle_comment_view(self):
-        self.set_comment_data()
         self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
+        if self.show_comments:
+            self.setup_comments()
 
     @hold_setup
     def change_download_session_sort(self):
@@ -682,7 +720,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @check_hold
     def set_download_session_data(self, extend=False):
         f = DownloadSessionFilter()
-        filter_tups = self.filter.filter(DownloadSession)
+        filter_tups = self.filter_widget.filter('DOWNLOAD_SESSION')
         query = self.session.query(DownloadSession)
         if self.reddit_object_focus:
             dl_ids = self.session.query(Post.download_session_id)\
@@ -705,7 +743,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @check_hold
     def set_reddit_object_data(self, extend=False):
         f = RedditObjectFilter()
-        filter_tups = self.filter.filter(RedditObject)
+        filter_tups = self.filter_widget.filter('REDDIT_OBJECT')
         query = self.session.query(RedditObject).filter(RedditObject.significant == True)
         if self.download_session_focus:
             subquery = self.session.query(Post.significant_reddit_object_id)\
@@ -728,7 +766,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @check_hold
     def set_post_data(self, extend=False):
         f = PostFilter()
-        filter_tups = self.filter.filter(Post)
+        filter_tups = self.filter_widget.filter('POST')
         query = self.session.query(Post)
         if self.download_session_focus or self.reddit_object_focus:
             if self.show_download_sessions:
@@ -750,7 +788,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @check_hold
     def set_content_data(self, extend=False):
         f = ContentFilter()
-        filter_tups = self.filter.filter(Content)
+        filter_tups = self.filter_widget.filter('CONTENT')
         query = self.session.query(Content)
         if self.download_session_focus:
             query = query.filter(Content.download_session_id == self.current_download_session_id)
@@ -783,7 +821,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @check_hold
     def set_comment_data(self, extend=False):
         f = CommentFilter()
-        filter_tups = self.filter.filter(Comment)
+        filter_tups = self.filter_widget.filter('COMMENT')
         query = self.session.query(Comment)
         if self.download_session_focus or self.reddit_object_focus:
             if self.show_posts:

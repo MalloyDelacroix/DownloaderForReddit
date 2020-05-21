@@ -70,6 +70,9 @@ class Ui_DatabaseDialog(object):
         self.verticalLayout_6.addLayout(self.horizontalLayout_5)
         self.filter_layout = QtWidgets.QGridLayout()
         self.filter_layout.setObjectName("filter_layout")
+        self.filter_widget = FilterWidget(DatabaseDialog)
+        self.filter_widget.setObjectName("filter_widget")
+        self.filter_layout.addWidget(self.filter_widget, 0, 0, 1, 1)
         self.verticalLayout_6.addLayout(self.filter_layout)
         self.splitter = QtWidgets.QSplitter(DatabaseDialog)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -283,4 +286,5 @@ class Ui_DatabaseDialog(object):
         self.load_more_content_button.setText(_translate("DatabaseDialog", "Load More"))
         self.comment_desc_sort_checkbox.setText(_translate("DatabaseDialog", "desc."))
         self.load_more_comments_button.setText(_translate("DatabaseDialog", "Load More"))
+from DownloaderForReddit.GUI.database_views.FilterWidget import FilterWidget
 from DownloaderForReddit.GUI.database_views.PostTextBrowser import PostTextBrowser

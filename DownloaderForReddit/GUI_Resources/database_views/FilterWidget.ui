@@ -7,23 +7,55 @@
     <x>0</x>
     <y>0</y>
     <width>1700</width>
-    <height>190</height>
+    <height>228</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>228</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Filter</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0" colspan="2">
+      <widget class="QLabel" name="label_4">
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Filter</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Model:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="model_combo"/>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Field:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QComboBox" name="field_combo">
        <property name="minimumSize">
         <size>
@@ -33,24 +65,24 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Operator:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QComboBox" name="operator_combo"/>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Value:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <layout class="QVBoxLayout" name="value_layout">
        <item>
         <widget class="QLineEdit" name="value_line_edit">
@@ -64,16 +96,10 @@
        </item>
       </layout>
      </item>
-     <item row="0" column="0" colspan="2">
-      <widget class="QLabel" name="label_4">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
+     <item row="5" column="0" colspan="2">
+      <widget class="QPushButton" name="add_filter_button">
        <property name="text">
-        <string>Filter</string>
+        <string>Add Filter</string>
        </property>
       </widget>
      </item>
@@ -88,13 +114,19 @@
       <enum>QAbstractItemView::ExtendedSelection</enum>
      </property>
      <property name="movement">
-      <enum>QListView::Snap</enum>
+      <enum>QListView::Static</enum>
      </property>
      <property name="spacing">
       <number>12</number>
      </property>
      <property name="viewMode">
       <enum>QListView::IconMode</enum>
+     </property>
+     <property name="uniformItemSizes">
+      <bool>false</bool>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
