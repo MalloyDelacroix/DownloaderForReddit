@@ -3,9 +3,11 @@ from abc import ABC
 from sqlalchemy.sql import func
 from sqlalchemy import or_
 from sqlalchemy import desc as descending
+from sqlalchemy import Integer, String, DateTime, Enum
 
 from .Models import (RedditObjectList, RedditObject, User, Subreddit, DownloadSession, Post, Content, Comment,
                      ListAssociation)
+from .ModelEnums import NsfwFilter
 
 
 class Filter(ABC):
@@ -64,7 +66,6 @@ class Filter(ABC):
 
     def __init__(self):
         self.custom_filter_map = {}
-        self.order_map = {}
 
     def filter(self, session, *filters, query=None, order_by=None, desc=False):
         self.session = session
@@ -93,7 +94,7 @@ class Filter(ABC):
         order_by = getattr(self.model, order, None)
         if order_by is None:
             try:
-                query, order_by = self.order_map[order](query)
+                query, order_by = self.custom_filter_map[order].order_method(query)
             except KeyError:
                 print('key error')
                 order_by = self.default_order
@@ -103,9 +104,36 @@ class Filter(ABC):
 
     def custom_filter(self, query, attr, operator, value):
         try:
-            return self.custom_filter_map[attr](query, operator, value)
+            return self.custom_filter_map[attr].filter_method(query, operator, value)
         except KeyError:
             return query
+
+    def get_type(self, attr):
+        try:
+            return type(self.model.__table__.c[attr].type)
+        except KeyError:
+            try:
+                return self.custom_filter_map[attr].field_type
+            except KeyError:
+                return None
+
+    def get_choices(self, attr):
+        try:
+            choices = []
+            field = self.model.__table__.c[attr]
+            if type(field.type) == Enum:
+                enum = field.type.enum_class
+                for value in enum:
+                    choices.append((value.display_name.title(), value))
+                return choices
+        except KeyError:
+            return self.custom_filter_map[attr].choices
+        except AttributeError:
+            return None
+        return None
+
+    def get_custom_filter_item(self, attr):
+        return self.custom_filter_map[attr]
 
 
 class RedditObjectListFilter(Filter):
@@ -119,13 +147,9 @@ class RedditObjectListFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'reddit_object_count': self.filter_reddit_object_count,
-            'total_score': self.filter_total_score,
-        }
-
-        self.order_map = {
-            'reddit_object_count': self.order_by_reddit_object_count,
-            'total_score': self.order_by_total_score,
+            'reddit_object_count': CustomItem(self.filter_reddit_object_count, self.order_by_reddit_object_count,
+                                              Integer),
+            'total_score': CustomItem(self.filter_total_score, self.order_by_total_score, Integer),
         }
 
     def get_reddit_object_count_sub(self):
@@ -179,23 +203,13 @@ class RedditObjectFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'post_score': self.filter_post_score,
-            'post_count': self.filter_post_count,
-            'comment_score': self.filter_comment_score,
-            'comment_count': self.filter_comment_count,
-            'content_count': self.filter_content_count,
-            'download_count': self.filter_download_count,
-            'last_post_date': self.filter_last_post_date,
-        }
-
-        self.order_map = {
-            'post_score': self.order_by_score,
-            'post_count': self.order_by_post_count,
-            'comment_score': self.order_by_comment_score,
-            'comment_count': self.order_by_comment_count,
-            'content_count': self.order_by_content_count,
-            'download_count': self.order_by_download_count,
-            'last_post_date': self.order_by_last_post_date,
+            'post_score': CustomItem(self.filter_post_score, self.order_by_score, Integer),
+            'post_count': CustomItem(self.filter_post_count, self.order_by_post_count, Integer),
+            'comment_score': CustomItem(self.filter_comment_score, self.order_by_comment_score, Integer),
+            'comment_count': CustomItem(self.filter_comment_count, self.order_by_comment_count, Integer),
+            'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer),
+            'download_count': CustomItem(self.filter_download_count, self.order_by_download_count, Integer),
+            'last_post_date': CustomItem(self.filter_last_post_date, self.order_by_last_post_date, DateTime)
         }
 
     def get_score_sum_sub(self):
@@ -323,17 +337,11 @@ class DownloadSessionFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'reddit_object_count': self.filter_reddit_object_count,
-            'post_count': self.filter_post_count,
-            'comment_count': self.filter_comment_count,
-            'content_count': self.filter_content_count,
-        }
-
-        self.order_map = {
-            'reddit_object_count': self.order_by_reddit_object_count,
-            'post_count': self.order_by_post_count,
-            'comment_count': self.order_by_comment_count,
-            'content_count': self.order_by_content_count,
+            'reddit_object_count': CustomItem(self.filter_reddit_object_count, self.order_by_reddit_object_count,
+                                              Integer),
+            'post_count': CustomItem(self.filter_post_count, self.order_by_post_count, Integer),
+            'comment_count': CustomItem(self.filter_comment_count, self.order_by_comment_count, Integer),
+            'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer),
         }
 
     def get_reddit_object_count_sub(self):
@@ -415,17 +423,10 @@ class PostFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'comment_count': self.filter_comment_count,
-            'content_count': self.filter_content_count,
-            'author_name': self.filter_author_name,
-            'subreddit_name': self.filter_subreddit_name,
-        }
-
-        self.order_map = {
-            'author_name': self.order_by_author_name,
-            'subreddit_name': self.order_by_subreddit_name,
-            'comment_count': self.order_by_comment_count,
-            'content_count': self.order_by_content_count,
+            'comment_count': CustomItem(self.filter_comment_count, self.order_by_comment_count, Integer),
+            'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer),
+            'author_name': CustomItem(self.filter_author_name,  self.order_by_author_name, String),
+            'subreddit_name': CustomItem(self.filter_subreddit_name,  self.order_by_subreddit_name, String),
         }
 
     def get_comment_count_sub(self):
@@ -492,18 +493,12 @@ class CommentFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'post_score': self.filter_post_score,
-            'post_date': self.filter_post_date,
-            'nsfw': self.filter_nsfw,
-            'author_name': self.filter_author_name,
-            'subreddit_name': self.filter_subreddit_name,
-        }
-
-        self.order_map = {
-            'post_score': self.order_by_post_score,
-            'post_date': self.order_by_post_date,
-            'author_name': self.order_by_author_name,
-            'subreddit_name': self.order_by_subreddit_name,
+            'post_score': CustomItem(self.filter_post_score, self.order_by_post_score),
+            'post_date': CustomItem(self.filter_post_date, self.order_by_post_date),
+            'nsfw': CustomItem(self.filter_nsfw, field_type=Enum,
+                               choices=[(x.display_name.title(), x) for x in NsfwFilter]),
+            'author_name': CustomItem(self.filter_author_name, self.order_by_author_name, String),
+            'subreddit_name': CustomItem(self.filter_subreddit_name, self.order_by_subreddit_name, String),
         }
 
     def filter_post_score(self, query, operator, value):
@@ -558,20 +553,13 @@ class ContentFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'post_score': self.filter_post_score,
-            'post_date': self.filter_date_posted,
-            'nsfw': self.filter_nsfw,
-            'domain': self.filter_domain,
-            'author_name': self.filter_author_name,
-            'subreddit_name': self.filter_subreddit_name,
-        }
-
-        self.order_map = {
-            'post_score': self.order_by_post_score,
-            'post_date': self.order_by_date_posted,
-            'domain': self.order_by_domain,
-            'author_name': self.order_by_author_name,
-            'subreddit_name': self.order_by_subreddit_name,
+            'post_score': CustomItem(self.filter_post_score, self.order_by_post_score, Integer),
+            'post_date': CustomItem(self.filter_date_posted, self.order_by_date_posted, DateTime),
+            'nsfw': CustomItem(self.filter_nsfw, field_type=Enum,
+                               choices=[(x.display_name.title(), x) for x in NsfwFilter]),
+            'domain': CustomItem(self.filter_domain, self.order_by_domain, String),
+            'author_name': CustomItem(self.filter_author_name, self.order_by_author_name, String),
+            'subreddit_name': CustomItem(self.filter_subreddit_name, self.order_by_subreddit_name, String),
         }
 
     def filter_post_score(self, query, operator, value):
@@ -618,3 +606,12 @@ class ContentFilter(Filter):
 
     def order_by_subreddit_name(self, query):
         return query.join(Subreddit, Subreddit.id == Content.subreddit_id), Subreddit.name
+
+
+class CustomItem:
+
+    def __init__(self, filter_method=None, order_method=None, field_type=String, choices=None):
+        self.filter_method = filter_method
+        self.order_method = order_method
+        self.field_type = field_type
+        self.choices = choices
