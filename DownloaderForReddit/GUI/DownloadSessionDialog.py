@@ -6,8 +6,8 @@ from PyQt5.QtGui import QCursor, QFont
 
 from ..Database.Models import DownloadSession, RedditObject, Post, Content, Comment
 from ..GUI_Resources.DownloadSessionsDialog_auto import Ui_DownloadSessionDialog
-from ..ViewModels.DownloadSessionViewModels import (DownloadSessionModel, RedditObjectModel, PostTableModel,
-                                                    ContentListModel, CommentTreeModel)
+from ..ViewModels.DatabaseViewModels import (DownloadSessionModel, RedditObjectModel, PostTableModel,
+                                             ContentListModel, CommentTreeModel)
 from ..Utils import Injector, SystemUtil
 
 

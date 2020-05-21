@@ -8,9 +8,9 @@ from DownloaderForReddit.Database.Filters import (DownloadSessionFilter, RedditO
                                                   ContentFilter)
 from DownloaderForReddit.GUI.BlankDialog import BlankDialog
 from DownloaderForReddit.GUI_Resources.database_views.DatabaseDialog_auto import Ui_DatabaseDialog
-from DownloaderForReddit.ViewModels.DownloadSessionViewModels import (DownloadSessionModel, RedditObjectModel,
-                                                                      PostTableModel, ContentListModel,
-                                                                      CommentTreeModel)
+from DownloaderForReddit.ViewModels.DatabaseViewModels import (DownloadSessionModel, RedditObjectModel,
+                                                               PostTableModel, ContentListModel,
+                                                               CommentTreeModel)
 from DownloaderForReddit.Utils import Injector, SystemUtil
 
 
