@@ -34,9 +34,7 @@ import logging
 
 from ..GUI_Resources.DownloaderForRedditGUI_auto import Ui_MainWindow
 from ..GUI.AboutDialog import AboutDialog
-from ..GUI.FailedDownloadsDialog import FailedDownloadsDialog
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
-from ..GUI.UnfinishedDownloadsDialog import UnfinishedDownloadsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
 from ..GUI.Messages import Message
 from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
@@ -52,6 +50,7 @@ from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
 from ..Utils.Exporters import TextExporter, JsonExporter
 from ..Utils.TokenParser import TokenParser
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
+from ..GUI.database_views.DatabaseStatisticsDialog import DatabaseStatisticsDialog
 from ..version import __version__
 
 
@@ -143,6 +142,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.comments_view_menu_item.triggered.connect(self.open_comment_dialog)
         self.failed_extraction_view_menu_item.triggered.connect(self.open_failed_extraction_dialog)
         self.failed_download_view_menu_item.triggered.connect(self.open_failed_downloads_dialog)
+        self.statistics_view_menu_item.triggered.connect(self.open_database_statistics_dialog)
         # endregion
 
         # region Download Menu
@@ -835,6 +835,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
+
+    def open_database_statistics_dialog(self):
+        dialog = DatabaseStatisticsDialog()
+        dialog.exec_()
 
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""

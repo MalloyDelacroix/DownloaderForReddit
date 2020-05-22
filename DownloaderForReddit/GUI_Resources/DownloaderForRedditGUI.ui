@@ -396,6 +396,8 @@
     <addaction name="separator"/>
     <addaction name="failed_extraction_view_menu_item"/>
     <addaction name="failed_download_view_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="statistics_view_menu_item"/>
    </widget>
    <addaction name="file_menu"/>
    <addaction name="view_menu"/>
@@ -657,6 +659,11 @@
   <action name="comments_view_menu_item">
    <property name="text">
     <string>Comments</string>
+   </property>
+  </action>
+  <action name="statistics_view_menu_item">
+   <property name="text">
+    <string>Statistics</string>
    </property>
   </action>
  </widget>
