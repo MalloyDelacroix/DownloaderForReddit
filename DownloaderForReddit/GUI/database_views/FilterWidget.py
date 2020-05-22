@@ -7,6 +7,7 @@ from sqlalchemy import Integer, String, DateTime, Enum, Boolean
 from DownloaderForReddit.GUI_Resources.database_views.FilterWidget_auto import Ui_FilterWidget
 from DownloaderForReddit.Database.Filters import (DownloadSessionFilter, RedditObjectFilter, PostFilter, ContentFilter,
                                                   CommentFilter)
+from DownloaderForReddit.Utils import Injector
 
 
 class FilterWidget(QWidget, Ui_FilterWidget):
@@ -15,6 +16,7 @@ class FilterWidget(QWidget, Ui_FilterWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
         self.setupUi(self)
+        self.settings_manager = Injector.get_settings_manager()
         self.active = False
         self.filters = {}
         self.list_item_map = {}
@@ -54,6 +56,9 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         self.set_fields()
         self.field_combo.currentIndexChanged.connect(self.set_value_field)
         self.set_value_field()
+
+        if self.settings_manager.database_view_default_filter_significant:
+            self.add_filter(FilterItem('REDDIT_OBJECT', 'significant', 'eq', True))
 
     @property
     def current_model(self):
@@ -106,12 +111,13 @@ class FilterWidget(QWidget, Ui_FilterWidget):
     def filter_download_filters(self, filter_name):
         return [x.filter_tuple for x in filter(lambda x: x.model == filter_name, self.filters.values())]
 
-    def add_filter(self):
-        filter_tuple = self.create_filter()
-        widget = self.create_widget()
-        self.filters[widget] = filter_tuple
+    def add_filter(self, filter_item=None):
+        if not filter_item:
+            filter_item = self.create_filter()
+        widget = self.create_widget(**filter_item.widget_dict)
+        self.filters[widget] = filter_item
         self.add_widget_to_list(widget)
-        self.filter_changed.emit(self.current_model)
+        self.filter_changed.emit(filter_item.model)
         self.value_field.clear()
 
     def add_widget_to_list(self, widget):
@@ -125,14 +131,14 @@ class FilterWidget(QWidget, Ui_FilterWidget):
     def create_filter(self):
         return FilterItem(self.current_model, self.current_field, self.current_operator, self.get_value())
 
-    def create_widget(self):
+    def create_widget(self, **kwargs):
         filter_item_widget = QWidget()
 
-        model_label = QLabel(self.model_combo.currentText())
-        field_label = QLabel(self.field_combo.currentText())
-        operator_label = QLabel(self.current_operator)
+        model_label = QLabel(kwargs.get('model', self.model_combo.currentText()))
+        field_label = QLabel(kwargs.get('field', self.field_combo.currentText()))
+        operator_label = QLabel(kwargs.get('operator', self.current_operator))
         # space added to this label text because it's the only way I could get it to stop cutting off the end of text
-        value_label = QLabel(str(self.get_value()) + '   ')
+        value_label = QLabel(str(kwargs.get('value', self.get_value())) + '   ')
 
         close_button = QToolButton()
         close_button.setText('X')
@@ -165,11 +171,12 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         return line
 
     def remove_filter(self, widget):
+        f = self.filters[widget]
         del self.filters[widget]
         item = self.list_item_map[widget]
         row = self.filter_box_list_widget.row(item)
         self.filter_box_list_widget.takeItem(row)
-        self.filter_changed.emit(self.current_model)
+        self.filter_changed.emit(f.model)
 
     def get_boolean_field(self):
         combo = QComboBox()
@@ -195,7 +202,8 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         return QDateTimeEdit()
 
     def keyPressEvent(self, event):
-        self.add_filter()
+        if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
+            self.add_filter()
 
 
 class FilterItem:
@@ -209,3 +217,12 @@ class FilterItem:
     @property
     def filter_tuple(self):
         return self.field, self.operator, self.value
+
+    @property
+    def widget_dict(self):
+        return {
+            'model': self.model,
+            'field': self.field,
+            'operator': self.operator,
+            'value': self.value
+        }
