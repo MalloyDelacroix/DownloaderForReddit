@@ -310,6 +310,18 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def show_comments(self):
         return self.show_comments_checkbox.isChecked()
 
+    def check_visibility(self, model_name):
+        if model_name == 'DOWNLOAD_SESSION':
+            return self.show_download_sessions
+        elif model_name == 'REDDIT_OBJECT':
+            return self.show_reddit_objects
+        elif model_name == 'POST':
+            return self.show_posts
+        elif model_name == 'CONTENT':
+            return self.show_content
+        elif model_name == 'COMMENT':
+            return self.show_comments
+
     @property
     def download_session_order(self):
         return self.download_session_sort_combo.currentData(Qt.UserRole)
@@ -508,6 +520,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.setup_download_sessions()
         else:
             self.current_download_session = None
+            self.adjust_focus('DOWNLOAD_SESSION')
             if self.show_reddit_objects:
                 self.setup_reddit_objects()
             elif self.show_posts:
@@ -523,6 +536,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.setup_reddit_objects()
         else:
             self.current_reddit_object = None
+            self.adjust_focus('REDDIT_OBJECT')
             if self.show_posts:
                 self.setup_posts()
             elif self.show_content:
@@ -536,6 +550,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.setup_posts()
         else:
             self.current_post = None
+            self.adjust_focus('POST')
             if self.show_content:
                 self.setup_content()
             elif self.show_comments:
@@ -547,6 +562,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.setup_content()
         else:
             self.current_content = None
+            self.adjust_focus('CONTENT')
             if self.show_comments:
                 self.setup_comments()
 
@@ -556,6 +572,26 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.setup_comments()
         else:
             self.current_comment = None
+            self.adjust_focus('COMMENT')
+
+    def adjust_focus(self, calling_model):
+        """
+        Adjusts the focus if a model widget is hidden while having the focus, since the focus cannot belong to a model
+        that is not visible.
+
+        Starts with the models in the order that they appear, then tries to adjust the focus to the models before the
+        supplied calling model.  If none before it are visible, it moves to the models after the supplied.
+        :param calling_model: The model that is being hidden and may need focus adjusted.
+        """
+        if self.focus_map[calling_model].isChecked():
+            model_order = ['DOWNLOAD_SESSION', 'REDDIT_OBJECT', 'POST', 'CONTENT', 'COMMENT']
+            index = model_order.index(calling_model)
+            sub = model_order[:index][::-1]
+            sub.extend(model_order[index + 1:])
+            for model in sub:
+                if self.check_visibility(model):
+                    self.focus_map[model].toggle()
+                    break
 
     @hold_setup
     def change_download_session_sort(self):
