@@ -208,6 +208,8 @@ class SettingsManager:
         self.database_view_comment_tree_headers = self.get('database_view',
                                                            'database_view_comment_tree_headers',
                                                            self.default_database_view_comment_headers)
+        self.database_view_default_filter_significant = self.get('database_view',
+                                                                 'database_view_default_filter_significant', True)
         # endregion
 
         # region Misc Dialogs
