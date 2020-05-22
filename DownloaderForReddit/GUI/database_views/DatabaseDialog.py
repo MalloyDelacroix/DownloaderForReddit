@@ -46,7 +46,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.resize(geom['width'], geom['height'])
         if geom['x'] != 0 and geom['y'] != 0:
             self.move(geom['x'], geom['y'])
-        self.splitter.setSizes(self.settings_manager.database_view_splitter_position)
+        self.download_session_widget.resize(self.settings_manager.database_view_download_session_widget_width, 0)
+        self.reddit_object_widget.resize(self.settings_manager.database_view_reddit_object_widget_width, 0)
+        self.post_widget.resize(self.settings_manager.database_view_post_widget_width, 0)
+        self.content_widget.resize(self.settings_manager.database_view_content_widget_width, 0)
+        self.comment_widget.resize(self.settings_manager.database_view_comment_widget_width, 0)
 
         self.show_download_sessions_checkbox.setChecked(self.settings_manager.database_view_show_download_sessions)
         self.show_reddit_objects_checkbox.setChecked(self.settings_manager.database_view_show_reddit_objects)
@@ -246,6 +250,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             'COMMENT': self.setup_comments
         }
         self.filter_widget.filter_changed.connect(self.update_filtering)
+
+        self.dl_wid_width = None
 
     def toggle_filter(self):
         self.filter_widget.setVisible(not self.filter_widget.isVisible())
@@ -501,6 +507,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_download_sessions:
             self.setup_download_sessions()
         else:
+            self.current_download_session = None
             if self.show_reddit_objects:
                 self.setup_reddit_objects()
             elif self.show_posts:
@@ -515,6 +522,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_reddit_objects:
             self.setup_reddit_objects()
         else:
+            self.current_reddit_object = None
             if self.show_posts:
                 self.setup_posts()
             elif self.show_content:
@@ -527,6 +535,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_posts:
             self.setup_posts()
         else:
+            self.current_post = None
             if self.show_content:
                 self.setup_content()
             elif self.show_comments:
@@ -536,13 +545,17 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_widget.setVisible(self.show_content_checkbox.isChecked())
         if self.show_content:
             self.setup_content()
-        elif self.show_comments:
-            self.setup_comments()
+        else:
+            self.current_content = None
+            if self.show_comments:
+                self.setup_comments()
 
     def toggle_comment_view(self):
         self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
         if self.show_comments:
             self.setup_comments()
+        else:
+            self.current_comment = None
 
     @hold_setup
     def change_download_session_sort(self):
@@ -946,7 +959,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.settings_manager.database_view_geom['height'] = self.height()
         self.settings_manager.database_view_geom['x'] = self.x()
         self.settings_manager.database_view_geom['y'] = self.y()
-        self.settings_manager.database_view_splitter_position = self.splitter.sizes()
+        self.settings_manager.database_view_download_session_widget_width = self.download_session_widget.width()
+        self.settings_manager.database_view_reddit_object_widget_width = self.reddit_object_widget.width()
+        self.settings_manager.database_view_post_widget_width = self.post_widget.width()
+        self.settings_manager.database_view_content_widget_width = self.content_widget.width()
+        self.settings_manager.database_view_comment_widget_width = self.comment_widget.width()
+
         self.settings_manager.database_view_icon_size = self.icon_size
         for key, value in self.focus_map.items():
             if value.isChecked():

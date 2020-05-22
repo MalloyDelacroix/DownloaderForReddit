@@ -152,6 +152,13 @@ class SettingsManager:
         self.database_view_show_comments = self.get('database_view', 'database_view_show_comments', True)
         self.database_view_splitter_position = self.get('database_view', 'database_view_splitter_position',
                                                         [330, 330, 330, 330, 330])
+        self.database_view_download_session_widget_width = self.get('database_view',
+                                                                    'database_view_download_session_widget_width', 328)
+        self.database_view_reddit_object_widget_width = self.get('database_view',
+                                                                 'database_view_reddit_object_widget_width', 328)
+        self.database_view_post_widget_width = self.get('database_view', 'database_view_post_widget_width', 328)
+        self.database_view_content_widget_width = self.get('database_view', 'database_view_content_widget_width', 328)
+        self.database_view_comment_widget_width = self.get('database_view', 'database_view_comment_widget_width', 328)
         self.database_view_post_text_font = self.get('database_view', 'database_view_post_text_font', 'Times')
         self.database_view_post_text_font_size = self.get('database_view', 'database_view_post_text_font_size',
                                                           10)
