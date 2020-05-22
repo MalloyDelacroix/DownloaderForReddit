@@ -119,9 +119,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.sort_list_descending_menu_item.triggered.connect(lambda: self.set_list_order(desc=True))
         self.sort_list_ascending_menu_item.setChecked(not self.settings_manager.order_list_desc)
         self.sort_list_descending_menu_item.setChecked(self.settings_manager.order_list_desc)
-
-        self.download_session_menu_item.triggered.connect(self.open_download_sessions_dialog)
-        self.database_view_menu_item.triggered.connect(self.open_database_view_dialog)
         # endregion
 
         # region Lists Menu
@@ -135,9 +132,17 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         self.export_sub_list_as_text_menu_item.triggered.connect(self.export_subreddit_list_to_text)
         self.export_sub_list_as_json_menu_item.triggered.connect(self.export_subreddit_list_to_json)
+        # endregion
 
-        self.failed_download_list_menu_item.triggered.connect(self.display_failed_downloads)
-        self.unfinished_downloads_menu_item.triggered.connect(self.display_unfinished_downloads_dialog)
+        # region Database Menu
+        self.database_view_menu_item.triggered.connect(self.open_database_view_dialog)
+        self.download_sessions_view_menu_item.triggered.connect(self.open_download_sessions_dialog)
+        self.reddit_objects_view_menu_item.triggered.connect(self.open_reddit_objects_dialog)
+        self.posts_view_menu_item.triggered.connect(self.open_posts_dialog)
+        self.content_view_menu_item.triggered.connect(self.open_content_dialog)
+        self.comments_view_menu_item.triggered.connect(self.open_comment_dialog)
+        self.failed_extraction_view_menu_item.triggered.connect(self.open_failed_extraction_dialog)
+        self.failed_download_view_menu_item.triggered.connect(self.open_failed_downloads_dialog)
         # endregion
 
         # region Download Menu
@@ -748,15 +753,88 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if self.settings_manager.download_on_add:
             self.add_to_download(reddit_object_id)
 
-    def open_download_sessions_dialog(self):
-        pass
-        # dialog = DownloadSessionDialog()
-        # dialog.show()
-        # dialog.exec_()
-
     def open_database_view_dialog(self):
-        self.database_dialog = DatabaseDialog()
+        if self.settings_manager.database_view_default_filter_significant:
+            kwargs = {
+                'filters': ('REDDIT_OBJECT', 'significant', 'eq', True)
+            }
+        else:
+            kwargs = {}
+        self.database_dialog = DatabaseDialog(**kwargs)
         self.database_dialog.show()
+
+    def open_download_sessions_dialog(self):
+        kwargs = {
+            'focus_model': 'DOWNLOAD_SESSION',
+            'download_session_sort': 'start_time',
+            'download_session_desc': True
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
+
+    def open_reddit_objects_dialog(self):
+        kwargs = {
+            'focus_model': 'REDDIT_OBJECT',
+            'reddit_object_sort': 'name',
+            'visible_models': ['REDDIT_OBJECT']
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
+
+    def open_posts_dialog(self):
+        kwargs = {
+            'focus_model': 'POST',
+            'reddit_object_sort': 'title',
+            'visible_models': ['POST']
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
+
+    def open_content_dialog(self):
+        kwargs = {
+            'focus_model': 'CONTENT',
+            'reddit_object_sort': 'title',
+            'visible_models': ['CONTENT']
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
+
+    def open_comment_dialog(self):
+        kwargs = {
+            'focus_model': 'COMMENT',
+            'reddit_object_sort': 'post_title',
+            'visible_models': ['COMMENT']
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
+
+    def open_failed_extraction_dialog(self):
+        kwargs = {
+            'focus_model': 'DOWNLOAD_SESSION',
+            'download_session_sort': 'start_time',
+            'download_session_desc': True,
+            'post_sort': 'title',
+            'visible_models': ['DOWNLOAD_SESSION', 'POST'],
+            'filters': [
+                ('POST', 'extracted', 'eq', False),
+            ]
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
+
+    def open_failed_downloads_dialog(self):
+        kwargs = {
+            'focus_model': 'DOWNLOAD_SESSION',
+            'download_session_sort': 'start_time',
+            'download_session_desc': True,
+            'content_sort': 'title',
+            'visible_models': ['DOWNLOAD_SESSION', 'CONTENT'],
+            'filters': [
+                ('CONTENT', 'downloaded', 'eq', False),
+            ]
+        }
+        dialog = DatabaseDialog(**kwargs)
+        dialog.show()
 
     def started_download_gui_shift(self):
         """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
@@ -774,10 +852,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """Re-enables disabled GUI options"""
         self.running = False
         self.progress_bar.setVisible(False)
-        if len(self.failed_list) > 0:
-            self.failed_download_list_menu_item.setEnabled(True)
-            if self.settings_manager.auto_display_failed_list:
-                self.display_failed_downloads()
         self.potential_downloads = 0
         self.shift_download_buttons()
 
@@ -845,42 +919,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         else:
             reddit_object.custom_date_limit = None
 
-    def display_failed_downloads(self):
-        """Opens a dialog with information about any content that was not able to be downloaded for whatever reason"""
-        failed_dialog = FailedDownloadsDialog(self.failed_list)
-        failed_dialog.auto_display_checkbox.setChecked(not self.settings_manager.auto_display_failed_list)
-        failed_dialog.show()
-        dialog = failed_dialog.exec_()
-        if dialog == QDialog.Accepted:
-            self.settings_manager.auto_display_failed_list = not failed_dialog.auto_display_checkbox.isChecked()
-
-    def set_unfinished_downloads(self, unfinished_list):
-        """
-        If the downloader is stopped before all content has been downloaded, this will save the list of unfinished
-        downloads and enable to file menu button to open the dialog
-        """
-        self.unfinished_downloads = unfinished_list
-        self.unfinished_downloads_available = True
-        self.unfinished_downloads_menu_item.setEnabled(True)
-
-    def display_unfinished_downloads_dialog(self):
-        try:
-            unfinished_dialog = UnfinishedDownloadsDialog()
-            unfinished_dialog.label.setText('You have %s unfinished downloads.  How would you like to proceed?' %
-                                            len(self.unfinished_downloads))
-            unfinished_dialog.download_button.clicked.connect(self.run_unfinished_downloads)
-            unfinished_dialog.close_and_delete_button.clicked.connect(self.clear_unfinished_list)
-            unfinished_dialog.exec_()
-        except TypeError:
-            pass
-
-    def clear_unfinished_list(self):
-        self.unfinished_downloads.clear()
-        self.unfinished_downloads_available = False
-
-    def reset_unfinished_downloads(self):
-        self.unfinished_downloads_available = False
-
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
         ImgurUtils.check_credits()
@@ -890,8 +928,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if Injector.get_settings_manager().imgur_mashape_key:
             dialog_text += "\nFallback to the commercial API enabled!"
         QMessageBox.information(self, 'Imgur Credits', dialog_text, QMessageBox.Ok)
-
-
 
     def display_about_dialog(self):
         about_dialog = AboutDialog()

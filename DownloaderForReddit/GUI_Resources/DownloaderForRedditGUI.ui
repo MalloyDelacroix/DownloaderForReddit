@@ -337,8 +337,6 @@
     <addaction name="export_user_list_menu"/>
     <addaction name="file_export_subreddit_list"/>
     <addaction name="separator"/>
-    <addaction name="failed_download_list_menu_item"/>
-    <addaction name="unfinished_downloads_menu_item"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="help_menu">
@@ -372,9 +370,6 @@
     </widget>
     <addaction name="list_sort_menu_item"/>
     <addaction name="list_order_menu_item"/>
-    <addaction name="separator"/>
-    <addaction name="download_session_menu_item"/>
-    <addaction name="database_view_menu_item"/>
    </widget>
    <widget class="QMenu" name="menuDownload">
     <property name="title">
@@ -387,9 +382,25 @@
     <addaction name="run_unfinished_extractions_menu_item"/>
     <addaction name="run_unfiinished_downloads_menu_item"/>
    </widget>
+   <widget class="QMenu" name="menuDatabase">
+    <property name="title">
+     <string>Database</string>
+    </property>
+    <addaction name="database_view_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="download_sessions_view_menu_item"/>
+    <addaction name="reddit_objects_view_menu_item"/>
+    <addaction name="posts_view_menu_item"/>
+    <addaction name="content_view_menu_item"/>
+    <addaction name="comments_view_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="failed_extraction_view_menu_item"/>
+    <addaction name="failed_download_view_menu_item"/>
+   </widget>
    <addaction name="file_menu"/>
    <addaction name="view_menu"/>
    <addaction name="lists_menu"/>
+   <addaction name="menuDatabase"/>
    <addaction name="menuDownload"/>
    <addaction name="help_menu"/>
   </widget>
@@ -429,9 +440,9 @@
     <string>Exit</string>
    </property>
   </action>
-  <action name="failed_download_list_menu_item">
+  <action name="failed_download_view_menu_item">
    <property name="text">
-    <string>Failed Download List</string>
+    <string>Failed Download</string>
    </property>
    <property name="toolTip">
     <string>Display the failed download list for the last download session</string>
@@ -447,9 +458,9 @@
     <string>Download Sessions</string>
    </property>
   </action>
-  <action name="unfinished_downloads_menu_item">
+  <action name="failed_extraction_view_menu_item">
    <property name="text">
-    <string>Unfinished Downloads</string>
+    <string>Failed Extractions</string>
    </property>
   </action>
   <action name="imgur_credit_dialog_menu_item">
@@ -621,6 +632,31 @@
   <action name="database_view_menu_item">
    <property name="text">
     <string>Database View</string>
+   </property>
+  </action>
+  <action name="download_sessions_view_menu_item">
+   <property name="text">
+    <string>Download Sessions</string>
+   </property>
+  </action>
+  <action name="reddit_objects_view_menu_item">
+   <property name="text">
+    <string>Reddit Objects</string>
+   </property>
+  </action>
+  <action name="posts_view_menu_item">
+   <property name="text">
+    <string>Posts</string>
+   </property>
+  </action>
+  <action name="content_view_menu_item">
+   <property name="text">
+    <string>Content</string>
+   </property>
+  </action>
+  <action name="comments_view_menu_item">
+   <property name="text">
+    <string>Comments</string>
    </property>
   </action>
  </widget>

@@ -48,17 +48,14 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         self.model_combo.addItem('Content', 'CONTENT')
         self.model_combo.addItem('Comment', 'COMMENT')
 
-        operators = [('Equal To', 'eq'), ('<', 'lt'), ('<=', 'lte'), ('>', 'gt'), ('>=', 'gte'), ('In', 'in'),
-                     ('Like', 'like'), ('Contains', 'contains')]
+        operators = [('Equal To', 'eq'), ('Not Equal', 'not'), ('<', 'lt'), ('<=', 'lte'), ('>', 'gt'), ('>=', 'gte'),
+                     ('In', 'in'), ('Like', 'like'), ('Contains', 'contains')]
         for x in operators:
             self.operator_combo.addItem(x[0], x[1])
 
         self.set_fields()
         self.field_combo.currentIndexChanged.connect(self.set_value_field)
         self.set_value_field()
-
-        if self.settings_manager.database_view_default_filter_significant:
-            self.add_filter(FilterItem('REDDIT_OBJECT', 'significant', 'eq', True))
 
     @property
     def current_model(self):
@@ -71,6 +68,10 @@ class FilterWidget(QWidget, Ui_FilterWidget):
     @property
     def current_operator(self):
         return self.operator_combo.currentData(Qt.UserRole)
+
+    def set_default_filters(self, *filters):
+        for filter_tuple in filters:
+            self.add_filter(FilterItem(*filter_tuple))
 
     def set_fields(self):
         self.field_combo.clear()

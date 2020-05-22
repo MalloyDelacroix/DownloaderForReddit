@@ -198,7 +198,10 @@ class SettingsManager:
             'domain': True,
             'author': True,
             'subreddit': True,
-            'nsfw': True
+            'nsfw': True,
+            'extracted': False,
+            'extraction_date': True,
+            'extraction_error': False
         }
         self.database_view_post_table_headers = self.get('database_view', 'database_view_post_table_headers',
                                                          self.default_database_view_post_headers)

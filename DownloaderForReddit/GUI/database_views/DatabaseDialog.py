@@ -31,7 +31,16 @@ def check_hold(method):
 
 class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
-    def __init__(self):
+    def __init__(self, **setup_kwargs):
+        """
+        setup_kwargs fields:
+            visible_models: The models that will be visible on start
+            <model_name>_sort: The sort attribute that will be used on start for the model name
+            <model_name>_desc: Dictates whether the model_name sort should be in desc. order
+            focus_model: The model that will have focus on start
+            filters: A list of filter tuples that will be used to filter models on start
+                filter tuple order: (model, attribute_field, operator, value)
+        """
         QWidget.__init__(self)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
@@ -39,6 +48,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.db = Injector.get_database_handler()
         self.session = self.db.get_session()
         self.hold_setup = False
+        self.setup_kwargs = setup_kwargs
 
         self.setup_call_list = []
 
@@ -52,11 +62,23 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_widget.resize(self.settings_manager.database_view_content_widget_width, 0)
         self.comment_widget.resize(self.settings_manager.database_view_comment_widget_width, 0)
 
-        self.show_download_sessions_checkbox.setChecked(self.settings_manager.database_view_show_download_sessions)
-        self.show_reddit_objects_checkbox.setChecked(self.settings_manager.database_view_show_reddit_objects)
-        self.show_posts_checkbox.setChecked(self.settings_manager.database_view_show_posts)
-        self.show_content_checkbox.setChecked(self.settings_manager.database_view_show_content)
-        self.show_comments_checkbox.setChecked(self.settings_manager.database_view_show_comments)
+        self.model_visibility_map = {
+            'DOWNLOAD_SESSION': self.show_download_sessions_checkbox,
+            'REDDIT_OBJECT': self.show_reddit_objects_checkbox,
+            'POST': self.show_posts_checkbox,
+            'CONTENT': self.show_content_checkbox,
+            'COMMENT': self.show_comments_checkbox
+        }
+        try:
+            visible_models = self.setup_kwargs['visible_models']
+            for model in visible_models:
+                self.model_visibility_map[model].setChecked(True)
+        except KeyError:
+            self.show_download_sessions_checkbox.setChecked(self.settings_manager.database_view_show_download_sessions)
+            self.show_reddit_objects_checkbox.setChecked(self.settings_manager.database_view_show_reddit_objects)
+            self.show_posts_checkbox.setChecked(self.settings_manager.database_view_show_posts)
+            self.show_content_checkbox.setChecked(self.settings_manager.database_view_show_content)
+            self.show_comments_checkbox.setChecked(self.settings_manager.database_view_show_comments)
 
         for x in DownloadSessionFilter.get_order_fields():
             self.download_session_sort_combo.addItem(x.replace('_', ' ').title(), x)
@@ -69,24 +91,37 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         for x in CommentFilter.get_order_fields():
             self.comment_sort_combo.addItem(x.replace('_', ' ').title(), x)
 
-        self.download_session_sort_combo.setCurrentText(
-            self.settings_manager.database_view_download_session_order.replace('_', ' ').title())
-        self.reddit_object_sort_combo.setCurrentText(
-            self.settings_manager.database_view_reddit_object_order.replace('_', ' ').title())
-        self.post_sort_combo.setCurrentText(
-            self.settings_manager.database_view_post_order.replace('_', ' ').title())
-        self.content_sort_combo.setCurrentText(
-            self.settings_manager.database_view_content_order.replace('_', ' ').title())
-        self.comment_sort_combo.setCurrentText(
-            self.settings_manager.database_view_comment_order.replace('_', ' ').title())
+        dl_session_default_sort = self.settings_manager.database_view_download_session_order
+        ro_default_sort = self.settings_manager.database_view_reddit_object_order
+        post_default_sort = self.settings_manager.database_view_post_order
+        content_default_sort = self.settings_manager.database_view_content_order
+        comment_default_sort = self.settings_manager.database_view_comment_order
+
+        dl_session_index = self.download_session_sort_combo.findData(
+            self.setup_kwargs.get('download_session_sort', dl_session_default_sort))
+        ro_index = self.reddit_object_sort_combo.findData(self.setup_kwargs.get('reddit_object_sort', ro_default_sort))
+        post_index = self.post_sort_combo.findData(self.setup_kwargs.get('post_sort', post_default_sort))
+        content_index = self.content_sort_combo.findData(self.setup_kwargs.get('content_sort', content_default_sort))
+        comment_index = self.comment_sort_combo.findData(self.setup_kwargs.get('comment_sort', comment_default_sort))
+
+        self.download_session_sort_combo.setCurrentIndex(dl_session_index)
+        self.reddit_object_sort_combo.setCurrentIndex(ro_index)
+        self.post_sort_combo.setCurrentIndex(post_index)
+        self.content_sort_combo.setCurrentIndex(content_index)
+        self.comment_sort_combo.setCurrentIndex(comment_index)
+
+        dl_session_default_desc = self.settings_manager.database_view_download_session_desc_order
+        ro_default_desc = self.settings_manager.database_view_reddit_object_desc_order
+        post_default_desc = self.settings_manager.database_view_post_desc_order
+        content_default_desc = self.settings_manager.database_view_content_desc_order
+        comment_default_desc = self.settings_manager.database_view_comment_desc_order
 
         self.download_session_desc_sort_checkbox.setChecked(
-            self.settings_manager.database_view_download_session_desc_order)
-        self.reddit_object_desc_sort_checkbox.setChecked(
-            self.settings_manager.database_view_reddit_object_desc_order)
-        self.post_desc_sort_checkbox.setChecked(self.settings_manager.database_view_post_desc_order)
-        self.content_desc_sort_checkbox.setChecked(self.settings_manager.database_view_content_desc_order)
-        self.comment_desc_sort_checkbox.setChecked(self.settings_manager.database_view_comment_desc_order)
+            self.setup_kwargs.get('download_session_desc', dl_session_default_desc))
+        self.reddit_object_desc_sort_checkbox.setChecked(self.setup_kwargs.get('reddit_object_desc', ro_default_desc))
+        self.post_desc_sort_checkbox.setChecked(self.setup_kwargs.get('post_desc', post_default_desc))
+        self.content_desc_sort_checkbox.setChecked(self.setup_kwargs.get('content_desc', content_default_desc))
+        self.comment_desc_sort_checkbox.setChecked(self.setup_kwargs.get('comment_desc', comment_default_desc))
 
         self.download_session_sort_combo.currentIndexChanged.connect(self.change_download_session_sort)
         self.reddit_object_sort_combo.currentIndexChanged.connect(self.change_reddit_object_sort)
@@ -123,16 +158,16 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_list_view.setBatchSize(1)
         self.content_list_view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.content_list_view.verticalScrollBar().setSingleStep(20)
-        # self.content_list_view.setResizeMode(QListView.Fixed)
 
         self.comment_tree_model = CommentTreeModel()
         self.comment_tree_view.setModel(self.comment_tree_model)
         self.comment_tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
-        self.reddit_object_widget.setVisible(self.show_reddit_objects_checkbox.isChecked())
-        self.post_widget.setVisible(self.show_posts_checkbox.isChecked())
-        self.content_widget.setVisible(self.show_content_checkbox.isChecked())
-        self.comment_widget.setVisible(self.show_comments_checkbox.isChecked())
+        self.download_session_widget.setVisible(self.show_download_sessions)
+        self.reddit_object_widget.setVisible(self.show_reddit_objects)
+        self.post_widget.setVisible(self.show_posts)
+        self.content_widget.setVisible(self.show_content)
+        self.comment_widget.setVisible(self.show_comments)
 
         self.post_text_browser.setVisible(False)
         self.post_text_browser.attach_signal.connect(self.attach_post_text_browser)
@@ -206,7 +241,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             'CONTENT': self.content_focus_radio,
             'COMMENT': self.comment_focus_radio
         }
-        self.focus_map[self.settings_manager.database_view_focus_model].setChecked(True)
+        self.focus_map[self.setup_kwargs.get('focus_model', self.settings_manager.database_view_focus_model)]\
+            .setChecked(True)
 
         self.download_session_list_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
             self.download_session_list_view.verticalScrollBar(), self.download_session_model,
@@ -251,7 +287,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         }
         self.filter_widget.filter_changed.connect(self.update_filtering)
 
-        self.dl_wid_width = None
+        self.filter_widget.set_default_filters(*self.setup_kwargs.get('filters', []))
 
     def toggle_filter(self):
         self.filter_widget.setVisible(not self.filter_widget.isVisible())
@@ -991,34 +1027,35 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.model_button_link_map[model].setVisible(model.has_next_page)
 
     def closeEvent(self, event):
-        self.settings_manager.database_view_geom['width'] = self.width()
-        self.settings_manager.database_view_geom['height'] = self.height()
-        self.settings_manager.database_view_geom['x'] = self.x()
-        self.settings_manager.database_view_geom['y'] = self.y()
-        self.settings_manager.database_view_download_session_widget_width = self.download_session_widget.width()
-        self.settings_manager.database_view_reddit_object_widget_width = self.reddit_object_widget.width()
-        self.settings_manager.database_view_post_widget_width = self.post_widget.width()
-        self.settings_manager.database_view_content_widget_width = self.content_widget.width()
-        self.settings_manager.database_view_comment_widget_width = self.comment_widget.width()
+        if len(self.setup_kwargs) <= 0:
+            self.settings_manager.database_view_geom['width'] = self.width()
+            self.settings_manager.database_view_geom['height'] = self.height()
+            self.settings_manager.database_view_geom['x'] = self.x()
+            self.settings_manager.database_view_geom['y'] = self.y()
+            self.settings_manager.database_view_download_session_widget_width = self.download_session_widget.width()
+            self.settings_manager.database_view_reddit_object_widget_width = self.reddit_object_widget.width()
+            self.settings_manager.database_view_post_widget_width = self.post_widget.width()
+            self.settings_manager.database_view_content_widget_width = self.content_widget.width()
+            self.settings_manager.database_view_comment_widget_width = self.comment_widget.width()
 
-        self.settings_manager.database_view_icon_size = self.icon_size
-        for key, value in self.focus_map.items():
-            if value.isChecked():
-                self.settings_manager.database_view_focus_model = key
-                break
-        self.settings_manager.database_view_show_download_sessions = self.show_download_sessions
-        self.settings_manager.database_view_show_reddit_objects = self.show_reddit_objects
-        self.settings_manager.database_view_show_posts = self.show_posts
-        self.settings_manager.database_view_show_content = self.show_content
-        self.settings_manager.database_view_show_comments = self.show_comments
-        self.settings_manager.database_view_download_session_order = self.download_session_order
-        self.settings_manager.database_view_reddit_object_order = self.reddit_object_order
-        self.settings_manager.database_view_post_order = self.post_order
-        self.settings_manager.database_view_content_order = self.content_order
-        self.settings_manager.database_view_comment_order = self.comment_order
-        self.settings_manager.database_view_download_session_desc_order = self.download_session_desc
-        self.settings_manager.database_view_reddit_object_desc_order = self.reddit_object_desc
-        self.settings_manager.database_view_post_desc_order = self.post_desc
-        self.settings_manager.database_view_content_desc_order = self.content_desc
-        self.settings_manager.database_view_comment_desc_order = self.comment_desc
+            self.settings_manager.database_view_icon_size = self.icon_size
+            for key, value in self.focus_map.items():
+                if value.isChecked():
+                    self.settings_manager.database_view_focus_model = key
+                    break
+            self.settings_manager.database_view_show_download_sessions = self.show_download_sessions
+            self.settings_manager.database_view_show_reddit_objects = self.show_reddit_objects
+            self.settings_manager.database_view_show_posts = self.show_posts
+            self.settings_manager.database_view_show_content = self.show_content
+            self.settings_manager.database_view_show_comments = self.show_comments
+            self.settings_manager.database_view_download_session_order = self.download_session_order
+            self.settings_manager.database_view_reddit_object_order = self.reddit_object_order
+            self.settings_manager.database_view_post_order = self.post_order
+            self.settings_manager.database_view_content_order = self.content_order
+            self.settings_manager.database_view_comment_order = self.comment_order
+            self.settings_manager.database_view_download_session_desc_order = self.download_session_desc
+            self.settings_manager.database_view_reddit_object_desc_order = self.reddit_object_desc
+            self.settings_manager.database_view_post_desc_order = self.post_desc
+            self.settings_manager.database_view_content_desc_order = self.content_desc
+            self.settings_manager.database_view_comment_desc_order = self.comment_desc
         super().closeEvent(event)

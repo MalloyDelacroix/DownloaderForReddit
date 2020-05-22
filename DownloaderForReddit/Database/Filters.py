@@ -19,6 +19,7 @@ class Filter(ABC):
 
     op_map = {
         'eq': lambda attr, value: attr == value,
+        'not': lambda attr, value: attr != value,
         'lt': lambda attr, value: or_(attr == None, attr < value),
         'lte': lambda attr, value: or_(attr == None, attr <= value),
         'gt': lambda attr, value: attr > value,
@@ -501,13 +502,18 @@ class CommentFilter(Filter):
     def __init__(self):
         super().__init__()
         self.custom_filter_map = {
-            'post_score': CustomItem(self.filter_post_score, self.order_by_post_score),
-            'post_date': CustomItem(self.filter_post_date, self.order_by_post_date),
+            'post_title': CustomItem(self.filter_post_title, self.order_by_post_title, String),
+            'post_score': CustomItem(self.filter_post_score, self.order_by_post_score, Integer),
+            'post_date': CustomItem(self.filter_post_date, self.order_by_post_date, DateTime),
             'nsfw': CustomItem(self.filter_nsfw, field_type=Enum,
                                choices=[(x.display_name.title(), x) for x in NsfwFilter]),
             'author_name': CustomItem(self.filter_author_name, self.order_by_author_name, String),
             'subreddit_name': CustomItem(self.filter_subreddit_name, self.order_by_subreddit_name, String),
         }
+
+    def filter_post_title(self, query, operator, value):
+        f = self.op_map[operator](Post.title, value)
+        query = query.join(Post).filter(f)
 
     def filter_post_score(self, query, operator, value):
         f = self.op_map[operator](Post.score, value)
@@ -533,6 +539,9 @@ class CommentFilter(Filter):
         f = self.op_map[operator](Subreddit.name, value)
         query = query.join(Subreddit, Subreddit.id == Comment.subreddit_id).filter(f)
         return query
+
+    def order_by_post_title(self, query):
+        return query.join(Post), Post.title
 
     def order_by_post_score(self, query):
         return query.join(Post), Post.score
