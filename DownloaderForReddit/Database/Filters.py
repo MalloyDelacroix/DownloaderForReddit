@@ -34,6 +34,7 @@ class Filter(ABC):
     filter_exclude = []
     order_by_include = []
     order_by_exclude = []
+    choices = {}
 
     session = None
 
@@ -109,6 +110,8 @@ class Filter(ABC):
             return query
 
     def get_type(self, attr):
+        if self.choices.get(attr, None) is not None:
+            return Enum
         try:
             return type(self.model.__table__.c[attr].type)
         except KeyError:
@@ -118,6 +121,9 @@ class Filter(ABC):
                 return None
 
     def get_choices(self, attr):
+        choices = self.choices.get(attr, None)
+        if choices is not None:
+            return choices
         try:
             choices = []
             field = self.model.__table__.c[attr]
@@ -143,6 +149,7 @@ class RedditObjectListFilter(Filter):
     filter_include = ['all', 'reddit_object_count', 'total_score']
     filter_exclude = ['post_score_limit_operator', 'comment_score_limit_operator']
     order_by_include = ['name', 'date_created', 'list_type', 'reddit_object_count', 'total_score', 'date_limit']
+    choices = {'list_type': ['USER', 'SUBREDDIT']}
 
     def __init__(self):
         super().__init__()
@@ -199,6 +206,7 @@ class RedditObjectFilter(Filter):
     order_by_include = ['id', 'name', 'last_download', 'date_added', 'absolute_date_limit', 'date_created',
                         'post_score', 'post_count', 'content_count', 'comment_count', 'download_count',
                         'last_post_date']
+    choices = {'object_type': ['USER', 'SUBREDDIT']}
 
     def __init__(self):
         super().__init__()
