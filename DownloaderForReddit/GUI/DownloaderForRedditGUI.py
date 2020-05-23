@@ -756,7 +756,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def open_database_view_dialog(self):
         if self.settings_manager.database_view_default_filter_significant:
             kwargs = {
-                'filters': ('REDDIT_OBJECT', 'significant', 'eq', True)
+                'filters': [('REDDIT_OBJECT', 'significant', 'eq', True)]
             }
         else:
             kwargs = {}
