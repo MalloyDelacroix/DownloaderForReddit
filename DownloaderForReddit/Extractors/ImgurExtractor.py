@@ -42,6 +42,8 @@ class ImgurExtractor(BaseExtractor):
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
+        if '?' in self.url:
+            self.url = self.url.split('?')[0]
         try:
             if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
                 self.extract_album()
@@ -78,8 +80,6 @@ class ImgurExtractor(BaseExtractor):
     def extract_direct_link(self):
         try:
             url = self.get_direct_url()
-            if '?' in url:
-                url = url[:url.find('?')]
             domain, id_with_ext = url.rsplit('/', 1)
             image_id, extension = id_with_ext.rsplit('.', 1)
             file_name = self.get_filename(image_id)
