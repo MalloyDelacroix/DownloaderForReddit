@@ -23,6 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from os import path
 from urllib.parse import urlparse
 
 import requests
@@ -30,8 +31,8 @@ import requests
 from ..Core import Const
 from ..Extractors.BaseExtractor import BaseExtractor
 
-_REDGIFS_ENDPOINT = "https://api.redgifs.com/v1/gfycats"
-_GFYCAT_ENDPOINT = "https://api.gfycat.com/v1/gfycats"
+_REDGIFS_ENDPOINT = "https://api.redgifs.com/v1/gfycats/"
+_GFYCAT_ENDPOINT = "https://api.gfycat.com/v1/gfycats/"
 
 class GfycatExtractor(BaseExtractor):
 
@@ -57,7 +58,8 @@ class GfycatExtractor(BaseExtractor):
 
     def extract_single(self):
         item = urlparse(self.url)
-        gif_id = item.path.split('-', 1)[0]
+        gif_id = item.path
+        gif_id = path.basename(gif_id).split('-')[0]
         print(gif_id)
 
         if item.hostname == 'redgifs.com':
