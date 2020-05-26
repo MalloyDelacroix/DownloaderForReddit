@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from DownloaderForReddit.Extractors.GfycatExtractor import GfycatExtractor
 from DownloaderForReddit.Utils import Injector
@@ -12,19 +12,31 @@ class TestGfycatExtractor(unittest.TestCase):
     def setUp(self):
         Injector.settings_manager = MockSettingsManager()
 
-    @patch('DownloaderForReddit.Extractors.GfycatExtractor.get_json')
+    @patch('requests.get')
     def test_extract_single_untagged(self, j_mock):
         dir_url = 'https://giant.gfycat.com/KindlyElderlyCony.webm'
-        j_mock.return_value = {'gfyItem': {'webmUrl': dir_url}}
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.headers = {'Content-Type': 'json'}
+        mock_response.json.return_value = {'gfyItem': {'webmUrl': dir_url}}
+        j_mock.return_value = mock_response
+
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat(), MockObjects.get_blank_user())
         ge.extract_single()
         j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/KindlyElderlyCony')
         self.check_output(ge, dir_url)
 
-    @patch('DownloaderForReddit.Extractors.GfycatExtractor.get_json')
+    @patch('requests.get')
     def test_extract_single_tagged(self, j_mock):
         dir_url = 'https://giant.gfycat.com/anchoredenchantedamericanriverotter.webm'
-        j_mock.return_value = {'gfyItem': {'webmUrl': dir_url}}
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.headers = {'Content-Type': 'json'}
+        mock_response.json.return_value = {'gfyItem': {'webmUrl': dir_url}}
+        j_mock.return_value = mock_response
+
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat_tagged(), MockObjects.get_blank_user())
         ge.extract_single()
         j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/anchoredenchantedamericanriverotter')
