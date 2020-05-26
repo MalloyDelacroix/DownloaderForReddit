@@ -23,14 +23,20 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from ..Extractors.BaseExtractor import BaseExtractor
-from ..Core import Const
-
+from os import path
 from urllib.parse import urlparse
+
+import requests
+
+from ..Core import Const
+from ..Extractors.BaseExtractor import BaseExtractor
+
+_REDGIFS_ENDPOINT = "https://api.redgifs.com/v1/gfycats/"
+_GFYCAT_ENDPOINT = "https://api.gfycat.com/v1/gfycats/"
 
 class GfycatExtractor(BaseExtractor):
 
-    url_key = ['gfycat','redgifs']
+    url_key = ['gfycat', 'redgifs']
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
@@ -38,11 +44,6 @@ class GfycatExtractor(BaseExtractor):
         api
         """
         super().__init__(post, reddit_object, content_display_only)
-        item = urlparse(self.url)
-        if  item.hostname == 'redgifs.com':
-            self.api_caller = "https://api.redgifs.com/v1/gfycats/"
-        else:
-            self.api_caller = "https://api.gfycat.com/v1/gfycats/"
 
     def extract_content(self):
         """Dictates which extraction method should be used"""
@@ -56,9 +57,20 @@ class GfycatExtractor(BaseExtractor):
             self.handle_failed_extract(message=message, extractor_error_message=message)
 
     def extract_single(self):
-        domain, gif_id = self.url.rsplit('/', 1)
-        gif_id = gif_id.split('-',1)[0]
-        gfy_json = self.get_json(self.api_caller + gif_id)
+        item = urlparse(self.url)
+        gif_id = item.path
+        gif_id = path.basename(gif_id).split('-')[0]
+        print(gif_id)
+
+        if item.hostname == 'redgifs.com':
+            gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
+        else:
+            response = requests.get(_GFYCAT_ENDPOINT + gif_id)
+            if response.status_code == 200 and 'json' in response.headers['Content-Type']:
+                gfy_json = response.json()
+            else:
+                gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
+
         gfy_url = gfy_json.get('gfyItem').get('webmUrl')
         file_name = self.get_filename(gif_id)
         self.make_content(gfy_url, file_name, 'webm')
