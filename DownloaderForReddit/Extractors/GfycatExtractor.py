@@ -23,18 +23,19 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from ..Extractors.BaseExtractor import BaseExtractor
-from ..Core import Const
-
 from urllib.parse import urlparse
+
 import requests
+
+from ..Core import Const
+from ..Extractors.BaseExtractor import BaseExtractor
 
 _REDGIFS_ENDPOINT = "https://api.redgifs.com/v1/gfycats"
 _GFYCAT_ENDPOINT = "https://api.gfycat.com/v1/gfycats"
 
 class GfycatExtractor(BaseExtractor):
 
-    url_key = ['gfycat','redgifs']
+    url_key = ['gfycat', 'redgifs']
 
     def __init__(self, post, reddit_object, content_display_only=False):
         """
@@ -42,7 +43,6 @@ class GfycatExtractor(BaseExtractor):
         api
         """
         super().__init__(post, reddit_object, content_display_only)
-
 
     def extract_content(self):
         """Dictates which extraction method should be used"""
