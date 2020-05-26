@@ -37,6 +37,11 @@ logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
 
 FORBIDDEN_CHARS = '"*\\/\'.|?:<>'
 
+KB = 1024
+MB = KB * KB
+GB = MB * KB
+TB = GB * KB
+
 
 def open_in_system(item):
     """
@@ -196,6 +201,18 @@ def get_duration_str(duration):
             time_string += f'{min_} min, '
     time_string += f'{round(sec, 2)} secs'
     return time_string
+
+
+def format_size(size):
+    if size >= TB:
+        i = f'{round(size / TB, 2)} TB'
+    elif size >= GB:
+        i = f'{round(size / GB, 2)} GB'
+    elif size >= MB:
+        i = f'{round(size / MB, 2)} MB'
+    else:
+        i = f'{round(size / KB, 2)} KB'
+    return i
 
 
 def delete_file(file_path):
