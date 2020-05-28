@@ -99,6 +99,7 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
                     self.multi_object_list_widget.addItem(self.single_object_line_edit.text())
                     self.single_object_line_edit.clear()
                     self.tab_widget.setCurrentIndex(1)
+                    self.refresh_name_count()
                 else:
                     self.accept()
             else:
