@@ -157,6 +157,7 @@ class RedditObjectListFilter(Filter):
         self.custom_filter_map = {
             'reddit_object_count': CustomItem(self.filter_reddit_object_count, self.order_by_reddit_object_count,
                                               Integer),
+            'post_count': CustomItem(self.filter_post_count, self.order_by_post_count, Integer),
             'total_score': CustomItem(self.filter_total_score, self.order_by_total_score, Integer),
         }
 
@@ -164,6 +165,12 @@ class RedditObjectListFilter(Filter):
         return self.session.query(ListAssociation.reddit_object_list_id,
                                  func.count(ListAssociation.reddit_object_id).label('ro_count')) \
             .group_by(ListAssociation.reddit_object_list_id).subquery()
+
+    def get_post_count_sub(self):
+        return self.session.query(ListAssociation.reddit_object_list_id, Post.significant_reddit_object_id,
+                                                func.count(Post.id).label('post_count'))\
+                .join(Post, Post.significant_reddit_object_id == ListAssociation.reddit_object_id)\
+                .group_by(ListAssociation.reddit_object_list_id).subquery()
 
     def get_total_score_sub(self):
         return self.session.query(ListAssociation.reddit_object_list_id, Post.significant_reddit_object_id,
@@ -180,6 +187,12 @@ class RedditObjectListFilter(Filter):
         query = self.join_query(query, sub).filter(f)
         return query
 
+    def filter_post_count(self, query, operator, value):
+        sub = self.get_post_count_sub()
+        f = self.op_map[operator](sub.c.post_count, value)
+        query = self.join_query(query, sub).filter(f)
+        return query
+
     def filter_total_score(self, query, operator, value):
         sub = self.get_total_score_sub()
         f = self.op_map[operator](sub.c.total_score, value)
@@ -190,6 +203,11 @@ class RedditObjectListFilter(Filter):
         sub = self.get_reddit_object_count_sub()
         query = self.join_query(query, sub)
         return query, sub.c.ro_count
+
+    def order_by_post_count(self, query):
+        sub = self.get_post_count_sub()
+        query = self.join_query(query, sub)
+        return query, sub.c.post_count
 
     def order_by_total_score(self, query):
         sub = self.get_total_score_sub()
