@@ -60,7 +60,7 @@ class RedditObjectCreator:
                 return subreddit.id
             return None
 
-    def create_reddit_object_list(self, name):
+    def create_reddit_object_list(self, name, add_to_db=True):
         with self.db.get_scoped_session() as session:
             exists = session.query(RedditObjectList.id)\
                      .filter(RedditObjectList.name == name)\
@@ -69,8 +69,9 @@ class RedditObjectCreator:
             if not exists:
                 defaults = self.get_default_setup(self.list_type)
                 ro_list = RedditObjectList(name=name, list_type=self.list_type, **defaults)
-                session.add(ro_list)
-                session.commit()
+                if add_to_db:
+                    session.add(ro_list)
+                    session.commit()
                 return ro_list
         return None
 

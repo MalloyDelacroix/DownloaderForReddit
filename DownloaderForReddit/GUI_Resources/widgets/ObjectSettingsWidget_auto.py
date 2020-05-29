@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'ObjectSettingsWidget.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ObjectSettingsWidget(object):
     def setupUi(self, ObjectSettingsWidget):
@@ -148,9 +150,9 @@ class Ui_ObjectSettingsWidget(object):
         self.post_sort_combo = QtWidgets.QComboBox(ObjectSettingsWidget)
         self.post_sort_combo.setObjectName("post_sort_combo")
         self.post_download_form.setWidget(15, QtWidgets.QFormLayout.FieldRole, self.post_sort_combo)
-        self.label_17 = QtWidgets.QLabel(ObjectSettingsWidget)
-        self.label_17.setObjectName("label_17")
-        self.post_download_form.setWidget(18, QtWidgets.QFormLayout.LabelRole, self.label_17)
+        self.post_download_naming_label = QtWidgets.QLabel(ObjectSettingsWidget)
+        self.post_download_naming_label.setObjectName("post_download_naming_label")
+        self.post_download_form.setWidget(18, QtWidgets.QFormLayout.LabelRole, self.post_download_naming_label)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setSpacing(2)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -161,9 +163,9 @@ class Ui_ObjectSettingsWidget(object):
         self.post_download_naming_available_tokens_button.setObjectName("post_download_naming_available_tokens_button")
         self.horizontalLayout_2.addWidget(self.post_download_naming_available_tokens_button)
         self.post_download_form.setLayout(18, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout_2)
-        self.save_structure_label = QtWidgets.QLabel(ObjectSettingsWidget)
-        self.save_structure_label.setObjectName("save_structure_label")
-        self.post_download_form.setWidget(19, QtWidgets.QFormLayout.LabelRole, self.save_structure_label)
+        self.post_save_structure_label = QtWidgets.QLabel(ObjectSettingsWidget)
+        self.post_save_structure_label.setObjectName("post_save_structure_label")
+        self.post_download_form.setWidget(19, QtWidgets.QFormLayout.LabelRole, self.post_save_structure_label)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setSpacing(2)
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
@@ -239,12 +241,12 @@ class Ui_ObjectSettingsWidget(object):
         self.comment_extract_combo = QtWidgets.QComboBox(ObjectSettingsWidget)
         self.comment_extract_combo.setObjectName("comment_extract_combo")
         self.comment_download_form.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.comment_extract_combo)
-        self.label_33 = QtWidgets.QLabel(ObjectSettingsWidget)
-        self.label_33.setObjectName("label_33")
-        self.comment_download_form.setWidget(9, QtWidgets.QFormLayout.LabelRole, self.label_33)
-        self.label_34 = QtWidgets.QLabel(ObjectSettingsWidget)
-        self.label_34.setObjectName("label_34")
-        self.comment_download_form.setWidget(10, QtWidgets.QFormLayout.LabelRole, self.label_34)
+        self.comment_download_naming_label = QtWidgets.QLabel(ObjectSettingsWidget)
+        self.comment_download_naming_label.setObjectName("comment_download_naming_label")
+        self.comment_download_form.setWidget(9, QtWidgets.QFormLayout.LabelRole, self.comment_download_naming_label)
+        self.comment_save_structure_label = QtWidgets.QLabel(ObjectSettingsWidget)
+        self.comment_save_structure_label.setObjectName("comment_save_structure_label")
+        self.comment_download_form.setWidget(10, QtWidgets.QFormLayout.LabelRole, self.comment_save_structure_label)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.comment_download_naming_line_edit = QtWidgets.QLineEdit(ObjectSettingsWidget)
@@ -291,11 +293,11 @@ class Ui_ObjectSettingsWidget(object):
         self.label_29.setText(_translate("ObjectSettingsWidget", "Download Gifs:"))
         self.label_28.setText(_translate("ObjectSettingsWidget", "NSFW Filter:"))
         self.label_16.setText(_translate("ObjectSettingsWidget", "Sort Posts By:"))
-        self.label_17.setText(_translate("ObjectSettingsWidget", "Download Naming:"))
+        self.post_download_naming_label.setText(_translate("ObjectSettingsWidget", "Download Naming:"))
         self.post_download_naming_line_edit.setPlaceholderText(_translate("ObjectSettingsWidget", "----"))
         self.post_download_naming_available_tokens_button.setToolTip(_translate("ObjectSettingsWidget", "See available tokens"))
         self.post_download_naming_available_tokens_button.setText(_translate("ObjectSettingsWidget", "..."))
-        self.save_structure_label.setText(_translate("ObjectSettingsWidget", "Save Path Structure:"))
+        self.post_save_structure_label.setText(_translate("ObjectSettingsWidget", "Save Path Structure:"))
         self.post_save_path_structure_line_edit.setPlaceholderText(_translate("ObjectSettingsWidget", "----"))
         self.post_save_structure_available_tokens_button.setToolTip(_translate("ObjectSettingsWidget", "See available tokens"))
         self.post_save_structure_available_tokens_button.setText(_translate("ObjectSettingsWidget", "..."))
@@ -309,12 +311,11 @@ class Ui_ObjectSettingsWidget(object):
         self.comment_limit_spinbox.setToolTip(_translate("ObjectSettingsWidget", "Only limits top level comment.  May pull more comments depending on replies"))
         self.comment_limit_max_button.setText(_translate("ObjectSettingsWidget", "Max"))
         self.label_32.setText(_translate("ObjectSettingsWidget", "Extract:"))
-        self.label_33.setText(_translate("ObjectSettingsWidget", "Download Naming:"))
-        self.label_34.setText(_translate("ObjectSettingsWidget", "Save Path Structure:"))
+        self.comment_download_naming_label.setText(_translate("ObjectSettingsWidget", "Download Naming:"))
+        self.comment_save_structure_label.setText(_translate("ObjectSettingsWidget", "Save Path Structure:"))
         self.comment_download_naming_line_edit.setPlaceholderText(_translate("ObjectSettingsWidget", "----"))
         self.comment_download_naming_available_tokens_button.setToolTip(_translate("ObjectSettingsWidget", "See available tokens"))
         self.comment_download_naming_available_tokens_button.setText(_translate("ObjectSettingsWidget", "..."))
         self.comment_save_path_structure_line_edit.setPlaceholderText(_translate("ObjectSettingsWidget", "----"))
         self.comment_save_structure_available_tokens_button.setToolTip(_translate("ObjectSettingsWidget", "See available tokens"))
         self.comment_save_structure_available_tokens_button.setText(_translate("ObjectSettingsWidget", "..."))
-

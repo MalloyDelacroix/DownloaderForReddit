@@ -283,7 +283,7 @@
         <widget class="QComboBox" name="post_sort_combo"/>
        </item>
        <item row="18" column="0">
-        <widget class="QLabel" name="label_17">
+        <widget class="QLabel" name="post_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
          </property>
@@ -314,7 +314,7 @@
         </layout>
        </item>
        <item row="19" column="0">
-        <widget class="QLabel" name="save_structure_label">
+        <widget class="QLabel" name="post_save_structure_label">
          <property name="text">
           <string>Save Path Structure:</string>
          </property>
@@ -461,14 +461,14 @@
         <widget class="QComboBox" name="comment_extract_combo"/>
        </item>
        <item row="9" column="0">
-        <widget class="QLabel" name="label_33">
+        <widget class="QLabel" name="comment_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
          </property>
         </widget>
        </item>
        <item row="10" column="0">
-        <widget class="QLabel" name="label_34">
+        <widget class="QLabel" name="comment_save_structure_label">
          <property name="text">
           <string>Save Path Structure:</string>
          </property>

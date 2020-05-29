@@ -37,7 +37,7 @@ from ..GUI.AboutDialog import AboutDialog
 from ..GUI.RedditObjectSettingsDialog import RedditObjectSettingsDialog
 from ..GUI.UpdateDialogGUI import UpdateDialog
 from ..GUI.Messages import Message
-from ..GUI.DownloaderForRedditSettingsGUI import RedditDownloaderSettingsGUI
+from ..GUI.settings.SettingsDialog import SettingsDialog
 from ..GUI.AddRedditObjectDialog import AddRedditObjectDialog
 from ..GUI.database_views.DatabaseDialog import DatabaseDialog
 from ..GUI.ExistingRedditObjectAddDialog import ExistingRedditObjectAddDialog
@@ -370,6 +370,12 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         dialog.download_signal.connect(self.add_to_download)
         dialog.show()
         dialog.exec_()
+
+    def user_list_settings(self):
+        pass
+
+    def subreddit_list_settings(self):
+        pass
 
     def get_reddit_object_download_folder(self, reddit_object: RedditObject):
         sub_path = TokenParser.parse_tokens(reddit_object, reddit_object.post_save_structure)
@@ -875,12 +881,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_settings_dialog(self):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
-        settings = RedditDownloaderSettingsGUI()
-        settings.show()
-        dialog = settings.exec_()
-        if dialog == QDialog.Accepted:
-            self.update_user_settings()
-            self.update_subreddit_settings()
+        settings = SettingsDialog()
+        settings.exec_()
 
     def update_user_settings(self):
         """Iterates through the user list and calls update settings for each user"""

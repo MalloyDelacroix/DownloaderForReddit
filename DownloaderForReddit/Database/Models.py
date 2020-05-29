@@ -53,6 +53,7 @@ class RedditObjectList(BaseModel):
     reddit_objects = relationship('RedditObject', secondary='reddit_object_list_association', lazy='dynamic')
 
     # region List Download Defaults
+    lock_settings = Column(Boolean, default=False)
     post_limit = Column(SmallInteger, default=25)
     post_score_limit = Column(Integer, default=1000)
     post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
@@ -80,12 +81,15 @@ class RedditObjectList(BaseModel):
     # endregion
 
     object_type = 'REDDIT_OBJECT_LIST'
+    download_enabled = True
+    absolute_date_limit = None
 
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
 
     def get_default_dict(self):
         return {
+            'lock_settings': self.lock_settings,
             'post_limit': self.post_limit,
             'post_score_limit': self.post_score_limit,
             'post_score_limit_operator': self.post_score_limit_operator,

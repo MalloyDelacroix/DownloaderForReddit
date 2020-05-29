@@ -20,19 +20,23 @@ class SettingsManager:
 
         # region Core
         self.last_update = self.get('core', 'last_update', Const.FIRST_POST_EPOCH)
-        self.extraction_thread_count = self.get('core', 'extraction_thread_count', 4)
-        self.download_thread_count = self.get('core', 'download_thread_count', 4)
-        self.match_file_modified_to_post_date = self.get('core', 'match_file_modified_to_post_date', True)
+        self.current_user_list = self.get('core', 'current_user_list', None)
+        self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
         default_save_path = os.path.join(os.path.expanduser('~'), 'Downloads', 'RedditDownloads')
         self.user_save_directory = self.get('core', 'user_save_directory', default_save_path)
         self.subreddit_save_directory = self.get('core', 'subreddit_save_directory', default_save_path)
-        self.current_user_list = self.get('core', 'current_user_list', None)
-        self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
-        self.download_on_add = self.get('core', 'download_on_add', False)
-        self.lock_reddit_object_settings = self.get('core', 'lock_reddit_object_settings', False)
-        self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
-        self.finish_incomplete_before_download = self.get('core', 'finish_incomplete_before_download', False)
+        self.match_file_modified_to_post_date = self.get('core', 'match_file_modified_to_post_date', True)
         self.rename_invalidated_download_folders = self.get('core', 'rename_invalidated_download_folders', True)
+        self.invalid_rename_format = self.get('core', 'invalid_rename_format', '(deleted)')
+        self.extraction_thread_count = self.get('core', 'extraction_thread_count', 4)
+        self.download_thread_count = self.get('core', 'download_thread_count', 4)
+        self.download_on_add = self.get('core', 'download_on_add', False)
+        self.finish_incomplete_extractions_at_session_start = \
+            self.get('core', 'finish_incomplete_extractions_at_session_start', False)
+        self.finish_incomplete_downloads_at_session_start = \
+            self.get('core', 'finish_incomplete_downloads_at_session_start', False)
+        self.lock_settings = self.get('core', 'lock_settings', False)
+        self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
         # endregion
 
         # region Download Defaults
@@ -223,7 +227,8 @@ class SettingsManager:
         # endregion
 
         # region Misc Dialogs
-        self.settings_dialog_geom = self.get('misc_dialogs', 'settings_dialog_geom')
+        self.settings_dialog_geom = self.get('misc_dialogs', 'settings_dialog_geom',
+                                             {'width': 1169, 'height': 820, 'x': 0, 'y': 0})
         self.failed_downloads_dialog_geom = self.get('misc_dialogs', 'failed_downloads_dialog_geom')
         self.failed_downloads_dialog_splitter_state = self.get('misc_dialogs', 'failed_downloads_dialog_splitter_state')
         self.update_dialog_geom = self.get('misc_dialogs', 'update_dialog_geom')
@@ -311,3 +316,38 @@ class SettingsManager:
             key_list.append(key)
         except KeyError:
             self.section_dict[section] = [key]
+
+    def get_list_defaults(self):
+        return {
+            'lock_settings': self.lock_settings,
+            'post_limit': self.post_limit,
+            'post_score_limit_operator': self.post_score_limit_operator,
+            'post_score_limit': self.post_score_limit,
+            'avoid_duplicates': self.avoid_duplicates,
+            'extract_self_post_links': self.extract_self_post_links,
+            'download_self_post_text': self.download_self_post_text,
+            'self_post_file_format': self.self_post_file_format,
+            'comment_file_format': self.comment_file_format,
+            'download_videos': self.download_videos,
+            'download_images': self.download_images,
+            'download_gifs': self.download_gifs,
+            'download_nsfw': self.download_nsfw,
+            'extract_comments': self.extract_comments,
+            'download_comments': self.download_comments,
+            'download_comment_content': self.download_comment_content,
+            'comment_limit': self.comment_limit,
+            'comment_score_limit': self.comment_score_limit,
+            'comment_score_limit_operator': self.comment_score_limit_operator,
+            'comment_sort_method': self.comment_sort_method,
+            'date_limit': self.date_limit,
+            'user_post_sort_method': self.user_post_sort_method,
+            'subreddit_post_sort_method': self.subreddit_post_sort_method,
+            'user_post_download_naming_method': self.user_post_download_naming_method,
+            'user_comment_download_naming_method': self.user_comment_download_naming_method,
+            'subreddit_post_download_naming_method': self.subreddit_post_download_naming_method,
+            'subreddit_comment_download_naming_method': self.subreddit_comment_download_naming_method,
+            'user_post_save_structure': self.user_post_save_structure,
+            'user_comment_save_structure': self.user_comment_save_structure,
+            'subreddit_post_save_structure': self.subreddit_post_save_structure,
+            'subreddit_comment_save_structure': self.subreddit_comment_save_structure,
+        }

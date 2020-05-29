@@ -1,5 +1,5 @@
 from datetime import datetime
-from PyQt5.QtWidgets import QWidget, QMenu
+from PyQt5.QtWidgets import QWidget, QMenu, QApplication, QPushButton
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 
@@ -155,12 +155,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         line_edit.insert(f'%[{token}]')
 
     def sync_widgets_to_object(self):
-        self.sync_checkbox(self.lock_settings_checkbox, 'lock_settings')
-        self.sync_checkbox(self.enable_download_checkbox, 'download_enabled')
+        self.sync_optional()
         self.sync_spin_box(self.post_limit_spinbox, 'post_limit')
         self.sync_spin_box(self.score_limit_spinbox, 'post_score_limit')
         self.sync_combo(self.score_limit_operator_combo, 'post_score_limit_operator')
-        self.sync_date_limits()
         self.sync_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
         self.sync_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.sync_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
@@ -182,10 +180,23 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_line_edit(self.comment_download_naming_line_edit, 'comment_naming_method')
         self.sync_line_edit(self.comment_save_path_structure_line_edit, 'comment_save_structure')
 
+    def sync_optional(self):
+        try:
+            self.sync_checkbox(self.lock_settings_checkbox, 'lock_settings')
+            self.sync_checkbox(self.enable_download_checkbox, 'download_enabled')
+            visibility = True
+        except (AttributeError, TypeError):
+            visibility = False
+        self.lock_settings_checkbox.setVisible(visibility)
+        self.enable_download_checkbox.setVisible(visibility)
+
     def sync_checkbox(self, checkbox, attr):
         value = self.get_value(attr)
         if value is not None:
-            checkbox.setChecked(value)
+            if value:
+                checkbox.setCheckState(2)
+            else:
+                checkbox.setCheckState(0)
         else:
             checkbox.setCheckState(1)
 
@@ -237,8 +248,21 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             self.date_limit_edit.lineEdit().setText('-')
 
     def set_absolute_date_limit(self):
-        absolute_date_limit = getattr(self.selected_objects[0], 'absolute_date_limit')
-        if all(getattr(x, 'absolute_date_limit') == absolute_date_limit for x in self.selected_objects):
-            self.date_limit_edit.setDateTime(absolute_date_limit)
-        else:
-            self.date_limit_edit.lineEdit().setText('-')
+        try:
+            absolute_date_limit = getattr(self.selected_objects[0], 'absolute_date_limit')
+            if all(getattr(x, 'absolute_date_limit') == absolute_date_limit for x in self.selected_objects):
+                self.date_limit_edit.setDateTime(absolute_date_limit)
+            else:
+                self.date_limit_edit.lineEdit().setText('-')
+            visible = True
+        except TypeError:
+            visible = False
+        self.date_limit_edit.setVisible(visible)
+        self.date_limit_checkbox.setVisible(visible)
+
+    def setup_for_master_list(self):
+        post_naming_button = QPushButton('User')
+
+    def make_ro_toggle_button(self):
+        button = QPushButton('User')
+        button.setCheckable(True)
