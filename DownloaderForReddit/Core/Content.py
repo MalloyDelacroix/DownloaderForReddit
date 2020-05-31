@@ -105,7 +105,7 @@ class Content(QRunnable, QObject):
     def run(self):
         self.check_save_path_subreddit()
         try:
-            response = requests.get(self.url, stream=True)
+            response = requests.get(self.url, stream=True, timeout=10)
             if response.status_code == 200:
                 # defer filename creation to last possible second so any duplicate file names should have already been
                 # written and can thus be avoided

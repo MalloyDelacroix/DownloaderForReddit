@@ -24,7 +24,7 @@ class TestGfycatExtractor(unittest.TestCase):
 
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat(), MockObjects.get_blank_user())
         ge.extract_single()
-        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/KindlyElderlyCony')
+        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/KindlyElderlyCony', timeout=10)
         self.check_output(ge, dir_url)
 
     @patch('requests.get')
@@ -39,7 +39,7 @@ class TestGfycatExtractor(unittest.TestCase):
 
         ge = GfycatExtractor(MockObjects.get_mock_post_gfycat_tagged(), MockObjects.get_blank_user())
         ge.extract_single()
-        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/anchoredenchantedamericanriverotter')
+        j_mock.assert_called_with('https://api.gfycat.com/v1/gfycats/anchoredenchantedamericanriverotter', timeout=10)
         self.check_output_tagged(ge, dir_url)
 
     def test_direct_extraction(self):

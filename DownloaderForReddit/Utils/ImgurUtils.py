@@ -61,7 +61,7 @@ def _send_request(url_extension, retries=1):
         headers['X-Mashape-Key'] = Injector.settings_manager.imgur_mashape_key
     else:
         raise ImgurError(429)
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=10)
     if response.status_code == 200:
         return response.json()
     if response.status_code == 429:
@@ -77,7 +77,7 @@ def check_credits():
     headers = {
         'Authorization': 'Client-ID {}'.format(Injector.settings_manager.imgur_client_id)
     }
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=10)
     if response.status_code != 200:
         raise ImgurError(response.status_code)
     result = response.json()
