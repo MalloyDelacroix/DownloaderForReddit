@@ -1027,18 +1027,18 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.model_button_link_map[model].setVisible(model.has_next_page)
 
     def closeEvent(self, event):
+        self.settings_manager.database_view_geom['width'] = self.width()
+        self.settings_manager.database_view_geom['height'] = self.height()
+        self.settings_manager.database_view_geom['x'] = self.x()
+        self.settings_manager.database_view_geom['y'] = self.y()
+        self.settings_manager.database_view_icon_size = self.icon_size
         if len(self.setup_kwargs) <= 0:
-            self.settings_manager.database_view_geom['width'] = self.width()
-            self.settings_manager.database_view_geom['height'] = self.height()
-            self.settings_manager.database_view_geom['x'] = self.x()
-            self.settings_manager.database_view_geom['y'] = self.y()
             self.settings_manager.database_view_download_session_widget_width = self.download_session_widget.width()
             self.settings_manager.database_view_reddit_object_widget_width = self.reddit_object_widget.width()
             self.settings_manager.database_view_post_widget_width = self.post_widget.width()
             self.settings_manager.database_view_content_widget_width = self.content_widget.width()
             self.settings_manager.database_view_comment_widget_width = self.comment_widget.width()
 
-            self.settings_manager.database_view_icon_size = self.icon_size
             for key, value in self.focus_map.items():
                 if value.isChecked():
                     self.settings_manager.database_view_focus_model = key
