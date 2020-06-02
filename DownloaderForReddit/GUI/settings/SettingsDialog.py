@@ -53,6 +53,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
     def apply(self):
         for view in self.settings_map.values():
             view.apply_settings()
+        self.settings_manager.save_all()
 
     def closeEvent(self, event):
         self.settings_manager.settings_dialog_geom = {
