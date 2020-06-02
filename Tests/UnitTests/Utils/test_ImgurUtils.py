@@ -27,7 +27,7 @@ class TestImgurUtils(unittest.TestCase):
         header = {
             'Authorization': 'Client-ID {{CLIENT ID}}'
         }
-        req_mock.assert_called_with(url, headers=header)
+        req_mock.assert_called_with(url, headers=header, timeout=10)
         self.assertEqual(497, value)
         self.assertEqual(497, ImgurUtils.num_credits)
         self.assertEqual(1584168402, ImgurUtils.credit_reset_time)

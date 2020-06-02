@@ -65,7 +65,7 @@ class GfycatExtractor(BaseExtractor):
         if item.hostname == 'redgifs.com':
             gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
         else:
-            response = requests.get(_GFYCAT_ENDPOINT + gif_id)
+            response = requests.get(_GFYCAT_ENDPOINT + gif_id, timeout=10)
             if response.status_code == 200 and 'json' in response.headers['Content-Type']:
                 gfy_json = response.json()
             else:
