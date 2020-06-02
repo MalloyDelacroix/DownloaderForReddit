@@ -60,7 +60,7 @@ class RedditObjectCreator:
                 return subreddit.id
             return None
 
-    def create_reddit_object_list(self, name, add_to_db=True):
+    def create_reddit_object_list(self, name, commit=True):
         with self.db.get_scoped_session() as session:
             exists = session.query(RedditObjectList.id)\
                      .filter(RedditObjectList.name == name)\
@@ -69,48 +69,14 @@ class RedditObjectCreator:
             if not exists:
                 defaults = self.get_default_setup(self.list_type)
                 ro_list = RedditObjectList(name=name, list_type=self.list_type, **defaults)
-                if add_to_db:
+                if commit:
                     session.add(ro_list)
                     session.commit()
                 return ro_list
         return None
 
     def get_default_setup(self, object_type):
-        defaults = {
-            'post_limit': self.settings_manager.post_limit,
-            'post_score_limit_operator': self.settings_manager.post_score_limit_operator,
-            'post_score_limit': self.settings_manager.post_score_limit,
-            'avoid_duplicates': self.settings_manager.avoid_duplicates,
-            'extract_self_post_links': self.settings_manager.extract_self_post_links,
-            'download_self_post_text': self.settings_manager.download_self_post_text,
-            'self_post_file_format': self.settings_manager.self_post_file_format,
-            'download_videos': self.settings_manager.download_videos,
-            'download_images': self.settings_manager.download_images,
-            'download_nsfw': self.settings_manager.download_nsfw,
-            'extract_comments': self.settings_manager.extract_comments,
-            'download_comments': self.settings_manager.download_comments,
-            'download_comment_content': self.settings_manager.download_comment_content,
-            'comment_limit': self.settings_manager.comment_limit,
-            'comment_score_limit': self.settings_manager.comment_score_limit,
-            'comment_score_limit_operator': self.settings_manager.comment_score_limit_operator,
-            'comment_sort_method': self.settings_manager.comment_sort_method,
-            'date_limit': self.settings_manager.date_limit,
-        }
-        self.get_specific_defaults(defaults, object_type)
-        return defaults
-
-    def get_specific_defaults(self, defaults, object_type):
-        kwargs = {}
         if object_type == 'USER':
-            kwargs['post_sort_method'] = self.settings_manager.user_post_sort_method
-            kwargs['post_download_naming_method'] = self.settings_manager.user_post_download_naming_method
-            kwargs['post_save_structure'] = self.settings_manager.user_post_save_structure
-            kwargs['comment_naming_method'] = self.settings_manager.user_comment_download_naming_method
-            kwargs['comment_save_structure'] = self.settings_manager.user_comment_save_structure
+            return self.settings_manager.user_download_defaults
         else:
-            kwargs['post_sort_method'] = self.settings_manager.subreddit_post_sort_method
-            kwargs['post_download_naming_method'] = self.settings_manager.subreddit_post_download_naming_method
-            kwargs['post_save_structure'] = self.settings_manager.subreddit_post_save_structure
-            kwargs['comment_naming_method'] = self.settings_manager.subreddit_comment_download_naming_method
-            kwargs['comment_save_structure'] = self.settings_manager.subreddit_comment_save_structure
-        defaults.update(**kwargs)
+            return self.settings_manager.subreddit_download_defaults

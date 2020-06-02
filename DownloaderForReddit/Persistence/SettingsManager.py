@@ -40,52 +40,69 @@ class SettingsManager:
         # endregion
 
         # region Download Defaults
-        self.post_limit = self.get('download_defaults', 'post_limit', 25)
-        self.post_score_limit_operator = self.get('download_defaults', 'post_score_limit_operator', 0,
-                                                  container=LimitOperator)
-        self.post_score_limit = self.get('download_defaults', 'post_score_limit', 1000)
-        self.avoid_duplicates = self.get('download_defaults', 'avoid_duplicates', True)
-        self.extract_self_post_links = self.get('download_defaults', 'extract_self_post_links', False)
-        self.download_self_post_text = self.get('download_defaults', 'download_self_post_text', False)
-        self.self_post_file_format = self.get('download_defaults', 'self_post_file_format', 'txt')
-        self.comment_file_format = self.get('download_defaults', 'comment_file_format', 'txt')
-        self.download_videos = self.get('download_defaults', 'download_videos', True)
-        self.download_images = self.get('download_defaults', 'download_images', True)
-        self.download_gifs = self.get('download_defaults', 'download_gifs', True)
-        self.download_nsfw = self.get('download_defaults', 'download_nsfw', 0, container=NsfwFilter)
-        self.extract_comments = self.get('download_defaults', 'extract_comments', 2, container=CommentDownload)
-        self.download_comments = self.get('download_defaults', 'download_comments', 2,
-                                          container=CommentDownload)
-        self.download_comment_content = self.get('download_defaults', 'download_comment_content', 2,
-                                                 container=CommentDownload)
-        self.comment_limit = self.get('download_defaults', 'comment_limit', 100)
-        self.comment_score_limit = self.get('download_defaults', 'comment_score_limit', 1000)
-        self.comment_score_limit_operator = self.get('download_defaults', 'comment_score_limit_operator', 0,
-                                                     container=LimitOperator)
-        self.comment_sort_method = self.get('download_defaults', 'comment_sort_method', 1, container=CommentSortMethod)
-        self.date_limit = self.get('download_defaults', 'date_limit', None)
-        self.absolute_date_limit = self.get('download_defaults', 'absolute_date_limit',
-                                            datetime.fromtimestamp(Const.FIRST_POST_EPOCH))
-        self.user_post_sort_method = self.get('download_defaults', 'user_post_sort_method', 1, container=PostSortMethod)
-        self.subreddit_post_sort_method = self.get('download_defaults', 'subreddit_post_sort_method', 1,
-                                                   container=PostSortMethod)
-        self.user_post_download_naming_method = self.get('download_defaults', 'user_post_download_naming_method',
-                                                         '%[title]')
-        self.user_comment_download_naming_method = self.get('download_defaults', 'user_comment_download_naming_method',
-                                                            '%[author_name]-comment')
-        self.subreddit_post_download_naming_method = self.get('download_defaults',
-                                                              'subreddit_post_download_naming_method',
-                                                              '%[title]')
-        self.subreddit_comment_download_naming_method = self.get('download_defaults',
-                                                                 'subreddit_comment_download_naming_method',
-                                                                 '%[author_name]-comment')
-        self.user_post_save_structure = self.get('download_defaults', 'user_post_save_structure', '%[author_name]')
-        self.user_comment_save_structure = self.get('download_defaults', 'user_comment_save_structure',
-                                                    '%[post_author_name]/Comments/%[post_title]')
-        self.subreddit_post_save_structure = self.get('download_defaults', 'subreddit_post_save_structure',
-                                                      '%[subreddit_name]')
-        self.subreddit_comment_save_structure = self.get('download_defaults', 'subreddit_comment_save_structure',
-                                                         '%[post_subreddit_name]/Comments/%[post_title]')
+
+        default_user_download_dict = {
+            'lock_settings': False,
+            'post_limit': 25,
+            'post_score_limit_operator': LimitOperator.NO_LIMIT,
+            'post_score_limit': 1000,
+            'avoid_duplicates': True,
+            'extract_self_post_links': False,
+            'download_self_post_text': False,
+            'self_post_file_format': 'txt',
+            'comment_file_format': 'txt',
+            'download_videos': True,
+            'download_images': True,
+            'download_gifs': True,
+            'download_nsfw': NsfwFilter.INCLUDE,
+            'extract_comments': CommentDownload.DO_NOT_DOWNLOAD,
+            'download_comments': CommentDownload.DO_NOT_DOWNLOAD,
+            'download_comment_content': CommentDownload.DO_NOT_DOWNLOAD,
+            'comment_limit': 100,
+            'comment_score_limit': 1000,
+            'comment_score_limit_operator': LimitOperator.NO_LIMIT,
+            'comment_sort_method': CommentSortMethod.NEW,
+            'date_limit': None,
+            'post_sort_method': PostSortMethod.NEW,
+            'post_download_naming_method': '%[title]',
+            'comment_naming_method': '%[author_name]-comment',
+            'post_save_structure': '%[author_name]',
+            'comment_save_structure': '%[post_author_name]/Comments/%[post_title]',
+        }
+
+        default_subreddit_download_dict = {
+            'lock_settings': False,
+            'post_limit': 25,
+            'post_score_limit_operator': LimitOperator.NO_LIMIT,
+            'post_score_limit': 1000,
+            'avoid_duplicates': True,
+            'extract_self_post_links': False,
+            'download_self_post_text': False,
+            'self_post_file_format': 'txt',
+            'comment_file_format': 'txt',
+            'download_videos': True,
+            'download_images': True,
+            'download_gifs': True,
+            'download_nsfw': NsfwFilter.INCLUDE,
+            'extract_comments': CommentDownload.DO_NOT_DOWNLOAD,
+            'download_comments': CommentDownload.DO_NOT_DOWNLOAD,
+            'download_comment_content': CommentDownload.DO_NOT_DOWNLOAD,
+            'comment_limit': 100,
+            'comment_score_limit': 1000,
+            'comment_score_limit_operator': LimitOperator.NO_LIMIT,
+            'comment_sort_method': CommentSortMethod.NEW,
+            'date_limit': None,
+            'post_sort_method': PostSortMethod.NEW,
+            'post_download_naming_method': '%[title]',
+            'comment_naming_method': '%[author_name]-comment',
+            'post_save_structure': '%[subreddit_name]',
+            'comment_save_structure': '%[post_subreddit_name]/Comments/%[post_title]',
+        }
+
+        self.user_download_defaults = self.get('download_defaults', 'user_download_defaults',
+                                               default_user_download_dict)
+        self.subreddit_download_defaults = self.get('download_defaults', 'subreddit_download_defaults',
+                                                    default_subreddit_download_dict)
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
         # endregion
 
@@ -316,38 +333,3 @@ class SettingsManager:
             key_list.append(key)
         except KeyError:
             self.section_dict[section] = [key]
-
-    def get_list_defaults(self):
-        return {
-            'lock_settings': self.lock_settings,
-            'post_limit': self.post_limit,
-            'post_score_limit_operator': self.post_score_limit_operator,
-            'post_score_limit': self.post_score_limit,
-            'avoid_duplicates': self.avoid_duplicates,
-            'extract_self_post_links': self.extract_self_post_links,
-            'download_self_post_text': self.download_self_post_text,
-            'self_post_file_format': self.self_post_file_format,
-            'comment_file_format': self.comment_file_format,
-            'download_videos': self.download_videos,
-            'download_images': self.download_images,
-            'download_gifs': self.download_gifs,
-            'download_nsfw': self.download_nsfw,
-            'extract_comments': self.extract_comments,
-            'download_comments': self.download_comments,
-            'download_comment_content': self.download_comment_content,
-            'comment_limit': self.comment_limit,
-            'comment_score_limit': self.comment_score_limit,
-            'comment_score_limit_operator': self.comment_score_limit_operator,
-            'comment_sort_method': self.comment_sort_method,
-            'date_limit': self.date_limit,
-            'user_post_sort_method': self.user_post_sort_method,
-            'subreddit_post_sort_method': self.subreddit_post_sort_method,
-            'user_post_download_naming_method': self.user_post_download_naming_method,
-            'user_comment_download_naming_method': self.user_comment_download_naming_method,
-            'subreddit_post_download_naming_method': self.subreddit_post_download_naming_method,
-            'subreddit_comment_download_naming_method': self.subreddit_comment_download_naming_method,
-            'user_post_save_structure': self.user_post_save_structure,
-            'user_comment_save_structure': self.user_comment_save_structure,
-            'subreddit_post_save_structure': self.subreddit_post_save_structure,
-            'subreddit_comment_save_structure': self.subreddit_comment_save_structure,
-        }

@@ -69,6 +69,7 @@ class RedditObjectList(BaseModel):
     extract_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
+    comment_file_format = Column(String, default='txt')
     comment_limit = Column(Integer, default=100)
     comment_score_limit = Column(Integer, default=1000)
     comment_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
@@ -98,6 +99,7 @@ class RedditObjectList(BaseModel):
             'extract_self_post_links': self.extract_self_post_links,
             'download_self_post_text': self.download_self_post_text,
             'self_post_file_format': self.self_post_file_format,
+            'comment_file_format': Column(String, default='txt'),
             'download_videos': self.download_videos,
             'download_images': self.download_images,
             'download_gifs': self.download_gifs,
@@ -139,6 +141,7 @@ class RedditObject(BaseModel):
     extract_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
+    comment_file_format = Column(String, default='txt')
     comment_limit = Column(Integer, default=100)
     comment_score_limit = Column(Integer, default=1000)
     comment_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
