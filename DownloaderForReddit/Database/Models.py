@@ -392,7 +392,11 @@ class Post(BaseModel):
 
     @property
     def short_title(self):
-        return self.title[:Injector.get_settings_manager().short_title_char_length]
+        length = Injector.get_settings_manager().short_title_char_length
+        if length > 0:
+            return self.title[:length]
+        else:
+            return self.title
 
     @property
     def date_posted_display(self):
@@ -507,7 +511,11 @@ class Content(BaseModel):
 
     @property
     def short_title(self):
-        return self.title[:Injector.get_settings_manager().short_title_char_length]
+        length = Injector.get_settings_manager().short_title_char_length
+        if length > 0:
+            return self.title[:length]
+        else:
+            return self.title
 
     def get_full_file_path(self, download_title=None):
         if not download_title:
