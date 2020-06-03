@@ -1,8 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 from DownloaderForReddit.GUI_Resources.settings.SettingsDialog_auto import Ui_SettingsDialog
-from .CoreSettingsWidget import CoreSettingsWidget
-from .DownloadSettingsWidget import DownloadSettingsWidget
+from . import CoreSettingsWidget, DownloadSettingsWidget, DisplaySettingsWidget
 from DownloaderForReddit.Utils import Injector
 
 
@@ -21,6 +20,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.settings_map = {
             'Core': CoreSettingsWidget(),
             'Download Defaults': DownloadSettingsWidget(),
+            'Display': DisplaySettingsWidget(),
         }
 
         for item in self.settings_map.keys():

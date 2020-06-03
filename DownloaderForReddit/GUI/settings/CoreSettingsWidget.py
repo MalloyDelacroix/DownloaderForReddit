@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QValidator
 
 from DownloaderForReddit.GUI_Resources.settings.CoreSettingsWidget_auto import Ui_CoreSettingsWidget
-from .AbstractSettingsWidget import AbstractSettingsWidget
+from . import AbstractSettingsWidget
 from DownloaderForReddit.Utils import GeneralUtils, SystemUtil
 
 
