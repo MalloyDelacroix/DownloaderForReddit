@@ -52,4 +52,5 @@ class Ui_DispalySettingsWidget(object):
         DispalySettingsWidget.setWindowTitle(_translate("DispalySettingsWidget", "Display Settings"))
         self.label.setToolTip(_translate("DispalySettingsWidget", "<html><head/><body><p>In most displays titles are shortened in order to display better. This dictates how many characters titles will be shortened to (set to &quot;0&quot; if you don\'t want titles shortened)</p></body></html>"))
         self.label.setText(_translate("DispalySettingsWidget", "Short title char length:"))
+        self.tooltip_groupbox.setToolTip(_translate("DispalySettingsWidget", "<html><head/><body><p>These are user/subreddit attributes that will be displayed in a tooltip from the main window when the mouse is hovered over their name</p></body></html>"))
         self.tooltip_groupbox.setTitle(_translate("DispalySettingsWidget", "User/Subreddit Tooltip Display"))
