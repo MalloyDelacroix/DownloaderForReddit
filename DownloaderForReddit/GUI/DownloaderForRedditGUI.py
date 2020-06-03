@@ -46,7 +46,7 @@ from ..Core.DownloadRunner import DownloadRunner
 from ..Database.Models import User, Subreddit, RedditObject, RedditObjectList
 from ..Database.Filters import RedditObjectFilter
 from ..Utils.UpdaterChecker import UpdateChecker
-from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger
+from ..Utils import Injector, SystemUtil, ImgurUtils, VideoMerger, GeneralUtils
 from ..Utils.Exporters import TextExporter, JsonExporter
 from ..Utils.TokenParser import TokenParser
 from ..ViewModels.RedditObjectListModel import RedditObjectListModel
@@ -692,7 +692,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         rename_message = 'Not Attempted'
         if rename:
             path = self.get_reddit_object_download_folder(reddit_object)
-            if not SystemUtil.rename_directory_deleted(path):
+            if not GeneralUtils.rename_invalid_directory(path):
                 rename_message = 'Failed'
                 Message.failed_to_rename_error(self, reddit_object.name)
             else:

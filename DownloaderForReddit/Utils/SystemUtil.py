@@ -92,23 +92,6 @@ def create_directory(path):
             pass
 
 
-def rename_directory_deleted(path):
-    """
-    Renames a folder with the '(deleted)' after the folder name.
-    :param path: The path of the folder that is to be renamed with the "(deleted)" marker
-    :type path: str
-    :return: True if the rename was successful and False if not.
-    :rtype: bool
-    """
-    try:
-        if os.path.isdir(path):
-            path = path[:-1] if path.endswith(os.sep) or path.endswith('/') else path
-            os.rename(path, '%s (deleted)' % path)
-        return True
-    except PermissionError:
-        return False
-
-
 def set_file_modify_time(file_path, epoch):
     """
     Sets a files date modified metadata to the time in the supplied epoch time.
