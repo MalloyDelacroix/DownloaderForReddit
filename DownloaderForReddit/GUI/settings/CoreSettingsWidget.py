@@ -1,13 +1,18 @@
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtGui import QValidator
 
 from DownloaderForReddit.GUI_Resources.settings.CoreSettingsWidget_auto import Ui_CoreSettingsWidget
 from .AbstractSettingsWidget import AbstractSettingsWidget
+from DownloaderForReddit.Utils import GeneralUtils, SystemUtil
 
 
 class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
 
     def __init__(self):
         super().__init__()
+        self.rename_invalid_download_folders_checkbox.toggled.connect(self.toggle_invalid_name_options)
+        self.invalid_rename_format_line_edit.setValidator(FormatValidator())
+        self.invalid_rename_format_line_edit.textChanged.connect(self.set_example)
+        self.user_save_dir_line_edit.textChanged.connect(self.set_example)
 
     def load_settings(self):
         self.user_save_dir_line_edit.setText(self.settings.user_save_directory)
@@ -40,3 +45,27 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             self.finish_incomplete_extractions_checkbox.isChecked()
         self.settings.finish_incomplete_downloads_at_session_start = \
             self.finish_incomplete_downloads_checkbox.isChecked()
+
+    def toggle_invalid_name_options(self):
+        enabled = not self.rename_invalid_download_folders_checkbox.isChecked()
+        self.invalid_rename_format_line_edit.setDisabled(enabled)
+        self.invalid_format_example_label.setDisabled(enabled)
+        self.invalid_rename_label.setDisabled(enabled)
+        self.example_label.setDisabled(enabled)
+
+    def set_example(self):
+        example_path = SystemUtil.join_path(self.user_save_dir_line_edit.text(), 'example_directory')
+        renamed_example = GeneralUtils.reformat_invalid_name(example_path, self.invalid_rename_format_line_edit.text())
+        self.invalid_format_example_label.setText(renamed_example)
+
+
+class FormatValidator(QValidator):
+
+    def __init__(self):
+        super().__init__()
+
+    def validate(self, text, pos):
+        if '%[dir_name]' in text:
+            return QValidator.Acceptable, text, pos
+        else:
+            return QValidator.Invalid, text, pos
