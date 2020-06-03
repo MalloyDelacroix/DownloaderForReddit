@@ -6,9 +6,10 @@ from DownloaderForReddit.Utils import Injector
 
 class AbstractSettingsWidget(QWidget):
 
-    def __init__(self):
+    def __init__(self, init_ui=True):
         QWidget.__init__(self)
-        self.setupUi(self)
+        if init_ui:
+            self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings = Injector.get_settings_manager()
         self.loaded = False
