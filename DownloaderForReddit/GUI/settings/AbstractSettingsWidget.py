@@ -13,6 +13,10 @@ class AbstractSettingsWidget(QWidget):
         self.settings = Injector.get_settings_manager()
         self.loaded = False
 
+    @property
+    def description(self):
+        return None
+
     def load_settings(self):
         pass
 

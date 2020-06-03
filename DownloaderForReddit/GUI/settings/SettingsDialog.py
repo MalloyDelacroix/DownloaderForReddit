@@ -44,7 +44,16 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.current_display = widget
         self.container_layout.addWidget(widget)
         widget.setVisible(True)
-        self.title_label.setText(widget.windowTitle())
+        self.set_labels()
+
+    def set_labels(self):
+        """
+        Sets the title and description label based on the new current display.
+        """
+        self.title_label.setText(self.current_display.windowTitle())
+        description = self.current_display.description
+        self.description_label.setVisible(description is not None)
+        self.description_label.setText(description)
 
     def accept(self):
         self.apply()

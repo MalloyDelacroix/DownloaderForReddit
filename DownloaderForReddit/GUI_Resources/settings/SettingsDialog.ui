@@ -17,7 +17,7 @@
    <iconset>
     <normaloff>../../../Resources/Images/settings_single_gear.png</normaloff>../../../Resources/Images/settings_single_gear.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
@@ -37,21 +37,41 @@
        </size>
       </property>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout">
+     <widget class="QWidget" name="">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QLabel" name="title_label">
-         <property name="font">
-          <font>
-           <pointsize>13</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <property name="spacing">
+          <number>16</number>
          </property>
-         <property name="text">
-          <string>Settings Title</string>
-         </property>
-        </widget>
+         <item>
+          <widget class="QLabel" name="title_label">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+             <weight>75</weight>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Settings Title</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="description_label">
+           <property name="text">
+            <string>Description label</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="openExternalLinks">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QFrame" name="frame">
