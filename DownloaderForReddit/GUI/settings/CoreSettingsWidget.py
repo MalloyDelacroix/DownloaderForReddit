@@ -31,6 +31,7 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             self.settings.finish_incomplete_extractions_at_session_start)
         self.finish_incomplete_downloads_checkbox.setChecked(
             self.settings.finish_incomplete_downloads_at_session_start)
+        self.download_reddit_hosted_videos_checkbox.setChecked(self.settings.download_reddit_hosted_videos)
 
     def apply_settings(self):
         self.settings.user_save_directory = self.user_save_dir_line_edit.text()
@@ -45,6 +46,7 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             self.finish_incomplete_extractions_checkbox.isChecked()
         self.settings.finish_incomplete_downloads_at_session_start = \
             self.finish_incomplete_downloads_checkbox.isChecked()
+        self.settings.download_reddit_hosted_videos = self.download_reddit_hosted_videos_checkbox.isChecked()
 
     def toggle_invalid_name_options(self):
         enabled = not self.rename_invalid_download_folders_checkbox.isChecked()

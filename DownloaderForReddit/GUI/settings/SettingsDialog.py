@@ -20,7 +20,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         self.settings_map = {
             'Core': CoreSettingsWidget(),
-            'Download': DownloadSettingsWidget(),
+            'Download Defaults': DownloadSettingsWidget(),
         }
 
         for item in self.settings_map.keys():

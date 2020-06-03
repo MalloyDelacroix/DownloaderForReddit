@@ -22,6 +22,7 @@ class SettingsManager:
         self.last_update = self.get('core', 'last_update', Const.FIRST_POST_EPOCH)
         self.current_user_list = self.get('core', 'current_user_list', None)
         self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
+
         default_save_path = SystemUtil.join_path(os.path.expanduser('~'), 'Downloads', 'RedditDownloads')
         self.user_save_directory = self.get('core', 'user_save_directory', default_save_path)
         self.subreddit_save_directory = self.get('core', 'subreddit_save_directory', default_save_path)
@@ -35,8 +36,7 @@ class SettingsManager:
             self.get('core', 'finish_incomplete_extractions_at_session_start', False)
         self.finish_incomplete_downloads_at_session_start = \
             self.get('core', 'finish_incomplete_downloads_at_session_start', False)
-        self.lock_settings = self.get('core', 'lock_settings', False)
-        self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
+        self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
         # endregion
 
         # region Download Defaults
@@ -103,7 +103,29 @@ class SettingsManager:
                                                default_user_download_dict)
         self.subreddit_download_defaults = self.get('download_defaults', 'subreddit_download_defaults',
                                                     default_subreddit_download_dict)
-        self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
+        # endregion
+
+        # region Display Settings
+        self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
+        default_tooltip_display_dict = {
+            'name': True,
+            'download_enabled': True,
+            'lock_settings': False,
+            'last_download_date': False,
+            'date_limit': True,
+            'absolute_date_limit': False,
+            'post_limit': False,
+            'download_naming_method': False,
+            'subreddit_save_method': False,
+            'download_videos': False,
+            'download_images': False,
+            'download_comments': False,
+            'download_comment_content': False,
+            'download_nsfw': False,
+            'date_added': False
+        }
+        self.main_window_tooltip_display_dict = self.get('tooltip_display', 'main_window_tooltip_display_dict',
+                                                         default_tooltip_display_dict)
         # endregion
 
         # region Database
@@ -251,26 +273,6 @@ class SettingsManager:
         self.update_dialog_geom = self.get('misc_dialogs', 'update_dialog_geom')
         self.database_statistics_geom = self.get('misc_dialogs', 'database_statistics_geom', None)
         # endregion
-
-        default_tooltip_display_dict = {
-            'name': True,
-            'download_enabled': True,
-            'lock_settings': False,
-            'last_download_date': False,
-            'date_limit': True,
-            'absolute_date_limit': False,
-            'post_limit': False,
-            'download_naming_method': False,
-            'subreddit_save_method': False,
-            'download_videos': False,
-            'download_images': False,
-            'download_comments': False,
-            'download_comment_content': False,
-            'download_nsfw': False,
-            'date_added': False
-        }
-        self.main_window_tooltip_display_dict = self.get('tooltip_display', 'main_window_tooltip_display_dict',
-                                                         default_tooltip_display_dict)
 
     def load_config_file(self):
         try:
