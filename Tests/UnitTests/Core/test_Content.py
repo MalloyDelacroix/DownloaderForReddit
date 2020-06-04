@@ -1,6 +1,6 @@
 import unittest
 
-from DownloaderForReddit.Core.Content import Content
+from DownloaderForReddit.core.Content import Content
 
 
 class TestContent(unittest.TestCase):

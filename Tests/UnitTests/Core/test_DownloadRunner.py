@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from unittest import TestCase
 from unittest.mock import patch
 
-from DownloaderForReddit.Core.DownloadRunner import DownloadRunner
-from DownloaderForReddit.Utils import Injector, RedditUtils
+from DownloaderForReddit.core.download_runner import DownloadRunner
+from DownloaderForReddit.utils import injector, reddit_utils
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects.MockObjects import MockPrawPost, MockPrawSubreddit, get_blank_user
 
@@ -11,12 +11,12 @@ from Tests.MockObjects.MockObjects import MockPrawPost, MockPrawSubreddit, get_b
 class TestDownloadRunner(TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
-        RedditUtils.reddit_instance = None
+        injector.settings_manager = MockSettingsManager()
+        reddit_utils.reddit_instance = None
 
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.get_raw_submissions')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_downloader')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_extractor')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.get_raw_submissions')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_downloader')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_extractor')
     def test_get_submissions_with_old_stickied_posts(self, start_extractor, start_downloader, get_raw_submissions):
         reddit_user = get_blank_user()
         reddit_user.date_limit = datetime.now() - timedelta(days=10)
@@ -36,9 +36,9 @@ class TestDownloadRunner(TestCase):
             self.assertGreater(sub.created, reddit_user.date_limit)
             self.assertFalse(sub.stickied)
 
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.get_raw_submissions')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_downloader')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_extractor')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.get_raw_submissions')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_downloader')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_extractor')
     def test_get_submissions_with_new_stickied_posts(self, start_extractor, start_downloader, get_raw_submissions):
         reddit_user = get_blank_user()
         reddit_user.date_limit = datetime.now() - timedelta(days=10)
@@ -61,9 +61,9 @@ class TestDownloadRunner(TestCase):
                 stickied += 1
         self.assertEqual(2, stickied)
 
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.get_raw_submissions')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_downloader')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_extractor')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.get_raw_submissions')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_downloader')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_extractor')
     def test_get_submissions_with_no_stickied_posts(self, start_extractor, start_downloader, get_raw_submissions):
         reddit_user = get_blank_user()
         reddit_user.date_limit = datetime.now() - timedelta(days=10)
@@ -80,9 +80,9 @@ class TestDownloadRunner(TestCase):
         for sub in submissions:
             self.assertGreater(sub.created, reddit_user.date_limit)
 
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.get_raw_submissions')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_downloader')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_extractor')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.get_raw_submissions')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_downloader')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_extractor')
     def test_get_submissions_with_old_stickied_posts_subreddits_filtered(self, start_extractor, start_downloader,
                                                                          get_raw_submissions):
         allowed_subreddit = MockPrawSubreddit(name='allowed')
@@ -111,9 +111,9 @@ class TestDownloadRunner(TestCase):
             self.assertGreater(sub.created, reddit_user.date_limit)
             self.assertFalse(sub.stickied)
 
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.get_raw_submissions')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_downloader')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_extractor')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.get_raw_submissions')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_downloader')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_extractor')
     def test_get_submissions_with_new_stickied_posts_subreddits_filtered(self, start_extractor, start_downloader,
                                                                          get_raw_submissions):
         allowed_subreddit = MockPrawSubreddit(name='allowed')
@@ -145,9 +145,9 @@ class TestDownloadRunner(TestCase):
                 stickied += 1
         self.assertEqual(2, stickied)
 
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.get_raw_submissions')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_downloader')
-    @patch('DownloaderForReddit.Core.DownloadRunner.DownloadRunner.start_extractor')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.get_raw_submissions')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_downloader')
+    @patch('DownloaderForReddit.core.DownloadRunner.DownloadRunner.start_extractor')
     def test_get_submissions_with_old_stickied_posts_subreddits_filtered(self, start_extractor, start_downloader,
                                                                          get_raw_submissions):
         allowed_subreddit = MockPrawSubreddit(name='allowed')

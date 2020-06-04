@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch
 
-from DownloaderForReddit.Extractors.GfycatExtractor import GfycatExtractor
-from DownloaderForReddit.Utils import Injector
+from DownloaderForReddit.extractors.gfycat_extractor import GfycatExtractor
+from DownloaderForReddit.utils import injector
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
@@ -10,7 +10,7 @@ from Tests.MockObjects import MockObjects
 class TestGfycatExtractor(unittest.TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
+        injector.settings_manager = MockSettingsManager()
 
     @patch('DownloaderForReddit.Extractors.GfycatExtractor.get_json')
     def test_extract_single_untagged(self, j_mock):

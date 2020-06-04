@@ -1,7 +1,7 @@
 import unittest
 
-from DownloaderForReddit.Core.SubmissionFilter import SubmissionFilter
-from DownloaderForReddit.Utils import Injector
+from DownloaderForReddit.core.submission_filter import SubmissionFilter
+from DownloaderForReddit.utils import injector
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects.MockObjects import MockPrawPost
 from Tests.MockObjects import MockObjects
@@ -13,16 +13,16 @@ MOCK_DATE_LIMIT = 1500000000
 class MyTestCase(unittest.TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
+        injector.settings_manager = MockSettingsManager()
 
     def test_score_filter_no_limit_restriction(self):
-        Injector.get_settings_manager().restrict_by_score = False
+        injector.get_settings_manager().restrict_by_score = False
         post_filter = SubmissionFilter()
         post = MockPrawPost(score=10000)
         self.assertTrue(post_filter.score_filter(post))
 
     def test_score_filter_greater_than_score(self):
-        Injector.get_settings_manager().restrict_by_score = True
+        injector.get_settings_manager().restrict_by_score = True
         post_filter = SubmissionFilter()
         post = MockPrawPost(score=5000)
         self.assertTrue(post_filter.score_filter(post))
@@ -30,7 +30,7 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(post_filter.score_filter(post))
 
     def test_score_filter_less_than_score(self):
-        settings_manager = Injector.get_settings_manager()
+        settings_manager = injector.get_settings_manager()
         settings_manager.restrict_by_score = True
         settings_manager.score_limit_operator = 'LESS'
         post_filter = SubmissionFilter()

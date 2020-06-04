@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
-from DownloaderForReddit.Extractors.VidbleExtractor import VidbleExtractor
-from DownloaderForReddit.Utils import Injector
+from DownloaderForReddit.extractors.vidble_extractor import VidbleExtractor
+from DownloaderForReddit.utils import injector
 from Tests.MockObjects import MockObjects
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 
@@ -13,7 +13,7 @@ from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 class TestVidbleExtractor(unittest.TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
+        injector.settings_manager = MockSettingsManager()
 
     @patch('DownloaderForReddit.Extractors.VidbleExtractor.get_imgs')
     def test_extract_single_show(self, s_mock):

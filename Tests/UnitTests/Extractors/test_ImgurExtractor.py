@@ -2,9 +2,9 @@ import unittest
 from unittest.mock import patch
 
 
-from DownloaderForReddit.Utils.ImgurUtils import ImgurError
-from DownloaderForReddit.Extractors.ImgurExtractor import ImgurExtractor
-from DownloaderForReddit.Utils import Injector, ImgurUtils, ExtractorUtils
+from DownloaderForReddit.utils.imgur_utils import ImgurError
+from DownloaderForReddit.extractors.imgur_extractor import ImgurExtractor
+from DownloaderForReddit.utils import injector, imgur_utils, ExtractorUtils
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
@@ -31,8 +31,8 @@ class TestImgurExtractor(unittest.TestCase):
     }
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
-        ImgurUtils.credit_time_limit = 1
+        injector.settings_manager = MockSettingsManager()
+        imgur_utils.credit_time_limit = 1
         ExtractorUtils.timeout_dict.clear()
         ExtractorUtils.time_limit_dict.clear()
 

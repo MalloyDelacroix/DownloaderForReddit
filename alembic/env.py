@@ -6,7 +6,7 @@ from alembic import context
 
 sys.path = ['', '..'] + sys.path[1:]
 
-from DownloaderForReddit.Database.DatabaseHandler import DatabaseHandler
+from DownloaderForReddit.database.database_handler import DatabaseHandler
 
 
 # this is the Alembic Config object, which provides

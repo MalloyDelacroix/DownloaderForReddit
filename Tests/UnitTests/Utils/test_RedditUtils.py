@@ -2,7 +2,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 import logging
 
-from DownloaderForReddit.Utils import RedditUtils
+from DownloaderForReddit.utils import reddit_utils
 
 
 class TestRedditUtils(TestCase):
@@ -24,7 +24,7 @@ class TestRedditUtils(TestCase):
                               created=self.created, domain=self.domain)
 
     def test_convert_praw_post_valid_praw_post(self):
-        post = RedditUtils.convert_praw_post(self.praw_post)
+        post = reddit_utils.convert_praw_post(self.praw_post)
 
         self.assertEqual(self.url, post.url)
         self.assertEqual(self.author_name, post.author)
@@ -36,7 +36,7 @@ class TestRedditUtils(TestCase):
     def test_convert_praw_post_invalid_praw_post(self):
         praw_post = TestObject()
 
-        post = RedditUtils.convert_praw_post(praw_post)
+        post = reddit_utils.convert_praw_post(praw_post)
 
         value = 'unknown'
         self.assertEqual(value, post.url)
@@ -50,7 +50,7 @@ class TestRedditUtils(TestCase):
         self.praw_post.author = TestObject()
         self.praw_post.subreddit = TestObject()
 
-        post = RedditUtils.convert_praw_post(self.praw_post)
+        post = reddit_utils.convert_praw_post(self.praw_post)
 
         self.assertEqual(self.url, post.url)
         self.assertEqual('Unable to find author name', post.author)

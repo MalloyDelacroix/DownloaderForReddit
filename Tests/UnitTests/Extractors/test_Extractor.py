@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch
 
-from DownloaderForReddit.Extractors.Extractor import Extractor
-from DownloaderForReddit.Utils import Injector
-from DownloaderForReddit.Core import Const
-from DownloaderForReddit.Utils import ExtractorUtils
+from DownloaderForReddit.extractors.Extractor import Extractor
+from DownloaderForReddit.utils import injector
+from DownloaderForReddit.core import const
+from DownloaderForReddit.utils import ExtractorUtils
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
@@ -20,7 +20,7 @@ class TestExtractor(unittest.TestCase):
     }
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
+        injector.settings_manager = MockSettingsManager()
 
     def test_assign_extractor_direct(self):
         ex = Extractor.assign_extractor(MockObjects.get_unsupported_direct_post())
@@ -99,7 +99,7 @@ class TestExtractor(unittest.TestCase):
     @patch('time.sleep', return_value=None)
     def test_timeout_dict(self, sleep_mock, ex_mock, extractor_mock):
         extractor_mock.assign_extractor.return_value = ex_mock
-        ExtractorUtils.time_limit_dict['ImgurExtractor'] = Const.TIMEOUT_INCREMENT
+        ExtractorUtils.time_limit_dict['ImgurExtractor'] = const.TIMEOUT_INCREMENT
         ExtractorUtils.timeout_dict['ImgurExtractor'] = time.time()
         extractor = Extractor(MockObjects.get_user_with_single_content())
         extractor.extract(MockObjects.get_mock_post_imgur())

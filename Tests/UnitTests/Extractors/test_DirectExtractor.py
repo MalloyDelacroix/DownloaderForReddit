@@ -1,7 +1,7 @@
 import unittest
 
-from DownloaderForReddit.Extractors.DirectExtractor import DirectExtractor
-from DownloaderForReddit.Utils import Injector
+from DownloaderForReddit.extractors.direct_extractor import DirectExtractor
+from DownloaderForReddit.utils import injector
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
@@ -9,7 +9,7 @@ from Tests.MockObjects import MockObjects
 class TestDirectExtractor(unittest.TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
+        injector.settings_manager = MockSettingsManager()
 
     def test_extract_direct_link(self):
         link = 'https://unsupported_site.com/image/3jfd9nlksd.jpg'

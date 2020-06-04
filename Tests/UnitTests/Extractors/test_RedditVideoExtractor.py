@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import patch
 
-from DownloaderForReddit.Extractors.RedditVideoExtractor import RedditVideoExtractor
-from DownloaderForReddit.Utils import Injector
-from DownloaderForReddit.Utils import VideoMerger
+from DownloaderForReddit.extractors.reddit_video_extractor import RedditVideoExtractor
+from DownloaderForReddit.utils import injector
+from DownloaderForReddit.utils import video_merger
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 from Tests.MockObjects import MockObjects
 
@@ -11,8 +11,8 @@ from Tests.MockObjects import MockObjects
 class TestRedditVideoExtractor(unittest.TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
-        VideoMerger.videos_to_merge.clear()
+        injector.settings_manager = MockSettingsManager()
+        video_merger.videos_to_merge.clear()
 
     def test_extract_gif(self):
         post = MockObjects.get_mock_post_reddit_video()
@@ -30,7 +30,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde.mp4', content.make_filename())
 
         self.assertEqual(0, len(re.failed_extract_posts))
-        self.assertEqual(0, len(VideoMerger.videos_to_merge))
+        self.assertEqual(0, len(video_merger.videos_to_merge))
 
     def test_extract_video_with_audio(self):
         post = MockObjects.get_mock_post_reddit_video()
@@ -54,7 +54,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.make_filename())
 
         self.assertEqual(0, len(re.failed_extract_posts))
-        self.assertEqual(1, len(VideoMerger.videos_to_merge))
+        self.assertEqual(1, len(video_merger.videos_to_merge))
 
     @patch('DownloaderForReddit.Extractors.RedditVideoExtractor.get_host_vid')
     def test_extract_video_with_audio_crossposted_post(self, rv_mock):
@@ -90,7 +90,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.make_filename())
 
         self.assertEqual(0, len(re.failed_extract_posts))
-        self.assertEqual(1, len(VideoMerger.videos_to_merge))
+        self.assertEqual(1, len(video_merger.videos_to_merge))
 
     @patch('DownloaderForReddit.Extractors.RedditVideoExtractor.get_audio_content')
     def test_extract_video_with_audio_extract_exception(self, rv_mock):
@@ -111,7 +111,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
 
         self.assertEqual(1, len(re.failed_extract_posts))
-        self.assertEqual(0, len(VideoMerger.videos_to_merge))
+        self.assertEqual(0, len(video_merger.videos_to_merge))
 
     @patch('DownloaderForReddit.Extractors.RedditVideoExtractor.get_vid_url')
     def test_extract_video_failed_to_find_url(self, rv_mock):

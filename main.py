@@ -29,10 +29,10 @@ import sys
 from PyQt5 import QtWidgets, QtCore
 import logging
 
-from DownloaderForReddit.GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
-from DownloaderForReddit.Messaging.MessageReceiver import MessageReceiver
-from DownloaderForReddit.Utils import Injector
-from DownloaderForReddit.Logging import Logger
+from DownloaderForReddit.gui.downloader_for_reddit_gui import DownloaderForRedditGUI
+from DownloaderForReddit.messaging.message_receiver import MessageReceiver
+from DownloaderForReddit.utils import injector
+from DownloaderForReddit.logging import logger
 from DownloaderForReddit.version import __version__
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
@@ -53,12 +53,12 @@ def log_unhandled_exception(exc_type, value, traceback):
 
 
 def main():
-    Logger.make_logger()
+    logger.make_logger()
     sys.excepthook = log_unhandled_exception
 
     app = QtWidgets.QApplication(sys.argv)
 
-    queue = Injector.get_message_queue()
+    queue = injector.get_message_queue()
     thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
 

@@ -1,8 +1,8 @@
 from datetime import datetime
 from unittest import TestCase
 
-from DownloaderForReddit.Database.DatabaseHandler import DatabaseHandler
-from DownloaderForReddit.Database.Models import (RedditObjectList, RedditObject, User, Subreddit, Post, Comment,
+from DownloaderForReddit.database.database_handler import DatabaseHandler
+from DownloaderForReddit.database.models import (RedditObjectList, RedditObject, User, Subreddit, Post, Comment,
                                                  Content, DownloadSession)
 
 

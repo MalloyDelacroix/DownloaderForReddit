@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 import json
 from os import path
 
-from DownloaderForReddit.Utils import Injector, ImgurUtils
+from DownloaderForReddit.utils import injector, imgur_utils
 from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 
 
@@ -11,7 +11,7 @@ from Tests.MockObjects.MockSettingsManager import MockSettingsManager
 class TestImgurUtils(unittest.TestCase):
 
     def setUp(self):
-        Injector.settings_manager = MockSettingsManager()
+        injector.settings_manager = MockSettingsManager()
 
     @patch('requests.get')
     def test_check_credits(self, req_mock: MagicMock):
@@ -21,7 +21,7 @@ class TestImgurUtils(unittest.TestCase):
 
         req_mock.return_value = mock_response
 
-        value = ImgurUtils.check_credits()
+        value = imgur_utils.check_credits()
 
         url = 'https://api.imgur.com/3/credits'
         header = {
@@ -29,11 +29,11 @@ class TestImgurUtils(unittest.TestCase):
         }
         req_mock.assert_called_with(url, headers=header)
         self.assertEqual(497, value)
-        self.assertEqual(497, ImgurUtils.num_credits)
-        self.assertEqual(1584168402, ImgurUtils.credit_reset_time)
+        self.assertEqual(497, imgur_utils.num_credits)
+        self.assertEqual(1584168402, imgur_utils.credit_reset_time)
 
     def test_get_link_gif(self):
-        link = ImgurUtils.get_link(_get_json_from_file(r'Resources\gif_res.txt')['data'])
+        link = imgur_utils.get_link(_get_json_from_file(r'Resources\gif_res.txt')['data'])
         self.assertEqual('https://i.imgur.com/mOlfhY3.mp4', link)
 
 
