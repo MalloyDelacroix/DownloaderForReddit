@@ -225,8 +225,8 @@ class DatabaseStatisticsDialog(QDialog):
             total_lists = session.query(RedditObjectList.id).count()
             user_lists = session.query(RedditObjectList.id).filter(RedditObjectList.list_type == 'USER').count()
             sub_lists = session.query(RedditObjectList.id).filter(RedditObjectList.list_type == 'SUBREDDIT').count()
-            oldest_list = session.query(RedditObjectList).order_by(desc(RedditObjectList.date_created)).first()
-            newest_list = session.query(RedditObjectList).order_by(RedditObjectList.date_created).first()
+            oldest_list = session.query(RedditObjectList).order_by(RedditObjectList.date_created).first()
+            newest_list = session.query(RedditObjectList).order_by(desc(RedditObjectList.date_created)).first()
 
             list_item_count_query = session.query(func.count(ListAssociation.reddit_object_id).label('count'),
                                                   RedditObjectList).join(RedditObjectList) \
@@ -697,7 +697,10 @@ class DatabaseStatisticsDialog(QDialog):
         :param y: The larger number of which X represents some percentage of.
         :return: X percent of Y as a string.
         """
-        return f'{round((x / y) * 100, 2)}%'
+        try:
+            return f'{round((x / y) * 100, 2)}%'
+        except TypeError:
+            return None
 
     def setup_ui(self):
         self.add_separator('Users/Subreddits', False)
@@ -777,7 +780,10 @@ class DatabaseStatisticsDialog(QDialog):
         self.stat_layout.addWidget(widget)
 
     def format_number(self, number):
-        return '{:,}'.format(number)
+        try:
+            return '{:,}'.format(number)
+        except TypeError:
+            return None
 
     def format_datetime(self, date_time):
         return date_time.strftime('%m/%d/%Y %I:%M %p')
