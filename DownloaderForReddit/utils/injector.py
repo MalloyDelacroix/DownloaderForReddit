@@ -26,6 +26,7 @@ from queue import Queue
 settings_manager = None
 database_handler = None
 message_queue = None
+scheduler = None
 
 
 def get_settings_manager():
@@ -49,3 +50,11 @@ def get_message_queue():
     if message_queue is None:
         message_queue = Queue()
     return message_queue
+
+
+def get_scheduler():
+    global scheduler
+    if scheduler is None:
+        from ..scheduling.scheduler import Scheduler
+        scheduler = Scheduler()
+    return scheduler

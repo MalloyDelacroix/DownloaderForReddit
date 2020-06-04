@@ -59,10 +59,11 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     queue = injector.get_message_queue()
-    thread = QtCore.QThread()
+    message_thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
+    scheduler = injector.get_scheduler()
 
-    window = DownloaderForRedditGUI(queue, receiver)
+    window = DownloaderForRedditGUI(queue, receiver, scheduler)
 
     receiver.text_output.connect(window.update_output)
     receiver.potential_extraction.connect(window.handle_potential_extraction)
@@ -72,13 +73,21 @@ def main():
     receiver.extraction_error.connect(window.handle_extraction_error)
     receiver.download_error.connect(window.handle_download_error)
 
-    receiver.moveToThread(thread)
-    thread.started.connect(receiver.run)
-    receiver.finished.connect(thread.quit)
+    receiver.moveToThread(message_thread)
+    message_thread.started.connect(receiver.run)
+    receiver.finished.connect(message_thread.quit)
     receiver.finished.connect(receiver.deleteLater)
-    thread.finished.connect(thread.deleteLater)
+    message_thread.finished.connect(message_thread.deleteLater)
+    message_thread.start()
 
-    thread.start()
+    schedule_thread = QtCore.QThread()
+    scheduler.moveToThread(schedule_thread)
+    scheduler.run_task.connect(window.run_scheduled_download)
+    scheduler.finished.connect(schedule_thread.quit)
+    scheduler.finished.connect(scheduler.deleteLater)
+    schedule_thread.finished.connect(schedule_thread.deleteLater)
+    schedule_thread.started.connect(scheduler.run)
+    schedule_thread.start()
 
     window.show()
     sys.exit(app.exec_())

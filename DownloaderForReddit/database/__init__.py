@@ -1,5 +1,6 @@
 from sqlalchemy import event
 
+from ..scheduling.tasks import DownloadTask
 from .models import Post, Content
 from ..messaging.message import Message, MessageType
 

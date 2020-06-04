@@ -47,8 +47,9 @@ from ..gui.settings.settings_dialog import SettingsDialog
 from ..core.download_runner import DownloadRunner
 from ..database.models import User, Subreddit, RedditObject, RedditObjectList
 from ..database.filters import RedditObjectFilter
-from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, TokenParser, UpdateChecker,
-                     json_exporter, text_exporter)
+from ..scheduling import DownloadTask, Interval
+from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, TokenParser, UpdateChecker)
+from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..version import __version__
 
@@ -57,7 +58,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     stop_download_signal = pyqtSignal(bool)  # bool indicates whether the stop is a hard stop or not
 
-    def __init__(self, queue, receiver):
+    def __init__(self, queue, receiver, scheduler):
         """
         The main GUI window that all interaction is done through.
 
@@ -98,6 +99,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         self.queue = queue
         self.receiver = receiver
+        self.scheduler = scheduler
 
         # region Main Menu
 
@@ -225,6 +227,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
+
+        # task = DownloadTask(interval=Interval.SECOND, user_list_id=1)
+        # self.scheduler.add_task(task)
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)
@@ -413,6 +418,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         user_id_list = self.user_list_model.get_id_list()
         sub_id_list = self.subreddit_list_model.get_id_list()
         self.run(user_id_list, sub_id_list)
+
+    def run_scheduled_download(self, id_tuple):
+        user_list_id, subreddit_list_id = id_tuple
+        print(f'running scheduled download...{user_list_id} | {subreddit_list_id}')
 
     def run(self, user_id_list, sub_id_list, reddit_object_id_list=None):
         self.started_download_gui_shift()
@@ -992,6 +1001,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def close(self):
         self.receiver.stop_run()
+        self.scheduler.stop_run()
         self.save_main_window_settings()
         self.settings_manager.save_all()
         super().close()

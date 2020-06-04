@@ -4,7 +4,8 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QApplication
 from PyQt5.QtCore import Qt
 
 from ..guiresources.add_reddit_object_dialog_auto import Ui_AddRedditObjectDialog
-from ..utils import injector, system_util, json_importer, text_importer
+from ..utils import injector, system_util
+from ..utils.importers import json_importer, text_importer
 
 
 class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
