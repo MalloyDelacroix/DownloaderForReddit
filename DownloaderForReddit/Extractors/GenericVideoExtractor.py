@@ -25,7 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import youtube_dl
 
-from ..Extractors.BaseExtractor import BaseExtractor
+from . import BaseExtractor
 from ..Core import Const
 from ..Logging import LogUtils
 

@@ -1,7 +1,7 @@
 from praw.models import Comment
 
+from ..Database import RedditObject
 from ..Database.ModelEnums import LimitOperator, CommentDownload
-from ..Database.Models import RedditObject
 
 
 class CommentFilter:

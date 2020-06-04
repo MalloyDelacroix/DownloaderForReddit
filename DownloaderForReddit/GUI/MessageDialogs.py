@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import QMessageBox as message
 from DownloaderForReddit.GUI_Resources.UnfinishedDownloadsWarningMessage_auto import Ui_Dialog
 
 
-class Message(object):
+class MessageDialog(object):
     """
     A class that holds various message boxes that are accessed by the GUI.  When implementing one of these message
     dialogs from the GUI it is important to provide an instance of the GUI 'self' with the function call.

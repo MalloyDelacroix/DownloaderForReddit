@@ -6,13 +6,10 @@ from threading import Thread
 from datetime import datetime
 from praw.models import Redditor
 
-from ..Utils import Injector, RedditUtils, VideoMerger
-from ..Utils.VerifyRun import verify_run
-from ..Core.SubmissionFilter import SubmissionFilter
-from ..Core.ContentExtractor import ContentExtractor
-from ..Core.Downloader import Downloader
-from ..Database.Models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
-from ..Messaging.Message import Message
+from . import Downloader, ContentExtractor, SubmissionFilter
+from ..Database import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
+from ..Utils import Injector, RedditUtils, VideoMerger, verify_run
+from ..Messaging import Message
 
 
 class DownloadRunner(QObject):

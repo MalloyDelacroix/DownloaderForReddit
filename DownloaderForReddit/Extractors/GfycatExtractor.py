@@ -23,7 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-from .BaseExtractor import BaseExtractor
+from . import BaseExtractor
 from ..Core import Const
 
 

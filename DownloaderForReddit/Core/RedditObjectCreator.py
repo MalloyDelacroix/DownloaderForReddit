@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy import func
 
-from ..Database.Models import User, Subreddit, RedditObjectList
+from ..Database import User, Subreddit, RedditObjectList
 from ..Utils import Injector, RedditUtils
 
 

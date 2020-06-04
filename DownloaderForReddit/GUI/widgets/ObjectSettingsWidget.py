@@ -5,7 +5,7 @@ from PyQt5.QtGui import QCursor
 
 from ...GUI_Resources.widgets.ObjectSettingsWidget_auto import Ui_ObjectSettingsWidget
 from ...Database.ModelEnums import *
-from ...Utils.TokenParser import TokenParser
+from ...Utils import TokenParser
 
 
 class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):

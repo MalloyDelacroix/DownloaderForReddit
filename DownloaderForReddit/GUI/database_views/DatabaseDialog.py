@@ -3,14 +3,13 @@ from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstrac
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor
 
-from DownloaderForReddit.Database.Models import DownloadSession, RedditObject, Post, Content, Comment
-from DownloaderForReddit.Database.Filters import (DownloadSessionFilter, RedditObjectFilter, PostFilter, CommentFilter,
-                                                  ContentFilter)
-from DownloaderForReddit.GUI.BlankDialog import BlankDialog
 from DownloaderForReddit.GUI_Resources.database_views.DatabaseDialog_auto import Ui_DatabaseDialog
-from DownloaderForReddit.ViewModels.DatabaseViewModels import (DownloadSessionModel, RedditObjectModel,
-                                                               PostTableModel, ContentListModel,
-                                                               CommentTreeModel)
+from DownloaderForReddit.Database import (DownloadSession, RedditObject, Post, Content, Comment,
+                                          DownloadSessionFilter, RedditObjectFilter, PostFilter, CommentFilter,
+                                          ContentFilter)
+from DownloaderForReddit.ViewModels import (DownloadSessionModel, RedditObjectModel, PostTableModel, ContentListModel,
+                                            CommentTreeModel)
+from DownloaderForReddit.GUI import BlankDialog
 from DownloaderForReddit.Utils import Injector, SystemUtil
 
 

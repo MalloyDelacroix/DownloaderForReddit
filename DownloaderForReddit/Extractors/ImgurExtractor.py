@@ -22,9 +22,8 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..Extractors.BaseExtractor import BaseExtractor
-from ..Utils import ImgurUtils
-from ..Utils.ImgurUtils import  ImgurError
+from . import BaseExtractor
+from ..Utils import ImgurUtils, ImgurError
 from ..Core import Const
 
 

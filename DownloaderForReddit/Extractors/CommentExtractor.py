@@ -1,6 +1,6 @@
 import os
 
-from .SelfPostExtractor import SelfPostExtractor
+from . import SelfPostExtractor
 from ..Utils import SystemUtil
 
 

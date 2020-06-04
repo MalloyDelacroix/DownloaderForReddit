@@ -3,6 +3,12 @@ from sqlalchemy import event
 from .Models import Post, Content
 from ..Messaging.Message import Message, MessageType
 
+from .DatabaseHandler import DatabaseHandler
+from .Filters import (RedditObjectListFilter, RedditObjectFilter, DownloadSessionFilter, PostFilter, ContentFilter,
+                      CommentFilter)
+from .Models import (ListAssociation, RedditObjectList, RedditObject, User, Subreddit, DownloadSession, Post, Content,
+                     Comment)
+
 
 @event.listens_for(Post, 'after_insert')
 def post_created(mapper, connection, target):

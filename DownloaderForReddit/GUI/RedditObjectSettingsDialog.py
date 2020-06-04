@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QItemSelectionModel
 
 from ..GUI_Resources.RedditObjectSettingsDialog_auto import Ui_RedditObjectSettingsDialog
-from ..ViewModels.RedditObjectListModel import RedditObjectListModel
+from ..ViewModels import RedditObjectListModel
 from ..Utils import Injector
 
 

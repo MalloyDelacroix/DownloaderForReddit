@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import func
 
-from .DatabaseHandler import DatabaseHandler
+from . import DatabaseHandler
 from .ModelEnums import (CommentDownload, NsfwFilter, LimitOperator, PostSortMethod, CommentSortMethod)
 from .Exceptions import ExistingNameException
 from ..Core import Const

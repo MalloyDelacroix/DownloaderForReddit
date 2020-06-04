@@ -1,7 +1,7 @@
 import os
 
-from .BaseExtractor import BaseExtractor
-from ..Database.Models import Content
+from . import BaseExtractor
+from ..Database import Content
 from ..Utils import SystemUtil
 
 

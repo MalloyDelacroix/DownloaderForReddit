@@ -3,10 +3,9 @@ import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from ..Utils import Injector, SystemUtil
-from ..Utils.VerifyRun import verify_run
-from ..Database.Models import Content
-from ..Messaging.Message import Message
+from ..Utils import Injector, SystemUtil, verify_run
+from ..Database import Content
+from ..Messaging import Message
 
 
 class Downloader:

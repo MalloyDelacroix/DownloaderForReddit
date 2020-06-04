@@ -7,17 +7,12 @@ from praw.models import Submission, Comment as PrawComment
 from bs4 import BeautifulSoup, SoupStrainer
 from sqlalchemy.orm.session import Session
 
-from ..Extractors.BaseExtractor import BaseExtractor
-from ..Extractors.DirectExtractor import DirectExtractor
-from ..Extractors.SelfPostExtractor import SelfPostExtractor
-from ..Extractors.CommentExtractor import CommentExtractor
-from ..Database.Models import User, Subreddit, Post, Comment
+from ..Extractors import BaseExtractor, DirectExtractor, SelfPostExtractor, CommentExtractor
+from ..Database import User, Subreddit, Post, Comment
 from ..Database.ModelEnums import CommentDownload
-from ..Utils import Injector
-from ..Utils.VerifyRun import verify_run
-from ..Core import Const
-from ..Core.CommentFilter import CommentFilter
-from ..Messaging.Message import Message
+from ..Utils import Injector, verify_run
+from ..Core import Const, CommentFilter
+from ..Messaging import Message
 
 
 class ContentExtractor:

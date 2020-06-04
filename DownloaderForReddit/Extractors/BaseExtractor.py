@@ -26,10 +26,9 @@ import os
 import requests
 import logging
 
-from ..Database.Models import Content, Post
-from ..Utils import Injector, SystemUtil
-from ..Utils.TokenParser import TokenParser
-from ..Messaging.Message import Message
+from ..Database import Content, Post
+from ..Utils import Injector, SystemUtil, TokenParser
+from ..Messaging import Message
 
 
 class BaseExtractor:
