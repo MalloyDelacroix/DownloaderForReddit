@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'DownloaderForRedditGUI.ui'
+# Form implementation generated from reading ui file 'downloader_for_reddit_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1232, 836)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../../Resources/images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("../Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -157,6 +157,30 @@ class Ui_MainWindow(object):
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.verticalLayout_3.addWidget(self.line)
+        self.schedule_widget = QtWidgets.QWidget(self.layoutWidget2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.schedule_widget.sizePolicy().hasHeightForWidth())
+        self.schedule_widget.setSizePolicy(sizePolicy)
+        self.schedule_widget.setMaximumSize(QtCore.QSize(16777215, 15))
+        self.schedule_widget.setObjectName("schedule_widget")
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.schedule_widget)
+        self.horizontalLayout_8.setContentsMargins(-1, 0, -1, 0)
+        self.horizontalLayout_8.setSpacing(15)
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.label_3 = QtWidgets.QLabel(self.schedule_widget)
+        self.label_3.setObjectName("label_3")
+        self.horizontalLayout_8.addWidget(self.label_3)
+        self.schedule_label = QtWidgets.QLabel(self.schedule_widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.schedule_label.sizePolicy().hasHeightForWidth())
+        self.schedule_label.setSizePolicy(sizePolicy)
+        self.schedule_label.setObjectName("schedule_label")
+        self.horizontalLayout_8.addWidget(self.schedule_label)
+        self.verticalLayout_3.addWidget(self.schedule_widget)
         self.output_box = QtWidgets.QTextBrowser(self.layoutWidget2)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -377,6 +401,8 @@ class Ui_MainWindow(object):
         self.download_subreddits_radio.setText(_translate("MainWindow", "Subreddits"))
         self.constain_to_sub_list_radio.setToolTip(_translate("MainWindow", "<html><head/><body><p>Download user list, but only extract posts made to subreddits in the subreddit list</p></body></html>"))
         self.constain_to_sub_list_radio.setText(_translate("MainWindow", "Constrain Users To Subreddit List"))
+        self.label_3.setText(_translate("MainWindow", "Download Scheduled:"))
+        self.schedule_label.setText(_translate("MainWindow", "00:00:00"))
         self.file_menu.setTitle(_translate("MainWindow", "File"))
         self.lists_menu.setTitle(_translate("MainWindow", "Lists"))
         self.export_user_list_menu.setTitle(_translate("MainWindow", "Export User List"))

@@ -220,6 +220,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
+        self.schedule_widget.setVisible(False)
+
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
