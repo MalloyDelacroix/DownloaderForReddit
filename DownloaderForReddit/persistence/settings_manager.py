@@ -36,6 +36,8 @@ class SettingsManager:
         self.finish_incomplete_downloads_at_session_start = \
             self.get('core', 'finish_incomplete_downloads_at_session_start', False)
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
+
+        self.perpetual_download = self.get('core', 'perpetual_download', False)
         # endregion
 
         # region Download Defaults

@@ -42,7 +42,8 @@ class Scheduler(QObject):
             if existing is None:
                 session.add(task)
                 session.commit()
-                self.schedule_task(task)
+                if task.active:
+                    self.schedule_task(task)
 
     def schedule_task(self, task):
         base = schedule.every()
@@ -59,7 +60,6 @@ class Scheduler(QObject):
             session.commit()
 
     def launch_task(self, user_list_id, subreddit_list_id):
-        print('emitting signal')
         self.run_task.emit((user_list_id, subreddit_list_id))
 
     def stop_run(self):

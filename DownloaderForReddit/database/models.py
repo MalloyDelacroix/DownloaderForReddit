@@ -88,6 +88,10 @@ class RedditObjectList(BaseModel):
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
 
+    @property
+    def display_name(self):
+        return f'{self.name} [{self.list_type}]'
+
     def get_reddit_object_id_list(self):
         return [x.id for x in self.reddit_objects]
 

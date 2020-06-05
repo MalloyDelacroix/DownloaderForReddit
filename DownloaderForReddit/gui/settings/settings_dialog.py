@@ -6,6 +6,7 @@ from .download_settings_widget import DownloadSettingsWidget
 from .display_settings_widget import DisplaySettingsWidget
 from .imgur_settings_widget import ImgurSettingsWidget
 from .database_settings_widget import DatabaseSettingsWidget
+from .schedule_settings_widget import ScheduleSettingsWidget
 from DownloaderForReddit.utils import injector
 
 
@@ -22,11 +23,12 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             self.move(geom['x'], geom['y'])
 
         self.settings_map = {
-            'core': CoreSettingsWidget(),
+            'Core': CoreSettingsWidget(),
             'Download Defaults': DownloadSettingsWidget(),
             'Display': DisplaySettingsWidget(),
             'Imgur': ImgurSettingsWidget(),
             'Database': DatabaseSettingsWidget(),
+            'Schedule': ScheduleSettingsWidget(),
         }
 
         for item in self.settings_map.keys():
