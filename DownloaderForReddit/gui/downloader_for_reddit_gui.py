@@ -221,7 +221,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        self.schedule_widget.setVisible(False)
+        # self.schedule_widget.setVisible(False)
 
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
@@ -513,6 +513,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def update_progress(self):
         self.progress += 1
         self.progress_bar.setValue(self.progress)
+
+    def update_scheduled_download(self, countdown):
+        self.schedule_label.setText(countdown)
 
     def add_user_list(self, *, list_name=None):
         if list_name is None:

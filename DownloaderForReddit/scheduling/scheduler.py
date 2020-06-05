@@ -1,14 +1,16 @@
-import schedule
+from datetime import datetime
 from threading import Event
+import schedule
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .tasks import DownloadTask, Interval
-from ..utils import injector
+from ..utils import injector, system_util
 
 
 class Scheduler(QObject):
 
     run_task = pyqtSignal(tuple)
+    countdown = pyqtSignal(str)
     finished = pyqtSignal()
 
     exit = Event()
@@ -28,6 +30,7 @@ class Scheduler(QObject):
     def run(self):
         while not self.exit.is_set():
             schedule.run_pending()
+            self.calculate_countdown()
             self.exit.wait(1)
         self.finished.emit()
 
@@ -52,6 +55,9 @@ class Scheduler(QObject):
             n = n.at(task.value)
         n.do(self.launch_task, user_list_id=task.user_list_id, subreddit_list_id=task.subreddit_list_id).tag(task.tag)
 
+    def pause_task(self, task):
+        schedule.clear(task.tag)
+
     def remove_task(self, task_id):
         with self.db.get_scoped_session() as session:
             task = session.query(DownloadTask).get(task_id)
@@ -64,3 +70,16 @@ class Scheduler(QObject):
 
     def stop_run(self):
         self.exit.set()
+
+    def calculate_countdown(self):
+        """
+        Calculates when the next scheduled download will begin and sends the update signal if there is one scheduled.
+        """
+        pass
+        # next_run = schedule.next_run()
+        # if next_run is not None:
+        #     t = datetime.now() - next_run
+        #     self.countdown.emit(system_util.get_duration_str(t))
+
+    def send_countdown(self):
+        pass
