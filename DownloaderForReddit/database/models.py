@@ -88,6 +88,9 @@ class RedditObjectList(BaseModel):
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
 
+    def get_reddit_object_id_list(self):
+        return [x.id for x in self.reddit_objects]
+
     def get_default_dict(self):
         return {
             'lock_settings': self.lock_settings,
@@ -99,7 +102,6 @@ class RedditObjectList(BaseModel):
             'extract_self_post_links': self.extract_self_post_links,
             'download_self_post_text': self.download_self_post_text,
             'self_post_file_format': self.self_post_file_format,
-            'comment_file_format': Column(String, default='txt'),
             'download_videos': self.download_videos,
             'download_images': self.download_images,
             'download_gifs': self.download_gifs,
@@ -107,6 +109,7 @@ class RedditObjectList(BaseModel):
             'extract_comments': self.extract_comments,
             'download_comments': self.download_comments,
             'download_comment_content': self.download_comment_content,
+            'comment_file_format': self.comment_file_format,
             'comment_limit': self.comment_limit,
             'comment_score_limit': self.comment_score_limit,
             'comment_score_limit_operator': self.comment_score_limit_operator,

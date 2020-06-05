@@ -7,7 +7,10 @@ from praw.models import Submission, Comment as PrawComment
 from bs4 import BeautifulSoup, SoupStrainer
 from sqlalchemy.orm.session import Session
 
-from ..extractors import base_extractor, direct_extractor, self_post_extractor, comment_extractor
+from ..extractors.base_extractor import BaseExtractor
+from ..extractors.direct_extractor import DirectExtractor
+from ..extractors.self_post_extractor import SelfPostExtractor
+from ..extractors.comment_extractor import CommentExtractor
 from ..database.models import User, Subreddit, Post, Comment
 from ..database.model_enums import CommentDownload
 from ..utils import injector, verify_run
@@ -152,7 +155,7 @@ class ContentExtractor:
                 extractor = self.assign_extractor(post.url)(post)
             else:
                 if post.significant_reddit_object.download_self_post_text:
-                    extractor = self_post_extractor(post, download_session_id=self.download_session_id)
+                    extractor = SelfPostExtractor(post, download_session_id=self.download_session_id)
                 else:
                     extractor = None
             if extractor is not None:
@@ -238,7 +241,7 @@ class ContentExtractor:
 
     @verify_run
     def extract_comment_text(self, comment):
-        extractor = comment_extractor(post=comment.post, comment=comment, download_session_id=self.download_session_id)
+        extractor = CommentExtractor(post=comment.post, comment=comment, download_session_id=self.download_session_id)
         extractor.extract_content()
 
     @verify_run
@@ -332,12 +335,12 @@ class ContentExtractor:
             self.logger.error('Failed to get creation date for reddit object', exc_info=True)
 
     def assign_extractor(self, url):
-        for extractor in base_extractor.__subclasses__():
+        for extractor in BaseExtractor.__subclasses__():
             key = extractor.get_url_key()
             if key is not None and any(x in url.lower() for x in key):
                 return extractor
         if url.lower().endswith(const.ALL_EXT):
-            return direct_extractor
+            return DirectExtractor
         return None
 
     def run_unextracted_posts(self):

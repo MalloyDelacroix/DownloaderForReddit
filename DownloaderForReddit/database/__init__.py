@@ -1,6 +1,6 @@
 from sqlalchemy import event
 
-from ..scheduling.tasks import DownloadTask
+from ..scheduling.tasks import DownloadTask  # import here so the database table is created along with the others
 from .models import Post, Content
 from ..messaging.message import Message, MessageType
 

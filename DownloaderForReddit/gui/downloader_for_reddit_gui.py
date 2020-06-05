@@ -47,7 +47,6 @@ from ..gui.settings.settings_dialog import SettingsDialog
 from ..core.download_runner import DownloadRunner
 from ..database.models import User, Subreddit, RedditObject, RedditObjectList
 from ..database.filters import RedditObjectFilter
-from ..scheduling import DownloadTask, Interval
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, TokenParser, UpdateChecker)
 from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
@@ -227,9 +226,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
         self.open_object_dialogs = []
-
-        # task = DownloadTask(interval=Interval.SECOND, user_list_id=1)
-        # self.scheduler.add_task(task)
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)
@@ -420,8 +416,16 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.run(user_id_list, sub_id_list)
 
     def run_scheduled_download(self, id_tuple):
-        user_list_id, subreddit_list_id = id_tuple
-        print(f'running scheduled download...{user_list_id} | {subreddit_list_id}')
+        if not self.running:
+            user_list_id, subreddit_list_id = id_tuple
+            user_id_list = None
+            sub_id_list = None
+            with self.db_handler.get_scoped_session() as session:
+                if user_list_id is not None:
+                    user_id_list = session.query(RedditObjectList).get(user_list_id).get_reddit_object_id_list()
+                if subreddit_list_id is not None:
+                    sub_id_list = session.query(RedditObjectList).get(subreddit_list_id).get_reddit_object_id_list()
+                self.run(user_id_list, sub_id_list)
 
     def run(self, user_id_list, sub_id_list, reddit_object_id_list=None):
         self.started_download_gui_shift()

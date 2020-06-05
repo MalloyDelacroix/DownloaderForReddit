@@ -1,5 +1,5 @@
 import schedule
-import time
+from threading import Event
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .tasks import DownloadTask, Interval
@@ -11,6 +11,8 @@ class Scheduler(QObject):
     run_task = pyqtSignal(tuple)
     finished = pyqtSignal()
 
+    exit = Event()
+
     def __init__(self):
         super().__init__()
         self.db = injector.get_database_handler()
@@ -20,12 +22,13 @@ class Scheduler(QObject):
     def load_tasks(self):
         with self.db.get_scoped_session() as session:
             for task in session.query(DownloadTask):
-                self.schedule_task(task)
+                if task.active:
+                    self.schedule_task(task)
 
     def run(self):
-        while self.continue_run:
+        while not self.exit.is_set():
             schedule.run_pending()
-            time.sleep(0.5)
+            self.exit.wait(1)
         self.finished.emit()
 
     def add_task(self, task):
@@ -60,4 +63,4 @@ class Scheduler(QObject):
         self.run_task.emit((user_list_id, subreddit_list_id))
 
     def stop_run(self):
-        self.continue_run = False
+        self.exit.set()

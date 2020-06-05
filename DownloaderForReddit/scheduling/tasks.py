@@ -1,5 +1,5 @@
 from enum import Enum
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy import Enum as EnumColumn
 from uuid import uuid4
 
@@ -40,3 +40,4 @@ class DownloadTask(Base):
     user_list_id = Column(Integer, nullable=True)
     subreddit_list_id = Column(Integer, nullable=True)
     tag = Column(String, default=uuid4().hex, unique=True)
+    active = Column(Boolean, default=True)
