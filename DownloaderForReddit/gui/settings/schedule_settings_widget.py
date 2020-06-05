@@ -50,17 +50,25 @@ class ScheduleSettingsWidget(AbstractSettingsWidget, Ui_ScheduleSettingsWidget):
 
     def apply_settings(self):
         self.settings.perpetual_download = self.perpetual_download_checkbox.isChecked()
-        with self.db.get_scoped_session() as session:
-            for task in self.task_map.values():
-                if task not in self.new_tasks and task not in self.deleted_tasks:
-                    session.add(task)
-            session.commit()
+        self.check_modified()
         for task in self.new_tasks:
             self.scheduler.add_task(task)
         for task in self.deleted_tasks:
-            self.scheduler.remove_task(task)
+            self.scheduler.remove_task(task.id)
         self.new_tasks.clear()
         self.deleted_tasks.clear()
+
+    def check_modified(self):
+        with self.db.get_scoped_session() as session:
+            for task in self.task_map.values():
+                if task not in self.new_tasks and task not in self.deleted_tasks:
+                    if session.is_modified(task):
+                        session.add(task)
+                        if task.active:
+                            self.scheduler.schedule_task(task)
+                        else:
+                            self.scheduler.pause_task(task)
+            session.commit()
 
     def add_task(self):
         if self.check_value_entry():
