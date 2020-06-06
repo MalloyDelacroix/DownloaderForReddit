@@ -515,7 +515,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_bar.setValue(self.progress)
 
     def update_scheduled_download(self, countdown):
-        self.schedule_label.setText(countdown)
+        if countdown is not None and self.settings_manager.show_schedule_countdown != 'DO_NOT_SHOW':
+            self.schedule_widget.setVisible(True)
+            self.schedule_label.setText(countdown)
+        else:
+            self.schedule_label.setText('No Download Scheduled')
+            if self.settings_manager.show_schedule_countdown != 'SHOW':
+                self.schedule_widget.setVisible(False)
 
     def add_user_list(self, *, list_name=None):
         if list_name is None:

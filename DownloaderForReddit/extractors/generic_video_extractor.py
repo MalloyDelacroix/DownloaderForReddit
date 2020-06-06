@@ -27,7 +27,7 @@ import youtube_dl
 
 from .base_extractor import BaseExtractor
 from ..core import const
-from ..logging import log_utils
+from ..local_logging import log_utils
 
 
 class GenericVideoExtractor(BaseExtractor):

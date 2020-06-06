@@ -32,7 +32,7 @@ import logging
 from DownloaderForReddit.gui.downloader_for_reddit_gui import DownloaderForRedditGUI
 from DownloaderForReddit.messaging.message_receiver import MessageReceiver
 from DownloaderForReddit.utils import injector
-from DownloaderForReddit.logging import logger
+from DownloaderForReddit.local_logging import logger
 from DownloaderForReddit.version import __version__
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
@@ -83,6 +83,7 @@ def main():
     schedule_thread = QtCore.QThread()
     scheduler.moveToThread(schedule_thread)
     scheduler.run_task.connect(window.run_scheduled_download)
+    scheduler.countdown.connect(window.update_scheduled_download)
     scheduler.finished.connect(schedule_thread.quit)
     scheduler.finished.connect(scheduler.deleteLater)
     schedule_thread.finished.connect(schedule_thread.deleteLater)

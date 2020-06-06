@@ -30,7 +30,7 @@ import datetime
 import logging
 import re
 
-from ..logging import log_utils
+from ..local_logging import log_utils
 
 
 logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
@@ -161,6 +161,13 @@ def epoch_to_datetime(epoch_time):
 
 def epoch_to_str(epoch_time):
     return epoch_to_datetime(epoch_time).strftime('%m/%d/%Y %I:%M %p')
+
+
+def format_time_delta(td):
+    if td.days > 0:
+        return f'{td.days} days, {get_duration_str(td.seconds)}'
+    else:
+        return get_duration_str(td.seconds)
 
 
 def get_duration_str(duration):

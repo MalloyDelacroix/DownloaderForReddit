@@ -107,7 +107,7 @@ class SettingsManager:
         # endregion
 
         # region Display Settings
-        self.short_title_char_length = self.get('core', 'short_title_char_length', 15)
+        self.short_title_char_length = self.get('display', 'short_title_char_length', 15)
         default_tooltip_display_dict = {
             'name': True,
             'download_enabled': True,
@@ -125,8 +125,10 @@ class SettingsManager:
             'download_nsfw': False,
             'date_added': False
         }
-        self.main_window_tooltip_display_dict = self.get('tooltip_display', 'main_window_tooltip_display_dict',
+        self.main_window_tooltip_display_dict = self.get('display', 'main_window_tooltip_display_dict',
                                                          default_tooltip_display_dict)
+        self.countdown_view_choices = ['DO_NOT_SHOW', 'ONLY_WHEN_ACTIVE', 'SHOW']
+        self.show_schedule_countdown = self.get('display', 'show_schedule_countdown', 'ONLY_WHEN_ACTIVE')
         # endregion
 
         # region Database

@@ -10,7 +10,7 @@ from ..utils import injector, system_util
 class Scheduler(QObject):
 
     run_task = pyqtSignal(tuple)
-    countdown = pyqtSignal(str)
+    countdown = pyqtSignal(object)
     finished = pyqtSignal()
 
     exit = Event()
@@ -19,6 +19,7 @@ class Scheduler(QObject):
         super().__init__()
         self.db = injector.get_database_handler()
         self.continue_run = True
+        self.update_countdown = True
         self.load_tasks()
 
     def load_tasks(self):
@@ -31,7 +32,7 @@ class Scheduler(QObject):
         while not self.exit.is_set():
             schedule.run_pending()
             self.calculate_countdown()
-            self.exit.wait(1)
+            self.exit.wait(0.999)
         self.finished.emit()
 
     def add_task(self, task):
@@ -54,6 +55,7 @@ class Scheduler(QObject):
         if task.interval != Interval.SECOND:
             n = n.at(task.value)
         n.do(self.launch_task, user_list_id=task.user_list_id, subreddit_list_id=task.subreddit_list_id).tag(task.tag)
+        self.update_countdown = True
 
     def pause_task(self, task):
         schedule.clear(task.tag)
@@ -75,11 +77,12 @@ class Scheduler(QObject):
         """
         Calculates when the next scheduled download will begin and sends the update signal if there is one scheduled.
         """
-        pass
-        # next_run = schedule.next_run()
-        # if next_run is not None:
-        #     t = datetime.now() - next_run
-        #     self.countdown.emit(system_util.get_duration_str(t))
-
-    def send_countdown(self):
-        pass
+        if self.update_countdown:
+            next_run = schedule.next_run()
+            if next_run is not None:
+                t = next_run - datetime.now()
+                dur = system_util.format_time_delta(t)
+                self.countdown.emit(dur)
+            else:
+                self.countdown.emit(None)
+                self.update_countdown = False
