@@ -34,7 +34,7 @@ class RedditObjectCreator:
             user = session.query(User).filter(func.lower(User.name) == user_name.lower()).first()
             if user is None:
                 validation_set = self.get_name_checker().check_user_name(user_name)
-                if validation_set.is_valid:
+                if validation_set.valid:
                     list_defaults['significant'] = True
                     user = User(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
                     session.add(user)
@@ -49,7 +49,7 @@ class RedditObjectCreator:
             subreddit = session.query(Subreddit).filter(func.lower(Subreddit.name) == sub_name.lower()).first()
             if subreddit is None:
                 validation_set = self.get_name_checker().check_subreddit_name(sub_name)
-                if validation_set.is_valid:
+                if validation_set.valid:
                     list_defaults['significant'] = True
                     subreddit = \
                         Subreddit(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
