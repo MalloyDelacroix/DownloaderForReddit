@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'DisplaySettingsWidget.ui'
+# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\settings\display_settings_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -32,6 +32,12 @@ class Ui_DispalySettingsWidget(object):
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.formLayout.setLayout(0, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout)
+        self.label_2 = QtWidgets.QLabel(DispalySettingsWidget)
+        self.label_2.setObjectName("label_2")
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
+        self.schedule_countdown_combo = QtWidgets.QComboBox(DispalySettingsWidget)
+        self.schedule_countdown_combo.setObjectName("schedule_countdown_combo")
+        self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.schedule_countdown_combo)
         self.verticalLayout.addLayout(self.formLayout)
         self.tooltip_groupbox = QtWidgets.QGroupBox(DispalySettingsWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
@@ -52,5 +58,6 @@ class Ui_DispalySettingsWidget(object):
         DispalySettingsWidget.setWindowTitle(_translate("DispalySettingsWidget", "Display Settings"))
         self.label.setToolTip(_translate("DispalySettingsWidget", "<html><head/><body><p>In most displays titles are shortened in order to display better. This dictates how many characters titles will be shortened to (set to &quot;0&quot; if you don\'t want titles shortened)</p></body></html>"))
         self.label.setText(_translate("DispalySettingsWidget", "Short title char length:"))
+        self.label_2.setText(_translate("DispalySettingsWidget", "Display Schedule Countdown:"))
         self.tooltip_groupbox.setToolTip(_translate("DispalySettingsWidget", "<html><head/><body><p>These are user/subreddit attributes that will be displayed in a tooltip from the main window when the mouse is hovered over their name</p></body></html>"))
         self.tooltip_groupbox.setTitle(_translate("DispalySettingsWidget", "User/Subreddit Tooltip Display"))
