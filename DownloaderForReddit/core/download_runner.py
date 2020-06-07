@@ -24,18 +24,15 @@ class DownloadRunner(QObject):
     update_progress_bar_signal = pyqtSignal()
     stop = pyqtSignal()
 
-    def __init__(self, user_id_list=None, subreddit_id_list=None, reddit_object_id_list=None, perpetual=False):
+    def __init__(self, user_id_list=None, subreddit_id_list=None, reddit_object_id_list=None):
         """
         Initializes the download runner with the settings needed to perform the download session.
         :param user_id_list: The list user id's queried from the database which is to be downloaded.  None indicates a
                              Subreddit download session.
         :param subreddit_id_list: The list subreddit id's queried from the database containing subreddits to be
                                   downloaded.  None indicates a User download.
-        :param perpetual: Indicates whether the downloader should stop after it makes it through the entire list or if
-                          it should continue to monitor for new posts.
         :type user_id_list: RedditObjectList
         :type subreddit_id_list: RedditObjectList
-        :type perpetual: bool
         """
         super().__init__()
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
@@ -59,44 +56,44 @@ class DownloadRunner(QObject):
         self.user_id_list = user_id_list
         self.subreddit_id_list = subreddit_id_list
         self.reddit_object_id_list = reddit_object_id_list
-        self.perpetual = perpetual
+        self.perpetual = self.settings_manager.perpetual_download
+        self.perpetual_map = {}  # key: RedditObject | value: praw object
         self.failed_connection_attempts = 0
         self.download_session_id = None
 
         self.reddit_object_queue = Queue(maxsize=-1)
 
     def validate_user(self, user_obj):
-        redditor = None
-        try:
-            redditor = self.reddit_instance.redditor(user_obj.name)
-            redditor.fullname  # validity check
+        redditor = self.reddit_instance.redditor(user_obj.name)
+        if self.validate_object(redditor, user_obj):
             Message.send_text(f'{user_obj.name} is valid')
             return redditor
-        except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
-            self.handle_invalid_reddit_object(user_obj)
-        except prawcore.exceptions.Forbidden:
-            self.handle_forbidden_reddit_object(user_obj)
-        except prawcore.RequestException:
-            self.handle_failed_connection()
-        except:
-            self.handle_unknown_error(user_obj)
-        finally:
-            return redditor
+        else:
+            return None
 
     def validate_subreddit(self, subreddit_obj):
-        try:
-            subreddit = self.reddit_instance.subreddit(subreddit_obj.name)
-            subreddit.fullname  # validity check
+        subreddit = self.reddit_instance.subreddit(subreddit_obj.name)
+        if self.validate_object(subreddit, subreddit_obj):
             Message.send_text(f'{subreddit_obj.name} is valid')
             return subreddit
+        else:
+            return None
+
+    def validate_object(self, praw_object, reddit_object):
+        try:
+            praw_object.fullname
+            return True
         except (prawcore.exceptions.Redirect, prawcore.exceptions.NotFound, AttributeError):
-            self.handle_invalid_reddit_object(subreddit_obj)
+            self.handle_invalid_reddit_object(reddit_object)
+            reddit_object.set_inactive()
         except prawcore.exceptions.Forbidden:
-            self.handle_forbidden_reddit_object(subreddit_obj)
+            self.handle_forbidden_reddit_object(reddit_object)
+            reddit_object.set_inactive()
         except prawcore.RequestException:
             self.handle_failed_connection()
         except:
-            self.handle_unknown_error(subreddit_obj)
+            self.handle_unknown_error(reddit_object)
+        return False
 
     def handle_invalid_reddit_object(self, reddit_object):
         self.logger.warning('Invalid reddit object detected', extra={'object_type': reddit_object.object_type,
@@ -189,6 +186,10 @@ class DownloadRunner(QObject):
                     self.get_subreddit_submissions(subreddit_id)
 
     def validate_subreddit_list(self):
+        """
+        Validates the list of subreddits to make sure they all exist so that the user list can be constrained to the
+        list of verified subreddits.
+        """
         with self.db.get_scoped_session() as session:
             for subreddit_id in self.subreddit_id_list:
                 if self.continue_run:
@@ -224,15 +225,7 @@ class DownloadRunner(QObject):
         redditor = self.validate_user(user)
 
         if redditor is not None:
-            submissions = self.get_submissions(redditor, user)
-            date_limit = 0
-            for submission in submissions:
-                if submission.created > date_limit:
-                    date_limit = submission.created
-                self.submission_queue.put((submission, user_id))
-            user.set_date_limit(date_limit)  # date limit modified after submissions are extracted
-        else:
-            user.set_inactive()
+            self.handle_submissions(user, redditor)
 
     @verify_run
     def get_subreddit_submissions(self, subreddit_id, session=None):
@@ -243,15 +236,17 @@ class DownloadRunner(QObject):
         sub = self.validate_subreddit(subreddit)
 
         if sub is not None:
-            submissions = self.get_submissions(sub, subreddit)
-            date_limit = 0
-            for submission in submissions:
-                if submission.created > date_limit:
-                    date_limit = submission.created
-                self.submission_queue.put((submission, subreddit_id))
-            subreddit.set_date_limit(date_limit)
-        else:
-            subreddit.set_inactive()
+            self.handle_submissions(subreddit, sub)
+
+    def handle_submissions(self, reddit_object, praw_object):
+        submissions = self.get_submissions(praw_object, reddit_object)
+        date_limit = 0
+        for submission in submissions:
+            if submission.created > date_limit:
+                date_limit = submission.created
+            self.submission_queue.put((submission, reddit_object.id))
+        if date_limit > 0:
+            reddit_object.set_date_limit(date_limit)  # date limit modified after submissions are extracted
 
     @verify_run
     def get_submissions(self, praw_object, reddit_object):
