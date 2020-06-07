@@ -12,9 +12,10 @@ from DownloaderForReddit.utils import injector
 
 class SettingsDialog(QDialog, Ui_SettingsDialog):
 
-    def __init__(self):
+    def __init__(self, parent=None):
         QDialog.__init__(self)
         self.setupUi(self)
+        self.parent = parent
         self.settings_manager = injector.get_settings_manager()
 
         geom = self.settings_manager.settings_dialog_geom
@@ -25,7 +26,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.settings_map = {
             'Core': CoreSettingsWidget(),
             'Download Defaults': DownloadSettingsWidget(),
-            'Display': DisplaySettingsWidget(),
+            'Display': DisplaySettingsWidget(self.parent),
             'Imgur': ImgurSettingsWidget(),
             'Database': DatabaseSettingsWidget(),
             'Schedule': ScheduleSettingsWidget(),

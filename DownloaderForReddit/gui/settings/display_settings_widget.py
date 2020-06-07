@@ -7,8 +7,9 @@ from .abstract_settings_widget import AbstractSettingsWidget
 
 class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
 
-    def __init__(self):
+    def __init__(self, main_window=None):
         super().__init__()
+        self.main_window = main_window
         self.grid = self.tooltip_groupbox.layout()
         self.tooltips = {}
 
@@ -19,6 +20,7 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.short_title_length_spin_box.setValue(self.settings.short_title_char_length)
         self.schedule_countdown_combo.setCurrentIndex(
             self.settings.countdown_view_choices.index(self.settings.show_schedule_countdown))
+
         for key, value in self.settings.main_window_tooltip_display_dict.items():
             self.add_checkbox(key, value)
 
@@ -30,6 +32,8 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
 
     def apply_settings(self):
         self.settings.short_title_char_length = self.short_title_length_spin_box.value()
-        self.settings.show_schedule_countdown = self.schedule_countdown_combo.currentData(Qt.UserRole)
+        show_countdown = self.schedule_countdown_combo.currentData(Qt.UserRole)
+        self.settings.show_schedule_countdown = show_countdown
+        self.main_window.schedule_widget.setVisible(show_countdown == 'SHOW')
         for attr, checkbox in self.tooltips.items():
             self.settings.main_window_tooltip_display_dict[attr] = checkbox.isChecked()

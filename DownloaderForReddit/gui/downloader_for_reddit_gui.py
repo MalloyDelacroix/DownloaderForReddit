@@ -904,7 +904,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_settings_dialog(self):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
-        settings = SettingsDialog()
+        settings = SettingsDialog(self)
         settings.exec_()
 
     def update_user_settings(self):
