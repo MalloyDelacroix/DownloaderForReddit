@@ -4,6 +4,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from queue import Queue, Empty
 from threading import Thread
 from datetime import datetime
+from collections import namedtuple
 from praw.models import Redditor
 
 from .downloader import Downloader
@@ -12,6 +13,9 @@ from .submission_filter import SubmissionFilter
 from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
 from ..utils import injector, reddit_utils, video_merger, verify_run
 from ..messaging.message import Message
+
+
+RunPair = namedtuple('RunPair', 'reddit_object_id praw_object')
 
 
 class DownloadRunner(QObject):
@@ -56,8 +60,8 @@ class DownloadRunner(QObject):
         self.user_id_list = user_id_list
         self.subreddit_id_list = subreddit_id_list
         self.reddit_object_id_list = reddit_object_id_list
-        self.perpetual = self.settings_manager.perpetual_download
-        self.perpetual_map = {}  # key: RedditObject | value: praw object
+        self.perpetual_download = self.settings_manager.perpetual_download
+        self.perpetual_queue = Queue(maxsize=-1)
         self.failed_connection_attempts = 0
         self.download_session_id = None
 
@@ -110,9 +114,9 @@ class DownloadRunner(QObject):
     def handle_failed_connection(self):
         if self.failed_connection_attempts >= 3:
             self.continue_run = False
-            self.logger.error('Failed connection attempts exceeded.  Shutting down run', exc_info=True)
-            Message.send_text('Failed connection attempts exceeded.  The downloader has been shut down.  Please '
-                                   'try the download again later.')
+            self.logger.error('Failed connection attempts exceeded.  Ending download session', exc_info=True)
+            Message.send_text('Failed connection attempts exceeded.  The download session has been canceled.  Please '
+                              'try the download again later.')
         else:
             self.logger.error('Failed to connect to reddit',
                               extra={'connection_attempts': self.failed_connection_attempts})
@@ -147,7 +151,10 @@ class DownloadRunner(QObject):
         self.start_extractor()
         self.start_downloader()
         self.run_download()
-        self.hold()
+        if self.perpetual_download:
+            pass
+        else:
+            self.hold()
 
     def create_download_session(self):
         with self.db.get_scoped_session() as session:
@@ -226,6 +233,9 @@ class DownloadRunner(QObject):
 
         if redditor is not None:
             self.handle_submissions(user, redditor)
+            if self.perpetual_download:
+                pair = RunPair(reddit_object_id=user_id, praw_object=redditor)
+                self.perpetual_queue.put(pair)
 
     @verify_run
     def get_subreddit_submissions(self, subreddit_id, session=None):
@@ -237,6 +247,9 @@ class DownloadRunner(QObject):
 
         if sub is not None:
             self.handle_submissions(subreddit, sub)
+            if self.perpetual_download:
+                pair = RunPair(reddit_object_id=subreddit_id, praw_object=sub)
+                self.perpetual_queue.put(pair)
 
     def handle_submissions(self, reddit_object, praw_object):
         submissions = self.get_submissions(praw_object, reddit_object)
@@ -247,6 +260,9 @@ class DownloadRunner(QObject):
             self.submission_queue.put((submission, reddit_object.id))
         if date_limit > 0:
             reddit_object.set_date_limit(date_limit)  # date limit modified after submissions are extracted
+        if self.perpetual_download:
+            pair = RunPair(reddit_object_id=reddit_object.id, praw_object=praw_object)
+            self.perpetual_queue.put(pair)
 
     @verify_run
     def get_submissions(self, praw_object, reddit_object):
@@ -303,21 +319,65 @@ class DownloadRunner(QObject):
         else:
             return getattr(praw_object, sort_type)
 
+    def perpetuate_run(self):
+        """
+        Enters a perpetual loop that recycles reddit objects from the perpetual queue and checks for new posts.  After
+        each object from the perpetual queue is checked, a check is also performed for new reddit objects that may have
+        been added to the session after it began.
+        """
+        self.logger.debug('Entering perpetual run')
+        while self.continue_run:
+            self.run_next_perpetual_pair()
+            self.check_added_object_queue(block=False)
+        self.finish_download()
+
+    def run_next_perpetual_pair(self):
+        """
+        Extracts a run_pair from the perpetual download queue and checks it for new submissions.
+        """
+        try:
+            run_pair = self.perpetual_queue.get(timeout=1)
+            if run_pair is not None:
+                reddit_object_id, praw_object = run_pair
+                with self.db.get_scoped_session() as session:
+                    reddit_object = session.query(RedditObject).get(reddit_object_id)
+                    self.handle_submissions(reddit_object, praw_object)
+        except Empty:
+            pass
+
     def hold(self):
+        """
+        Holds the download runner while the content extractor and downloader finish their work loads.  During this time,
+        reddit objects that were not initially in the download list can be added to the download queue.
+        """
         self.logger.debug('DownloadRunner holding')
         self.submission_queue.put('HOLD')
         while self.continue_run and (self.extractor.running or self.downloader.running):
-            try:
-                reddit_object_id = self.reddit_object_queue.get(timeout=1)
-                if reddit_object_id is not None:
-                    self.submission_queue.put('RELEASE_HOLD')
-                    self.get_reddit_object_submissions(reddit_object_id)
-                    self.submission_queue.put('HOLD')  # reapply holds after new submissions added to queue
-            except Empty:
-                pass
+            self.check_added_object_queue()
         self.finish_download()
 
+    def check_added_object_queue(self, block=True):
+        """
+        Checks the added reddit object queue to see if a new reddit object has been added to the download session after
+        it began running.
+        :param block: Indicates whether the reddit object queue check should block or not.  The default is True, which
+                      should be used for holding.  False would be used if a quick check is to happen, but monitoring
+                      the queue is not the main activity.
+        """
+        try:
+            reddit_object_id = self.reddit_object_queue.get(timeout=1, block=block)
+            if reddit_object_id is not None:
+                self.submission_queue.put('RELEASE_HOLD')
+                self.get_reddit_object_submissions(reddit_object_id)
+                self.submission_queue.put('HOLD')  # reapply holds after new submissions added to queue
+        except Empty:
+            pass
+
     def finish_download(self):
+        """
+        Wraps up the download session by shutting down the extractor and downloader, adding the finishing information
+        to the download session model, saving it to the database and generally any cleanign up that needs to happen.
+        """
         self.logger.debug('DownloadRunner finished')
         self.submission_queue.put(None)
         try:
@@ -336,12 +396,22 @@ class DownloadRunner(QObject):
         self.finished.emit()
 
     def finish_download_session(self, session):
+        """
+        Adds the finishing information to the current download session and commits it to the database.
+        :param session: The sqlalchemy session that is active for use in committing the download session to storage.
+        :return: The finished download session with all it's information.
+        """
         download_session = session.query(DownloadSession).get(self.download_session_id)
         download_session.end_time = datetime.now()
         session.commit()
         return download_session
 
     def finish_messages(self, dl_session, session):
+        """
+        Constructs and displays a finish message to the user and a log message.
+        :param dl_session: The active download session for this run.
+        :param session: The sqlalchemy session that is active for interacting with the database.
+        """
         extracted_post_count = session.query(Post.id).filter(Post.download_session_id == dl_session.id).count()
         extracted_comment_count = \
             session.query(Comment.id).filter(Comment.download_session_id == dl_session.id).count()
