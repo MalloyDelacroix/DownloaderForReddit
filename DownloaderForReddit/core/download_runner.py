@@ -152,7 +152,7 @@ class DownloadRunner(QObject):
         self.start_downloader()
         self.run_download()
         if self.perpetual_download:
-            pass
+            self.perpetuate_run()
         else:
             self.hold()
 
