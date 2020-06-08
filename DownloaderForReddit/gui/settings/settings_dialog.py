@@ -46,7 +46,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
     def set_current_display(self, view_name):
         widget = self.settings_map[view_name]
         if not widget.loaded:
-            widget.load_settings()
+            widget.load()
         if self.current_display is not None:
             self.container_layout.removeWidget(self.current_display)
             self.current_display.setVisible(False)
@@ -70,7 +70,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
     def apply(self):
         for view in self.settings_map.values():
-            view.apply_settings()
+            view.apply()
         self.settings_manager.save_all()
 
     def closeEvent(self, event):

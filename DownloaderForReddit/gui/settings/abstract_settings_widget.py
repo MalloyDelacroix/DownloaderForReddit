@@ -18,8 +18,16 @@ class AbstractSettingsWidget(QWidget):
     def description(self):
         return None
 
+    def load(self):
+        self.load_settings()
+        self.loaded = True
+
     def load_settings(self):
         pass
+
+    def apply(self):
+        if self.loaded:
+            self.apply_settings()
 
     def apply_settings(self):
         pass
