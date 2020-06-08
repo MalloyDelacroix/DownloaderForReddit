@@ -32,4 +32,4 @@ class DatabaseSettingsWidget(AbstractSettingsWidget, Ui_DatabaseSettingsWidget):
         self.settings.content_query_limit = self.content_query_limit_spinbox.value()
         self.settings.comment_query_limit = self.comment_query_limit_spinbox.value()
         for key, value in self.infinite_scroll_map.items():
-            setattr(self.settings, key, value)
+            setattr(self.settings, key, value.isChecked())
