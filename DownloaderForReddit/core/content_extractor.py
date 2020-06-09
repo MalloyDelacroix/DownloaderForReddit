@@ -44,26 +44,6 @@ class ContentExtractor:
         return True
         # return not self.hold
 
-    # def run(self):
-    #     self.logger.debug('Content extractor running')
-    #     while self.continue_run:
-    #         item = self.submission_queue.get()
-    #         if item is not None:
-    #             if item == 'HOLD':
-    #                 self.hold = True
-    #                 self.download_queue.put('HOLD')
-    #             elif item == 'RELEASE_HOLD':
-    #                 self.hold = False
-    #                 self.download_queue.put('RELEASE_HOLD')
-    #             else:
-    #                 submission = item[0]
-    #                 siginificant_id = item[1]
-    #                 self.handle_submission(submission, siginificant_id)
-    #         else:
-    #             self.continue_run = False
-    #     self.download_queue.put(None)
-    #     self.logger.debug('Content extractor exiting')
-
     def run(self):
         self.logger.debug('Content extractor running')
         while self.continue_run:
@@ -114,8 +94,7 @@ class ContentExtractor:
         """
         if post.is_self:
             self.extract_linked_content(post)
-        else:
-            self.extract(post)
+        self.extract(post)
 
     @verify_run
     def create_post(self, submission: Submission, significant_id: int, session: Session) -> Optional[Post]:
