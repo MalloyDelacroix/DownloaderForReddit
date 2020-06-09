@@ -628,10 +628,10 @@ class DatabaseStatisticsDialog(QDialog):
 
                 ('SEPARATOR', None),
                 ('Average Download Time',
-                 system_util.get_duration_str(session.query(func.avg(DownloadSession.duration))
-                                              .filter(DownloadSession.duration >= 0).first()[0])),
+                 system_util.format_duration_full(session.query(func.avg(DownloadSession.duration))
+                                                  .filter(DownloadSession.duration >= 0).first()[0])),
                 ('Shortest Download Session', shortest_download_session.name),
-                ('Shorted Download Time', system_util.get_duration_str(shortest_download_session.duration)),
+                ('Shorted Download Time', system_util.format_duration_full(shortest_download_session.duration)),
                 ('Posts Extracted', session.query(Post.id)
                  .filter(Post.download_session_id == shortest_download_session.id)
                  .filter(Post.extracted == True).count()),
@@ -639,7 +639,7 @@ class DatabaseStatisticsDialog(QDialog):
                  .filter(Content.download_session_id == shortest_download_session.id)
                  .filter(Content.downloaded == True).count()),
                 ('Longest Download Session', longest_download_session.name),
-                ('Longest Download Time', system_util.get_duration_str(longest_download_session.duration)),
+                ('Longest Download Time', system_util.format_duration_full(longest_download_session.duration)),
                 ('Posts Extracted', session.query(Post.id)
                  .filter(Post.download_session_id == longest_download_session.id)
                  .filter(Post.extracted == True).count()),

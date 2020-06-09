@@ -325,7 +325,7 @@ class DownloadSession(BaseModel):
     @property
     def duration_display(self):
         try:
-            return system_util.get_duration_str(self.duration)
+            return system_util.format_duration_full(self.duration)
         except AttributeError:
             return 'Never finished'
 

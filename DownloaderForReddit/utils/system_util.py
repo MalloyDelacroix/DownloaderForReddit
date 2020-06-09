@@ -163,17 +163,17 @@ def epoch_to_str(epoch_time):
     return epoch_to_datetime(epoch_time).strftime('%m/%d/%Y %I:%M %p')
 
 
-def format_time_delta(td):
+def format_time_delta(td: datetime.timedelta):
     if td.days > 0:
-        return f'{td.days} days, {get_duration_str(td.seconds)}'
+        return f'{td.days} days, {format_duration_full(td.seconds)}'
     else:
-        return get_duration_str(td.seconds)
+        return format_duration_full(td.seconds)
 
 
-def get_duration_str(duration):
+def format_duration_full(duration: int):
     """
     Calculates the duration of seconds between the supplied end and start times and returns the value in a human
-    readable format with hour, min, second representation.
+    readable format with hour, min, second representation. Formatted with a full readout: 2 hours, 4 mins, 17 secs
     """
     min_, sec = divmod(duration, 60)
     hour, min_ = divmod(min_, 60)
@@ -191,6 +191,17 @@ def get_duration_str(duration):
             time_string += f'{min_} min, '
     time_string += f'{round(sec, 2)} secs'
     return time_string
+
+
+def format_duration_short(duration: int):
+    """
+    Returns a duration integer as a displayable string formatted in this style: 00:00:00  (hour:min:sec)
+    :param duration: The duration to be formatted.
+    """
+    min_, sec = divmod(duration, 60)
+    hour, min_ = divmod(min_, 60)
+
+    return f'{hour:02d}:{min_:02d}:{round(sec):02d}'
 
 
 def format_size(size):

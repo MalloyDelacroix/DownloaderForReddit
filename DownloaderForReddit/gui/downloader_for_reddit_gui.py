@@ -27,8 +27,8 @@ import os
 import sys
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
-                             QFileDialog, QMessageBox)
-from PyQt5.QtCore import QThread, Qt, pyqtSignal
+                             QFileDialog, QMessageBox, QWidget, QHBoxLayout)
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QCursor
 import logging
 
@@ -213,6 +213,22 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_combo.setContextMenuPolicy(Qt.CustomContextMenu)
         self.subreddit_list_combo.customContextMenuRequested.connect(self.subreddit_list_combo_context_menu)
 
+        self.run_time = 0
+        self.timer_widget = QWidget()
+        self.timer_widget.setVisible(False)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(11, 0, 11, 0)
+        self.timer_widget.setLayout(layout)
+        self.perpetual_run_label = QLabel('Perpetual Run |')
+        layout.addWidget(self.perpetual_run_label)
+        layout.addWidget(QLabel('Run Time: '))
+        self.timer_label = QLabel('00:00:00')
+        layout.addWidget(self.timer_label)
+
+        self.statusbar.addPermanentWidget(self.timer_widget)
+        self.run_timer = QTimer(self)
+        self.run_timer.timeout.connect(self.update_run_time)
+
         self.progress_bar = QProgressBar()
         self.statusbar.addPermanentWidget(self.progress_bar)
         self.progress_bar.setVisible(False)
@@ -220,8 +236,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.progress_label)
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
-
-        # self.schedule_widget.setVisible(False)
 
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
@@ -870,7 +884,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         dialog.exec_()
 
     def started_download_gui_shift(self):
-        """Disables certain options in the GUI that may be problematic if used while the downloader is running"""
+        """Changes parts of the gui to display differently while there is a download session currently in progress."""
         self.running = True
         self.init_progress_bar()
         self.downloaded = 0
@@ -880,13 +894,16 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_label.setVisible(False)
         self.progress_bar.setVisible(True)
         self.shift_download_buttons()
+        self.setup_run_timer()
 
     def finished_download_gui_shift(self):
-        """Re-enables disabled GUI options"""
+        """Resets the GUI shift that happens when a download session is started."""
         self.running = False
         self.progress_bar.setVisible(False)
         self.potential_downloads = 0
         self.shift_download_buttons()
+        self.timer_widget.setVisible(False)
+        self.run_time = 0
 
     def shift_download_buttons(self):
         self.download_button.setVisible(not self.running)
@@ -901,6 +918,18 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Download complete - Downloaded: %s' % self.potential_downloads)
         if self.progress_bar.value() < self.progress_bar.maximum():
             self.progress_bar.setValue(self.progress_bar.maximum())
+
+    def setup_run_timer(self):
+        """
+        Starts the run timer and sets the appropriate displays visible to the user.
+        """
+        self.run_timer.start(1000)
+        self.timer_widget.setVisible(True)
+        self.perpetual_run_label.setVisible(self.settings_manager.perpetual_download)
+
+    def update_run_time(self):
+        self.run_time += 1
+        self.timer_label.setText(system_util.format_duration_short(self.run_time))
 
     def open_settings_dialog(self):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
