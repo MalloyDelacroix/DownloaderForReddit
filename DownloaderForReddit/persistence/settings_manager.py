@@ -16,6 +16,7 @@ class SettingsManager:
         self.load_config_file()
         self.section_dict = {}
         self.conversion_list = []
+        self.supported_videos_updated = None
 
         # region core
         self.last_update = self.get('core', 'last_update', const.FIRST_POST_EPOCH)

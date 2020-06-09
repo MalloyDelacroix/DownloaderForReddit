@@ -23,22 +23,33 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
+from time import time
 import youtube_dl
 
 from .base_extractor import BaseExtractor
 from ..core import const
 from ..local_logging import log_utils
+from ..utils import injector
 
 
 class GenericVideoExtractor(BaseExtractor):
 
-    try:
-        file = open(const.SUPPORTED_SITES_FILE, 'r')
-        url_key = [x.strip() for x in file.readlines()]
-        file.close()
-    except FileNotFoundError:
-        url_key = None
-        log_utils.log_proxy(__name__, 'WARNING', message='Failed to load supported video sites')
+    key = None
+    load_time = None
+
+    @classmethod
+    def get_url_key(cls):
+        if cls.load_time is None or cls.load_time < injector.get_settings_manager().supported_videos_updated:
+            try:
+                with open(const.SUPPORTED_SITES_FILE, 'r') as file:
+                    cls.key = [x.strip().strip('*') for x in file.readlines() if x.endswith('*\n')]
+                    load_time = time()
+                    cls.load_time = load_time
+                    injector.get_settings_manager().supported_videos_updated = load_time
+            except FileNotFoundError:
+                cls.key = None
+                log_utils.log_proxy(__name__, 'WARNING', message='Failed to load supported video sites')
+        return cls.key
 
     def __init__(self, post, **kwargs):
         super().__init__(post, **kwargs)

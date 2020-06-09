@@ -52,6 +52,8 @@ from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..version import __version__
 
+from ..extractors.generic_video_extractor import GenericVideoExtractor
+
 
 class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
@@ -180,7 +182,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_search_edit.editingFinished.connect(
             lambda: self.subreddit_list_model.search_list(self.subreddit_list_search_edit.text()))
 
-        self.download_button.clicked.connect(self.run_full_download)
+        # self.download_button.clicked.connect(self.run_full_download)
+        self.download_button.clicked.connect(lambda: GenericVideoExtractor.get_url_key())
         self.soft_stop_download_button.clicked.connect(lambda: self.stop_download_signal.emit(False))
         self.terminate_download_button.clicked.connect(lambda: self.stop_download_signal.emit(True))
         self.shift_download_buttons()
