@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\downloader_for_reddit_gui.ui'
+# Form implementation generated from reading ui file 'C:/Users/Kyle/PycharmProjects/DownloaderForReddit/Resources/ui_files/downloader_for_reddit_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1232, 836)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:\\Users\\Kyle\\PycharmProjects\\DownloaderForReddit\\Resources\\ui_files\\../Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("C:/Users/Kyle/PycharmProjects/DownloaderForReddit/Resources/ui_files\\../Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -163,7 +163,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.schedule_widget.sizePolicy().hasHeightForWidth())
         self.schedule_widget.setSizePolicy(sizePolicy)
-        self.schedule_widget.setMaximumSize(QtCore.QSize(16777215, 20))
+        self.schedule_widget.setMaximumSize(QtCore.QSize(16777215, 15))
         self.schedule_widget.setObjectName("schedule_widget")
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.schedule_widget)
         self.horizontalLayout_8.setContentsMargins(-1, 0, -1, 0)
@@ -291,8 +291,8 @@ class Ui_MainWindow(object):
         self.download_user_list_constrained_menu_item.setObjectName("download_user_list_constrained_menu_item")
         self.run_unfinished_extractions_menu_item = QtWidgets.QAction(MainWindow)
         self.run_unfinished_extractions_menu_item.setObjectName("run_unfinished_extractions_menu_item")
-        self.run_unfiinished_downloads_menu_item = QtWidgets.QAction(MainWindow)
-        self.run_unfiinished_downloads_menu_item.setObjectName("run_unfiinished_downloads_menu_item")
+        self.run_unfinished_downloads_menu_item = QtWidgets.QAction(MainWindow)
+        self.run_unfinished_downloads_menu_item.setObjectName("run_unfinished_downloads_menu_item")
         self.sort_list_by_content_count_menu_item = QtWidgets.QAction(MainWindow)
         self.sort_list_by_content_count_menu_item.setObjectName("sort_list_by_content_count_menu_item")
         self.sort_list_by_comment_count_menu_item = QtWidgets.QAction(MainWindow)
@@ -315,6 +315,8 @@ class Ui_MainWindow(object):
         self.comments_view_menu_item.setObjectName("comments_view_menu_item")
         self.statistics_view_menu_item = QtWidgets.QAction(MainWindow)
         self.statistics_view_menu_item.setObjectName("statistics_view_menu_item")
+        self.run_all_unfiinished_menu_item = QtWidgets.QAction(MainWindow)
+        self.run_all_unfiinished_menu_item.setObjectName("run_all_unfiinished_menu_item")
         self.file_menu.addAction(self.open_settings_menu_item)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.open_data_directory_menu_item)
@@ -351,7 +353,8 @@ class Ui_MainWindow(object):
         self.menuDownload.addAction(self.download_user_list_constrained_menu_item)
         self.menuDownload.addSeparator()
         self.menuDownload.addAction(self.run_unfinished_extractions_menu_item)
-        self.menuDownload.addAction(self.run_unfiinished_downloads_menu_item)
+        self.menuDownload.addAction(self.run_unfinished_downloads_menu_item)
+        self.menuDownload.addAction(self.run_all_unfiinished_menu_item)
         self.menuDatabase.addAction(self.database_view_menu_item)
         self.menuDatabase.addSeparator()
         self.menuDatabase.addAction(self.download_sessions_view_menu_item)
@@ -402,7 +405,7 @@ class Ui_MainWindow(object):
         self.constain_to_sub_list_radio.setToolTip(_translate("MainWindow", "<html><head/><body><p>Download user list, but only extract posts made to subreddits in the subreddit list</p></body></html>"))
         self.constain_to_sub_list_radio.setText(_translate("MainWindow", "Constrain Users To Subreddit List"))
         self.label_3.setText(_translate("MainWindow", "Download Scheduled:"))
-        self.schedule_label.setText(_translate("MainWindow", "0 hours, 0 min, 0 secs"))
+        self.schedule_label.setText(_translate("MainWindow", "00:00:00"))
         self.file_menu.setTitle(_translate("MainWindow", "File"))
         self.lists_menu.setTitle(_translate("MainWindow", "Lists"))
         self.export_user_list_menu.setTitle(_translate("MainWindow", "Export User List"))
@@ -450,7 +453,7 @@ class Ui_MainWindow(object):
         self.download_user_list_constrained_menu_item.setText(_translate("MainWindow", "Download User List Constrained"))
         self.download_user_list_constrained_menu_item.setToolTip(_translate("MainWindow", "<html><head/><body><p>Download user list, but only extract posts made to subreddits in the subreddit list</p></body></html>"))
         self.run_unfinished_extractions_menu_item.setText(_translate("MainWindow", "Run Unfinished Extractions"))
-        self.run_unfiinished_downloads_menu_item.setText(_translate("MainWindow", "Run Unfinished Downloads"))
+        self.run_unfinished_downloads_menu_item.setText(_translate("MainWindow", "Run Unfinished Downloads"))
         self.sort_list_by_content_count_menu_item.setText(_translate("MainWindow", "Content Count"))
         self.sort_list_by_comment_count_menu_item.setText(_translate("MainWindow", "Comment Count"))
         self.sort_list_by_date_created_menu_item.setText(_translate("MainWindow", "Date Created"))
@@ -463,3 +466,4 @@ class Ui_MainWindow(object):
         self.content_view_menu_item.setText(_translate("MainWindow", "Content"))
         self.comments_view_menu_item.setText(_translate("MainWindow", "Comments"))
         self.statistics_view_menu_item.setText(_translate("MainWindow", "Statistics"))
+        self.run_all_unfiinished_menu_item.setText(_translate("MainWindow", "Run All Unfinished"))

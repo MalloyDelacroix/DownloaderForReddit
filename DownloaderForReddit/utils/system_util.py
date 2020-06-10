@@ -63,10 +63,10 @@ def clean_path(path):
     :param path: The path that is to be cleaned.
     :return:  A clean file path that can be used by the system.
     """
-    return '/'.join(__clean(part) for part in re.split('[\\\\/]+', path))
+    return '/'.join(clean(part) for part in re.split('[\\\\/]+', path))
 
 
-def __clean(part):
+def clean(part):
     # For some reason the file system (Windows at least) is having trouble saving files that are over 180ish
     # characters.  I'm not sure why this is, as the file name limit should be around 240. But either way, this
     # method has been adapted to work with the results that I am consistently getting.

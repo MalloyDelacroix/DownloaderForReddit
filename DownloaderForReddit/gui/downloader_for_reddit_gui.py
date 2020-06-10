@@ -149,6 +149,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.download_user_list_menu_item.triggered.connect(self.download_user_list)
         self.download_subreddit_list_menu_item.triggered.connect(self.download_subreddit_list)
         self.download_user_list_constrained_menu_item.triggered.connect(self.download_user_list_constrained)
+        self.run_unfinished_extractions_menu_item.triggered.connect(self.run_unextracted_only)
+        self.run_unfinished_downloads_menu_item.triggered.connect(self.run_undownloaded_only)
+        self.run_all_unfiinished_menu_item.triggered.connect(self.run_all_unfinished)
         # endregion
 
         # region Help Menu
@@ -409,41 +412,66 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             MessageDialog.no_download_folder(self, reddit_object.object_type.lower())
 
     def run_full_download(self):
+        run_unextracted = self.settings_manager.finish_incomplete_extractions_at_session_start
+        run_undownloaded = self.settings_manager.finish_incomplete_downloads_at_session_start
+        kwargs = {
+            'run_unextracted': run_unextracted,
+            'run_undownloaded': run_undownloaded
+        }
         if self.download_users_radio.isChecked():
-            self.download_user_list()
+            self.download_user_list(**kwargs)
         elif self.download_subreddits_radio.isChecked():
-            self.download_subreddit_list()
+            self.download_subreddit_list(**kwargs)
         else:
-            self.download_user_list_constrained()
+            self.download_user_list_constrained(**kwargs)
 
-    def download_user_list(self):
+    def download_user_list(self, **kwargs):
         user_id_list = self.user_list_model.get_id_list()
-        self.run(user_id_list, None)
+        self.run(user_id_list, None, **kwargs)
 
-    def download_subreddit_list(self):
+    def download_subreddit_list(self, **kwargs):
         sub_id_list = self.subreddit_list_model.get_id_list()
-        self.run(None, sub_id_list)
+        self.run(None, sub_id_list, **kwargs)
 
-    def download_user_list_constrained(self):
+    def download_user_list_constrained(self, **kwargs):
         user_id_list = self.user_list_model.get_id_list()
         sub_id_list = self.subreddit_list_model.get_id_list()
-        self.run(user_id_list, sub_id_list)
+        self.run(user_id_list, sub_id_list, **kwargs)
+
+    def run_all_unfinished(self, *, post_id_list=None, content_id_list=None):
+        self.run(None, None, run_new=False, run_unextracted=True, run_undownloaded=True,
+                 unextracted_id_list=post_id_list, undownloaded_id_list=content_id_list)
+
+    def run_unextracted_only(self, *, id_list=None):
+        self.run(None, None, run_new=False, run_unextracted=True, unextracted_id_list=id_list)
+
+    def run_undownloaded_only(self, *, id_list=None):
+        self.run(None, None, run_new=False, run_undownloaded=True, undownloaded_id_list=id_list)
 
     def run_scheduled_download(self, id_tuple):
         if not self.running:
             user_list_id, subreddit_list_id = id_tuple
             user_id_list = None
             sub_id_list = None
+            run_unextracted = self.settings_manager.finish_incomplete_extractions_at_session_start
+            run_undownloaded = self.settings_manager.finish_incomplete_downloads_at_session_start
             with self.db_handler.get_scoped_session() as session:
                 if user_list_id is not None:
                     user_id_list = session.query(RedditObjectList).get(user_list_id).get_reddit_object_id_list()
                 if subreddit_list_id is not None:
                     sub_id_list = session.query(RedditObjectList).get(subreddit_list_id).get_reddit_object_id_list()
-                self.run(user_id_list, sub_id_list)
+                self.run(user_id_list, sub_id_list, run_unextracted=run_unextracted, run_undownloaded=run_undownloaded)
 
-    def run(self, user_id_list, sub_id_list, reddit_object_id_list=None):
+    def run(self, user_id_list, sub_id_list, reddit_object_id_list=None, **kwargs):
         self.started_download_gui_shift()
-        self.download_runner = DownloadRunner(user_id_list, sub_id_list, reddit_object_id_list)
+
+        self.download_runner = DownloadRunner(
+            user_id_list=user_id_list,
+            subreddit_id_list=sub_id_list,
+            reddit_object_id_list=reddit_object_id_list,
+            **kwargs
+        )
+
         self.stop_download_signal.connect(self.download_runner.stop_download)
         self.thread = QThread()
         self.download_runner.moveToThread(self.thread)

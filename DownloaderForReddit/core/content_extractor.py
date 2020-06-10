@@ -57,10 +57,12 @@ class ContentExtractor:
                         self.hold = False
                         self.download_queue.put('RELEASE_HOLD')
                     else:
-                        submission = item[0]
-                        significant_id = item[1]
-                        self.executor.submit(self.handle_submission, submission=submission,
-                                             significant_id=significant_id)
+                        extraction_type, extraction_object, significant_id = item
+                        if extraction_type == 'SUBMISSION':
+                            self.executor.submit(self.handle_submission, submission=extraction_object,
+                                                 significant_id=significant_id)
+                        elif extraction_type == 'POST':
+                            self.executor.submit(self.finish_post, post_id=extraction_object)
                 else:
                     self.continue_run = False
             except Empty:
@@ -321,22 +323,6 @@ class ContentExtractor:
         if url.lower().endswith(const.ALL_EXT):
             return DirectExtractor
         return None
-
-    def run_unextracted_posts(self):
-        """
-        Queries the database for posts that were not extracted (either due to connection error or user interference with
-        download) and attempts to re-extract and download them.
-        """
-        self.logger.debug('Content extractor running un-extracted posts')
-        with self.db.get_scoped_session() as session:
-            unfinished_posts = session.query(Post.id)\
-                .filter(Post.extracted == False)\
-                .filter(Post.extraction_error == None)
-            for post_id in unfinished_posts:
-                self.executor.submit(self.finish_post, post_id)
-        self.executor.shutdown(wait=True)
-        self.download_queue.put(None)
-        self.logger.debug('Content extractor finished un-extracted posts, now exiting')
 
     def finish_post(self, post_id):
         with self.db.get_scoped_session() as session:

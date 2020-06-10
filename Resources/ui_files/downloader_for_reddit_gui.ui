@@ -287,7 +287,7 @@
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>20</height>
+            <height>15</height>
            </size>
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -316,7 +316,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>0 hours, 0 min, 0 secs</string>
+              <string>00:00:00</string>
              </property>
             </widget>
            </item>
@@ -427,7 +427,8 @@
     <addaction name="download_user_list_constrained_menu_item"/>
     <addaction name="separator"/>
     <addaction name="run_unfinished_extractions_menu_item"/>
-    <addaction name="run_unfiinished_downloads_menu_item"/>
+    <addaction name="run_unfinished_downloads_menu_item"/>
+    <addaction name="run_all_unfiinished_menu_item"/>
    </widget>
    <widget class="QMenu" name="menuDatabase">
     <property name="title">
@@ -650,7 +651,7 @@
     <string>Run Unfinished Extractions</string>
    </property>
   </action>
-  <action name="run_unfiinished_downloads_menu_item">
+  <action name="run_unfinished_downloads_menu_item">
    <property name="text">
     <string>Run Unfinished Downloads</string>
    </property>
@@ -711,6 +712,11 @@
   <action name="statistics_view_menu_item">
    <property name="text">
     <string>Statistics</string>
+   </property>
+  </action>
+  <action name="run_all_unfiinished_menu_item">
+   <property name="text">
+    <string>Run All Unfinished</string>
    </property>
   </action>
  </widget>

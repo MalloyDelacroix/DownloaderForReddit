@@ -15,6 +15,7 @@ from ..utils import injector, reddit_utils, video_merger, verify_run
 from ..messaging.message import Message
 
 
+ExtractionSet = namedtuple('ExtractionSet', 'extraction_type extraction_object significant_id')
 RunPair = namedtuple('RunPair', 'reddit_object_id praw_object')
 
 
@@ -28,7 +29,7 @@ class DownloadRunner(QObject):
     update_progress_bar_signal = pyqtSignal()
     stop = pyqtSignal()
 
-    def __init__(self, user_id_list=None, subreddit_id_list=None, reddit_object_id_list=None):
+    def __init__(self, user_id_list=None, subreddit_id_list=None, reddit_object_id_list=None, **kwargs):
         """
         Initializes the download runner with the settings needed to perform the download session.
         :param user_id_list: The list user id's queried from the database which is to be downloaded.  None indicates a
@@ -44,6 +45,16 @@ class DownloadRunner(QObject):
         self.settings_manager = injector.get_settings_manager()
         self.reddit_instance = reddit_utils.get_reddit_instance()
         self.submission_filter = SubmissionFilter()
+
+        self.user_id_list = user_id_list
+        self.subreddit_id_list = subreddit_id_list
+        self.reddit_object_id_list = reddit_object_id_list
+        self.run_unextracted = kwargs.get('run_unextracted', False)
+        self.unextracted_id_list = kwargs.get('unextracted_id_list', None)
+        self.run_undownloaded = kwargs.get('run_undownloaded', False)
+        self.undownloaded_id_list = kwargs.get('undownloaded_id_list', None)
+        self.run_new = kwargs.get('run_new', True)
+
         self.continue_run = True
         self.stopped = False
         self.filter_subreddits = False
@@ -57,9 +68,6 @@ class DownloadRunner(QObject):
         self.downloader = None
         self.download_thread = None
 
-        self.user_id_list = user_id_list
-        self.subreddit_id_list = subreddit_id_list
-        self.reddit_object_id_list = reddit_object_id_list
         self.perpetual_download = self.settings_manager.perpetual_download
         self.perpetual_queue = Queue(maxsize=-1)
         self.failed_connection_attempts = 0
@@ -129,28 +137,45 @@ class DownloadRunner(QObject):
                           extra={'object_type': reddit_object.object_type, 'reddit_object': reddit_object.name},
                           exc_info=True)
 
-    def run_unextracted(self):
-        self.start_downloader()
-        self.extractor = ContentExtractor(self.submission_queue, self.download_queue, self.download_session_id)
-        self.extraction_thread = Thread(target=self.extractor.run_unextracted_posts)
-        self.extraction_thread.start()
+    def run_unextracted_posts(self):
+        self.logger.debug('Running unextracted posts')
+        post_id_list = self.unextracted_id_list
+        if post_id_list is None:
+            with self.db.get_scoped_session() as session:
+                post_id_list = session.query(Post.id)\
+                    .filter(Post.extracted == False)\
+                    .filter(Post.extraction_error != 'Unsupported domain')\
+                    .filter(Post.retry_attempts <= 3)
+        self.logger.debug(f'{post_id_list.count()} unfinished posts to download')
+        for post_id, in post_id_list.all():  # comma used to unpack result tuple
+            extraction_set = ExtractionSet(extraction_type='POST', extraction_object=post_id, significant_id=None)
+            self.submission_queue.put(extraction_set)
+        self.logger.debug('Finished unextracted posts')
 
-    def run_undownloaded(self):
-        self.start_downloader()
-        with self.db.get_scoped_session() as session:
-            unfunished_downloads = session.query(Content.id)\
-                .filter(Content.downloaded == False)\
-                .filter(Content.download_error == None)
-            for content_id in unfunished_downloads:
-                self.download_queue.put(content_id)
-        self.download_queue.put(None)
-        self.finish_download()
+    def run_undownloaded_content(self):
+        self.logger.debug('Running undownloaded content')
+        content_id_list = self.undownloaded_id_list
+        if content_id_list is None:
+            with self.db.get_scoped_session() as session:
+                content_id_list = session.query(Content)\
+                    .filter(Content.downloaded == False)\
+                    .filter(Content.download_error == None)\
+                    .filter(Content.retry_attempts <= 3)
+        self.logger.debug(f'{content_id_list.count()} unfinished content items to download')
+        for content in content_id_list.all():
+            self.download_queue.put(content.id)
+        self.logger.debug('Finished undownloaded content')
 
     def run(self):
         self.create_download_session()
         self.start_extractor()
         self.start_downloader()
-        self.run_download()
+        if self.run_unextracted:
+            self.run_unextracted_posts()
+        if self.run_undownloaded:
+            self.run_undownloaded_content()
+        if self.run_new:
+            self.run_download()
         if self.perpetual_download:
             self.perpetuate_run()
         else:
@@ -178,7 +203,7 @@ class DownloadRunner(QObject):
         self.download_thread.start()
 
     def run_download(self):
-        if self.reddit_object_id_list:
+        if self.reddit_object_id_list is not None:
             for ro_id in self.reddit_object_id_list:
                 self.get_reddit_object_submissions(ro_id)
         else:
@@ -257,7 +282,9 @@ class DownloadRunner(QObject):
         for submission in submissions:
             if submission.created > date_limit:
                 date_limit = submission.created
-            self.submission_queue.put((submission, reddit_object.id))
+            extraction_set = ExtractionSet(extraction_type='SUBMISSION', extraction_object=submission,
+                                           significant_id=reddit_object.id)
+            self.submission_queue.put(extraction_set)
         if date_limit > 0:
             reddit_object.set_date_limit(date_limit)  # date limit modified after submissions are extracted
         if self.perpetual_download:

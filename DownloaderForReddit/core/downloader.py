@@ -98,11 +98,11 @@ class Downloader:
             self.logger.error('Could not create directory path', extra={'directory_path': content.directory_path},
                               exc_info=True)
         unique_count = 1
-        base_path = system_util.clean_path(content.title)
-        download_title = base_path
+        clean_title = system_util.clean(content.title)
+        download_title = clean_title
         path = content.get_full_file_path(download_title)
         while os.path.exists(path):
-            download_title = f'{base_path}({unique_count})'
+            download_title = f'{clean_title}({unique_count})'
             path = content.get_full_file_path(download_title)
             unique_count += 1
         content.download_title = download_title

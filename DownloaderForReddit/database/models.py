@@ -352,7 +352,6 @@ class DownloadSession(BaseModel):
 
 @event.listens_for(DownloadSession.end_time, 'set')
 def set_download_session_duration(target, value, oldValue, initiator):
-    print('setting duration')
     target.duration = value.timestamp() - target.start_time.timestamp()
 
 
@@ -385,6 +384,7 @@ class Post(BaseModel):
     extracted = Column(Boolean, default=False)
     extraction_date = Column(DateTime, nullable=True)
     extraction_error = Column(String, nullable=True)
+    retry_attempts = Column(Integer, default=0)
 
     author_id = Column(ForeignKey('user.id'))
     author = relationship('User', foreign_keys=author_id, backref='posts')
@@ -424,6 +424,7 @@ class Post(BaseModel):
         self.extracted = False
         self.extraction_date = datetime.now()
         self.extraction_error = message
+        self.retry_attempts += 1
         self.get_session().commit()
 
 
@@ -443,6 +444,7 @@ class Comment(BaseModel):
     has_content = Column(Boolean, default=False)
     extraction_date = Column(DateTime, nullable=True)
     extraction_error = Column(String, nullable=True)
+    retry_attempts = Column(Integer, default=0)
 
     author_id = Column(ForeignKey('user.id'))
     author = relationship('User', foreign_keys=author_id, backref='comments')
@@ -483,6 +485,7 @@ class Comment(BaseModel):
         self.extracted = False
         self.extraction_date = datetime.now()
         self.extraction_error = message
+        self.retry_attempts += 1
         self.get_session().commit()
 
 
@@ -500,6 +503,7 @@ class Content(BaseModel):
     downloaded = Column(Boolean, default=False)
     download_date = Column(DateTime, nullable=True)
     download_error = Column(String, nullable=True)
+    retry_attempts = Column(Integer, default=0)
 
     user_id = Column(ForeignKey('user.id'))
     user = relationship('User', backref='content')
@@ -540,4 +544,5 @@ class Content(BaseModel):
     def set_download_error(self, message):
         self.downloaded = False
         self.download_error = message
+        self.retry_attempts = self.retry_attempts + 1
         self.get_session().commit()
