@@ -237,6 +237,8 @@ class RedditObject(BaseModel):
         date_limit_epoch = self.absolute_date_limit.timestamp()
         if epoch > date_limit_epoch:
             self.absolute_date_limit = datetime.fromtimestamp(epoch)
+            if not self.lock_settings:
+                self.date_limit = None
             self.get_session().commit()
 
     def set_inactive(self):
