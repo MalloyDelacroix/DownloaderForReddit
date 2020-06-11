@@ -51,7 +51,7 @@ class RedditObjectListModel(QAbstractListModel):
         if ro_list is not None:
             self.session.add(ro_list)
             self.list = ro_list
-            self.reddit_objects = self.list.reddit_objects
+            self.reddit_objects = self.list.reddit_objects.all()
             self.row_count = self.list.reddit_objects.count()
             return True
         return False
@@ -76,7 +76,7 @@ class RedditObjectListModel(QAbstractListModel):
             order = self.settings_manager.list_order_method
             desc = self.settings_manager.order_list_desc
             f = RedditObjectFilter()
-            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc)
+            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc).all()
             self.refresh()
         except AttributeError:
             # AttributeError indicates that no list is set for this view model
@@ -87,11 +87,11 @@ class RedditObjectListModel(QAbstractListModel):
         if term is not None and term != '':
             self.reddit_objects = f.filter(self.session, ('name', 'wild_like', term), query=self.list.reddit_objects,
                                            order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.list_order_method)
+                                           desc=self.settings_manager.list_order_method).all()
         else:
             self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
                                            order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.list_order_method)
+                                           desc=self.settings_manager.list_order_method).all()
         self.refresh()
 
     def check_name(self, name):
@@ -192,22 +192,23 @@ class RedditObjectListModel(QAbstractListModel):
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
-        try:
-            if role == Qt.DisplayRole or role == Qt.EditRole:
-                return self.reddit_objects[row].name
-            elif role == Qt.ForegroundRole:
-                if not self.reddit_objects[row].download_enabled:
-                    return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
+        if index.isValid():
+            try:
+                if role == Qt.DisplayRole or role == Qt.EditRole:
+                    return self.reddit_objects[row].name
+                elif role == Qt.ForegroundRole:
+                    if not self.reddit_objects[row].download_enabled:
+                        return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
+                    else:
+                        return None
+                elif role == Qt.ToolTipRole:
+                    return self.set_tooltips(self.reddit_objects[row])
+                elif role == Qt.UserRole:
+                    return self.reddit_objects[row]
                 else:
                     return None
-            elif role == Qt.ToolTipRole:
-                return self.set_tooltips(self.reddit_objects[row])
-            elif role == Qt.UserRole:
-                return self.reddit_objects[row]
-            else:
-                return None
-        except IndexError:
-            pass
+            except IndexError:
+                pass
 
     def raw_data(self, row):
         try:
