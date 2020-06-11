@@ -1,8 +1,8 @@
 import os
+from contextlib import contextmanager
 from sqlalchemy.ext.declarative import declarative_base
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
-from contextlib import contextmanager
 
 from ..core import const
 from ..utils import system_util
@@ -16,13 +16,11 @@ class DatabaseHandler:
 
     def __init__(self, *, in_memory=False):
         if not in_memory:
-            self.engine = sqlalchemy.create_engine(self.database_url)
+            self.engine = sqlalchemy.create_engine(self.database_url, echo=False,
+                                                   connect_args={'check_same_thread': False})
         else:
             self.engine = sqlalchemy.create_engine('sqlite:///:memory:')
         self.base.metadata.create_all(self.engine)
-
-        # session_factory = sessionmaker(bind=self.engine)
-        # self.Session = scoped_session(session_factory)
 
         self.Session = sessionmaker(bind=self.engine)
 
