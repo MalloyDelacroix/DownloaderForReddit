@@ -10,10 +10,16 @@
     <height>228</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>228</height>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -28,6 +34,12 @@
    </item>
    <item>
     <widget class="QListWidget" name="filter_box_list_widget">
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustIgnored</enum>
+     </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -37,8 +49,17 @@
      <property name="movement">
       <enum>QListView::Static</enum>
      </property>
+     <property name="flow">
+      <enum>QListView::LeftToRight</enum>
+     </property>
+     <property name="isWrapping" stdset="0">
+      <bool>true</bool>
+     </property>
      <property name="resizeMode">
-      <enum>QListView::Adjust</enum>
+      <enum>QListView::Fixed</enum>
+     </property>
+     <property name="layoutMode">
+      <enum>QListView::Batched</enum>
      </property>
      <property name="spacing">
       <number>12</number>
@@ -49,8 +70,14 @@
      <property name="uniformItemSizes">
       <bool>false</bool>
      </property>
+     <property name="batchSize">
+      <number>1</number>
+     </property>
      <property name="wordWrap">
-      <bool>true</bool>
+      <bool>false</bool>
+     </property>
+     <property name="selectionRectVisible">
+      <bool>false</bool>
      </property>
     </widget>
    </item>

@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QLineEdit, QSpinBox, QComboBox, QDateTimeEdit, QSizePolicy, QMenu, QInputDialog
+from PyQt5.QtWidgets import (QWidget, QLineEdit, QSpinBox, QComboBox, QDateTimeEdit, QSizePolicy, QMenu, QInputDialog,
+                             QLabel)
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 from sqlalchemy import Integer, String, DateTime, Enum, Boolean
@@ -115,7 +116,7 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
 
     def handle_quick_filter(self, filter_list):
         for filter_item in filter_list:
-            f = FilterItem(*list(filter_item.values()))
+            f = FilterItem(**filter_item)
             self.add_filter(f)
 
     def make_current_quick_filter(self):
@@ -128,8 +129,9 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
                     return
             self.settings_manager[filter_name] = filter_item
 
-    def add_filter(self):
-        filter_item = self.create_filter()
+    def add_filter(self, filter_item=None):
+        if type(filter_item) != FilterItem:
+            filter_item = self.create_filter()
         self.export_filter.emit(filter_item)
 
     def create_filter(self):
