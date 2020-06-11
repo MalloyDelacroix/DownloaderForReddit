@@ -375,7 +375,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             users = [self.user_list_model.reddit_objects[0]]
         id_list = [x.id for x in users]
         dialog = RedditObjectSettingsDialog('USER', self.user_list_model.list.name, selected_object_ids=id_list)
-        dialog.download_signal.connect(self.add_to_download)
+        dialog.download_signal.connect(lambda download_ids: self.add_to_download(*download_ids))
         dialog.show()
         dialog.exec_()
 
@@ -386,7 +386,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         id_list = [x.id for x in subreddits]
         dialog = RedditObjectSettingsDialog('SUBREDDIT', self.subreddit_list_model.list.name,
                                             selected_object_ids=id_list)
-        dialog.download_signal.connect(self.add_to_download)
+        dialog.download_signal.connect(lambda download_ids: self.add_to_download(*download_ids))
         dialog.show()
         dialog.exec_()
 

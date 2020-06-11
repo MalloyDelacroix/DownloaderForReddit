@@ -9,7 +9,7 @@ from ..utils import injector
 
 class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialog):
 
-    download_signal = pyqtSignal(int)
+    download_signal = pyqtSignal(list)
 
     def __init__(self, list_type, list_name, selected_object_ids: list):
         QtWidgets.QDialog.__init__(self)
@@ -70,7 +70,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     def download(self):
         self.list_model.session.commit()
-        self.download_signal.emit(self.selected_objects.id)
+        self.download_signal.emit([x.id for x in self.selected_objects])
 
     def closeEvent(self, event):
         self.settings_manager.main_window_geom = {
