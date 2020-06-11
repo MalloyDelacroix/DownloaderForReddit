@@ -979,6 +979,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.download_session_list_view.setCurrentIndex(first_index)
             else:
                 self.set_current_download_session()
+        else:
+            current_index = self.download_session_model.get_item_index(self.current_download_session)
+            if self.download_session_list_view.currentIndex() != current_index:
+                self.download_session_list_view.setCurrentIndex(current_index)
 
     def set_first_reddit_object_index(self):
         if not self.reddit_object_model.contains(self.current_reddit_object):
@@ -987,6 +991,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.reddit_object_list_view.setCurrentIndex(first_index)
             else:
                 self.set_current_reddit_object()
+        else:
+            current_index = self.reddit_object_model.get_item_index(self.current_reddit_object)
+            if self.reddit_object_list_view.currentIndex() != current_index:
+                self.reddit_object_list_view.setCurrentIndex(current_index)
 
     def set_first_post_index(self):
         if not self.post_model.contains(self.current_post):
@@ -995,6 +1003,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.post_table_view.setCurrentIndex(first_index)
             else:
                 self.set_current_post()
+        else:
+            current_index = self.post_model.get_item_index(self.current_post)
+            if self.post_table_view.currentIndex() != current_index:
+                self.post_table_view.setCurrentIndex(current_index)
 
     def set_first_content_index(self):
         if not self.content_model.contains(self.current_content):
@@ -1003,6 +1015,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.content_list_view.setCurrentIndex(first_index)
             else:
                 self.set_current_content()
+        else:
+            current_index = self.content_model.get_item_index(self.current_content)
+            if self.content_list_view.currentIndex() != current_index:
+                self.content_list_view.setCurrentIndex(current_index)
 
     def set_first_comment_index(self):
         if not self.comment_tree_model.contains(self.current_comment):
@@ -1011,6 +1027,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.comment_tree_view.setCurrentIndex(first_index)
             else:
                 self.set_current_comment()
+        else:
+            current_index = self.comment_tree_model.get_item_index(self.current_comment)
+            if self.comment_tree_view.currentIndex() != current_index:
+                self.comment_tree_view.setCurrentIndex(current_index)
 
     def monitor_scrollbar(self, bar, model, load_method, load_percentage=90):
         try:
