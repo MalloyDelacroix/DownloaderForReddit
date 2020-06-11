@@ -269,24 +269,24 @@ class SettingsManager:
                                                                  'database_view_default_filter_significant', True)
         default_quick_filters = {
             'only_download_sessions_containing_activity': [
-                {'model': 'DOWNLOAD_SESSION', 'attribute': 'post_count', 'operator': 'gt', 'value': 0},
-                {'model': 'DOWNLOAD_SESSION', 'attribute': 'content_count', 'operator': 'gt', 'value': 0},
-                {'model': 'DOWNLOAD_SESSION', 'attribute': 'comment_count', 'operator': 'gt', 'value': 0}
+                {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
+                {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
+                {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
             ],
             'only_download_sessions_containing_posts': [
-                {'model': 'DOWNLOAD_SESSION', 'attribute': 'content_count', 'operator': 'gt', 'value': 0}
+                {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0}
             ],
             'only_download_sessions_containing_content': [
-                {'model': 'DOWNLOAD_SESSION', 'attribute': 'content_count', 'operator': 'gt', 'value': 0}
+                {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0}
             ],
             'only_download_sessions_containing_comments': [
-                {'model': 'DOWNLOAD_SESSION', 'attribute': 'comment_count', 'operator': 'gt', 'value': 0}
+                {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
             ],
             'significant_reddit_objects_only': [
-                {'model': 'REDDIT_OBJECT', 'attribute': 'significant', 'operator': 'eq', 'value': True}
+                {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
             ],
             'non_significant_reddit_objects_only': [
-                {'model': 'REDDIT_OBJECT', 'attribute': 'significant', 'operator': 'eq', 'value': False}
+                {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': False}
             ]
         }
         self.database_view_quick_filters = self.get('database_view', 'database_view_quick_filters',
