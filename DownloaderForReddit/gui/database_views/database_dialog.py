@@ -852,8 +852,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         filter_tups = self.filter_widget.filter('REDDIT_OBJECT')
         query = self.session.query(RedditObject)
         if self.download_session_focus:
-            subquery = self.session.query(Post.significant_reddit_object_id)\
-                .filter(Post.download_session_id == self.current_download_session_id)
+            subquery = self.session.query(Post.significant_reddit_object_id).join(Content)\
+                .filter(Content.download_session_id == self.current_download_session_id)\
+                .union(
+                self.session.query(Post.significant_reddit_object_id)
+                    .filter(Post.download_session_id == self.current_download_session_id)
+            )
             query = query.filter(RedditObject.id.in_(subquery))
         elif self.post_focus:
             query = query.filter(RedditObject.id == self.current_post.significant_reddit_object_id)
