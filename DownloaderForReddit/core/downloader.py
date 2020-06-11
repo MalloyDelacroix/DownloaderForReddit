@@ -68,7 +68,7 @@ class Downloader:
         try:
             with self.db.get_scoped_session() as session:
                 content = session.query(Content).get(content_id)
-                response = requests.get(content.url, stream=True)
+                response = requests.get(content.url, stream=True, timeout=10)
                 if response.status_code == 200:
                     self.check_file_path(content)
                     file_path = content.get_full_file_path()

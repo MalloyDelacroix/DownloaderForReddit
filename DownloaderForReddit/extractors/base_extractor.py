@@ -110,7 +110,7 @@ class BaseExtractor:
 
     def get_json(self, url):
         """Makes sure that a request is valid and handles without errors if the connection is not successful"""
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         if response.status_code == 200 and 'json' in response.headers['Content-Type']:
             return response.json()
         else:
@@ -119,7 +119,7 @@ class BaseExtractor:
 
     def get_text(self, url):
         """See get_json"""
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
         if response.status_code == 200 and 'text' in response.headers['Content-Type']:
             return response.text
         else:

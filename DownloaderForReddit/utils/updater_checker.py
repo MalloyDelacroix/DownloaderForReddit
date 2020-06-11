@@ -62,7 +62,7 @@ class UpdateChecker(QObject):
             self.finished.emit()
 
     def retrieve_json_data(self):
-        response = requests.get(self.release_api_caller)
+        response = requests.get(self.release_api_caller, timeout=10)
         if response.status_code == 200:
             self._json = response.json()
         else:
