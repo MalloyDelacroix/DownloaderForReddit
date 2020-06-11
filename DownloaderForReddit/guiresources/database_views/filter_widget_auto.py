@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'FilterWidget.ui'
+# Form implementation generated from reading ui file 'C:/Users/Kyle/PycharmProjects/DownloaderForReddit/Resources/ui_files//database_views/filter_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -22,13 +22,6 @@ class Ui_FilterWidget(object):
         self.formLayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.formLayout.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout.setObjectName("formLayout")
-        self.label_4 = QtWidgets.QLabel(FilterWidget)
-        font = QtGui.QFont()
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_4.setFont(font)
-        self.label_4.setObjectName("label_4")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.SpanningRole, self.label_4)
         self.label_5 = QtWidgets.QLabel(FilterWidget)
         self.label_5.setObjectName("label_5")
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_5)
@@ -73,11 +66,29 @@ class Ui_FilterWidget(object):
         self.add_filter_button = QtWidgets.QPushButton(FilterWidget)
         self.add_filter_button.setObjectName("add_filter_button")
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.SpanningRole, self.add_filter_button)
+        self.label_4 = QtWidgets.QLabel(FilterWidget)
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_4.setFont(font)
+        self.label_4.setObjectName("label_4")
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_4)
+        self.quick_filter_label = ClickableLabel(FilterWidget)
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        font.setBold(True)
+        font.setWeight(75)
+        self.quick_filter_label.setFont(font)
+        self.quick_filter_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.quick_filter_label.setObjectName("quick_filter_label")
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.quick_filter_label)
         self.horizontalLayout.addLayout(self.formLayout)
         self.filter_box_list_widget = QtWidgets.QListWidget(FilterWidget)
         self.filter_box_list_widget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.filter_box_list_widget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.filter_box_list_widget.setMovement(QtWidgets.QListView.Static)
+        self.filter_box_list_widget.setResizeMode(QtWidgets.QListView.Adjust)
         self.filter_box_list_widget.setViewMode(QtWidgets.QListView.IconMode)
         self.filter_box_list_widget.setUniformItemSizes(False)
         self.filter_box_list_widget.setWordWrap(True)
@@ -90,9 +101,11 @@ class Ui_FilterWidget(object):
     def retranslateUi(self, FilterWidget):
         _translate = QtCore.QCoreApplication.translate
         FilterWidget.setWindowTitle(_translate("FilterWidget", "Filter"))
-        self.label_4.setText(_translate("FilterWidget", "Filter"))
         self.label_5.setText(_translate("FilterWidget", "Model:"))
         self.label.setText(_translate("FilterWidget", "Field:"))
         self.label_2.setText(_translate("FilterWidget", "Operator:"))
         self.label_3.setText(_translate("FilterWidget", "Value:"))
         self.add_filter_button.setText(_translate("FilterWidget", "Add Filter"))
+        self.label_4.setText(_translate("FilterWidget", "Filter"))
+        self.quick_filter_label.setText(_translate("FilterWidget", "<html><head/><body><p><span style=\" color:#0000ee;\">Quick Filters</span></p></body></html>"))
+from DownloaderForReddit.customwidgets.clickable_label import ClickableLabel

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QLabel, QToolButton, QHBoxLayout, QVBoxLayout, QListWidgetItem, QFrame, QLineEdit,
-                             QSpinBox, QComboBox, QDateTimeEdit, QSizePolicy, QListView)
+                             QSpinBox, QComboBox, QDateTimeEdit, QSizePolicy, QListView, QMenu)
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QCursor
 from sqlalchemy import Integer, String, DateTime, Enum, Boolean
 
 from DownloaderForReddit.guiresources.database_views.filter_widget_auto import Ui_FilterWidget
@@ -57,6 +57,10 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         self.field_combo.currentIndexChanged.connect(self.set_value_field)
         self.set_value_field()
 
+        self.quick_filter_label.clicked.connect(self.quick_filters_menu)
+        self.quick_filter_label.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.quick_filter_label.customContextMenuRequested.connect(self.quick_filters_menu)
+
     @property
     def current_model(self):
         return self.model_combo.currentData(Qt.UserRole)
@@ -111,6 +115,19 @@ class FilterWidget(QWidget, Ui_FilterWidget):
 
     def filter_download_filters(self, filter_name):
         return [x.filter_tuple for x in filter(lambda x: x.model == filter_name, self.filters.values())]
+
+    def quick_filters_menu(self):
+        quick_filters = self.settings_manager.database_view_quick_filters
+        menu = QMenu()
+        for key, value in quick_filters.items():
+            menu.addAction(key.replace('_', ' ').title(),
+                           lambda filter_list=value: self.handle_quick_filter(filter_list))
+        menu.exec_(QCursor.pos())
+
+    def handle_quick_filter(self, filter_list):
+        for filter_item in filter_list:
+            f = FilterItem(*list(filter_item.values()))
+            self.add_filter(f)
 
     def add_filter(self, filter_item=None):
         if not filter_item:
