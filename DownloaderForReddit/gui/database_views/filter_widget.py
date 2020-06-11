@@ -42,7 +42,12 @@ class FilterWidget(QWidget, Ui_FilterWidget):
 
     def add_widget_to_list(self, widget):
         item = QListWidgetItem()
-        item.setSizeHint(widget.sizeHint())
+
+        size = widget.sizeHint()
+        size.setWidth(size.width() + 25)
+        size.setHeight(size.height() + 10)
+
+        item.setSizeHint(size)
         item.setBackground(QColor('#C8C8C8'))
         self.filter_box_list_widget.addItem(item)
         self.filter_box_list_widget.setItemWidget(item, widget)
@@ -94,7 +99,3 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         row = self.filter_box_list_widget.row(item)
         self.filter_box_list_widget.takeItem(row)
         self.filter_changed.emit(f.model)
-
-    # def keyPressEvent(self, event):
-    #     if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
-    #         self.add_filter()
