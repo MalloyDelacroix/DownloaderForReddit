@@ -828,7 +828,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         kwargs = {
             'filters': self.settings_manager.database_view_default_filters['database_view']
         }
-        self.database_dialog = DatabaseDialog(**kwargs)
+        self.database_dialog = DatabaseDialog(save_settings=True, **kwargs)
         self.database_dialog.show()
 
     def open_download_sessions_dialog(self):

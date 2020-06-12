@@ -30,7 +30,7 @@ def check_hold(method):
 
 class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
-    def __init__(self, **setup_kwargs):
+    def __init__(self, save_settings=False, **setup_kwargs):
         """
         setup_kwargs fields:
             visible_models: The models that will be visible on start
@@ -47,6 +47,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.db = injector.get_database_handler()
         self.session = self.db.get_session()
         self.hold_setup = False
+        self.save_settings = save_settings
         self.setup_kwargs = setup_kwargs
 
         self.setup_call_list = []
@@ -1056,7 +1057,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.settings_manager.database_view_geom['x'] = self.x()
         self.settings_manager.database_view_geom['y'] = self.y()
         self.settings_manager.database_view_icon_size = self.icon_size
-        if len(self.setup_kwargs) <= 0:
+        if self.save_settings:
             self.settings_manager.database_view_download_session_widget_width = self.download_session_widget.width()
             self.settings_manager.database_view_reddit_object_widget_width = self.reddit_object_widget.width()
             self.settings_manager.database_view_post_widget_width = self.post_widget.width()
