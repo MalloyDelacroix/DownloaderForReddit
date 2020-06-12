@@ -287,7 +287,25 @@ class SettingsManager:
             ],
             'Non Significant Reddit Objects Only': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': False}
-            ]
+            ],
+            'Self Posts Only': [
+                {'model': 'POST', 'field': 'is_self', 'operator': 'eq', 'value': True}
+            ],
+            'No Self Posts': [
+                {'model': 'POST', 'field': 'is_self', 'operator': 'eq', 'value': False}
+            ],
+            'Content From Posts Only': [
+                {'model': 'CONTENT', 'field': 'comment_id', 'operator': 'eq', 'value': None}
+            ],
+            'Content From Comments Only': [
+                {'model': 'CONTENT', 'field': 'comment_id', 'operator': 'not', 'value': None}
+            ],
+            'Comments With Content': [
+                {'model': 'COMMENT', 'field': 'content_count', 'operator': 'gt', 'value': 0}
+            ],
+            'Comments Without Content': [
+                {'model': 'COMMENT', 'field': 'content_count', 'operator': 'lte', 'value': 0}
+            ],
         }
         self.database_view_quick_filters = self.get('database_view', 'database_view_quick_filters',
                                                     default_quick_filters)
