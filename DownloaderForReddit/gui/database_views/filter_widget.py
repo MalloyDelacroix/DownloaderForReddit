@@ -100,4 +100,4 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         item = self.list_item_map[widget]
         row = self.filter_box_list_widget.row(item)
         self.filter_box_list_widget.takeItem(row)
-        self.filter_changed.emit(f.model)
+        self.filter_changed.emit([f.model])
