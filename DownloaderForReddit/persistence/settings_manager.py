@@ -308,22 +308,26 @@ class SettingsManager:
         self.database_view_quick_filters = self.get('database_view', 'database_view_quick_filters',
                                                     default_quick_filters)
 
-        default_database_view_filters = [
-            {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
-        ]
+        default_database_view_default_filters = {
+            'database_view': [
+                {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
+            ],
+            'download_session_view': [
+                {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
+                {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
+                {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0},
+            ],
+            'reddit_object_view': [
+                {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
+            ],
+            'post_view': [],
+            'content_view': [],
+            'comment_view': [],
+            'failed_extraction_view': [],
+            'failed_downloads_view': [],
+        }
         self.database_view_default_filters = self.get('database_view', 'database_view_default_filters',
-                                                      default_database_view_filters)
-        download_session_view_default_filters = [
-            {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
-            {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
-            {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
-        ]
-        self.download_session_view_default_filters = self.get('database_view', 'download_session_view_default_filters',
-                                                              download_session_view_default_filters)
-        self.reddit_object_view_default_filters = self.get('database_view', 'reddit_object_view_default_filters', [])
-        self.post_view_default_filters = self.get('database_view', 'post_view_default_filters', [])
-        self.content_view_default_filters = self.get('database_view', 'content_view_default_filters', [])
-        self.comment_view_default_filters = self.get('database_view', 'comment_view_default_filters', [])
+                                                      default_database_view_default_filters)
         # endregion
 
         # region Misc Dialogs

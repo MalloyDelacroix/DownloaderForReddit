@@ -10,13 +10,12 @@ from .abstract_settings_widget import AbstractSettingsWidget
 class QuickFilterSettingsWidget(AbstractSettingsWidget, Ui_QuickFilterSettingsWidget):
 
     def __init__(self):
-        super().__init__(init_ui=False)
-        self.setupUi(self)
-        self.filters = self.settings.database_view_quick_filters
+        super().__init__()
+        self.filters = None
         self.widget_item_map = {}
         self.widget_filter_map = {}
 
-        self.filter_input_widget.quick_filter_label.setVisible(False)
+        self.filter_input_widget.quick_filter_combo.setVisible(False)
 
         self.name_list_widget.currentItemChanged.connect(self.select_item)
         self.filter_list_widget.setSpacing(12)
@@ -24,7 +23,13 @@ class QuickFilterSettingsWidget(AbstractSettingsWidget, Ui_QuickFilterSettingsWi
 
         self.add_new_quick_filter_button.clicked.connect(self.add_quick_filter)
 
+    @property
+    def description(self):
+        return 'These quick filters are available from a combo box in the database view dialog for quick access to ' \
+               'filters that are used most often.  Multiple filters can be combined together for one quick action.'
+
     def load_settings(self):
+        self.filters = self.settings.database_view_quick_filters
         self.name_list_widget.addItems(self.filters.keys())
         self.name_list_widget.setCurrentRow(0)
 
@@ -85,12 +90,13 @@ class QuickFilterSettingsWidget(AbstractSettingsWidget, Ui_QuickFilterSettingsWi
             self.name_list_widget.addItem(name)
             self.name_list_widget.setCurrentRow(self.name_list_widget.count() - 1)
 
-    def add_filter(self, filter_item):
-        filter_name = self.name_list_widget.currentItem().text()
-        filter_list = self.filters[filter_name]
-        filter_dict = filter_item.widget_dict
-        filter_list.append(filter_dict)
-        self.add_widget(filter_dict, filter_name)
+    def add_filter(self, filter_item_list):
+        for filter_item in filter_item_list:
+            filter_name = self.name_list_widget.currentItem().text()
+            filter_list = self.filters[filter_name]
+            filter_dict = filter_item.widget_dict
+            filter_list.append(filter_dict)
+            self.add_widget(filter_dict, filter_name)
 
 
 class ClickableWidget(QWidget):

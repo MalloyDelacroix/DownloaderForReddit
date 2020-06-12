@@ -826,7 +826,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_database_view_dialog(self):
         kwargs = {
-            'filters': self.settings_manager.database_view_default_filters
+            'filters': self.settings_manager.database_view_default_filters['database_view']
         }
         self.database_dialog = DatabaseDialog(**kwargs)
         self.database_dialog.show()
@@ -836,7 +836,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'focus_model': 'DOWNLOAD_SESSION',
             'download_session_sort': 'start_time',
             'download_session_desc': True,
-            'filters': self.settings_manager.download_session_view_default_filters
+            'filters': self.settings_manager.database_view_default_filters['download_session_view']
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -846,7 +846,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'focus_model': 'REDDIT_OBJECT',
             'reddit_object_sort': 'name',
             'visible_models': ['REDDIT_OBJECT'],
-            'filters': self.settings_manager.reddit_object_view_default_filters
+            'filters': self.settings_manager.database_view_default_filters['reddit_object_view']
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -856,7 +856,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'focus_model': 'POST',
             'reddit_object_sort': 'title',
             'visible_models': ['POST'],
-            'filters': self.settings_manager.post_view_default_filters
+            'filters': self.settings_manager.database_view_default_filters['post_view']
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -866,7 +866,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'focus_model': 'CONTENT',
             'reddit_object_sort': 'title',
             'visible_models': ['CONTENT'],
-            'filters': self.settings_manager.content_view_default_filters
+            'filters': self.settings_manager.database_view_default_filters['content_view']
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -876,7 +876,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'focus_model': 'COMMENT',
             'reddit_object_sort': 'post_title',
             'visible_models': ['COMMENT'],
-            'filters': self.settings_manager.comment_view_default_filters
+            'filters': self.settings_manager.database_view_default_filters['comment_view']
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -892,6 +892,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 ('POST', 'extracted', 'eq', False),
             ]
         }
+        kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_extraction_view'])
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
 
@@ -906,6 +907,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 ('CONTENT', 'downloaded', 'eq', False),
             ]
         }
+        kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_downloads_view'])
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
 
