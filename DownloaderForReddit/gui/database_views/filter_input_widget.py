@@ -1,7 +1,5 @@
-from PyQt5.QtWidgets import (QWidget, QLineEdit, QSpinBox, QComboBox, QDateTimeEdit, QSizePolicy, QMenu, QInputDialog,
-                             QLabel)
+from PyQt5.QtWidgets import QWidget, QLineEdit, QSpinBox, QComboBox, QDateTimeEdit, QSizePolicy
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QCursor
 from sqlalchemy import Integer, String, DateTime, Enum, Boolean
 
 from DownloaderForReddit.guiresources.database_views.filter_input_widget_auto import Ui_FilterInputWidget
@@ -13,12 +11,13 @@ from .filter_item import FilterItem
 
 class FilterInputWidget(QWidget, Ui_FilterInputWidget):
 
-    export_filter = pyqtSignal(object)
+    export_filter = pyqtSignal(list)
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
         self.setupUi(self)
         self.settings_manager = injector.get_settings_manager()
+        self.launch_quick_filter = True
         self.filter_model_map = {
             'DOWNLOAD_SESSION': DownloadSessionFilter,
             'REDDIT_OBJECT': RedditObjectFilter,
@@ -54,9 +53,9 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
         self.field_combo.currentIndexChanged.connect(self.set_value_field)
         self.set_value_field()
 
-        self.quick_filter_label.clicked.connect(self.quick_filters_menu)
-        self.quick_filter_label.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.quick_filter_label.customContextMenuRequested.connect(self.quick_filters_menu)
+        self.quick_filter_combo.addItem('Quick Filters')
+        self.quick_filter_combo.addItems(self.settings_manager.database_view_quick_filters.keys())
+        self.quick_filter_combo.currentIndexChanged.connect(self.handle_quick_filter)
 
     @property
     def current_model(self):
@@ -103,36 +102,20 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
         elif t == QSpinBox:
             return self.value_field.value()
 
-    def quick_filters_menu(self):
-        quick_filters = self.settings_manager.database_view_quick_filters
-        menu = QMenu()
-        for key, value in quick_filters.items():
-            menu.addAction(key.replace('_', ' ').title(),
-                           lambda filter_list=value: self.handle_quick_filter(filter_list))
-        menu.addSeparator()
-        make_new_quick_filter = menu.addAction('Make Current Quick Filter', self.make_current_quick_filter)
-        make_new_quick_filter.setToolTip('Makes the current selection of filtering options into a quick filter')
-        menu.exec_(QCursor.pos())
+    def handle_quick_filter(self):
+        if self.launch_quick_filter and self.quick_filter_combo.currentIndex() != 0:
+            self.launch_quick_filter = False
+            filter_name = self.quick_filter_combo.currentText()
+            filters = [FilterItem(**filter_dict) for filter_dict in
+                       self.settings_manager.database_view_quick_filters[filter_name]]
+            self.add_filter(filters)
+            self.quick_filter_combo.setCurrentIndex(0)
+            self.launch_quick_filter = True
 
-    def handle_quick_filter(self, filter_list):
-        for filter_item in filter_list:
-            f = FilterItem(**filter_item)
-            self.add_filter(f)
-
-    def make_current_quick_filter(self):
-        filter_name, ok = QInputDialog.getText(self, 'Quick Filter Name', 'Enter name for quick filter:')
-        if ok and filter_name != '' and not filter_name in self.settings_manager.database_view_quick_filters:
-            filter_item = {'model': self.current_model, 'attribute': self.current_field,
-                           'operator': self.current_operator, 'value': self.get_value()}
-            for filter_list in self.settings_manager.database_view_quick_filters.values():
-                if filter_item in filter_list:
-                    return
-            self.settings_manager[filter_name] = filter_item
-
-    def add_filter(self, filter_item=None):
-        if type(filter_item) != FilterItem:
-            filter_item = self.create_filter()
-        self.export_filter.emit(filter_item)
+    def add_filter(self, filters=None):
+        if type(filters) != list:
+            filters = [self.create_filter()]
+        self.export_filter.emit(filters)
 
     def create_filter(self):
         return FilterItem(self.current_model, self.current_field, self.current_operator, self.get_value())

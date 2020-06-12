@@ -9,7 +9,7 @@ from .filter_item import FilterItem
 
 class FilterWidget(QWidget, Ui_FilterWidget):
 
-    filter_changed = pyqtSignal(str)
+    filter_changed = pyqtSignal(list)
 
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
@@ -19,14 +19,13 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         self.filters = {}
         self.list_item_map = {}
 
-        self.filter_input_widget.export_filter.connect(self.add_filter)
+        self.filter_input_widget.export_filter.connect(self.add_filters)
 
         self.filter_box_list_widget.setSpacing(12)
         self.filter_box_list_widget.setResizeMode(QListView.Adjust)
 
     def set_default_filters(self, *filters):
-        for filter_tuple in filters:
-            self.add_filter(FilterItem(*filter_tuple))
+        self.add_filters([FilterItem(*filter_tuple) for filter_tuple in filters])
 
     def filter(self, model_name):
         return self.filter_download_filters(model_name)
@@ -34,11 +33,14 @@ class FilterWidget(QWidget, Ui_FilterWidget):
     def filter_download_filters(self, filter_name):
         return [x.filter_tuple for x in filter(lambda x: x.model == filter_name, self.filters.values())]
 
-    def add_filter(self, filter_item=None):
-        widget = self.create_widget(**filter_item.widget_dict)
-        self.filters[widget] = filter_item
-        self.add_widget_to_list(widget)
-        self.filter_changed.emit(filter_item.model)
+    def add_filters(self, filters):
+        models = []
+        for filter_item in filters:
+            widget = self.create_widget(**filter_item.widget_dict)
+            self.filters[widget] = filter_item
+            self.add_widget_to_list(widget)
+            models.append(filter_item.model)
+        self.filter_changed.emit(list(set(models)))
 
     def add_widget_to_list(self, widget):
         item = QListWidgetItem()

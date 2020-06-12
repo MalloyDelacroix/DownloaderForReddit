@@ -291,9 +291,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def toggle_filter(self):
         self.filter_widget.setVisible(not self.filter_widget.isVisible())
 
-    def update_filtering(self, model_name):
-        data_setup_method = self.data_setup_filter_map[model_name]
-        data_setup_method()
+    def update_filtering(self, model_names):
+        for name in model_names:
+            data_setup_method = self.data_setup_filter_map[name]
+            data_setup_method()
 
     def check_call_list(self, call):
         contains = call in self.setup_call_list
