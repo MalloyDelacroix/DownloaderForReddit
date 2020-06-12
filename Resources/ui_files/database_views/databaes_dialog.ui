@@ -140,323 +140,312 @@
       </layout>
      </item>
      <item>
-      <widget class="QSplitter" name="splitter_2">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
+      <widget class="QSplitter" name="splitter">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <widget class="QWidget" name="">
-        <layout class="QGridLayout" name="filter_layout">
-         <item row="0" column="0">
-          <widget class="FilterWidget" name="filter_widget" native="true"/>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="FilterWidget" name="filter_widget" native="true"/>
+       <widget class="QWidget" name="download_session_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QComboBox" name="download_session_sort_combo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="download_session_desc_sort_checkbox">
+             <property name="font">
+              <font>
+               <pointsize>7</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>desc.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListView" name="download_session_list_view">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_more_download_sessions_button">
+           <property name="text">
+            <string>Load More</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
-       <widget class="QSplitter" name="splitter">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <widget class="QWidget" name="download_session_widget" native="true">
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QComboBox" name="download_session_sort_combo">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="download_session_desc_sort_checkbox">
-              <property name="font">
-               <font>
-                <pointsize>7</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>desc.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QListView" name="download_session_list_view">
-            <property name="editTriggers">
-             <set>QAbstractItemView::NoEditTriggers</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="load_more_download_sessions_button">
-            <property name="text">
-             <string>Load More</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="reddit_object_widget" native="true">
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
-            <item>
-             <widget class="QComboBox" name="reddit_object_sort_combo">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="reddit_object_desc_sort_checkbox">
-              <property name="font">
-               <font>
-                <pointsize>7</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>desc.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QListView" name="reddit_object_list_view">
-            <property name="editTriggers">
-             <set>QAbstractItemView::NoEditTriggers</set>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="load_more_reddit_objects_button">
-            <property name="text">
-             <string>Load More</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="post_widget" native="true">
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <item>
-             <widget class="QComboBox" name="post_sort_combo">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="post_desc_sort_checkbox">
-              <property name="font">
-               <font>
-                <pointsize>7</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>desc.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QSplitter" name="post_text_splitter">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <widget class="QTableView" name="post_table_view">
-             <property name="sizeAdjustPolicy">
-              <enum>QAbstractScrollArea::AdjustIgnored</enum>
-             </property>
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
-             </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::SingleSelection</enum>
-             </property>
-             <property name="selectionBehavior">
-              <enum>QAbstractItemView::SelectRows</enum>
-             </property>
-             <property name="showGrid">
-              <bool>false</bool>
-             </property>
-             <property name="gridStyle">
-              <enum>Qt::NoPen</enum>
-             </property>
-             <attribute name="horizontalHeaderCascadingSectionResizes">
-              <bool>false</bool>
-             </attribute>
-            </widget>
-            <widget class="PostTextBrowser" name="post_text_browser">
-             <property name="openExternalLinks">
-              <bool>true</bool>
+       <widget class="QWidget" name="reddit_object_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QComboBox" name="reddit_object_sort_combo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
             </widget>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="load_more_posts_button">
-            <property name="text">
-             <string>Load More</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="content_widget" native="true">
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_8">
-            <item>
-             <widget class="QComboBox" name="content_sort_combo">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="content_desc_sort_checkbox">
-              <property name="font">
-               <font>
-                <pointsize>7</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>desc.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QListView" name="content_list_view">
-            <property name="styleSheet">
-             <string notr="true"/>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="reddit_object_desc_sort_checkbox">
+             <property name="font">
+              <font>
+               <pointsize>7</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>desc.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListView" name="reddit_object_list_view">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_more_reddit_objects_button">
+           <property name="text">
+            <string>Load More</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="post_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QComboBox" name="post_sort_combo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="post_desc_sort_checkbox">
+             <property name="font">
+              <font>
+               <pointsize>7</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>desc.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSplitter" name="post_text_splitter">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <widget class="QTableView" name="post_table_view">
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustIgnored</enum>
             </property>
             <property name="editTriggers">
              <set>QAbstractItemView::NoEditTriggers</set>
             </property>
-            <property name="iconSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SingleSelection</enum>
             </property>
-            <property name="verticalScrollMode">
-             <enum>QAbstractItemView::ScrollPerPixel</enum>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
             </property>
-            <property name="flow">
-             <enum>QListView::LeftToRight</enum>
+            <property name="showGrid">
+             <bool>false</bool>
             </property>
-            <property name="resizeMode">
-             <enum>QListView::Adjust</enum>
+            <property name="gridStyle">
+             <enum>Qt::NoPen</enum>
             </property>
-            <property name="layoutMode">
-             <enum>QListView::Batched</enum>
-            </property>
-            <property name="spacing">
-             <number>5</number>
-            </property>
-            <property name="gridSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="viewMode">
-             <enum>QListView::IconMode</enum>
-            </property>
-            <property name="batchSize">
-             <number>2</number>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-            <property name="selectionRectVisible">
+            <attribute name="horizontalHeaderCascadingSectionResizes">
+             <bool>false</bool>
+            </attribute>
+           </widget>
+           <widget class="PostTextBrowser" name="post_text_browser">
+            <property name="openExternalLinks">
              <bool>true</bool>
             </property>
            </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="load_more_content_button">
-            <property name="text">
-             <string>Load More</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="comment_widget" native="true">
-         <layout class="QVBoxLayout" name="verticalLayout_7">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QComboBox" name="comment_sort_combo">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="comment_desc_sort_checkbox">
-              <property name="font">
-               <font>
-                <pointsize>7</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>desc.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QSplitter" name="comment_text_splitter">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <widget class="QTreeView" name="comment_tree_view">
-             <property name="editTriggers">
-              <set>QAbstractItemView::NoEditTriggers</set>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_more_posts_button">
+           <property name="text">
+            <string>Load More</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="content_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QComboBox" name="content_sort_combo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
             </widget>
-            <widget class="PostTextBrowser" name="comment_text_browser"/>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="load_more_comments_button">
-            <property name="text">
-             <string>Load More</string>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="content_desc_sort_checkbox">
+             <property name="font">
+              <font>
+               <pointsize>7</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>desc.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QListView" name="content_list_view">
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="verticalScrollMode">
+            <enum>QAbstractItemView::ScrollPerPixel</enum>
+           </property>
+           <property name="flow">
+            <enum>QListView::LeftToRight</enum>
+           </property>
+           <property name="resizeMode">
+            <enum>QListView::Adjust</enum>
+           </property>
+           <property name="layoutMode">
+            <enum>QListView::Batched</enum>
+           </property>
+           <property name="spacing">
+            <number>5</number>
+           </property>
+           <property name="gridSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="viewMode">
+            <enum>QListView::IconMode</enum>
+           </property>
+           <property name="batchSize">
+            <number>2</number>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+           <property name="selectionRectVisible">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_more_content_button">
+           <property name="text">
+            <string>Load More</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="comment_widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <item>
+            <widget class="QComboBox" name="comment_sort_combo">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="comment_desc_sort_checkbox">
+             <property name="font">
+              <font>
+               <pointsize>7</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>desc.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QSplitter" name="comment_text_splitter">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <widget class="QTreeView" name="comment_tree_view">
+            <property name="editTriggers">
+             <set>QAbstractItemView::NoEditTriggers</set>
             </property>
            </widget>
-          </item>
-         </layout>
-        </widget>
+           <widget class="PostTextBrowser" name="comment_text_browser"/>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="load_more_comments_button">
+           <property name="text">
+            <string>Load More</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </widget>
      </item>

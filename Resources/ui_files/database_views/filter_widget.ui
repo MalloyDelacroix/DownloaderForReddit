@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1700</width>
-    <height>228</height>
+    <width>350</width>
+    <height>850</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -28,7 +28,7 @@
   <property name="styleSheet">
    <string notr="true"/>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="FilterInputWidget" name="filter_input_widget" native="true"/>
    </item>
@@ -50,7 +50,7 @@
       <enum>QListView::Static</enum>
      </property>
      <property name="flow">
-      <enum>QListView::LeftToRight</enum>
+      <enum>QListView::TopToBottom</enum>
      </property>
      <property name="isWrapping" stdset="0">
       <bool>true</bool>
@@ -62,10 +62,10 @@
       <enum>QListView::Batched</enum>
      </property>
      <property name="spacing">
-      <number>12</number>
+      <number>6</number>
      </property>
      <property name="viewMode">
-      <enum>QListView::IconMode</enum>
+      <enum>QListView::ListMode</enum>
      </property>
      <property name="uniformItemSizes">
       <bool>false</bool>
