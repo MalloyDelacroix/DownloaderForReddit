@@ -527,11 +527,17 @@ class CommentFilter(Filter):
                                choices=[(x.display_name.title(), x) for x in NsfwFilter]),
             'author_name': CustomItem(self.filter_author_name, self.order_by_author_name, String),
             'subreddit_name': CustomItem(self.filter_subreddit_name, self.order_by_subreddit_name, String),
+            'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer)
         }
+
+    def get_content_count_sub(self):
+        return self.session.query(Content.comment_id, func.count(Content.id).label('content_count'))\
+            .group_by(Content.comment_id).subquery()
 
     def filter_post_title(self, query, operator, value):
         f = self.op_map[operator](Post.title, value)
         query = query.join(Post).filter(f)
+        return query
 
     def filter_post_score(self, query, operator, value):
         f = self.op_map[operator](Post.score, value)
@@ -558,6 +564,12 @@ class CommentFilter(Filter):
         query = query.join(Subreddit, Subreddit.id == Comment.subreddit_id).filter(f)
         return query
 
+    def filter_content_count(self, query, operator, value):
+        sub = self.get_content_count_sub()
+        f = self.op_map[operator](sub.c.content_count, value)
+        query = query.outerjoin(sub, sub.c.comment_id == Comment.id).filter(f)
+        return query
+
     def order_by_post_title(self, query):
         return query.join(Post), Post.title
 
@@ -572,6 +584,11 @@ class CommentFilter(Filter):
 
     def order_by_subreddit_name(self, query):
         return query.join(Subreddit, Subreddit.id == Comment.subreddit_id), Subreddit.name
+
+    def order_by_content_count(self, query):
+        sub = self.get_content_count_sub()
+        query = query.outerjoin(sub, sub.c.comment_id == Comment.id)
+        return query, sub.c.content_count
 
 
 class ContentFilter(Filter):
