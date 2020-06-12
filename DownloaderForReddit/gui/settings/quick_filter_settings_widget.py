@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QLabel, QVBoxLayout, QHBoxLayout, QWidget, QFrame, QListWidgetItem, QToolButton,
                              QInputDialog)
-from PyQt5.QtCore import pyqtSignal, Qt, QSize
+from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QColor
 
 from DownloaderForReddit.guiresources.settings.quick_filter_settings_widget_auto import Ui_QuickFilterSettingsWidget
@@ -42,7 +42,7 @@ class QuickFilterSettingsWidget(AbstractSettingsWidget, Ui_QuickFilterSettingsWi
             self.add_widget(filter_item, item.text())
 
     def add_widget(self, filter_item, filter_name):
-        widget = ClickableWidget()
+        widget = QWidget()
         main_layout = QVBoxLayout()
         widget.setLayout(main_layout)
         main_layout.addWidget(QLabel(filter_item['model']))
@@ -97,15 +97,3 @@ class QuickFilterSettingsWidget(AbstractSettingsWidget, Ui_QuickFilterSettingsWi
             filter_dict = filter_item.widget_dict
             filter_list.append(filter_dict)
             self.add_widget(filter_dict, filter_name)
-
-
-class ClickableWidget(QWidget):
-
-    clicked = pyqtSignal()
-
-    def __init__(self):
-        QWidget.__init__(self)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.clicked.emit()
