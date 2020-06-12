@@ -14,6 +14,10 @@ from DownloaderForReddit.utils import injector, system_util
 
 
 def hold_setup(method):
+    """
+    Decorator method that sets a hold flag before the method is called and releases it after.  This is used to avoid
+    infinite looping calls when a monitored attribute must be changed.
+    """
     def set_hold(instance):
         instance.hold_setup = True
         method(instance)
@@ -22,6 +26,10 @@ def hold_setup(method):
 
 
 def check_hold(method):
+    """
+    Checks a hold flag before calling the supplied method.  This is used so that monitored attributes can be changed
+    without causing an infinite loop.
+    """
     def check(instance, **kwargs):
         if not instance.hold_setup or kwargs.pop('override_hold', False):
             method(instance, **kwargs)
@@ -32,6 +40,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def __init__(self, save_settings=False, **setup_kwargs):
         """
+        save_settings: True if the dialog settings should be saved on close.
         setup_kwargs fields:
             visible_models: The models that will be visible on start
             <model_name>_sort: The sort attribute that will be used on start for the model name
@@ -460,6 +469,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.exec_(QCursor.pos())
 
     def post_headers_context_menu(self):
+        """
+        Displays a context menu for the post table header which allows the user to select which headers will be visible.
+        """
         menu = QMenu()
         for value in self.post_model.headers:
             item = menu.addAction(value.replace('_', ' ').replace(' display', '').title())
@@ -469,10 +481,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.exec_(QCursor.pos())
 
     def attach_post_text_browser(self):
+        """Closes the post text browser dialog and adds it back to the main dialog window."""
         self.post_text_splitter.addWidget(self.post_text_browser)
         self.post_text_browser.stand_alone = False
 
     def detach_post_text_browser(self):
+        """Detaches the post text browser from the main dialog window and displays it as a separate dialog."""
         dialog = BlankDialog(parent=self)
         dialog.add_widgets(self.post_text_browser)
         dialog.closing.connect(self.post_text_browser.handle_dialog_movement)
@@ -493,6 +507,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.comment_text_browser.stand_alone = True
 
     def toggle_post_table_header(self, header):
+        """
+        Hides or shows the supplied post table header based on its currently visibility. (hidden headers will be shown,
+        visible headers will be hidden)
+        :param header: The header that is to be toggled.
+        """
         index = self.post_model.headers.index(header)
         visible = self.settings_manager.database_view_post_table_headers[header]
         self.settings_manager.database_view_post_table_headers[header] = not visible
@@ -536,6 +555,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         return item
 
     def comment_header_context_menu(self):
+        """
+        Displays a context menu for the comment table header which allows the user to select which headers will be
+        visible.
+        """
         menu = QMenu()
         for value in self.comment_tree_model.headers:
             item = menu.addAction(value.replace('_', ' ').title())
@@ -545,6 +568,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.exec_(QCursor.pos())
 
     def toggle_comment_tree_headers(self, header):
+        """Toggles the visibility of the supplied comment table header."""
         index = self.comment_tree_model.headers.index(header)
         visible = self.settings_manager.database_view_comment_tree_headers[header]
         self.settings_manager.database_view_comment_tree_headers[header] = not visible
@@ -680,6 +704,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.settings_manager.database_view_comment_order = self.comment_sort_combo.currentData(Qt.UserRole)
 
     def set_content_icon_size(self, size=None):
+        """Sets the content icon size to the supplied size which is supplied by the user."""
         if size is None:
             size = self.icon_size
         else:
@@ -688,11 +713,13 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_list_view.setGridSize(QSize(size + 2, size + 45))
 
     def set_custom_content_icon_size(self):
+        """Prompts the user to enter a custom size for the icon display, then calls the method to set the size."""
         size, ok = QInputDialog.getInt(self, 'Custom Icon Size', 'Enter custom icon size:')
         if ok:
             self.set_content_icon_size(size)
 
     def open_selected_content(self):
+        """Opens the selected content with the operating systems default application."""
         content = self.content_model.get_item(self.content_list_view.selectedIndexes()[0].row())
         system_util.open_in_system(content.get_full_file_path())
 
@@ -725,6 +752,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.set_first_comment_index()
 
     def cascade_setup(self):
+        """
+        Cascades the view setup down the line of models.  The order of these calls is important to ensure that each
+        view is setup correctly based on the view before it.  The call list contains the names of models who's views
+        have already been set up.  Not checking the call list will result in an infinite loop and a stack overflow
+        error.
+        """
         if not self.download_session_focus and not self.check_call_list('DOWNLOAD_SESSION'):
             self.setup_download_sessions()
         if not self.reddit_object_focus and not self.check_call_list('REDDIT_OBJECT'):
@@ -737,6 +770,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.setup_comments()
 
     def set_current_download_session(self):
+        """
+        Sets the current download session, then cascades the view setup down the line so that the rest of the views show
+        the correct models based on this download session.
+        """
         if self.show_download_sessions:
             try:
                 self.current_download_session = \
@@ -749,6 +786,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.setup_call_list.clear()
 
     def set_current_reddit_object(self):
+        """See set current download session."""
         if self.show_reddit_objects:
             try:
                 self.current_reddit_object = \
@@ -763,6 +801,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.setup_call_list.clear()
 
     def set_current_post(self):
+        """See set current download session."""
         if self.show_posts:
             try:
                 self.current_post = self.post_model.get_item(self.post_table_view.currentIndex().row())
@@ -783,6 +822,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.setup_call_list.clear()
 
     def set_current_content(self):
+        """See set current download session."""
         if self.show_content:
             try:
                 self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
@@ -796,6 +836,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.setup_call_list.clear()
 
     def set_current_comment(self):
+        """See set current download session."""
         if self.show_comments:
             try:
                 self.current_comment = self.comment_tree_model.get_item(self.comment_tree_view.currentIndex())
@@ -819,6 +860,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     @check_hold
     def set_download_session_data(self, extend=False):
+        """
+        Sets the data displayed in the download session view based on the focus settings, visible models, and filters
+        that are used in the database dialog.
+        :param extend: False if this is the first page of data, false if it is another page.  This indicates whether
+                       the shown data should be extended (if True) or overwritten (if False).
+        """
         f = DownloadSessionFilter()
         filter_tups = self.filter_widget.filter('DOWNLOAD_SESSION')
         query = self.session.query(DownloadSession)
@@ -850,6 +897,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     @check_hold
     def set_reddit_object_data(self, extend=False):
+        """See set download session data."""
         f = RedditObjectFilter()
         filter_tups = self.filter_widget.filter('REDDIT_OBJECT')
         query = self.session.query(RedditObject)
@@ -877,6 +925,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     @check_hold
     def set_post_data(self, extend=False):
+        """See set download session data."""
         f = PostFilter()
         filter_tups = self.filter_widget.filter('POST')
         query = self.session.query(Post)
@@ -905,6 +954,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     @check_hold
     def set_content_data(self, extend=False):
+        """See set download session data."""
         f = ContentFilter()
         filter_tups = self.filter_widget.filter('CONTENT')
         query = self.session.query(Content)
@@ -950,6 +1000,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     @check_hold
     def set_comment_data(self, extend=False):
+        """See set download session data."""
         f = CommentFilter()
         filter_tups = self.filter_widget.filter('COMMENT')
         query = self.session.query(Comment)
@@ -975,6 +1026,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.check_load_more_button(self.comment_tree_model)
 
     def set_first_download_session_index(self):
+        """
+        Sets the index of the download session view once it has been reloaded.  This will be the first view if the
+        download session that was selected before the data was changed is no long in the viewable data.  If the previous
+        download session is still in the viewable data, it will be re-selected.
+        """
         if not self.download_session_model.contains(self.current_download_session):
             first_index = self.download_session_model.createIndex(0, 0)
             if self.download_session_list_view.currentIndex() != first_index:
@@ -987,6 +1043,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.download_session_list_view.setCurrentIndex(current_index)
 
     def set_first_reddit_object_index(self):
+        """See set_first_download_session_index."""
         if not self.reddit_object_model.contains(self.current_reddit_object):
             first_index = self.reddit_object_model.createIndex(0, 0)
             if self.reddit_object_list_view.currentIndex() != first_index:
@@ -999,6 +1056,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.reddit_object_list_view.setCurrentIndex(current_index)
 
     def set_first_post_index(self):
+        """See set_first_download_session_index."""
         if not self.post_model.contains(self.current_post):
             first_index = self.post_model.createIndex(0, 0)
             if self.post_table_view.currentIndex() != first_index:
@@ -1011,6 +1069,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.post_table_view.setCurrentIndex(current_index)
 
     def set_first_content_index(self):
+        """See set_first_download_session_index."""
         if not self.content_model.contains(self.current_content):
             first_index = self.content_model.createIndex(0, 0)
             if self.content_list_view.currentIndex() != first_index:
@@ -1023,6 +1082,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.content_list_view.setCurrentIndex(current_index)
 
     def set_first_comment_index(self):
+        """See set_first_download_session_index."""
         if not self.comment_tree_model.contains(self.current_comment):
             first_index = self.comment_tree_model.get_first_index()
             if self.comment_tree_view.currentIndex() != first_index:
@@ -1035,6 +1095,15 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.comment_tree_view.setCurrentIndex(current_index)
 
     def monitor_scrollbar(self, bar, model, load_method, load_percentage=90):
+        """
+        Monitors the supplied scrollbar for when it reaches the load_percentage position.  This is used to determine
+        when the infinite scroll should load the next page if it is enabled.  The load_percentage is adjustable and
+        should be determined based on the loading performance of the model that the view deals with.
+        :param bar: The scrollbar that is monitored.
+        :param model: The model who's view the scrollbar belongs to.
+        :param load_method: The method that should be called in order to load the next page.
+        :param load_percentage: The percentage at which the scrollbar will call the load method.
+        """
         try:
             if self.infinite_scroll_map[model]:
                 value = bar.value()
@@ -1049,9 +1118,19 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.check_load_more_button(model)
 
     def check_load_more_button(self, model):
+        """
+        Checks the supplied view model, and sets the 'load more' button visibility based on if there is another page
+        available.
+        """
         self.model_button_link_map[model].setVisible(model.has_next_page)
 
     def closeEvent(self, event):
+        """
+        Overrides the default close event in order to save the window settings.  The settings will only be saved if the
+        classes 'save_settings' flag is set.  When this dialog is setup to display specialty information (such as failed
+        downloads) the settings should not be saved so that the database view dialog displays correctly the next time
+        the user opens the dialog.
+        """
         self.settings_manager.database_view_geom['width'] = self.width()
         self.settings_manager.database_view_geom['height'] = self.height()
         self.settings_manager.database_view_geom['x'] = self.x()
