@@ -268,24 +268,24 @@ class SettingsManager:
         self.database_view_default_filter_significant = self.get('database_view',
                                                                  'database_view_default_filter_significant', True)
         default_quick_filters = {
-            'only_download_sessions_containing_activity': [
+            'Only Download Sessions Containing Activity': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
                 {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
                 {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
             ],
-            'only_download_sessions_containing_posts': [
+            'Only Download Sessions Containing Posts': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0}
             ],
-            'only_download_sessions_containing_content': [
+            'Only Download Sessions Containing Content': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0}
             ],
-            'only_download_sessions_containing_comments': [
+            'Only Download Sessions Containing Comments': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
             ],
-            'significant_reddit_objects_only': [
+            'Significant Reddit Objects Only': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
             ],
-            'non_significant_reddit_objects_only': [
+            'Non Significant Reddit Objects Only': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': False}
             ]
         }

@@ -8,6 +8,7 @@ from .imgur_settings_widget import ImgurSettingsWidget
 from .database_settings_widget import DatabaseSettingsWidget
 from .schedule_settings_widget import ScheduleSettingsWidget
 from .supported_video_settings_widget import SupportedVideoSettingsWidget
+from .quick_filter_settings_widget import QuickFilterSettingsWidget
 from DownloaderForReddit.utils import injector
 
 
@@ -32,6 +33,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             'Database': DatabaseSettingsWidget(),
             'Schedule': ScheduleSettingsWidget(),
             'Supported Video Sites': SupportedVideoSettingsWidget(),
+            'Quick Filters': QuickFilterSettingsWidget(),
         }
 
         for item in self.settings_map.keys():
