@@ -825,12 +825,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             self.add_to_download(reddit_object_id)
 
     def open_database_view_dialog(self):
-        if self.settings_manager.database_view_default_filter_significant:
-            kwargs = {
-                'filters': [('REDDIT_OBJECT', 'significant', 'eq', True)]
-            }
-        else:
-            kwargs = {}
+        kwargs = {
+            'filters': self.settings_manager.database_view_default_filters
+        }
         self.database_dialog = DatabaseDialog(**kwargs)
         self.database_dialog.show()
 
@@ -838,7 +835,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         kwargs = {
             'focus_model': 'DOWNLOAD_SESSION',
             'download_session_sort': 'start_time',
-            'download_session_desc': True
+            'download_session_desc': True,
+            'filters': self.settings_manager.download_session_view_default_filters
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -847,7 +845,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         kwargs = {
             'focus_model': 'REDDIT_OBJECT',
             'reddit_object_sort': 'name',
-            'visible_models': ['REDDIT_OBJECT']
+            'visible_models': ['REDDIT_OBJECT'],
+            'filters': self.settings_manager.reddit_object_view_default_filters
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -856,7 +855,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         kwargs = {
             'focus_model': 'POST',
             'reddit_object_sort': 'title',
-            'visible_models': ['POST']
+            'visible_models': ['POST'],
+            'filters': self.settings_manager.post_view_default_filters
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -865,7 +865,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         kwargs = {
             'focus_model': 'CONTENT',
             'reddit_object_sort': 'title',
-            'visible_models': ['CONTENT']
+            'visible_models': ['CONTENT'],
+            'filters': self.settings_manager.content_view_default_filters
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()
@@ -874,7 +875,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         kwargs = {
             'focus_model': 'COMMENT',
             'reddit_object_sort': 'post_title',
-            'visible_models': ['COMMENT']
+            'visible_models': ['COMMENT'],
+            'filters': self.settings_manager.comment_view_default_filters
         }
         dialog = DatabaseDialog(**kwargs)
         dialog.show()

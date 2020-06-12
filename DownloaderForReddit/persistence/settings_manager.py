@@ -265,8 +265,6 @@ class SettingsManager:
         self.database_view_comment_tree_headers = self.get('database_view',
                                                            'database_view_comment_tree_headers',
                                                            self.default_database_view_comment_headers)
-        self.database_view_default_filter_significant = self.get('database_view',
-                                                                 'database_view_default_filter_significant', True)
         default_quick_filters = {
             'Only Download Sessions Containing Activity': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
@@ -309,6 +307,23 @@ class SettingsManager:
         }
         self.database_view_quick_filters = self.get('database_view', 'database_view_quick_filters',
                                                     default_quick_filters)
+
+        default_database_view_filters = [
+            {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
+        ]
+        self.database_view_default_filters = self.get('database_view', 'database_view_default_filters',
+                                                      default_database_view_filters)
+        download_session_view_default_filters = [
+            {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
+            {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
+            {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
+        ]
+        self.download_session_view_default_filters = self.get('database_view', 'download_session_view_default_filters',
+                                                              download_session_view_default_filters)
+        self.reddit_object_view_default_filters = self.get('database_view', 'reddit_object_view_default_filters', [])
+        self.post_view_default_filters = self.get('database_view', 'post_view_default_filters', [])
+        self.content_view_default_filters = self.get('database_view', 'content_view_default_filters', [])
+        self.comment_view_default_filters = self.get('database_view', 'comment_view_default_filters', [])
         # endregion
 
         # region Misc Dialogs

@@ -25,7 +25,7 @@ class FilterWidget(QWidget, Ui_FilterWidget):
         self.filter_box_list_widget.setResizeMode(QListView.Adjust)
 
     def set_default_filters(self, *filters):
-        self.add_filters([FilterItem(*filter_tuple) for filter_tuple in filters])
+        self.add_filters([FilterItem(**filter_dict) for filter_dict in filters])
 
     def filter(self, model_name):
         return self.filter_download_filters(model_name)
