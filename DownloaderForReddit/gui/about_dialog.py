@@ -57,7 +57,5 @@ class AboutDialog(QtWidgets.QDialog, Ui_About):
 
         self.license_box.setOpenExternalLinks(True)
 
-        self.total_downloads_label.setText("Total Downloads: %s" % self.settings_manager.total_files_downloaded)
-
     def accept(self):
         super().accept()

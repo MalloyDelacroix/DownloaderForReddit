@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'GUI_Resources/AboutDialog.ui'
+# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\about_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_About(object):
     def setupUi(self, About):
@@ -15,7 +17,7 @@ class Ui_About(object):
         About.setMinimumSize(QtCore.QSize(365, 230))
         About.setMaximumSize(QtCore.QSize(1000, 1000))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Resources/Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("C:\\Users\\Kyle\\PycharmProjects\\DownloaderForReddit\\Resources\\ui_files\\../Resources/Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         About.setWindowIcon(icon)
         self.gridLayout_3 = QtWidgets.QGridLayout(About)
         self.gridLayout_3.setObjectName("gridLayout_3")
@@ -43,9 +45,6 @@ class Ui_About(object):
         self.license_box = QtWidgets.QTextBrowser(About)
         self.license_box.setObjectName("license_box")
         self.gridLayout_2.addWidget(self.license_box, 0, 0, 1, 2)
-        self.total_downloads_label = QtWidgets.QLabel(About)
-        self.total_downloads_label.setObjectName("total_downloads_label")
-        self.gridLayout_2.addWidget(self.total_downloads_label, 1, 0, 1, 1)
         self.buttonBox = QtWidgets.QDialogButtonBox(About)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
@@ -74,5 +73,3 @@ class Ui_About(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Courier New\';\">Downloader For Reddit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</span></p>\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:\'Courier New\';\"><br /></p>\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:\'Courier New\';\">You should have received a copy of the GNU General Public License along with Downloader For Reddit.  If not, see: </span><a href=\"http://www.gnu.org/licenses/\"><span style=\" text-decoration: underline; color:#0000ff;\">http://www.gnu.org/licenses/</span></a></p></body></html>"))
-        self.total_downloads_label.setText(_translate("About", "Total Downloads:"))
-
