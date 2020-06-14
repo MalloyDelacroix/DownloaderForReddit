@@ -30,6 +30,7 @@ from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProg
                              QFileDialog, QMessageBox, QWidget, QHBoxLayout)
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QCursor
+from pyqtspinner.spinner import WaitingSpinner
 import logging
 
 from ..guiresources.downloader_for_reddit_gui_auto import Ui_MainWindow
@@ -78,6 +79,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress = 0
         self.running = False
         self.db_handler = injector.get_database_handler()
+        self.spinner = WaitingSpinner(self.user_list_view, roundness=80.0, opacity=10.0, fade=72.0, radius=10.0,
+                                      lines=12, line_length=12.0, line_width=4.0, speed=1.4, color=(0, 0, 0))
 
         # region Settings
         self.settings_manager = injector.get_settings_manager()
@@ -534,6 +537,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.potential_downloads -= 1
         self.update_status_bar()
         # TODO: inform user somehow
+
+    def start_spinner(self, parent=None):
+        if parent is not None:
+            self.spinner.setParent(parent)
+        self.spinner.start()
+
+    def stop_spinner(self):
+        self.spinner.stop()
 
     def update_status_bar(self):
         self.statusbar.showMessage(f'Downloaded: {self.downloaded} of {self.potential_downloads}', -1)
