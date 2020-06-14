@@ -5,6 +5,7 @@ import logging
 from ..utils import system_util
 from ..core import const
 from ..database.model_enums import *
+from ..database import model_enums
 
 
 class SettingsManager:
@@ -102,9 +103,10 @@ class SettingsManager:
         }
 
         self.user_download_defaults = self.get('download_defaults', 'user_download_defaults',
-                                               default_user_download_dict)
+                                               default_user_download_dict, converter=self.convert_download_dict)
         self.subreddit_download_defaults = self.get('download_defaults', 'subreddit_download_defaults',
-                                                    default_subreddit_download_dict)
+                                                    default_subreddit_download_dict,
+                                                    converter=self.convert_download_dict)
         # endregion
 
         # region Display Settings
@@ -371,14 +373,14 @@ class SettingsManager:
             return value.value
         return value
 
-    def get(self, section, key, default_value=None, container=None):
+    def get(self, section, key, default_value=None, converter=None):
         """
         Attempts to extract the value from the config object that is loaded from a config file.  The default value is
         returned if the key is not found in the config.
         :param section: The section that the key is located in.
         :param key: The key to the value that is needed.
         :param default_value: The value that will be returned if the key is not found in the config object.
-        :param container: Optional.  Object that should wrap the value loaded from the config file.  Since objects such
+        :param converter: Optional.  Object that should wrap the value loaded from the config file.  Since objects such
                           as ModelEnums are not able to be stored in the config file, a storable value is used instead.
                           When a container is supplied the supplied container object will be initialized with the value
                           loaded from the config file.
@@ -389,11 +391,10 @@ class SettingsManager:
             value = self.config[section][key]
         except KeyError:
             value = default_value
-        if container is None:
+        if converter is None:
             return value
         else:
-            self.conversion_list.append(key)
-            return container(value)
+            return converter(value)
 
     def map_section(self, section, key):
         try:
@@ -402,9 +403,13 @@ class SettingsManager:
         except KeyError:
             self.section_dict[section] = [key]
 
-
-class QuickFilter:
-
-    def __init__(self, name, *filters):
-        self.name = name
-        self.filters = filters
+    def convert_download_dict(self, download_dict):
+        converts = {}
+        for key, value in download_dict.items():
+            if type(value) == str and value.startswith('<') and value.endswith('>'):
+                class_name = value.split('.')[0][1:]
+                n = int(value.split(':')[1].strip('>'))
+                e = getattr(model_enums, class_name)(n)
+                converts[key] = e
+        download_dict.update(converts)
+        return download_dict
