@@ -71,6 +71,19 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.content_widget.resize(self.settings_manager.database_view_content_widget_width, 0)
         self.comment_widget.resize(self.settings_manager.database_view_comment_widget_width, 0)
 
+        self.filter_widget.set_default_filters(*self.setup_kwargs.get('filters', []))
+        self.filter_widget.setVisible(False)
+        self.filter_button.clicked.connect(self.toggle_filter)
+
+        self.data_setup_filter_map = {
+            'DOWNLOAD_SESSION': self.setup_download_sessions,
+            'REDDIT_OBJECT': self.setup_reddit_objects,
+            'POST': self.setup_posts,
+            'CONTENT': self.setup_content,
+            'COMMENT': self.setup_comments
+        }
+        self.filter_widget.filter_changed.connect(self.update_filtering)
+
         self.model_visibility_map = {
             'DOWNLOAD_SESSION': self.show_download_sessions_checkbox,
             'REDDIT_OBJECT': self.show_reddit_objects_checkbox,
@@ -288,20 +301,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         for model, button in self.model_button_link_map.items():
             button.setVisible(model.has_next_page)
-
-        self.filter_widget.setVisible(False)
-        self.filter_button.clicked.connect(self.toggle_filter)
-
-        self.data_setup_filter_map = {
-            'DOWNLOAD_SESSION': self.setup_download_sessions,
-            'REDDIT_OBJECT': self.setup_reddit_objects,
-            'POST': self.setup_posts,
-            'CONTENT': self.setup_content,
-            'COMMENT': self.setup_comments
-        }
-        self.filter_widget.filter_changed.connect(self.update_filtering)
-
-        self.filter_widget.set_default_filters(*self.setup_kwargs.get('filters', []))
 
     def toggle_filter(self):
         self.filter_widget.setVisible(not self.filter_widget.isVisible())
