@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ObjectSettingsWidget.ui'
+# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\widgets\object_settings_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -274,7 +274,7 @@ class Ui_ObjectSettingsWidget(object):
     def retranslateUi(self, ObjectSettingsWidget):
         _translate = QtCore.QCoreApplication.translate
         ObjectSettingsWidget.setWindowTitle(_translate("ObjectSettingsWidget", "Settings"))
-        self.label.setText(_translate("ObjectSettingsWidget", "core Settings:"))
+        self.label.setText(_translate("ObjectSettingsWidget", "Core Settings:"))
         self.lock_settings_checkbox.setToolTip(_translate("ObjectSettingsWidget", "When checked, the settings in this window will not be overwritten due to changes in the main settings window"))
         self.lock_settings_checkbox.setText(_translate("ObjectSettingsWidget", "Lock Settings"))
         self.enable_download_checkbox.setText(_translate("ObjectSettingsWidget", "Download Enabled"))
