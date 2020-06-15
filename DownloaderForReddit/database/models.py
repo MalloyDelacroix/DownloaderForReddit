@@ -92,8 +92,35 @@ class RedditObjectList(BaseModel):
     def display_name(self):
         return f'{self.name} [{self.list_type}]'
 
+    @property
+    def date_created_display(self):
+        return self.get_display_date(self.date_created)
+
     def get_reddit_object_id_list(self):
         return [x.id for x in self.reddit_objects]
+
+    def get_reddit_object_sub(self, session):
+        return session.query(ListAssociation.reddit_object_id).filter(ListAssociation.reddit_object_list_id == self.id)
+
+    def get_post_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        sub = self.get_reddit_object_sub(session)
+        return session.query(func.count(Post.id)).filter(Post.significant_reddit_object_id.in_(sub)).scalar()
+
+    def get_content_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        sub = self.get_reddit_object_sub(session)
+        return session.query(func.count(Content.id)).join(Post)\
+            .filter(Post.significant_reddit_object_id.in_(sub)).scalar()
+
+    def get_comment_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        sub = self.get_reddit_object_sub(session)
+        return session.query(func.count(Comment.id)).join(Post)\
+            .filter(Post.significant_reddit_object_id.in_(sub)).scalar()
 
     def get_default_dict(self):
         return {
