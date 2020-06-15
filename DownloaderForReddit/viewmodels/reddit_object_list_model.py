@@ -87,13 +87,13 @@ class RedditObjectListModel(QAbstractListModel):
     def search_list(self, term):
         f = RedditObjectFilter()
         if term is not None and term != '':
-            self.reddit_objects = f.filter(self.session, ('name', 'wild_like', term), query=self.list.reddit_objects,
+            self.reddit_objects = f.filter(self.session, ('name', 'like', term), query=self.list.reddit_objects,
                                            order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.list_order_method).all()
+                                           desc=self.settings_manager.order_list_desc).all()
         else:
             self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
                                            order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.list_order_method).all()
+                                           desc=self.settings_manager.order_list_desc).all()
         self.refresh()
 
     def check_name(self, name):

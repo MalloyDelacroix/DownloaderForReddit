@@ -185,10 +185,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.refresh_user_count()
         self.refresh_subreddit_count()
 
-        self.user_list_search_edit.editingFinished.connect(
-            lambda: self.user_list_model.search_list(self.user_list_search_edit.text()))
-        self.subreddit_list_search_edit.editingFinished.connect(
-            lambda: self.subreddit_list_model.search_list(self.subreddit_list_search_edit.text()))
+        self.user_list_search_edit.textChanged.connect(
+            lambda text: self.user_list_model.search_list(text))
+        self.subreddit_list_search_edit.textChanged.connect(
+            lambda text: self.subreddit_list_model.search_list(text))
 
         self.download_button.clicked.connect(self.run_full_download)
         self.soft_stop_download_button.clicked.connect(lambda: self.stop_download_signal.emit(False))
