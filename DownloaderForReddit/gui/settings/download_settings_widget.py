@@ -7,10 +7,11 @@ from DownloaderForReddit.core.reddit_object_creator import RedditObjectCreator
 
 class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
         self.db = injector.get_database_handler()
         self.session = self.db.get_session()
+        self.kwargs = kwargs
 
         self.list_map = {}
 
@@ -20,7 +21,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
 
         self.add_list(self.master_user_list, True)
         self.add_list(self.master_subreddit_list, True)
-        for ro_list in self.session.query(RedditObjectList).order_by(RedditObjectList.id):
+        for ro_list in self.session.query(RedditObjectList).order_by(RedditObjectList.name):
             self.add_list(ro_list)
 
         self.list_widget.currentItemChanged.connect(
@@ -47,7 +48,18 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         self.list_widget.addItem(item)
 
     def load_settings(self):
-        self.list_widget.setCurrentRow(0)
+        open_list_id = self.kwargs.get('open_list_id', None)
+        if open_list_id is None:
+            self.list_widget.setCurrentRow(0)
+        else:
+            index = 0
+            for ro_list in self.list_map.values():
+                if ro_list.id == open_list_id:
+                    self.list_widget.setCurrentRow(index)
+                    break
+                else:
+                    index += 1
+
 
     def apply_settings(self):
         self.set_from_master()
