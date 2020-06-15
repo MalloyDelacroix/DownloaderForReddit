@@ -168,10 +168,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # endregion
 
         self.user_list_model = RedditObjectListModel('USER')
+        self.user_list_model.starting_add.connect(self.start_spinner)
+        self.user_list_model.finished_add.connect(self.stop_spinner)
         self.user_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.user_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.user_list_view.setModel(self.user_list_model)
         self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
+        self.subreddit_list_model.starting_add.connect(self.start_spinner)
+        self.subreddit_list_model.finished_add.connect(self.stop_spinner)
         self.subreddit_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.subreddit_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.subreddit_list_view.setModel(self.subreddit_list_model)
@@ -538,9 +542,12 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.update_status_bar()
         # TODO: inform user somehow
 
-    def start_spinner(self, parent=None):
-        if parent is not None:
-            self.spinner.setParent(parent)
+    def start_spinner(self, list_model):
+        if list_model == self.user_list_model:
+            parent = self.user_list_view
+        else:
+            parent = self.subreddit_list_view
+        self.spinner.setParent(parent)
         self.spinner.start()
 
     def stop_spinner(self):

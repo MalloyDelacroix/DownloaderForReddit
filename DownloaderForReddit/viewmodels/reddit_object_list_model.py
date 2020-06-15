@@ -12,6 +12,8 @@ from ..database.filters import RedditObjectFilter
 
 class RedditObjectListModel(QAbstractListModel):
 
+    starting_add = pyqtSignal(object)
+    finished_add = pyqtSignal()
     reddit_object_added = pyqtSignal(int)
     existing_object_added = pyqtSignal(tuple)
 
@@ -122,17 +124,19 @@ class RedditObjectListModel(QAbstractListModel):
         :param name_list: A list of names to be validated, made into reddit objects, and added to the current reddit
                           object list.
         """
+        self.starting_add.emit(self)
         name_list = self.check_existing(name_list)
         self.validating = True
         self.validation_thread = QThread()
         self.validator = ObjectValidator(name_list, self.list_type, list_defaults=self.list.get_default_dict())
+        self.validator.moveToThread(self.validation_thread)
         self.validation_thread.started.connect(self.validator.run)
         self.validator.new_object_signal.connect(self.add_validated_reddit_object)
         self.validator.invalid_name_signal.connect(lambda name: print(f'Invalid name: {name}'))
         self.validator.finished.connect(self.validation_thread.quit)
-        self.validation_thread.finished.connect(self.validator.deleteLater)
+        self.validator.finished.connect(self.validator.deleteLater)
+        self.validator.finished.connect(self.finish_adding)
         self.validation_thread.finished.connect(self.validation_thread.deleteLater)
-        self.validator.moveToThread(self.validation_thread)
         self.validation_thread.start()
 
     def check_existing(self, name_list):
@@ -158,6 +162,10 @@ class RedditObjectListModel(QAbstractListModel):
     def add_validated_reddit_object(self, ro_id):
         reddit_object = self.session.query(RedditObject).get(ro_id)
         self.insertRow(reddit_object)
+        self.reddit_objects = self.list.reddit_objects.all()
+
+    def finish_adding(self):
+        self.finished_add.emit()
 
     def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
         self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
