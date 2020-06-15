@@ -223,6 +223,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_combo.setContextMenuPolicy(Qt.CustomContextMenu)
         self.subreddit_list_combo.customContextMenuRequested.connect(self.subreddit_list_combo_context_menu)
 
+        self.schedule_widget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.schedule_widget.customContextMenuRequested.connect(self.schedule_context_menu)
+
         self.run_time = 0
         self.timer_widget = QWidget()
         self.timer_widget.setVisible(False)
@@ -297,6 +300,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def get_selected_subreddit_ids(self):
         return [x.id for x in self.get_selected_subreddits()]
 
+    # region Context Menus
     def reddit_object_list_context_menu(self, object_type):
         menu = QMenu()
         try:
@@ -362,7 +366,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addAction('Remove User List', self.remove_user_list)
         menu.addSeparator()
         menu.addAction('List Settings', self.user_list_settings)
-        menu.exec(QCursor.pos())
+        menu.exec_(QCursor.pos())
 
     def subreddit_list_combo_context_menu(self):
         menu = QMenu()
@@ -370,7 +374,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
         menu.addSeparator()
         menu.addAction('List Settings', self.subreddit_list_settings)
-        menu.exec(QCursor.pos())
+        menu.exec_(QCursor.pos())
+
+    def schedule_context_menu(self):
+        menu = QMenu()
+        menu.addAction('Schedule Settings', lambda: self.open_settings_dialog(open_display='Schedule'))
+        menu.exec_(QCursor.pos())
+    # endregion
 
     def user_settings(self, users):
         """
