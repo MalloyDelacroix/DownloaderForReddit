@@ -1,5 +1,5 @@
 import logging
-from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView
+from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor
 
@@ -479,10 +479,14 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         """
         menu = QMenu()
         for value in self.post_model.headers:
-            item = menu.addAction(value.replace('_', ' ').replace(' display', '').title())
-            item.triggered.connect(lambda x, header=value: self.toggle_post_table_header(header))
-            item.setCheckable(True)
-            item.setChecked(self.settings_manager.database_view_post_table_headers[value])
+            name = value.replace('_', ' ').replace(' display', '')
+            checkbox = QCheckBox(menu)
+            checkbox.setText(name)
+            checkbox.setChecked(self.settings_manager.database_view_post_table_headers[value])
+            checkbox.toggled.connect(lambda x, header=value: self.toggle_post_table_header(header))
+            action = QWidgetAction(menu)
+            action.setDefaultWidget(checkbox)
+            menu.addAction(action)
         menu.exec_(QCursor.pos())
 
     def attach_post_text_browser(self):
