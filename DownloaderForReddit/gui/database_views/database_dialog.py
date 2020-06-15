@@ -243,11 +243,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             index = self.comment_tree_model.headers.index(key)
             comment_headers.setSectionHidden(index, not value)
 
-        self.download_session_focus_radio.toggled.connect(lambda x: self.setup_download_sessions() if x else None)
-        self.reddit_object_focus_radio.toggled.connect(lambda x: self.setup_reddit_objects() if x else None)
-        self.post_focus_radio.toggled.connect(lambda x: self.setup_posts() if x else None)
-        self.content_focus_radio.toggled.connect(lambda x: self.setup_content() if x else None)
-        self.comment_focus_radio.toggled.connect(lambda x: self.setup_comments() if x else None)
+        self.download_session_focus_radio.toggled.connect(lambda x: self.focus_on('DOWNLOAD_SESSION') if x else None)
+        self.reddit_object_focus_radio.toggled.connect(lambda x: self.focus_on('REDDIT_OBJECT') if x else None)
+        self.post_focus_radio.toggled.connect(lambda x: self.focus_on('POST') if x else None)
+        self.content_focus_radio.toggled.connect(lambda x: self.focus_on('CONTENT') if x else None)
+        self.comment_focus_radio.toggled.connect(lambda x: self.focus_on('COMMENT') if x else None)
         self.focus_map = {
             'DOWNLOAD_SESSION': self.download_session_focus_radio,
             'REDDIT_OBJECT': self.reddit_object_focus_radio,
@@ -735,6 +735,28 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 dl_session.name = new_name
                 self.session.commit()
                 self.download_session_model.refresh()
+
+    def focus_on(self, model_name):
+        """
+        Checks that the supplied model view is visible.  If it is not, it is selected to become visible, then the
+        appropriate setup method is called to reflect the focused model.
+        :param model_name: The name of the model that is being focused in on.
+        """
+        if model_name == 'DOWNLOAD_SESSION':
+            self.show_download_sessions_checkbox.setChecked(True)
+            self.setup_download_sessions()
+        elif model_name == 'REDDIT_OBJECT':
+            self.show_reddit_objects_checkbox.setChecked(True)
+            self.setup_reddit_objects()
+        elif model_name == 'POST':
+            self.show_posts_checkbox.setChecked(True)
+            self.setup_posts()
+        elif model_name == 'CONTENT':
+            self.show_content_checkbox.setChecked(True)
+            self.setup_content()
+        else:
+            self.show_comments_checkbox.setChecked(True)
+            self.setup_comments()
 
     def setup_download_sessions(self):
         self.set_download_session_data()
