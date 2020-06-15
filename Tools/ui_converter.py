@@ -34,14 +34,19 @@ class Converter:
         ]
 
     def run(self):
+        if self.ui_file == 'list':
+            self.list_methods()
+            return
         try:
-            # self.command_dict[self.ui_file]()
             method = getattr(self, self.ui_file)
             method()
         except AttributeError:
             print(f'Command not recognized.  Choices are: ')
-            for x in self.callable_methods:
-                print(x)
+            self.list_methods()
+
+    def list_methods(self):
+        for x in self.callable_methods:
+            print(x)
 
     def convert(self, name, *sub_paths):
         in_path = self.get_in_path(name, *sub_paths)
