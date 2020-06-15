@@ -358,18 +358,18 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def user_list_combo_context_menu(self):
         menu = QMenu()
-        add_list = menu.addAction('Add User List')
-        remove_list = menu.addAction('Remove User List')
-        add_list.triggered.connect(self.add_user_list)
-        remove_list.triggered.connect(self.remove_user_list)
+        menu.addAction('Add User List', self.add_user_list)
+        menu.addAction('Remove User List', self.remove_user_list)
+        menu.addSeparator()
+        menu.addAction('List Settings', self.user_list_settings)
         menu.exec(QCursor.pos())
 
     def subreddit_list_combo_context_menu(self):
         menu = QMenu()
-        add_list = menu.addAction('Add Subreddit List')
-        remove_list = menu.addAction('Remove Subreddit List')
-        add_list.triggered.connect(self.add_subreddit_list)
-        remove_list.triggered.connect(self.remove_subreddit_list)
+        menu.addAction('Add Subreddit List', self.add_subreddit_list)
+        menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
+        menu.addSeparator()
+        menu.addAction('List Settings', self.subreddit_list_settings)
         menu.exec(QCursor.pos())
 
     def user_settings(self, users):
@@ -398,10 +398,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         dialog.exec_()
 
     def user_list_settings(self):
-        pass
+        self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.user_list_model.list.id)
 
     def subreddit_list_settings(self):
-        pass
+        self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.subreddit_list_model.list.id)
 
     def get_reddit_object_download_folder(self, reddit_object: RedditObject):
         sub_path = TokenParser.parse_tokens(reddit_object, reddit_object.post_save_structure)
@@ -981,9 +981,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.run_time += 1
         self.timer_label.setText(system_util.format_duration_short(self.run_time))
 
-    def open_settings_dialog(self):
+    def open_settings_dialog(self, **kwargs):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
-        settings = SettingsDialog(self)
+        settings = SettingsDialog(self, **kwargs)
         settings.exec_()
 
     def update_user_settings(self):
