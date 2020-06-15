@@ -11,7 +11,6 @@ from .model_enums import NsfwFilter
 
 
 class Filter(ABC):
-
     """
     An abstract class that filters database model queries based on a list of supplied tuples that correspond to model
     attributes.
@@ -144,7 +143,6 @@ class Filter(ABC):
 
 
 class RedditObjectListFilter(Filter):
-
     model = RedditObjectList
     default_order = 'name'
     filter_include = ['all', 'reddit_object_count', 'total_score']
@@ -163,19 +161,19 @@ class RedditObjectListFilter(Filter):
 
     def get_reddit_object_count_sub(self):
         return self.session.query(ListAssociation.reddit_object_list_id,
-                                 func.count(ListAssociation.reddit_object_id).label('ro_count')) \
+                                  func.count(ListAssociation.reddit_object_id).label('ro_count')) \
             .group_by(ListAssociation.reddit_object_list_id).subquery()
 
     def get_post_count_sub(self):
         return self.session.query(ListAssociation.reddit_object_list_id, Post.significant_reddit_object_id,
-                                                func.count(Post.id).label('post_count'))\
-                .join(Post, Post.significant_reddit_object_id == ListAssociation.reddit_object_id)\
-                .group_by(ListAssociation.reddit_object_list_id).subquery()
+                                  func.count(Post.id).label('post_count')) \
+            .join(Post, Post.significant_reddit_object_id == ListAssociation.reddit_object_id) \
+            .group_by(ListAssociation.reddit_object_list_id).subquery()
 
     def get_total_score_sub(self):
         return self.session.query(ListAssociation.reddit_object_list_id, Post.significant_reddit_object_id,
-                                  func.sum(Post.score).label('total_score'))\
-            .join(Post, Post.significant_reddit_object_id == ListAssociation.reddit_object_id)\
+                                  func.sum(Post.score).label('total_score')) \
+            .join(Post, Post.significant_reddit_object_id == ListAssociation.reddit_object_id) \
             .group_by(ListAssociation.reddit_object_list_id).subquery()
 
     def join_query(self, query, sub):
@@ -216,7 +214,6 @@ class RedditObjectListFilter(Filter):
 
 
 class RedditObjectFilter(Filter):
-
     model = RedditObject
     default_order = 'name'
     filter_include = ['all', 'post_score', 'post_count', 'comment_score', 'comment_count', 'download_count',
@@ -244,15 +241,15 @@ class RedditObjectFilter(Filter):
             .group_by(Post.significant_reddit_object_id).subquery()
 
     def get_post_count_sub(self):
-        return self.session.query(Post.significant_reddit_object_id, func.count(Post.id).label('post_count'))\
+        return self.session.query(Post.significant_reddit_object_id, func.count(Post.id).label('post_count')) \
             .group_by(Post.significant_reddit_object_id).subquery()
 
     def get_comment_score_sub(self):
-        return self.session.query(Post.significant_reddit_object_id, func.sum(Comment.score).label('total_score'))\
+        return self.session.query(Post.significant_reddit_object_id, func.sum(Comment.score).label('total_score')) \
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
 
     def get_comment_count_sub(self):
-        return self.session.query(Post.significant_reddit_object_id, func.count(Comment.id).label('comment_count'))\
+        return self.session.query(Post.significant_reddit_object_id, func.count(Comment.id).label('comment_count')) \
             .join(Post).group_by(Post.significant_reddit_object_id).subquery()
 
     def get_content_count_sub(self):
@@ -266,7 +263,7 @@ class RedditObjectFilter(Filter):
 
     def get_last_post_date_sub(self):
         return self.session.query(Post.significant_reddit_object_id,
-                                  func.max(Post.date_posted).label('last_post_date'))\
+                                  func.max(Post.date_posted).label('last_post_date')) \
             .group_by(Post.significant_reddit_object_id).subquery()
 
     def join_queries(self, query, sub):
@@ -351,10 +348,9 @@ class RedditObjectFilter(Filter):
 
 
 class DownloadSessionFilter(Filter):
-
     model = DownloadSession
     default_order = 'id'
-    included = ['all', 'reddit_object_count', 'post_count', 'comment_count', 'content_count']
+    included = ['all', 'reddit_object_count', 'post_count', 'comment_count', 'content_count', 'total_activity_count']
     excluded = ['extraction_thread_count', 'download_thread_count']
     filter_include = included
     filter_exclude = excluded
@@ -369,11 +365,13 @@ class DownloadSessionFilter(Filter):
             'post_count': CustomItem(self.filter_post_count, self.order_by_post_count, Integer),
             'comment_count': CustomItem(self.filter_comment_count, self.order_by_comment_count, Integer),
             'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer),
+            'total_activity_count': CustomItem(self.filter_total_activity_count, self.order_by_total_activity_count,
+                                               Integer)
         }
 
     def get_reddit_object_count_sub(self):
         return self.session.query(Post.download_session_id,
-                                 func.count(Post.significant_reddit_object_id.distinct()).label('ro_count'))\
+                                  func.count(Post.significant_reddit_object_id.distinct()).label('ro_count')) \
             .group_by(Post.download_session_id).subquery()
 
     def get_post_count_sub(self):
@@ -381,12 +379,15 @@ class DownloadSessionFilter(Filter):
             .group_by(Post.download_session_id).subquery()
 
     def get_comment_count_sub(self):
-        return self.session.query(Post.download_session_id, func.count(Comment.id).label('comment_count')) \
-            .join(Post).group_by(Post.download_session_id).subquery()
+        return self.session.query(Comment.download_session_id, func.count(Comment.id).label('comment_count')) \
+            .group_by(Comment.download_session_id).subquery()
 
     def get_content_count_sub(self):
-        return self.session.query(Post.download_session_id, func.count(Content.id).label('content_count')) \
-            .join(Post).group_by(Post.download_session_id).subquery()
+        return self.session.query(Content.download_session_id, func.count(Content.id).label('content_count')) \
+            .group_by(Content.download_session_id).subquery()
+
+    def get_total_activity_sub(self):
+        return self.get_post_count_sub(), self.get_comment_count_sub(), self.get_content_count_sub()
 
     def join_queries(self, query, sub):
         return query.outerjoin(sub, DownloadSession.id == sub.c.download_session_id)
@@ -415,6 +416,21 @@ class DownloadSessionFilter(Filter):
         query = self.join_queries(query, sub).filter(f)
         return query
 
+    def filter_total_activity_count(self, query, operator, value):
+        post_sub, comment_sub, content_sub = self.get_total_activity_sub()
+        f = self.op_map[operator](
+            (func.coalesce(post_sub.c.post_count, 0) +
+             func.coalesce(content_sub.c.content_count, 0) +
+             func.coalesce(comment_sub.c.comment_count, 0)),
+            value
+        )
+        query = query \
+            .outerjoin(post_sub, post_sub.c.download_session_id == DownloadSession.id) \
+            .outerjoin(content_sub, content_sub.c.download_session_id == DownloadSession.id) \
+            .outerjoin(comment_sub, comment_sub.c.download_session_id == DownloadSession.id) \
+            .filter(f)
+        return query
+
     def order_by_reddit_object_count(self, query):
         sub = self.get_reddit_object_count_sub()
         query = self.join_queries(query, sub)
@@ -435,9 +451,19 @@ class DownloadSessionFilter(Filter):
         query = self.join_queries(query, sub)
         return query, sub.c.content_count
 
+    def order_by_total_activity_count(self, query):
+        post_sub, comment_sub, content_sub = self.get_total_activity_sub()
+        query = query \
+            .outerjoin(post_sub, post_sub.c.download_session_id == DownloadSession.id) \
+            .outerjoin(content_sub, content_sub.c.download_session_id == DownloadSession.id) \
+            .outerjoin(comment_sub, comment_sub.c.download_session_id == DownloadSession.id)
+        return query, \
+               (func.coalesce(post_sub.c.post_count, 0) +
+                func.coalesce(content_sub.c.content_count, 0) +
+                func.coalesce(comment_sub.c.comment_count, 0)).label('total_activity')
+
 
 class PostFilter(Filter):
-
     model = Post
     default_order = 'title'
     include = ['all', 'author_name', 'subreddit_name', 'comment_count', 'content_count']
@@ -452,16 +478,16 @@ class PostFilter(Filter):
         self.custom_filter_map = {
             'comment_count': CustomItem(self.filter_comment_count, self.order_by_comment_count, Integer),
             'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer),
-            'author_name': CustomItem(self.filter_author_name,  self.order_by_author_name, String),
-            'subreddit_name': CustomItem(self.filter_subreddit_name,  self.order_by_subreddit_name, String),
+            'author_name': CustomItem(self.filter_author_name, self.order_by_author_name, String),
+            'subreddit_name': CustomItem(self.filter_subreddit_name, self.order_by_subreddit_name, String),
         }
 
     def get_comment_count_sub(self):
-        return self.session.query(Comment.post_id, func.count(Comment.id).label('comment_count'))\
+        return self.session.query(Comment.post_id, func.count(Comment.id).label('comment_count')) \
             .group_by(Comment.post_id).subquery()
 
     def get_content_count_sub(self):
-        return self.session.query(Content.post_id, func.count(Content.id).label('content_count'))\
+        return self.session.query(Content.post_id, func.count(Content.id).label('content_count')) \
             .group_by(Content.post_id).subquery()
 
     def join_queries(self, query, sub):
@@ -507,7 +533,6 @@ class PostFilter(Filter):
 
 
 class CommentFilter(Filter):
-
     model = Comment
     default_order = 'id'
     include = ['all', 'post_score', 'post_date', 'nsfw', 'author_name', 'subreddit_name']
@@ -531,7 +556,7 @@ class CommentFilter(Filter):
         }
 
     def get_content_count_sub(self):
-        return self.session.query(Content.comment_id, func.count(Content.id).label('content_count'))\
+        return self.session.query(Content.comment_id, func.count(Content.id).label('content_count')) \
             .group_by(Content.comment_id).subquery()
 
     def filter_post_title(self, query, operator, value):
@@ -592,7 +617,6 @@ class CommentFilter(Filter):
 
 
 class ContentFilter(Filter):
-
     model = Content
     default_order = 'title'
     include = ['all', 'post_score', 'post_date', 'nsfw', 'domain', 'author_name', 'subreddit_name']
