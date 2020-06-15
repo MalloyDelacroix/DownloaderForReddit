@@ -154,22 +154,27 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         self.download_session_model = DownloadSessionModel()
         self.download_session_list_view.setModel(self.download_session_model)
+        self.download_session_model.update_count.connect(lambda x: self.update_count_label(x, 'DOWNLOAD_SESSION'))
 
         self.reddit_object_model = RedditObjectModel()
         self.reddit_object_list_view.setModel(self.reddit_object_model)
+        self.reddit_object_model.update_count.connect(lambda x: self.update_count_label(x, 'REDDIT_OBJECT'))
 
         self.post_model = PostTableModel()
         self.post_table_view.setModel(self.post_model)
+        self.post_model.update_count.connect(lambda x: self.update_count_label(x, 'POST'))
 
         self.set_content_icon_size()
         self.content_model = ContentListModel()
         self.content_list_view.setModel(self.content_model)
+        self.content_model.update_count.connect(lambda x: self.update_count_label(x, 'CONTENT'))
         self.content_list_view.setBatchSize(1)
         self.content_list_view.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.content_list_view.verticalScrollBar().setSingleStep(20)
 
         self.comment_tree_model = CommentTreeModel()
         self.comment_tree_view.setModel(self.comment_tree_model)
+        self.comment_tree_model.update_count.connect(lambda x: self.update_count_label(x, 'COMMENT'))
         self.comment_tree_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
         self.download_session_widget.setVisible(self.show_download_sessions)
@@ -1123,6 +1128,26 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         available.
         """
         self.model_button_link_map[model].setVisible(model.has_next_page)
+
+    def update_count_label(self, count_pair, model):
+        visible, total = count_pair
+        if model == 'DOWNLOAD_SESSION':
+            visible_label = self.download_session_visible_count_label
+            count_label = self.download_session_count_label
+        elif model == 'REDDIT_OBJECT':
+            visible_label = self.reddit_object_visible_count_label
+            count_label = self.reddit_object_count_label
+        elif model == 'POST':
+            visible_label = self.post_visible_count_label
+            count_label = self.post_count_label
+        elif model == 'CONTENT':
+            visible_label = self.content_visible_count_label
+            count_label = self.content_count_label
+        else:
+            visible_label = self.comment_visible_count_label
+            count_label = self.comment_count_label
+        visible_label.setText(str(visible))
+        count_label.setText(str(total))
 
     def closeEvent(self, event):
         """

@@ -1,10 +1,13 @@
-from PyQt5.QtCore import (QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant)
+from PyQt5.QtCore import (QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant,
+                          pyqtSignal)
 from PyQt5.QtGui import QPixmap, QIcon
 
 from ..utils import injector
 
 
 class CustomItemModel:
+
+    update_count = pyqtSignal(tuple)
 
     settings_manager = injector.get_settings_manager()
     db = injector.get_database_handler()
@@ -16,6 +19,7 @@ class CustomItemModel:
         self.items = []
         self.total_items = 0
         self.loading = False
+        self.last_count = 0
 
     @property
     def has_next_page(self):
@@ -35,6 +39,7 @@ class CustomItemModel:
 
     def set_data(self, query):
         self.total_items = query.count()
+        # self.update_count.emit(self.rowCount(), self.total_items)
         data = query.limit(self.limit).all()
         self.beginRemoveRows(QModelIndex(), 0, len(self.items))
         self.items.clear()
@@ -53,7 +58,10 @@ class CustomItemModel:
             self.loading = False
 
     def rowCount(self, parent=None, *args, **kwargs):
-        return len(self.items)
+        row_count = len(self.items)
+        if row_count != self.last_count:
+            self.update_count.emit((row_count, self.total_items))
+        return row_count
 
     def columnCount(self, parent=None, *args, **kwargs):
         return len(self.headers)
@@ -304,12 +312,15 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
 
     def rowCount(self, parent=None):
         if parent.column() > 0:
-            return 0
-        if not parent.isValid():
-            item = self.root
+            row_count = 0
         else:
-            item = parent.internalPointer()
-        return item.childCount()
+            if not parent.isValid():
+                item = self.root
+            else:
+                item = parent.internalPointer()
+            row_count = item.childCount()
+        self.update_count.emit((row_count, self.total_items))
+        return row_count
 
 
 class TreeItem:
