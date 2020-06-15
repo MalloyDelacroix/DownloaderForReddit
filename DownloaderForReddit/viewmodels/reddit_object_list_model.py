@@ -53,7 +53,7 @@ class RedditObjectListModel(QAbstractListModel):
         if ro_list is not None:
             self.session.add(ro_list)
             self.list = ro_list
-            self.reddit_objects = self.list.reddit_objects.all()
+            self.sort_list()
             self.row_count = self.list.reddit_objects.count()
             return True
         return False
@@ -78,7 +78,8 @@ class RedditObjectListModel(QAbstractListModel):
             order = self.settings_manager.list_order_method
             desc = self.settings_manager.order_list_desc
             f = RedditObjectFilter()
-            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc).all()
+            self.reddit_objects = \
+                f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc).all()
             self.refresh()
         except AttributeError:
             # AttributeError indicates that no list is set for this view model
@@ -162,7 +163,7 @@ class RedditObjectListModel(QAbstractListModel):
     def add_validated_reddit_object(self, ro_id):
         reddit_object = self.session.query(RedditObject).get(ro_id)
         self.insertRow(reddit_object)
-        self.reddit_objects = self.list.reddit_objects.all()
+        self.sort_list()
 
     def finish_adding(self):
         self.finished_add.emit()
