@@ -268,18 +268,16 @@ class SettingsManager:
                                                            'database_view_comment_tree_headers',
                                                            self.default_database_view_comment_headers)
         default_quick_filters = {
-            'Only Download Sessions Containing Activity': [
-                {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
-                {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
-                {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
+            'Download Sessions With Activity': [
+                {'model': 'DOWNLOAD_SESSION', 'field': 'total_activity_count', 'operator': 'gt', 'value': 0}
             ],
-            'Only Download Sessions Containing Posts': [
+            'Download Sessions With Posts': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0}
             ],
-            'Only Download Sessions Containing Content': [
+            'Download Sessions With Content': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0}
             ],
-            'Only Download Sessions Containing Comments': [
+            'Download Sessions With Comments': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0}
             ],
             'Significant Reddit Objects Only': [
@@ -315,9 +313,7 @@ class SettingsManager:
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
             ],
             'download_session_view': [
-                {'model': 'DOWNLOAD_SESSION', 'field': 'post_count', 'operator': 'gt', 'value': 0},
-                {'model': 'DOWNLOAD_SESSION', 'field': 'content_count', 'operator': 'gt', 'value': 0},
-                {'model': 'DOWNLOAD_SESSION', 'field': 'comment_count', 'operator': 'gt', 'value': 0},
+                {'model': 'DOWNLOAD_SESSION', 'field': 'total_activity_count', 'operator': 'gt', 'value': 0}
             ],
             'reddit_object_view': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
