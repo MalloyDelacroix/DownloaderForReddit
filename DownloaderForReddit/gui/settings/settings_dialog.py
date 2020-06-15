@@ -15,7 +15,7 @@ from DownloaderForReddit.utils import injector
 
 class SettingsDialog(QDialog, Ui_SettingsDialog):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, **kwargs):
         QDialog.__init__(self)
         self.setupUi(self)
         self.parent = parent
@@ -28,7 +28,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         self.settings_map = {
             'Core': CoreSettingsWidget(),
-            'Download Defaults': DownloadSettingsWidget(),
+            'Download Defaults': DownloadSettingsWidget(**kwargs),
             'Display': DisplaySettingsWidget(self.parent),
             'Imgur': ImgurSettingsWidget(),
             'Database': DatabaseSettingsWidget(),
@@ -43,7 +43,11 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         self.current_display = None
         self.settings_list_widget.currentItemChanged.connect(lambda x: self.set_current_display(x.text()))
-        self.settings_list_widget.setCurrentRow(0)
+        open_display = kwargs.pop('open_display', None)
+        if open_display is None:
+            self.settings_list_widget.setCurrentRow(0)
+        else:
+            self.settings_list_widget.setCurrentRow(list(self.settings_map.keys()).index(open_display))
 
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.close)
