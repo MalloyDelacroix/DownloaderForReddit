@@ -843,6 +843,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                     self.post_text_browser.clear()
             except IndexError:
                 self.current_post = None
+                self.post_text_browser.setVisible(False)
             if self.cascade:
                 self.setup_call_list.append('POST')
                 if not self.post_focus:
