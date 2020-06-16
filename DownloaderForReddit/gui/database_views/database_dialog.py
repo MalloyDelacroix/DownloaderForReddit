@@ -2,6 +2,7 @@ import logging
 from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor
+from sqlalchemy import or_
 
 from DownloaderForReddit.guiresources.database_views.database_dialog_auto import Ui_DatabaseDialog
 from DownloaderForReddit.database.models import DownloadSession, RedditObject, Post, Content, Comment
@@ -159,11 +160,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         self.icon_size = self.settings_manager.database_view_icon_size
 
-        self.current_download_session = None
-        self.current_reddit_object = None
-        self.current_post = None
-        self.current_content = None
-        self.current_comment = None
+        self.current_download_session = []
+        self.current_reddit_object = []
+        self.current_post = []
+        self.current_content = []
+        self.current_comment = []
 
         self.download_session_model = DownloadSessionModel()
         self.download_session_list_view.setModel(self.download_session_model)
@@ -232,6 +233,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.content_model: self.settings_manager.database_view_content_infinite_scroll,
             self.comment_tree_model: self.settings_manager.database_view_comment_infinite_scroll
         }
+
+        self.download_session_list_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.reddit_object_list_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.post_table_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.content_list_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.comment_tree_view.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         self.download_session_list_view.selectionModel().selectionChanged.connect(self.set_current_download_session)
         self.reddit_object_list_view.selectionModel().selectionChanged.connect(self.set_current_reddit_object)
@@ -411,54 +418,79 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def content_desc(self):
         return self.content_desc_sort_checkbox.isChecked()
 
-    @property
-    def current_download_session_id(self):
+    def current_download_session_attr(self, attr):
         try:
-            return self.current_download_session.id
+            return [getattr(x, attr) for x in self.current_download_session]
         except AttributeError:
             return None
+
+    def current_reddit_object_attr(self, attr):
+        try:
+            return [getattr(x, attr) for x in self.current_reddit_object]
+        except AttributeError:
+            return None
+
+    def current_post_attr(self, attr):
+        try:
+            return [getattr(x, attr) for x in self.current_post]
+        except AttributeError:
+            return None
+
+    def current_content_attr(self, attr):
+        try:
+            return [getattr(x, attr) for x in self.current_content]
+        except AttributeError:
+            return None
+
+    def current_comment_attr(self, attr):
+        try:
+            return [getattr(x, attr) for x in self.current_comment]
+        except AttributeError:
+            return None
+
+    @property
+    def current_download_session_id(self):
+        return self.current_download_session_attr('id')
 
     @property
     def current_reddit_object_id(self):
-        try:
-            return self.current_reddit_object.id
-        except AttributeError:
-            return None
+        return self.current_reddit_object_attr('id')
+
+    @property
+    def current_user_id(self):
+        return [x.id for x in self.current_reddit_object if x.object_type == 'USER']
+
+    @property
+    def current_subreddit_id(self):
+        return [x.id for x in self.current_reddit_object if x.object_type == 'SUBREDDIT']
 
     @property
     def current_reddit_object_significant(self):
-        try:
-            return self.current_reddit_object.significant
-        except AttributeError:
-            return None
+        return self.current_reddit_object_attr('significant_reddit_object_id')
 
     @property
     def current_reddit_object_type(self):
         try:
-            return self.current_reddit_object.object_type
-        except AttributeError:
+            types = self.current_reddit_object_attr('object_type')
+            first = types[0]
+            if all(x == first for x in types):
+                return first
+            else:
+                return 'MIXED'
+        except IndexError:
             return None
 
     @property
     def current_post_id(self):
-        try:
-            return self.current_post.id
-        except AttributeError:
-            return None
+        return self.current_post_attr('id')
 
     @property
     def current_content_id(self):
-        try:
-            return self.current_content.id
-        except AttributeError:
-            return None
+        return self.current_content_attr('id')
 
     @property
     def current_comment_id(self):
-        try:
-            return self.current_comment.id
-        except AttributeError:
-            return None
+        return self.current_comment_attr('id')
 
     def download_session_view_context_menu(self):
         menu = QMenu()
@@ -587,7 +619,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_download_sessions:
             self.setup_download_sessions()
         else:
-            self.current_download_session = None
+            self.current_download_session = []
             self.adjust_focus('DOWNLOAD_SESSION')
             if self.show_reddit_objects:
                 self.setup_reddit_objects()
@@ -603,7 +635,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_reddit_objects:
             self.setup_reddit_objects()
         else:
-            self.current_reddit_object = None
+            self.current_reddit_object = []
             self.adjust_focus('REDDIT_OBJECT')
             if self.show_posts:
                 self.setup_posts()
@@ -617,7 +649,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_posts:
             self.setup_posts()
         else:
-            self.current_post = None
+            self.current_post = []
             self.adjust_focus('POST')
             if self.show_content:
                 self.setup_content()
@@ -629,7 +661,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_content:
             self.setup_content()
         else:
-            self.current_content = None
+            self.current_content = []
             self.adjust_focus('CONTENT')
             if self.show_comments:
                 self.setup_comments()
@@ -639,7 +671,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_comments:
             self.setup_comments()
         else:
-            self.current_comment = None
+            self.current_comment = []
             self.adjust_focus('COMMENT')
 
     def adjust_focus(self, calling_model):
@@ -806,9 +838,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_download_sessions:
             try:
                 self.current_download_session = \
-                    self.download_session_model.get_item(self.download_session_list_view.currentIndex().row())
+                    self.download_session_model.get_items(self.download_session_list_view.selectedIndexes())
             except IndexError:
-                self.current_download_session = None
+                self.current_download_session = []
             if self.cascade:
                 self.setup_call_list.append('DOWNLOAD_SESSION')
                 self.cascade_setup()
@@ -819,9 +851,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.show_reddit_objects:
             try:
                 self.current_reddit_object = \
-                    self.reddit_object_model.get_item(self.reddit_object_list_view.currentIndex().row())
+                    self.reddit_object_model.get_items(self.reddit_object_list_view.selectedIndexes())
             except IndexError:
-                self.current_reddit_object = None
+                self.current_reddit_object = []
             if self.cascade:
                 self.setup_call_list.append('REDDIT_OBJECT')
                 if not self.reddit_object_focus:
@@ -833,16 +865,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         """See set current download session."""
         if self.show_posts:
             try:
-                self.current_post = self.post_model.get_item(self.post_table_view.currentIndex().row())
-                if self.current_post.text_html is not None and self.current_post.text_html != '':
-                    self.post_text_browser.setVisible(True)
-                    self.post_text_browser.setHtml(self.current_post.text_html)
-                else:
-                    if not self.post_text_browser.stand_alone and self.post_text_browser.isVisible():
-                        self.post_text_browser.setVisible(False)
-                    self.post_text_browser.clear()
+                self.current_post = self.post_model.get_items(self.post_table_view.selectedIndexes())
+                self.handle_post_text_browser()
             except IndexError:
-                self.current_post = None
+                self.current_post = []
                 self.post_text_browser.setVisible(False)
             if self.cascade:
                 self.setup_call_list.append('POST')
@@ -851,13 +877,37 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 self.cascade_setup()
                 self.setup_call_list.clear()
 
+    def handle_post_text_browser(self):
+        post_size = len(self.current_post)
+        if post_size >= 1:
+            if post_size > 1:
+                parts = [f'<b>{post.title}</b>\n{post.text_html}' for post in self.current_post if
+                         post.text_html is not None]
+                if len(parts) > 0:
+                    text = '\n\n'.join(parts)
+                else:
+                    text = None
+            else:
+                text = self.current_post[0].text_html
+            if text is not None:
+                self.post_text_browser.setHtml(text)
+                self.post_text_browser.setVisible(True)
+            else:
+                self.post_text_browser.clear()
+                self.post_text_browser.setVisible(False)
+        else:
+            if not self.post_text_browser.stand_alone and self.post_text_browser.isVisible():
+                self.post_text_browser.setVisible(False)
+            self.post_text_browser.clear()
+
     def set_current_content(self):
         """See set current download session."""
         if self.show_content:
             try:
-                self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
+                # self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
+                self.current_content = self.content_model.get_items(self.content_list_view.selectedIndexes())
             except IndexError:
-                self.current_content = None
+                self.current_content = []
             if self.cascade:
                 self.setup_call_list.append('CONTENT')
                 if not self.content_focus:
@@ -869,7 +919,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         """See set current download session."""
         if self.show_comments:
             try:
-                self.current_comment = self.comment_tree_model.get_item(self.comment_tree_view.currentIndex())
+                # self.current_comment = self.comment_tree_model.get_item(self.comment_tree_view.currentIndex())
+                self.current_comment = self.comment_tree_model.get_items(self.comment_tree_view.selectedIndexes())
                 if self.current_comment.body_html is not None and self.current_comment.body_html != '':
                     self.comment_text_browser.setVisible(True)
                     self.comment_text_browser.setHtml(self.current_comment.body_html)
@@ -878,7 +929,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                         self.comment_text_browser.setVisible(False)
                     self.comment_text_browser.clear()
             except (IndexError, AttributeError):
-                self.current_comment = None
+                self.current_comment = []
                 self.comment_text_browser.setVisible(False)
                 self.comment_text_browser.clear()
             if self.cascade:
@@ -902,21 +953,26 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         if self.reddit_object_focus:
             if self.current_reddit_object_significant:
                 dl_ids = self.session.query(Post.download_session_id)\
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
+                    .filter(Post.significant_reddit_object_id.in_(self.current_reddit_object_id))
             else:
-                if self.current_reddit_object_type == 'USER':
+                current_reddit_object_type = self.current_reddit_object_type
+                if current_reddit_object_type == 'USER':
                     dl_ids = self.session.query(Post.download_session_id)\
-                        .filter(Post.author_id == self.current_reddit_object_id)
+                        .filter(Post.author_id.in_(self.current_user_id))
+                elif current_reddit_object_type == 'SUBREDDIT':
+                    dl_ids = self.session.query(Post.download_session_id)\
+                        .filter(Post.subreddit_id.in_(self.current_subreddit_id))
                 else:
                     dl_ids = self.session.query(Post.download_session_id)\
-                        .filter(Post.subreddit_id == self.current_reddit_object_id)
+                        .filter(or_(Post.author_id.in_(self.current_user_id),
+                                    Post.subreddit_id.in_(self.current_subreddit_id)))
             query = query.filter(DownloadSession.id.in_(dl_ids))
         elif self.post_focus:
-            query = query.filter(DownloadSession.id == self.current_post.download_session_id)
+            query = query.filter(DownloadSession.id.in_(self.current_post_attr('download_session_id')))
         elif self.content_focus:
-            query = query.filter(DownloadSession.id == self.current_content.download_session_id)
+            query = query.filter(DownloadSession.id.in_(self.current_content_attr('download_session_id')))
         elif self.comment_focus:
-            query = query.filter(DownloadSession.id == self.current_comment.download_session_id)
+            query = query.filter(DownloadSession.id.in_(self.current_comment_attr('download_session_id')))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.download_session_order,
                                desc=self.download_session_desc)
         if not extend:
@@ -933,18 +989,20 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         query = self.session.query(RedditObject)
         if self.download_session_focus:
             subquery = self.session.query(Post.significant_reddit_object_id).join(Content)\
-                .filter(Content.download_session_id == self.current_download_session_id)\
+                .filter(Content.download_session_id.in_(self.current_download_session_id))\
                 .union(
                 self.session.query(Post.significant_reddit_object_id)
-                    .filter(Post.download_session_id == self.current_download_session_id)
+                    .filter(Post.download_session_id.in_(self.current_download_session_id))
             )
             query = query.filter(RedditObject.id.in_(subquery))
         elif self.post_focus:
-            query = query.filter(RedditObject.id == self.current_post.significant_reddit_object_id)
+            query = query.filter(RedditObject.id.in_(self.current_post_attr('significant_reddit_object_id')))
         elif self.content_focus:
-            query = query.filter(RedditObject.id == self.current_content.post.significant_reddit_object_id)
+            query = query.filter(RedditObject.id.in_(
+                [x.post.significant_reddit_object_id for x in self.current_content]))
         elif self.comment_focus:
-            query = query.filter(RedditObject.id == self.current_comment.post.significant_reddit_object_id)
+            query = query.filter(RedditObject.id.in_(
+                [x.post.significant_reddit_object_id for x in self.current_comment]))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.reddit_object_order,
                                desc=self.reddit_object_desc)
         if not extend:
@@ -961,19 +1019,23 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         query = self.session.query(Post)
         if self.download_session_focus or self.reddit_object_focus:
             if self.show_download_sessions:
-                query = query.filter(Post.download_session_id == self.current_download_session_id)
+                query = query.filter(Post.download_session_id.in_(self.current_download_session_id))
             if self.show_reddit_objects:
                 if self.current_reddit_object_significant:
-                    query = query.filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
+                    query = query.filter(Post.significant_reddit_object_id.in_(self.current_reddit_object_id))
                 else:
-                    if self.current_reddit_object_type == 'USER':
-                        query = query.filter(Post.author_id == self.current_reddit_object_id)
+                    current_type = self.current_reddit_object_type
+                    if current_type == 'USER':
+                        query = query.filter(Post.author_id.in_(self.current_user_id))
+                    elif current_type == 'SUBREDDIT':
+                        query = query.filter(Post.subreddit_id.in_(self.current_subreddit_id))
                     else:
-                        query = query.filter(Post.subreddit_id == self.current_reddit_object_id)
+                        query = query.filter(or_(Post.author_id.in_(self.current_user_id),
+                                                 Post.subreddit_id.in_(self.current_subreddit_id)))
         elif self.content_focus:
-            query = query.filter(Post.id == self.current_content.post_id)
+            query = query.filter(Post.id.in_(self.current_content_attr('post_id')))
         elif self.comment_focus:
-            query = query.filter(Post.id == self.current_comment.post_id)
+            query = query.filter(Post.id.in_(self.current_comment_attr('post_id')))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.post_order,
                                desc=self.post_desc)
         if not extend:
@@ -989,37 +1051,45 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         filter_tups = self.filter_widget.filter('CONTENT')
         query = self.session.query(Content)
         if self.download_session_focus:
-            query = query.filter(Content.download_session_id == self.current_download_session_id)
+            query = query.filter(Content.download_session_id.in_(self.current_download_session_id))
             if self.show_posts:
-                query = query.filter(Content.post_id == self.current_post_id)
+                query = query.filter(Content.post_id.in_(self.current_post_id))
             elif self.show_reddit_objects:
                 if self.current_reddit_object_significant:
                     posts = self.session.query(Post.id) \
-                        .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
+                        .filter(Post.significant_reddit_object_id.in_(self.current_reddit_object_id))
                     query = query.filter(Content.post_id.in_(posts))
                 else:
-                    if self.current_reddit_object_type == 'USER':
-                        query = query.filter(Content.user_id == self.current_reddit_object_id)
+                    current_type = self.current_reddit_object_type
+                    if current_type == 'USER':
+                        query = query.filter(Content.user_id.in_(self.current_user_id))
+                    elif current_type == 'SUBREDDIT':
+                        query = query.filter(Content.subreddit_id.in_(self.current_subreddit_id))
                     else:
-                        query = query.filter(Content.subreddit_id == self.current_reddit_object_id)
+                        query = query.filter(or_(Content.user_id.in_(self.current_user_id),
+                                                 Content.subreddit_id.in_(self.current_subreddit_id)))
         elif self.reddit_object_focus:
             if self.current_reddit_object_significant:
                 posts = self.session.query(Post.id) \
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
+                    .filter(Post.significant_reddit_object_id.in_(self.current_reddit_object_id))
                 query = query.filter(Content.post_id.in_(posts))
             else:
-                if self.current_reddit_object_type == 'USER':
-                    query = query.filter(Content.user_id == self.current_reddit_object_id)
+                current_type = self.current_reddit_object_type
+                if current_type == 'USER':
+                    query = query.filter(Content.user_id.in_(self.current_user_id))
+                elif current_type == 'SUBREDDIT':
+                    query = query.filter(Content.subreddit_id.in_(self.current_subreddit_id))
                 else:
-                    query = query.filter(Content.subreddit_id == self.current_reddit_object_id)
+                    query = query.filter(or_(Content.user_id.in_(self.current_user_id),
+                                             Content.subreddit_id.in_(self.current_subreddit_id)))
             if self.show_posts:
-                query = query.filter(Content.post_id == self.current_post_id)
+                query = query.filter(Content.post_id.in_(self.current_post_id))
             elif self.show_download_sessions:
-                query = query.filter(Content.download_session_id == self.current_download_session_id)
+                query = query.filter(Content.download_session_id.in_(self.current_download_session_id))
         elif self.post_focus:
-            query = query.filter(Content.post_id == self.current_post_id)
+            query = query.filter(Content.post_id.in_(self.current_post_id))
         elif self.comment_focus:
-            query = query.filter(Content.comment_id == self.current_comment_id)
+            query = query.filter(Content.comment_id.in_(self.current_comment_id))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.content_order,
                                desc=self.content_desc)
         if not extend:
@@ -1036,17 +1106,17 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         query = self.session.query(Comment)
         if self.download_session_focus or self.reddit_object_focus:
             if self.show_posts:
-                query = query.filter(Comment.post_id == self.current_post_id)
+                query = query.filter(Comment.post_id.in_(self.current_post_id))
             elif self.show_reddit_objects:
                 posts = self.session.query(Post.id)\
-                    .filter(Post.significant_reddit_object_id == self.current_reddit_object_id)
+                    .filter(Post.significant_reddit_object_id.in_(self.current_reddit_object_id))
                 query = query.filter(Comment.post_id.in_(posts))
             else:
-                query = query.filter(Comment.download_session_id == self.current_download_session_id)
+                query = query.filter(Comment.download_session_id.in_(self.current_download_session_id))
         elif self.post_focus:
-            query = query.filter(Comment.post_id == self.current_post_id)
+            query = query.filter(Comment.post_id.in_(self.current_post_id))
         elif self.content_focus:
-            query = query.filter(Comment.post_id == self.current_content.comment_id)
+            query = query.filter(Comment.post_id.in_(self.current_content_attr('comment_id')))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.comment_order,
                                desc=self.comment_desc)
         if not extend:

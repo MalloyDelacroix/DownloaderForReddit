@@ -34,6 +34,13 @@ class CustomItemModel:
         else:
             raise IndexError
 
+    def get_items(self, indices):
+        items = []
+        rows = set(x.row() for x in indices)
+        for x in rows:
+            items.append(self.items[x])
+        return items
+
     def get_item_index(self, item):
         try:
             return self.createIndex(self.items.index(item), 0)
@@ -235,6 +242,12 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
     def get_item(self, index):
         try:
             return index.internalPointer().data(0, Qt.UserRole)
+        except AttributeError:
+            return None
+
+    def get_items(self, indices):
+        try:
+            return [index.internalPointer().data(0, Qt.UserRole) for index in indices]
         except AttributeError:
             return None
 
