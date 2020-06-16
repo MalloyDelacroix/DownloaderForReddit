@@ -547,7 +547,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             post = self.post_model.get_item(self.post_table_view.selectedIndexes()[0].row())
         except:
             post = None
+        open_post = menu.addAction('Visit Post', lambda: general_utils.open_post_in_browser(post))
+        menu.addSeparator()
         menu.addAction('Select All', lambda: self.post_table_view.selectAll())
+
+        open_post.setDisabled(post is None)
         menu.exec_(QCursor.pos())
 
     def post_headers_context_menu(self):

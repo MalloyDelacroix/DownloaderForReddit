@@ -45,3 +45,11 @@ def open_reddit_object_download_folder(reddit_object, calling_window):
         system_util.open_in_system(path)
     except FileNotFoundError:
         MessageDialog.no_download_folder(calling_window, reddit_object.object_type.lower())
+
+
+def open_post_in_browser(post):
+    try:
+        url = post.url
+        system_util.open_in_system(url)
+    except Exception as e:
+        print(e)
