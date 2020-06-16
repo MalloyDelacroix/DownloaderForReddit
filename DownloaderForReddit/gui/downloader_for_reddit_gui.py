@@ -917,7 +917,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'post_sort': 'title',
             'visible_models': ['DOWNLOAD_SESSION', 'POST'],
             'filters': [
-                ('POST', 'extracted', 'eq', False),
+                {'model': 'POST', 'field': 'extracted', 'operator': 'eq', 'value': False},
             ]
         }
         kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_extraction_view'])
@@ -932,7 +932,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'content_sort': 'title',
             'visible_models': ['DOWNLOAD_SESSION', 'CONTENT'],
             'filters': [
-                ('CONTENT', 'downloaded', 'eq', False),
+                {'model': 'CONTENT', 'field': 'downloaded', 'operator': 'eq', 'value': False}
             ]
         }
         kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_downloads_view'])
