@@ -1,6 +1,6 @@
 import logging
 from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 from sqlalchemy import or_
 
@@ -11,7 +11,7 @@ from DownloaderForReddit.database.filters import (DownloadSessionFilter, RedditO
 from DownloaderForReddit.viewmodels.database_view_models import (DownloadSessionModel, RedditObjectModel,
                                                                  PostTableModel, ContentListModel, CommentTreeModel)
 from DownloaderForReddit.gui.blank_dialog import BlankDialog
-from DownloaderForReddit.utils import injector, system_util
+from DownloaderForReddit.utils import injector, system_util, general_utils
 
 
 def hold_setup(method):
@@ -38,6 +38,8 @@ def check_hold(method):
 
 
 class DatabaseDialog(QWidget, Ui_DatabaseDialog):
+
+    download_signal = pyqtSignal(list)
 
     def __init__(self, save_settings=False, **setup_kwargs):
         """
@@ -251,8 +253,17 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.download_session_list_view.customContextMenuRequested.connect(self.download_session_view_context_menu)
 
+        self.reddit_object_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.reddit_object_list_view.customContextMenuRequested.connect(self.reddit_object_context_menu)
+
+        self.post_table_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.post_table_view.customContextMenuRequested.connect(self.post_view_context_menu)
+
         self.content_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.content_list_view.customContextMenuRequested.connect(self.content_view_context_menu)
+
+        self.comment_tree_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.comment_tree_view.customContextMenuRequested.connect(self.comment_view_context_menu)
 
         comment_headers = self.comment_tree_view.header()
         comment_headers.setSectionsMovable(True)
@@ -501,6 +512,42 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             dl_session = None
         rename = menu.addAction('Rename Session', lambda: self.rename_download_session(dl_session))
         rename.setDisabled(dl_session is None)
+        menu.addSeparator()
+        menu.addAction('Select All', lambda: self.download_session_list_view.selectAll())
+        menu.exec_(QCursor.pos())
+
+    def reddit_object_context_menu(self):
+        menu = QMenu()
+        try:
+            ro = self.reddit_object_model.get_item(self.reddit_object_list_view.selectedIndexes()[0].row())
+        except:
+            ro = None
+        oepn_dl_folder = menu.addAction('Open Download Folder', self.open_download_folder)
+        menu.addSeparator()
+        download = menu.addAction('Download', self.download_reddit_object)
+        menu.addSeparator()
+        menu.addAction('Select All', lambda: self.reddit_object_list_view.selectAll())
+
+        if ro is None:
+            oepn_dl_folder.setDisabled(True)
+            download.setDisabled(True)
+        menu.exec_(QCursor.pos())
+
+    def open_download_folder(self):
+        reddit_object = self.reddit_object_model.get_item(self.reddit_object_list_view.selectedIndexes()[0].row())
+        general_utils.open_reddit_object_download_folder(reddit_object, self)
+
+    def download_reddit_object(self):
+        reddit_objects = self.reddit_object_model.get_item(self.reddit_object_list_view.selectedIndexes())
+        self.download_signal.emit([x.id for x in reddit_objects])
+
+    def post_view_context_menu(self):
+        menu = QMenu()
+        try:
+            post = self.post_model.get_item(self.post_table_view.selectedIndexes()[0].row())
+        except:
+            post = None
+        menu.addAction('Select All', lambda: self.post_table_view.selectAll())
         menu.exec_(QCursor.pos())
 
     def post_headers_context_menu(self):
@@ -592,6 +639,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         item.setChecked(icon_size == self.icon_size)
         action_group.addAction(item)
         return item
+
+    def comment_view_context_menu(self):
+        menu = QMenu()
+        menu.addAction('Select All', lambda: self.comment_tree_view.selectAll())
+        menu.exec_(QCursor.pos())
 
     def comment_header_context_menu(self):
         """
