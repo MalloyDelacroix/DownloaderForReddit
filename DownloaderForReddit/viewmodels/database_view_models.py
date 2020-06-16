@@ -29,7 +29,10 @@ class CustomItemModel:
         return item in self.items
 
     def get_item(self, row):
-        return self.items[row]
+        if row >= 0:
+            return self.items[row]
+        else:
+            raise IndexError
 
     def get_item_index(self, item):
         try:
@@ -39,7 +42,6 @@ class CustomItemModel:
 
     def set_data(self, query):
         self.total_items = query.count()
-        # self.update_count.emit(self.rowCount(), self.total_items)
         data = query.limit(self.limit).all()
         self.beginRemoveRows(QModelIndex(), 0, len(self.items))
         self.items.clear()
@@ -61,6 +63,7 @@ class CustomItemModel:
         row_count = len(self.items)
         if row_count != self.last_count:
             self.update_count.emit((row_count, self.total_items))
+            self.last_count = row_count
         return row_count
 
     def columnCount(self, parent=None, *args, **kwargs):
