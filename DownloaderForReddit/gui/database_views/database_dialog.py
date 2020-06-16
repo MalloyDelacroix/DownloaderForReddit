@@ -176,6 +176,17 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.post_model = PostTableModel()
         self.post_table_view.setModel(self.post_model)
         self.post_model.update_count.connect(lambda x: self.update_count_label(x, 'POST'))
+        self.post_text_browser.setVisible(False)
+        self.post_text_browser.attach_signal.connect(self.attach_post_text_browser)
+        self.post_text_browser.detach_signal.connect(self.detach_post_text_browser)
+        post_headers = self.post_table_view.horizontalHeader()
+        post_headers.setStretchLastSection(True)
+        post_headers.setContextMenuPolicy(Qt.CustomContextMenu)
+        post_headers.customContextMenuRequested.connect(self.post_headers_context_menu)
+        post_headers.setSectionsMovable(True)
+        for key, value in self.settings_manager.database_view_post_table_headers.items():
+            index = self.post_model.headers.index(key)
+            post_headers.setSectionHidden(index, not value)
 
         self.set_content_icon_size()
         self.content_model = ContentListModel()
@@ -195,10 +206,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.post_widget.setVisible(self.show_posts)
         self.content_widget.setVisible(self.show_content)
         self.comment_widget.setVisible(self.show_comments)
-
-        self.post_text_browser.setVisible(False)
-        self.post_text_browser.attach_signal.connect(self.attach_post_text_browser)
-        self.post_text_browser.detach_signal.connect(self.detach_post_text_browser)
 
         self.comment_text_browser.setVisible(False)
         self.comment_text_browser.attach_signal.connect(self.attach_comment_text_browser)
@@ -236,14 +243,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         self.download_session_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.download_session_list_view.customContextMenuRequested.connect(self.download_session_view_context_menu)
-
-        post_headers = self.post_table_view.horizontalHeader()
-        post_headers.setContextMenuPolicy(Qt.CustomContextMenu)
-        post_headers.customContextMenuRequested.connect(self.post_headers_context_menu)
-        post_headers.setSectionsMovable(True)
-        for key, value in self.settings_manager.database_view_post_table_headers.items():
-            index = self.post_model.headers.index(key)
-            post_headers.setSectionHidden(index, not value)
 
         self.content_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.content_list_view.customContextMenuRequested.connect(self.content_view_context_menu)
