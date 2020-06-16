@@ -127,7 +127,9 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
         return combo
 
     def get_integer_field(self):
-        return QSpinBox()
+        spin_box = QSpinBox()
+        spin_box.setMaximum(1000000000)
+        return spin_box
 
     def get_string_field(self):
         x = QLineEdit()
