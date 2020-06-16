@@ -2,6 +2,8 @@ import os
 
 from . import injector
 from . import system_util
+from .token_parser import TokenParser
+from ..gui.message_dialogs import MessageDialog
 
 
 def rename_invalid_directory(path):
@@ -26,3 +28,20 @@ def reformat_invalid_name(path, formatting):
     new_name = formatting.replace('%[dir_name]', dir_name)
     new_path = system_util.join_path(dir_path, new_name)
     return new_path
+
+
+def get_reddit_object_download_folder(reddit_object):
+    sub_path = TokenParser.parse_tokens(reddit_object, reddit_object.post_save_structure)
+    if reddit_object.object_type == 'USER':
+        base_path = injector.get_settings_manager().user_save_directory
+    else:
+        base_path = injector.get_settings_manager().subreddit_save_directory
+    return os.path.join(base_path, sub_path)
+
+
+def open_reddit_object_download_folder(reddit_object, calling_window):
+    try:
+        path = get_reddit_object_download_folder(reddit_object)
+        system_util.open_in_system(path)
+    except FileNotFoundError:
+        MessageDialog.no_download_folder(calling_window, reddit_object.object_type.lower())

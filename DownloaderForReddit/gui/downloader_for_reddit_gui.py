@@ -413,20 +413,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def subreddit_list_settings(self):
         self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.subreddit_list_model.list.id)
 
-    def get_reddit_object_download_folder(self, reddit_object: RedditObject):
-        sub_path = TokenParser.parse_tokens(reddit_object, reddit_object.post_save_structure)
-        if reddit_object.object_type == 'USER':
-            base_path = self.settings_manager.user_save_directory
-        else:
-            base_path = self.settings_manager.subreddit_save_directory
-        return os.path.join(base_path, sub_path)
-
     def open_reddit_object_download_folder(self, reddit_object: RedditObject):
-        try:
-            path = self.get_reddit_object_download_folder(reddit_object)
-            system_util.open_in_system(path)
-        except FileNotFoundError:
-            MessageDialog.no_download_folder(self, reddit_object.object_type.lower())
+        general_utils.open_reddit_object_download_folder(reddit_object, self)
 
     def run_full_download(self):
         run_unextracted = self.settings_manager.finish_incomplete_extractions_at_session_start
