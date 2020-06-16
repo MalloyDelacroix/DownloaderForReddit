@@ -911,7 +911,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_failed_extraction_dialog(self):
         kwargs = {
-            'focus_model': 'DOWNLOAD_SESSION',
+            'focus_model': 'POST',
             'download_session_sort': 'start_time',
             'download_session_desc': True,
             'post_sort': 'title',
@@ -926,7 +926,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_failed_downloads_dialog(self):
         kwargs = {
-            'focus_model': 'DOWNLOAD_SESSION',
+            'focus_model': 'CONTENT',
             'download_session_sort': 'start_time',
             'download_session_desc': True,
             'content_sort': 'title',
