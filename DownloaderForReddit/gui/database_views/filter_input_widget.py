@@ -38,11 +38,9 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
         self.add_filter_button.clicked.connect(self.add_filter)
         self.model_combo.currentIndexChanged.connect(self.set_fields)
 
-        self.model_combo.addItem('Download Session', 'DOWNLOAD_SESSION')
-        self.model_combo.addItem('Reddit Object', 'REDDIT_OBJECT')
-        self.model_combo.addItem('Post', 'POST')
-        self.model_combo.addItem('Content', 'CONTENT')
-        self.model_combo.addItem('Comment', 'COMMENT')
+        self.model_list = ['DOWNLOAD_SESSION', 'REDDIT_OBJECT', 'POST', 'CONTENT', 'COMMENT']
+        for model in self.model_list:
+            self.model_combo.addItem(model.replace('_', ' ').title(), model)
 
         operators = [('Equal To', 'eq'), ('Not Equal', 'not'), ('<', 'lt'), ('<=', 'lte'), ('>', 'gt'), ('>=', 'gte'),
                      ('In', 'in'), ('Like', 'like'), ('Contains', 'contains')]
@@ -68,6 +66,12 @@ class FilterInputWidget(QWidget, Ui_FilterInputWidget):
     @property
     def current_operator(self):
         return self.operator_combo.currentData(Qt.UserRole)
+
+    def set_model_combo(self, model):
+        try:
+            self.model_combo.setCurrentIndex(self.model_list.index(model))
+        except IndexError:
+            pass
 
     def set_fields(self):
         self.field_combo.clear()

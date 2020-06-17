@@ -847,6 +847,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         else:
             self.show_comments_checkbox.setChecked(True)
             self.setup_comments()
+        self.filter_widget.filter_input_widget.set_model_combo(model_name)
 
     def setup_download_sessions(self):
         self.set_download_session_data()
