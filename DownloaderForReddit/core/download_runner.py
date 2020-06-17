@@ -8,7 +8,7 @@ from collections import namedtuple
 from praw.models import Redditor
 
 from .downloader import Downloader
-from .content_extractor import ContentExtractor
+from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
 from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
 from ..utils import injector, reddit_utils, video_merger, verify_run
@@ -193,7 +193,7 @@ class DownloadRunner(QObject):
             self.download_session_id = download_session.id
 
     def start_extractor(self):
-        self.extractor = ContentExtractor(self.submission_queue, self.download_queue, self.download_session_id)
+        self.extractor = ContentRunner(self.submission_queue, self.download_queue, self.download_session_id)
         self.extraction_thread = Thread(target=self.extractor.run)
         self.extraction_thread.start()
 
