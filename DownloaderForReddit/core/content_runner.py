@@ -89,7 +89,7 @@ class ContentRunner:
         :param post: The post that is to be extracted.
         """
         with self.db.get_scoped_session() as session:
-            submission_handler = SubmissionHandler(None, post, self.download_session_id, session)
+            submission_handler = SubmissionHandler(None, post, self.download_session_id, session, self.download_queue)
             if not post.is_self:
                 submission_handler.extract_submission_content()
             else:

@@ -59,10 +59,10 @@ class SubmissionHandler:
             extractor = CommentExtractor(post=self.post, comment=comment, download_session_id=self.download_session_id)
             self.finish_extractor(extractor)
         for comment in comment_handler.comments_to_extract_links:
-            kwargs = {'comment': comment, 'user': comment.author, 'subreddit': comment.subreddit,
-                      'significant_reddit_object': self.post.significant_reddit_object,
-                      'creation_date': comment.date_posted}
-            self.extract_text_links(comment.body_html, **kwargs)
+            self.extract_text_links(comment.body_html, comment=comment, user=comment.author,
+                                    subreddit=comment.subreddit,
+                                    significant_reddit_object=self.post.significant_reddit_object,
+                                    creation_date=comment.date_posted)
 
     @verify_run
     def extract_text_links(self, html_text, **kwargs):
@@ -139,6 +139,6 @@ class SubmissionHandler:
 
     def output_error(self, message, **kwargs):
         message = f'Failed to extract due to: {message}'
-        message_extra = f'\nTitle: {self.post.title}\nUser: {self.post.author.name}\nSubreddit: {self.post.subreddit.name}\n' \
-                        f'Url: {kwargs.get("url", self.post.url)}\n'
+        message_extra = f'\nTitle: {self.post.title}\nUser: {self.post.author.name}\n' \
+                        f'Subreddit: {self.post.subreddit.name}\nUrl: {kwargs.get("url", self.post.url)}\n'
         Message.send_extraction_error(message + message_extra)
