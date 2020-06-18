@@ -70,14 +70,14 @@ class SubmittableCreator:
         return None
 
     @classmethod
-    def check_duplicate_comment(cls, comment_id: str, session: Session):
-        return session.query(Comment).filter(Comment.reddit_id == comment_id).scalar() is None
+    def check_duplicate_comment(cls, praw_comment_id: str, session: Session):
+        return session.query(Comment).filter(Comment.reddit_id == praw_comment_id).scalar() is None
 
     @classmethod
     def get_author(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             author = cls.db.get_or_create(User, name=praw_object.author.name,
-                                           date_created=cls.get_created(praw_object.author), session=session)[0]
+                                          date_created=cls.get_created(praw_object.author), session=session)[0]
         except AttributeError:
             author = cls.db.get_or_create(User, name='deleted', session=session)[0]
         return author
@@ -86,8 +86,8 @@ class SubmittableCreator:
     def get_subreddit(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             subreddit = cls.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name,
-                                              date_created=cls.get_created(praw_object.subreddit),
-                                              session=session)[0]
+                                             date_created=cls.get_created(praw_object.subreddit),
+                                             session=session)[0]
         except AttributeError:
             subreddit = cls.db.get_or_create(Subreddit, name='deleted', session=session)[0]
         return subreddit
