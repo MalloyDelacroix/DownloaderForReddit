@@ -3,7 +3,7 @@ import os
 from . import injector
 from . import system_util
 from .token_parser import TokenParser
-from ..gui.message_dialogs import MessageDialog
+from ..gui import message_dialogs
 
 
 def rename_invalid_directory(path):
@@ -44,7 +44,7 @@ def open_reddit_object_download_folder(reddit_object, calling_window):
         path = get_reddit_object_download_folder(reddit_object)
         system_util.open_in_system(path)
     except FileNotFoundError:
-        MessageDialog.no_download_folder(calling_window, reddit_object.object_type.lower())
+        message_dialogs.no_download_folder(calling_window, reddit_object.object_type.lower())
 
 
 def open_post_in_browser(post):

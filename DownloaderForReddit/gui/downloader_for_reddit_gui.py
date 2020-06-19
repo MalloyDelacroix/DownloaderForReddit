@@ -38,17 +38,17 @@ from ..gui.about_dialog import AboutDialog
 from ..gui.add_reddit_object_dialog import AddRedditObjectDialog
 from ..gui.existing_reddit_object_add_dialog import ExistingRedditObjectAddDialog
 from ..gui.ffmpeg_info_dialog import FfmpegInfoDialog
-
-from ..gui.message_dialogs import MessageDialog
+from ..gui import message_dialogs
 from ..gui.reddit_object_settings_dialog import RedditObjectSettingsDialog
 from ..gui.update_dialog_gui import UpdateDialog
 from ..gui.database_views.database_dialog import DatabaseDialog
 from ..gui.database_views.database_statistics_dialog import DatabaseStatisticsDialog
 from ..gui.settings.settings_dialog import SettingsDialog
 from ..core.download_runner import DownloadRunner
+from ..core.update_runner import UpdateRunner
 from ..database.models import User, Subreddit, RedditObject, RedditObjectList
 from ..database.filters import RedditObjectFilter
-from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, TokenParser, UpdateChecker)
+from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..version import __version__
@@ -108,7 +108,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # region File Menu
         self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
         self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
-        self.exit_menu_item.triggered.connect(self.close_from_menu)
+        # self.exit_menu_item.triggered.connect(self.close_from_menu)
+        self.exit_menu_item.triggered.connect(lambda: self.fetch_new_post_comments(None))
         # endregion
 
         # region View Menu
@@ -503,13 +504,50 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         else:
             self.run(user_id_list=None, sub_id_list=None, reddit_object_id_list=args)
 
-    def handle_failed_download_object(self, failed_post):
+    def update_post_scores(self, post_id_list):
+        print('scores')
+        post_count = len(post_id_list)
+        if post_count < 200 or self.large_post_update_alert(post_count):
+            self.update_runner = UpdateRunner(run_method='UPDATE_SCORES', post_id_list=post_id_list)
+            self.run_update(self.update_runner)
+
+    def fetch_new_post_comments(self, post_id_list):
+        post_count = len(post_id_list)
+        if post_count < 200 or self.large_post_update_alert(post_count):
+            self.update_runner = UpdateRunner(run_method='UPDATE_COMMENTS', post_id_list=post_id_list)
+            self.run_update(self.update_runner)
+
+    def large_post_update_alert(self, count):
         """
-        Handles a post sent from the download runner that failed to be extracted or downloaded.
-        :param failed_post: The post that failed to extract or download.
-        :type failed_post: Post
+        Alerts the user when a large number of posts are about to be updated and asks if they want to proceed.  The
+        answer to that question is returned.  The settings manager is checked before displaying the dialog to see if
+        the ignore flag for this dialog is set.  If it is set to be ignored, True is always returned.
+        :param count: The number of posts that are about to be updated.  Supplied so it can be displayed to the user.
+        :return: True if the update action should proceed, False if it should not.
         """
-        self.failed_list.append(failed_post)
+        if self.settings_manager.large_post_update_warning:
+            accepted, do_not_show = message_dialogs.optional_question_dialog(
+                self, 'Update Posts?', f'There are {"{:,}".format(count)} posts in this selection to be updated.  It '
+                                       f'could take a while to update this many posts.\n\n'
+                                       f'Are you sure you want to proceed?')
+            self.settings_manager.large_post_update_warning = not do_not_show
+            return accepted
+        else:
+            return True
+
+    def run_update(self, update_runner):
+        self.update_thread = QThread()
+        update_runner.moveToThread(self.update_thread)
+        self.stop_download_signal.connect(update_runner.stop)
+        update_runner.finished.connect(self.update_thread.quit)
+        update_runner.finished.connect(self.update_runner.deleteLater)
+        self.update_thread.finished.connect(self.update_thread.deleteLater)
+        self.update_thread.finished.connect(self.finish_update)
+        self.update_thread.started.connect(update_runner.run)
+        self.update_thread.start()
+
+    def finish_update(self):
+        pass
 
     def update_output(self, text):
         self.output_box.append(text)
@@ -593,10 +631,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                     self.refresh_user_count()
                 else:
                     text = f'A user list already exists with the name "{list_name}"'
-                    MessageDialog.generic_message(self, title='List Name Exists', text=text)
+                    message_dialogs.generic_message(self, title='List Name Exists', text=text)
             else:
                 self.logger.warning('Unable to add user list', extra={'invalid_name': list_name}, exc_info=True)
-                MessageDialog.not_valid_name(self)
+                message_dialogs.not_valid_name(self)
 
     def get_list_name(self, object_type):
         """
@@ -613,7 +651,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def remove_user_list(self):
         try:
-            if MessageDialog.remove_user_list(self):
+            if message_dialogs.remove_user_list(self):
                 current_user_list = self.user_lists_combo.currentText()
                 list_size = self.user_list_model.rowCount()
                 self.user_list_model.delete_current_list()
@@ -626,7 +664,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                                                              'previous_list_size': list_size})
         except KeyError:
             self.logger.warning('Unable to remove user list: No user list available to remove', exc_info=True)
-            MessageDialog.no_user_list(self)
+            message_dialogs.no_user_list(self)
 
     def change_user_list(self):
         """Changes the user list model based on the user_list_combo"""
@@ -662,15 +700,15 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                     self.refresh_subreddit_count()
                 else:
                     text = f'A subreddit list already exists with the name "{list_name}"'
-                    MessageDialog.generic_message(self, title='List Name Exists', text=text)
+                    message_dialogs.generic_message(self, title='List Name Exists', text=text)
             else:
                 self.logger.warning('Unable to add subreddit list', extra={'invalid_name': list_name},
                                     exc_info=True)
-                MessageDialog.not_valid_name(self)
+                message_dialogs.not_valid_name(self)
 
     def remove_subreddit_list(self):
         try:
-            if MessageDialog.remove_subreddit_list(self):
+            if message_dialogs.remove_subreddit_list(self):
                 current_sub_list = self.subreddit_list_combo.currentText()
                 list_size = self.subreddit_list_model.rowCount()
                 self.subreddit_list_model.delete_current_list()
@@ -683,7 +721,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                                                                   'previous_list_size': list_size})
         except KeyError:
             self.logger.warning('Unable to remove subreddit list: No list to remove', exc_info=True)
-            MessageDialog.no_subreddit_list(self)
+            message_dialogs.no_subreddit_list(self)
 
     def change_subreddit_list(self):
         new_list_name = self.subreddit_list_combo.currentText()
@@ -731,11 +769,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         :type list_model: ListModel
         """
         try:
-            if MessageDialog.remove_reddit_object(self, reddit_object.name):
+            if message_dialogs.remove_reddit_object(self, reddit_object.name):
                 list_model.delete_reddit_object(reddit_object)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
-            MessageDialog.no_reddit_object_selected(self, list_model.list_type)
+            message_dialogs.no_reddit_object_selected(self, list_model.list_type)
 
     def remove_invalid_reddit_object(self, reddit_object):
         """
@@ -744,7 +782,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         :param reddit_object: The reddit object (User or Subreddit) that is invalid and is to be removed.
         :type reddit_object: RedditObject
         """
-        if MessageDialog.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
+        if message_dialogs.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
             self.remove_problem_reddit_object(reddit_object, self.settings_manager.rename_invalidated_download_folders,
                                               'Invalid')
 
@@ -755,7 +793,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         :param reddit_object: The reddit object to which access if forbidden.
         :type reddit_object: RedditObject
         """
-        if MessageDialog.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
+        if message_dialogs.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
             self.remove_problem_reddit_object(reddit_object, False, 'Forbidden')
 
     def remove_problem_reddit_object(self, reddit_object, rename, reason):
@@ -775,7 +813,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             path = self.get_reddit_object_download_folder(reddit_object)
             if not general_utils.rename_invalid_directory(path):
                 rename_message = 'Failed'
-                MessageDialog.failed_to_rename_error(self, reddit_object.name)
+                message_dialogs.failed_to_rename_error(self, reddit_object.name)
             else:
                 rename_message = 'Success'
         self.refresh_object_count()
@@ -819,7 +857,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if os.path.isdir(folder):
             return folder
         else:
-            MessageDialog.invalid_file_path(self)
+            message_dialogs.invalid_file_path(self)
             return None
 
     def check_existing_object_for_download(self, existing_tuple: tuple):
@@ -840,12 +878,21 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if self.settings_manager.download_on_add:
             self.add_to_download(reddit_object_id)
 
+    def display_database_dialog(self, **kwargs):
+        """
+        Creates the database dialog instance with the supplied kwargs, connects the appropriate signals, and returns the
+        dialog to be used by the caller.
+        """
+        database_dialog = DatabaseDialog(**kwargs)
+        database_dialog.update_post_score_signal.connect(self.update_post_scores)
+        database_dialog.update_post_comments_signal.connect(self.fetch_new_post_comments)
+        database_dialog.show()
+
     def open_database_view_dialog(self):
         kwargs = {
             'filters': self.settings_manager.database_view_default_filters['database_view']
         }
-        self.database_dialog = DatabaseDialog(save_settings=True, **kwargs)
-        self.database_dialog.show()
+        self.display_database_dialog(save_settings=True, **kwargs)
 
     def open_download_sessions_dialog(self):
         kwargs = {
@@ -854,8 +901,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'download_session_desc': True,
             'filters': self.settings_manager.database_view_default_filters['download_session_view']
         }
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_reddit_objects_dialog(self):
         kwargs = {
@@ -864,8 +910,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'visible_models': ['REDDIT_OBJECT'],
             'filters': self.settings_manager.database_view_default_filters['reddit_object_view']
         }
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_posts_dialog(self):
         kwargs = {
@@ -874,8 +919,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'visible_models': ['POST'],
             'filters': self.settings_manager.database_view_default_filters['post_view']
         }
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_content_dialog(self):
         kwargs = {
@@ -884,8 +928,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'visible_models': ['CONTENT'],
             'filters': self.settings_manager.database_view_default_filters['content_view']
         }
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_comment_dialog(self):
         kwargs = {
@@ -894,8 +937,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             'visible_models': ['COMMENT'],
             'filters': self.settings_manager.database_view_default_filters['comment_view']
         }
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_failed_extraction_dialog(self):
         kwargs = {
@@ -909,8 +951,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             ]
         }
         kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_extraction_view'])
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_failed_downloads_dialog(self):
         kwargs = {
@@ -924,8 +965,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             ]
         }
         kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_downloads_view'])
-        dialog = DatabaseDialog(**kwargs)
-        dialog.show()
+        self.display_database_dialog(**kwargs)
 
     def open_database_statistics_dialog(self):
         dialog = DatabaseStatisticsDialog()
@@ -1052,7 +1092,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             system_util.open_in_system(file)
         except FileNotFoundError:
             self.logger.error('Unable to open user manual: Manual file not found', exc_info=True)
-            MessageDialog.user_manual_not_found(self)
+            message_dialogs.user_manual_not_found(self)
 
     def refresh_object_count(self):
         self.refresh_user_count()
@@ -1195,7 +1235,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         update_checker.exec_()
 
     def no_update_available_dialog(self):
-        MessageDialog.up_to_date_message(self)
+        message_dialogs.up_to_date_message(self)
 
     def display_ffmpeg_info_dialog(self):
         dialog = FfmpegInfoDialog()
@@ -1207,6 +1247,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         disable reddit video download depending on the user input through the dialog.
         """
         if not video_merger.ffmpeg_valid and self.settings_manager.display_ffmpeg_warning_dialog:
-            disable = MessageDialog.ffmpeg_warning(self)
+            disable = message_dialogs.ffmpeg_warning(self)
             self.settings_manager.download_reddit_hosted_videos = not disable
             self.settings_manager.display_ffmpeg_warning_dialog = False

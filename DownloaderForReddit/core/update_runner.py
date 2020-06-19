@@ -1,12 +1,13 @@
 import logging
 from datetime import datetime
 from queue import Queue
+from threading import Thread
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .submission_handler import SubmissionHandler
+from .downloader import Downloader
 from ..database.models import DownloadSession, Post
 from ..utils import injector, reddit_utils, verify_run
-from ..messaging.message import Message
 
 
 class UpdateRunner(QObject):
@@ -16,21 +17,31 @@ class UpdateRunner(QObject):
     """
 
     finished = pyqtSignal()
-    stop_run = pyqtSignal()
 
-    def __init__(self, **kwargs):
+    def __init__(self, run_method, **kwargs):
         super().__init__()
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = injector.get_settings_manager()
         self.db = injector.get_database_handler()
         self.reddit_instance = reddit_utils.get_reddit_instance()
+        self.run_method = run_method
         self.reddit_object_id_list = kwargs.get('reddit_object_id_list', None)
         self.post_id_list = kwargs.get('post_id_list', None)
 
         self.continue_run = True
         self.post_queue = Queue(maxsize=-1)
+        self.download_thread = None
+        self.downloader = None
         self.download_queue = Queue(maxsize=-1)
         self.download_session_id = None
+
+    def run(self):
+        self.logger.debug('Update runner starting')
+        if self.run_method == 'UPDATE_SCORES':
+            self.update_scores()
+        elif self.run_method == 'UPDATE_COMMENTS':
+            self.update_comments()
+        self.logger.debug('Update runner finished')
 
     def create_download_session(self):
         with self.db.get_scoped_session() as session:
@@ -43,6 +54,11 @@ class UpdateRunner(QObject):
             session.add(download_session)
             session.commit()
             self.download_session_id = download_session.id
+
+    def finish_download_session(self):
+        with self.db.get_scoped_update_session() as session:
+            download_session = session.query(DownloadSession).get(self.download_session_id)
+            download_session.end_time = datetime.now()
 
     def get_post_ids(self):
         """
@@ -59,6 +75,7 @@ class UpdateRunner(QObject):
         self.get_post_ids()
         for post_id in self.post_id_list:
             self.extract_score(post_id)
+        self.finished.emit()
 
     @verify_run
     def extract_score(self, post_id):
@@ -79,10 +96,20 @@ class UpdateRunner(QObject):
         Queries the submission that the post is based on from reddit and iterates through the comments, extracting new
         ones as specified by the significant reddit objects comment settings.
         """
+        self.create_download_session()
+        self.start_downloader()
         self.get_post_ids()
         for post_id in self.post_id_list:
             self.extract_comments(post_id)
         self.download_queue.put(None)
+        self.download_thread.join()
+        self.finish_download_session()
+        self.finished.emit()
+
+    def start_downloader(self):
+        self.downloader = Downloader(self.download_queue, self.download_session_id)
+        self.download_thread = Thread(target=self.downloader.run)
+        self.download_thread.start()
 
     @verify_run
     def extract_comments(self, post_id):
@@ -91,5 +118,7 @@ class UpdateRunner(QObject):
             submission = self.reddit_instance.submission(id=post.reddit_id)
             submission_handler = SubmissionHandler(submission, post, self.download_session_id, session,
                                                    self.download_queue)
-            self.stop_run.connect(submission_handler.stop)
             submission_handler.extract_comments()
+
+    def stop(self):
+        self.continue_run = False
