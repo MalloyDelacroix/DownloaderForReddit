@@ -1,13 +1,14 @@
 import logging
 from datetime import datetime
 from queue import Queue
-from threading import Thread
+from threading import Thread, Event
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .submission_handler import SubmissionHandler
 from .downloader import Downloader
+from .runner import verify_run
 from ..database.models import DownloadSession, Post
-from ..utils import injector, reddit_utils, verify_run
+from ..utils import injector, reddit_utils
 
 
 class UpdateRunner(QObject):
@@ -28,6 +29,7 @@ class UpdateRunner(QObject):
         self.reddit_object_id_list = kwargs.get('reddit_object_id_list', None)
         self.post_id_list = kwargs.get('post_id_list', None)
 
+        self.stop_run = Event()
         self.continue_run = True
         self.post_queue = Queue(maxsize=-1)
         self.download_thread = None
@@ -121,4 +123,4 @@ class UpdateRunner(QObject):
             submission_handler.extract_comments()
 
     def stop(self):
-        self.continue_run = False
+        self.stop_run.set()

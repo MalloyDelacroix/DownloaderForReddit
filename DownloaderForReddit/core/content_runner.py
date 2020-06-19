@@ -1,17 +1,17 @@
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from queue import Empty
 
+from .runner import Runner, verify_run
 from .submission_handler import SubmissionHandler
 from .submittable_creator import SubmittableCreator
 from ..database.models import Post
-from ..utils import injector, verify_run, reddit_utils
+from ..utils import injector, reddit_utils
 
 
-class ContentRunner:
+class ContentRunner(Runner):
 
-    def __init__(self, submission_queue, download_queue, download_session_id):
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+    def __init__(self, submission_queue, download_queue, download_session_id, stop_run):
+        super().__init__(stop_run)
         self.submission_queue = submission_queue
         self.download_queue = download_queue
         self.download_session_id = download_session_id
@@ -23,7 +23,6 @@ class ContentRunner:
         self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
         self.hold = False
         self.submit_hold = False
-        self.continue_run = True
 
     @property
     def running(self):
@@ -51,7 +50,7 @@ class ContentRunner:
                         elif extraction_type == 'POST':
                             self.executor.submit(self.finish_post, post_id=extraction_object)
                 else:
-                    self.continue_run = False
+                    break
             except Empty:
                 if self.submit_hold and not self.running:
                     self.download_queue.put('HOLD')
@@ -72,7 +71,7 @@ class ContentRunner:
             post = SubmittableCreator.create_post(submission, significant_id, session, self.download_session_id)
             if post is not None:
                 submission_handler = SubmissionHandler(submission, post, self.download_session_id, session,
-                                                       self.download_queue)
+                                                       self.download_queue, self.stop_run)
                 submission_handler.extract_submission()
                 if post.significant_reddit_object.run_comment_operations:
                     submission_handler.extract_comments()
@@ -89,7 +88,8 @@ class ContentRunner:
         :param post: The post that is to be extracted.
         """
         with self.db.get_scoped_session() as session:
-            submission_handler = SubmissionHandler(None, post, self.download_session_id, session, self.download_queue)
+            submission_handler = SubmissionHandler(None, post, self.download_session_id, session, self.download_queue,
+                                                   self.stop_run)
             if not post.is_self:
                 submission_handler.extract_submission_content()
             else:

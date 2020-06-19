@@ -1,25 +1,24 @@
-import logging
 from typing import Optional
 from praw.models import Comment as PrawComment
 from sqlalchemy.orm.session import Session
 
+from .runner import Runner, verify_run
 from ..database.models import Post
 from ..core.comment_filter import CommentFilter
 from ..core.submittable_creator import SubmittableCreator
-from ..utils import injector, verify_run
+from ..utils import injector
 
 
-class CommentHandler:
+class CommentHandler(Runner):
 
-    def __init__(self, submission, post, download_session_id, session=None):
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+    def __init__(self, submission, post, download_session_id, stop_run, session=None):
+        super().__init__(stop_run)
         self.db = injector.get_database_handler()
         self.submission = submission
         self.post = post
         self.download_session_id = download_session_id
         self.session = session
 
-        self.continue_run = True
         self.comment_filter = CommentFilter()
         self.comments_to_download = []
         self.comments_to_extract_links = []

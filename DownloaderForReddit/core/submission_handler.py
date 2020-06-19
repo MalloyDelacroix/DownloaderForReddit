@@ -1,10 +1,10 @@
-import logging
 from typing import Optional
 from queue import Queue
 from praw.models import Submission
 from sqlalchemy.orm.session import Session
 from bs4 import BeautifulSoup, SoupStrainer
 
+from .runner import Runner, verify_run
 from .comment_handler import CommentHandler
 from ..database.models import Post
 from ..extractors.base_extractor import BaseExtractor
@@ -13,21 +13,19 @@ from ..extractors.self_post_extractor import SelfPostExtractor
 from ..extractors.comment_extractor import CommentExtractor
 from ..core import const
 from ..messaging.message import Message
-from ..utils import verify_run
 
 
-class SubmissionHandler:
+class SubmissionHandler(Runner):
 
     def __init__(self, submission: Optional[Submission], post: Post, download_session_id: int, session: Session,
-                 download_queue: Queue):
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+                 download_queue: Queue, stop_run):
+        super().__init__(stop_run)
         self.submission = submission
         self.post = post
         self.download_session_id = download_session_id
         self.session = session
         self.download_queue = download_queue
 
-        self.continue_run = True
         self.content = []
 
     @verify_run
@@ -53,16 +51,21 @@ class SubmissionHandler:
 
     @verify_run
     def extract_comments(self):
-        comment_handler = CommentHandler(self.submission, self.post, self.download_session_id, self.session)
+        comment_handler = CommentHandler(self.submission, self.post, self.download_session_id, self.stop_run,
+                                         self.session)
         comment_handler.run()
         for comment in comment_handler.comments_to_download:
-            extractor = CommentExtractor(post=self.post, comment=comment, download_session_id=self.download_session_id)
-            self.finish_extractor(extractor)
+            self.download_comment(comment)
         for comment in comment_handler.comments_to_extract_links:
             self.extract_text_links(comment.body_html, comment=comment, user=comment.author,
                                     subreddit=comment.subreddit,
                                     significant_reddit_object=self.post.significant_reddit_object,
                                     creation_date=comment.date_posted)
+
+    @verify_run
+    def download_comment(self, comment):
+        extractor = CommentExtractor(post=self.post, comment=comment, download_session_id=self.download_session_id)
+        self.finish_extractor(extractor)
 
     @verify_run
     def extract_text_links(self, html_text, **kwargs):

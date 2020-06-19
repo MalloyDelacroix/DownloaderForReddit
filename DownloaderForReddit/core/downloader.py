@@ -1,26 +1,26 @@
 import os
 import requests
-import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from ..utils import injector, system_util, verify_run
+from .runner import Runner, verify_run
+from ..utils import injector, system_util
 from ..database import Content
 from ..messaging.message import Message
 
 
-class Downloader:
+class Downloader(Runner):
 
     """
     Class that is responsible for the actual downloading of content.
     """
 
-    def __init__(self, download_queue, download_session_id):
+    def __init__(self, download_queue, download_session_id, stop_run):
         """
         Initializes the Downloader class.
         :param download_queue: A queue of Content items that are to be downloaded.
         :type download_queue: Queue
         """
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+        super().__init__(stop_run)
         self.download_queue = download_queue  # contains the id of content created elsewhere that is to be downloaded
         self.download_session_id = download_session_id
         self.output_queue = injector.get_message_queue()
@@ -30,7 +30,6 @@ class Downloader:
         self.thread_count = self.settings_manager.download_thread_count
         self.executor = ThreadPoolExecutor(self.thread_count)
         self.hold = False
-        self.continue_run = True
         self.hard_stop = False
         self.download_count = 0
 
@@ -55,7 +54,7 @@ class Downloader:
                 else:
                     self.executor.submit(self.download, content_id=item)
             else:
-                self.continue_run = False
+                break
         self.executor.shutdown(wait=True)
         self.logger.debug('Downloader exiting')
 

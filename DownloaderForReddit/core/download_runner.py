@@ -2,7 +2,7 @@ import prawcore
 import logging
 from PyQt5.QtCore import QObject, pyqtSignal
 from queue import Queue, Empty
-from threading import Thread
+from threading import Thread, Event
 from datetime import datetime
 from collections import namedtuple
 from praw.models import Redditor
@@ -10,8 +10,9 @@ from praw.models import Redditor
 from .downloader import Downloader
 from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
+from .runner import verify_run
 from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
-from ..utils import injector, reddit_utils, video_merger, verify_run
+from ..utils import injector, reddit_utils, video_merger
 from ..messaging.message import Message
 
 
@@ -27,7 +28,6 @@ class DownloadRunner(QObject):
     download_session_signal = pyqtSignal(int)  # emits the id of the DownloadSession created at the start of the run
     setup_progress_bar = pyqtSignal(int)
     update_progress_bar_signal = pyqtSignal()
-    stop = pyqtSignal()
 
     def __init__(self, user_id_list=None, subreddit_id_list=None, reddit_object_id_list=None, **kwargs):
         """
@@ -55,6 +55,7 @@ class DownloadRunner(QObject):
         self.undownloaded_id_list = kwargs.get('undownloaded_id_list', None)
         self.run_new = kwargs.get('run_new', True)
 
+        self.stop_run = Event()
         self.continue_run = True
         self.stopped = False
         self.filter_subreddits = False
@@ -193,12 +194,13 @@ class DownloadRunner(QObject):
             self.download_session_id = download_session.id
 
     def start_extractor(self):
-        self.extractor = ContentRunner(self.submission_queue, self.download_queue, self.download_session_id)
+        self.extractor = ContentRunner(self.submission_queue, self.download_queue, self.download_session_id,
+                                       self.stop_run)
         self.extraction_thread = Thread(target=self.extractor.run)
         self.extraction_thread.start()
 
     def start_downloader(self):
-        self.downloader = Downloader(self.download_queue, self.download_session_id)
+        self.downloader = Downloader(self.download_queue, self.download_session_id, self.stop_run)
         self.download_thread = Thread(target=self.downloader.run)
         self.download_thread.start()
 
@@ -468,7 +470,6 @@ class DownloadRunner(QObject):
     def stop_download(self, hard_stop=False):
         self.stopped = True
         self.continue_run = False
-        self.extractor.continue_run = False
-        self.downloader.continue_run = False
+        self.stop_run.set()
         self.downloader.hard_stop = hard_stop
         Message.send_text('\nStopped\n')
