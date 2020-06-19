@@ -22,8 +22,8 @@ RunPair = namedtuple('RunPair', 'reddit_object_id praw_object')
 
 class DownloadRunner(QObject):
 
-    remove_invalid_object = pyqtSignal(object)
-    remove_forbidden_object = pyqtSignal(object)
+    remove_invalid_object = pyqtSignal(int)
+    remove_forbidden_object = pyqtSignal(int)
     finished = pyqtSignal()
     download_session_signal = pyqtSignal(int)  # emits the id of the DownloadSession created at the start of the run
     setup_progress_bar = pyqtSignal(int)
@@ -112,13 +112,13 @@ class DownloadRunner(QObject):
         self.logger.warning('Invalid reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                      'reddit_object': reddit_object.name})
         Message.send_text(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
-        self.remove_invalid_object.emit(reddit_object)
+        self.remove_invalid_object.emit(reddit_object.id)
 
     def handle_forbidden_reddit_object(self, reddit_object):
         self.logger.warning('Forbidden reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                        'reddit_object': reddit_object.name})
         Message.send_text(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
-        self.remove_invalid_object.emit(reddit_object)
+        self.remove_forbidden_object.emit(reddit_object.id)
 
     def handle_failed_connection(self):
         if self.failed_connection_attempts >= 3:

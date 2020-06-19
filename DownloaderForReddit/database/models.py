@@ -268,10 +268,11 @@ class RedditObject(BaseModel):
                 self.date_limit = None
             self.get_session().commit()
 
-    def set_inactive(self):
+    def set_inactive(self, commit=True):
         self.active = False
         self.inactive_date = datetime.now()
-        self.get_session().commit()
+        if commit:
+            self.get_session().commit()
 
     def toggle_enable_download(self):
         self.download_enabled = not self.download_enabled

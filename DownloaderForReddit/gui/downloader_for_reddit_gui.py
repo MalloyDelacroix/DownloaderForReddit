@@ -46,7 +46,7 @@ from ..gui.database_views.database_statistics_dialog import DatabaseStatisticsDi
 from ..gui.settings.settings_dialog import SettingsDialog
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
-from ..database.models import User, Subreddit, RedditObject, RedditObjectList
+from ..database.models import User, Subreddit, RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..utils.exporters import json_exporter, text_exporter
@@ -775,42 +775,49 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             message_dialogs.no_reddit_object_selected(self, list_model.list_type)
 
-    def remove_invalid_reddit_object(self, reddit_object):
+    def remove_invalid_reddit_object(self, reddit_object_id):
         """
         Handles removing the supplied reddit object if the downloader finds that the reddit object is not valid.  This
         method also renames the download folder.
-        :param reddit_object: The reddit object (User or Subreddit) that is invalid and is to be removed.
-        :type reddit_object: RedditObject
+        :param reddit_object_id: The id of the reddit object (User or Subreddit) that is invalid and is to be removed.
+        :type reddit_object_id: int
         """
-        if message_dialogs.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
-            self.remove_problem_reddit_object(reddit_object, self.settings_manager.rename_invalidated_download_folders,
-                                              'Invalid')
+        with self.db_handler.get_scoped_update_session() as session:
+            reddit_object = session.query(RedditObject).get(reddit_object_id)
+            if message_dialogs.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
+                self.remove_problem_reddit_object(reddit_object,
+                                                  self.settings_manager.rename_invalidated_download_folders, 'Invalid',
+                                                  session)
 
-    def remove_forbidden_reddit_object(self, reddit_object):
+    def remove_forbidden_reddit_object(self, reddit_object_id):
         """
         Handles removing the supplied reddit object if access to the object is forbidden (ie: a private subreddit).
         This method will not rename the download folder.
-        :param reddit_object: The reddit object to which access if forbidden.
-        :type reddit_object: RedditObject
+        :param reddit_object_id: The id of the reddit object to which access if forbidden.
+        :type reddit_object_id: int
         """
-        if message_dialogs.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
-            self.remove_problem_reddit_object(reddit_object, False, 'Forbidden')
+        with self.db_handler.get_scoped_update_session() as session:
+            reddit_object = session.query(RedditObject).get(reddit_object_id)
+            if message_dialogs.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
+                self.remove_problem_reddit_object(reddit_object, False, 'Forbidden', session)
 
-    def remove_problem_reddit_object(self, reddit_object, rename, reason):
+    def remove_problem_reddit_object(self, reddit_object, rename, reason, session):
         """
         Handles the actual removal of the supplied reddit object from the list that it is found in.
         :param reddit_object: The reddit object that is to be removed.
         :param rename: True if the objects download folder is to be renamed.
         :param reason: The reason that the object is being removed.  Used for logging purposes.
+        :param session: The sqlalchemy session that is currently open and is used for deleting the reddit object.
         :type reddit_object: RedditObject
         :type rename: bool
         :type reason: str
+        :type session: Session
         """
-        working_list = self.get_working_list(reddit_object.object_type)
-        working_list.delete_reddit_object(reddit_object)
+        session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object.id).delete()
+        reddit_object.set_inactive(commit=False)  # committing this is left to the update session
         rename_message = 'Not Attempted'
         if rename:
-            path = self.get_reddit_object_download_folder(reddit_object)
+            path = general_utils.get_reddit_object_download_folder(reddit_object)
             if not general_utils.rename_invalid_directory(path):
                 rename_message = 'Failed'
                 message_dialogs.failed_to_rename_error(self, reddit_object.name)
@@ -820,17 +827,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
                                                                  'folder_rename': rename_message,
                                                                  'removal_reason': reason})
-
-    def get_working_list(self, object_type):
-        """
-        Returns the list that is currently being displayed based on the supplied object type.
-        :param object_type: The type of list that is to be returned.
-        :return: The List model that of the supplied object type that is currently being displayed.
-        """
-        if object_type == 'USER':
-            return self.user_list_model
-        else:
-            return self.subreddit_list_model
 
     def add_subreddit(self):
         if self.subreddit_list_model.list is None:
