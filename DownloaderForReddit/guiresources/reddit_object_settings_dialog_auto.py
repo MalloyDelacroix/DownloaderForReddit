@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'RedditObjectSettingsDialog.ui'
+# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\reddit_object_settings_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_RedditObjectSettingsDialog(object):
     def setupUi(self, RedditObjectSettingsDialog):
@@ -26,7 +28,7 @@ class Ui_RedditObjectSettingsDialog(object):
         self.reddit_objects_list_view.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.reddit_objects_list_view.setObjectName("reddit_objects_list_view")
         self.scroll_area = QtWidgets.QScrollArea(self.splitter)
-        self.scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.scroll_area.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setObjectName("scroll_area")
@@ -34,7 +36,6 @@ class Ui_RedditObjectSettingsDialog(object):
         self.scroll_area_contents.setGeometry(QtCore.QRect(0, 0, 262, 867))
         self.scroll_area_contents.setObjectName("scroll_area_contents")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scroll_area_contents)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
@@ -82,6 +83,5 @@ class Ui_RedditObjectSettingsDialog(object):
         RedditObjectSettingsDialog.setWindowTitle(_translate("RedditObjectSettingsDialog", "Settings"))
         self.download_button.setText(_translate("RedditObjectSettingsDialog", "Download "))
         self.reset_button.setText(_translate("RedditObjectSettingsDialog", "Reset"))
-
 from DownloaderForReddit.gui.widgets.object_info_widget import ObjectInfoWidget
 from DownloaderForReddit.gui.widgets.object_settings_widget import ObjectSettingsWidget

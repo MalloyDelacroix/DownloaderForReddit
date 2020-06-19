@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 
 from ...guiresources.widgets.object_settings_widget_auto import Ui_ObjectSettingsWidget
+from ...database.models import User, Subreddit, Post
 from ...database.model_enums import *
 from ...utils import TokenParser
 
@@ -17,9 +18,28 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.connect_edit_widgets()
         self.selected_objects = []
 
+        self.user = User(
+            id=45,
+            name='UserName',
+        )
+        self.subreddit = Subreddit(
+            id=79,
+            name='SubredditName'
+        )
+        self.post = Post(
+            title='Example_Post_Title',
+            date_posted=datetime.now(),
+            reddit_id='23sdf9lksdf',
+            domain='i.imgur.com',
+            extraction_date=datetime.now(),
+            author=self.user,
+            subreddit=self.subreddit
+        )
+
     def set_objects(self, object_list):
         if object_list:
             self.selected_objects = object_list
+            self.sync_post()
             self.sync_widgets_to_object()
 
     def setup_widgets(self):
@@ -91,8 +111,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.post_sort_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('post_sort_method', self.post_sort_combo.itemData(x))
         )
+        self.post_download_naming_line_edit.textChanged.connect(self.sync_post_path_example)
         self.post_download_naming_line_edit.editingFinished.connect(
             lambda: self.set_object_value('post_download_naming_method', self.post_download_naming_line_edit.text()))
+        self.post_save_path_structure_line_edit.textChanged.connect(self.sync_post_path_example)
         self.post_save_path_structure_line_edit.editingFinished.connect(
             lambda: self.set_object_value('post_save_structure', self.post_save_path_structure_line_edit.text()))
         self.comment_extract_combo.currentIndexChanged.connect(
@@ -113,9 +135,11 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.comment_sort_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('comment_sort_method', self.comment_sort_combo.itemData(x))
         )
+        self.comment_download_naming_line_edit.textChanged.connect(self.sync_comment_path_example)
         self.comment_download_naming_line_edit.editingFinished.connect(
             lambda: self.set_object_value('comment_naming_method', self.comment_download_naming_line_edit.text())
         )
+        self.comment_download_naming_line_edit.textChanged.connect(self.sync_comment_path_example)
         self.comment_save_path_structure_line_edit.editingFinished.connect(
             lambda: self.set_object_value('comment_save_structure', self.comment_save_path_structure_line_edit.text())
         )
@@ -154,6 +178,25 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             line_edit.del_()
         line_edit.insert(f'%[{token}]')
 
+    def sync_post(self):
+        selected = self.selected_objects[0]
+        if selected.object_type == 'USER':
+            self.user.name = selected.name
+            self.subreddit.name = 'ExampleName'
+        else:
+            self.user.name = 'ExampleUser'
+            self.subreddit.name = selected.name
+
+    def sync_post_path_example(self):
+        path = TokenParser.parse_tokens(self.post, self.post_save_path_structure_line_edit.text())
+        title = TokenParser.parse_tokens(self.post, self.post_download_naming_line_edit.text())
+        self.post_path_example_label.setText(f'.../{path}/{title}')
+
+    def sync_comment_path_example(self):
+        path = TokenParser.parse_tokens(self.post, self.comment_save_path_structure_line_edit.text())
+        title = TokenParser.parse_tokens(self.post, self.comment_download_naming_line_edit.text())
+        self.comment_path_example_label.setText(f'.../{path}/{title}')
+
     def sync_widgets_to_object(self):
         self.sync_optional()
         self.sync_spin_box(self.post_limit_spinbox, 'post_limit')
@@ -170,6 +213,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.post_sort_combo, 'post_sort_method')
         self.sync_line_edit(self.post_download_naming_line_edit, 'post_download_naming_method')
         self.sync_line_edit(self.post_save_path_structure_line_edit, 'post_save_structure')
+        self.sync_post_path_example()
         self.sync_combo(self.comment_extract_combo, 'extract_comments')
         self.sync_combo(self.comment_download_combo, 'download_comments')
         self.sync_combo(self.comment_content_download_combo, 'download_comment_content')
@@ -179,6 +223,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.comment_sort_combo, 'comment_sort_method')
         self.sync_line_edit(self.comment_download_naming_line_edit, 'comment_naming_method')
         self.sync_line_edit(self.comment_save_path_structure_line_edit, 'comment_save_structure')
+        self.sync_comment_path_example()
 
     def sync_optional(self):
         try:

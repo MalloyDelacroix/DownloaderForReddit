@@ -344,6 +344,13 @@
          </item>
         </layout>
        </item>
+       <item row="20" column="0" colspan="2">
+        <widget class="QLabel" name="post_path_example_label">
+         <property name="text">
+          <string>Post path example</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -515,6 +522,13 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="11" column="0" colspan="2">
+        <widget class="QLabel" name="comment_path_example_label">
+         <property name="text">
+          <string>Comment path example</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
