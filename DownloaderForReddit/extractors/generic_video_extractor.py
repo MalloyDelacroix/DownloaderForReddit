@@ -56,6 +56,7 @@ class GenericVideoExtractor(BaseExtractor):
 
     def extract_content(self):
         try:
+            # TODO: need way to kill this when session is terminated
             with youtube_dl.YoutubeDL({'format': 'mp4'}) as ydl:
                 result = ydl.extract_info(self.url, download=False)
             if 'entries' in result:

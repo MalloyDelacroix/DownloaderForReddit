@@ -52,7 +52,7 @@ from ..utils import (injector, system_util, imgur_utils, video_merger, general_u
 from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
-from ..messaging.message import MessageType, MessagePriority, Message
+from ..messaging.message import MessageType, MessagePriority
 from ..version import __version__
 
 
