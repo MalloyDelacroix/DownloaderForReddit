@@ -72,7 +72,7 @@ class SubmissionHandler(Runner):
         links = BeautifulSoup(html_text, parse_only=SoupStrainer('a'), features='html.parser')
         track_count = len(links) > 1
         for link in links:
-            if link.has_attr['href']:
+            if link.has_attr('href'):
                 url = link['href']
                 if track_count:
                     kwargs['count'] = links.index(link) + 1
