@@ -232,6 +232,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.schedule_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.schedule_widget.customContextMenuRequested.connect(self.schedule_context_menu)
 
+        self.output_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.output_list_view.customContextMenuRequested.connect(self.output_context_menu)
+
         self.run_time = 0
         self.timer_widget = QWidget()
         self.timer_widget.setVisible(False)
@@ -258,7 +261,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         # self.check_ffmpeg()
         # self.check_for_updates(False)  TODO: re-enable this
-        self.open_object_dialogs = []
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)
@@ -385,6 +387,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def schedule_context_menu(self):
         menu = QMenu()
         menu.addAction('Schedule Settings', lambda: self.open_settings_dialog(open_display='Schedule'))
+        menu.exec_(QCursor.pos())
+
+    def output_context_menu(self):
+        menu = QMenu()
+        menu.addAction('Output Settings', lambda: self.open_settings_dialog(open_display='Output'))
         menu.exec_(QCursor.pos())
     # endregion
 
