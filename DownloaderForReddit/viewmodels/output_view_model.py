@@ -1,10 +1,12 @@
-from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QVariant
+from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QVariant, pyqtSignal
 from PyQt5.QtGui import QColor
 
 from ..utils import injector
 
 
 class OutputViewModel(QAbstractListModel):
+
+    added = pyqtSignal()
 
     """
     List model that controls the output of messages collected from all parts of the application.
@@ -38,6 +40,7 @@ class OutputViewModel(QAbstractListModel):
         self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
         self.display_messages.append(item)
         self.endInsertRows()
+        self.added.emit()
 
     def removeRow(self, row, parent=QModelIndex(), *args):
         self.beginRemoveRows(parent, row, row)

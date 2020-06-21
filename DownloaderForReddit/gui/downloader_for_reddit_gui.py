@@ -107,6 +107,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         self.output_view_model = OutputViewModel()
         self.output_list_view.setModel(self.output_view_model)
+        self.output_view_model.added.connect(self.scroll_output)
 
         # region Main Menu
 
@@ -270,6 +271,18 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             list_view_group.addAction(item)
             item.setCheckable(True)
             item.setChecked(field == self.settings_manager.list_order_method)
+
+    def scroll_output(self):
+        """
+        Scrolls the output to the bottom when a new output message is added and the scroll bar position is in the lower
+        5th percentile of the view.
+        """
+        try:
+            bar = self.output_list_view.verticalScrollBar()
+            if ((bar.value() / bar.maximum()) * 100) >= 95:
+                self.output_list_view.scrollToBottom()
+        except ZeroDivisionError:
+            pass
 
     def get_selected_single_user(self):
         """
