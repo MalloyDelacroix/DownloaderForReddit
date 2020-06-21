@@ -17,6 +17,15 @@ class OutputViewModel(QAbstractListModel):
         self.messages = []
         self.display_messages = []
 
+    def update_output_level(self):
+        priority = self.settings_manager.output_priority_level
+        if priority != self.display_priority:
+            self.display_priority = priority
+            self.display_messages.clear()
+            for message in self.messages:
+                if message.priority.value >= self.display_priority.value:
+                    self.insertRow(message)
+
     def handle_message(self, message):
         self.messages.append(message)
         if message.priority.value >= self.display_priority.value:

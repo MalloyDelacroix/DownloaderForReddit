@@ -46,13 +46,13 @@ from ..gui.database_views.database_statistics_dialog import DatabaseStatisticsDi
 from ..gui.settings.settings_dialog import SettingsDialog
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
-from ..database.models import User, Subreddit, RedditObject, RedditObjectList, ListAssociation
+from ..database.models import RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
-from ..messaging.message import MessageType, MessagePriority
+from ..messaging.message import MessageType, MessagePriority, Message
 from ..version import __version__
 
 
@@ -1024,46 +1024,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         settings = SettingsDialog(self, **kwargs)
         settings.exec_()
 
-    def update_user_settings(self):
-        """Iterates through the user list and calls update settings for each user"""
-        updated = 0
-        total = 0
-        with self.db_handler.get_scoped_session() as session:
-            for user in session.query(User):
-                total += 1
-                if not user.lock_settings:
-                    self.update_object_settings(user)
-                    updated += 1
-        self.logger.info('User settings updated', extra={'updated_users': updated, 'total_users': total})
-
-    def update_subreddit_settings(self):
-        """Iterates through the subreddit list and calls update settings for each sub"""
-        updated = 0
-        total = 0
-        with self.db_handler.get_scoped_session() as session:
-            for subreddit in session.query(Subreddit):
-                total += 1
-                if not subreddit.lock_settings:
-                    self.update_object_settings(subreddit)
-                    updated += 1
-        self.logger.info('Subreddit settings updated', extra={'updated_subreddits': updated, 'total_subreddits': total})
-
-    def update_object_settings(self, reddit_object):
-        """Updates object specific settings for the supplied object"""
-        reddit_object.post_limit = self.settings_manager.post_limit
-        reddit_object.save_path = self.settings_manager.save_directory
-        reddit_object.name_downloads_by = self.settings_manager.name_downloads_by
-        reddit_object.avoid_duplicates = self.settings_manager.avoid_duplicates
-        reddit_object.download_videos = self.settings_manager.download_videos
-        reddit_object.download_images = self.settings_manager.download_images
-        self.update_custom_dates(reddit_object)
-
-    def update_custom_dates(self, reddit_object):
-        """Updates the custom date attribute of the supplied reddit object."""
-        if self.settings_manager.restrict_by_custom_date:
-            reddit_object.custom_date_limit = self.settings_manager.custom_date
-        else:
-            reddit_object.custom_date_limit = None
+    def update_output(self):
+        self.output_view_model.update_output_level()
 
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""

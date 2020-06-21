@@ -30,8 +30,8 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.settings_map = {
             'Core': CoreSettingsWidget(),
             'Download Defaults': DownloadSettingsWidget(**kwargs),
-            'Display': DisplaySettingsWidget(self.parent),
-            'Output': OutputSettingsWidget(),
+            'Display': DisplaySettingsWidget(main_window=self.parent),
+            'Output': OutputSettingsWidget(main_window=self.parent),
             'Imgur': ImgurSettingsWidget(),
             'Database': DatabaseSettingsWidget(),
             'Schedule': ScheduleSettingsWidget(),

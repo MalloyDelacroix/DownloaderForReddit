@@ -10,6 +10,7 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
 
     def __init__(self, **kwargs):
         super().__init__()
+        self.main_window = kwargs.get('main_window', None)
         self.colors = {}
         for x in MessagePriority:
             self.priority_level_combo.addItem(x.name, x)
@@ -55,7 +56,10 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
         self.set_label_stylesheet(priority)
 
     def apply_settings(self):
-        self.settings.output_priority_level = self.priority_level_combo.currentData(Qt.UserRole)
+        priority = self.priority_level_combo.currentData(Qt.UserRole)
+        if priority != self.settings.output_priority_level:
+            self.settings.output_priority_level = self.priority_level_combo.currentData(Qt.UserRole)
+            self.main_window.update_output()
         self.settings.show_priority_level = self.show_priority_level_checkbox.isChecked()
         self.settings.clear_messages_on_run = self.clear_on_run_checkbox.isChecked()
         self.settings.use_color_output = self.use_color_output_checkbox.isChecked()

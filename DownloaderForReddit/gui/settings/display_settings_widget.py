@@ -7,9 +7,9 @@ from .abstract_settings_widget import AbstractSettingsWidget
 
 class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
 
-    def __init__(self, main_window=None):
+    def __init__(self, **kwargs):
         super().__init__()
-        self.main_window = main_window
+        self.main_window = kwargs.get('main_window', None)
         self.grid = self.tooltip_groupbox.layout()
         self.tooltips = {}
 
