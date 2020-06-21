@@ -1,7 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from .message import MessageType
-
 
 class MessageReceiver(QObject):
 
@@ -28,7 +26,7 @@ class MessageReceiver(QObject):
             if message is not None:
                 try:
                     if message.message is None:
-                        self.non_text_output.emit()
+                        self.non_text_output.emit(message)
                     else:
                         self.text_output.emit(message)
                 except AttributeError:
