@@ -324,13 +324,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTextBrowser" name="output_box">
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
-         </widget>
+         <widget class="QListView" name="output_list_view"/>
         </item>
        </layout>
       </widget>

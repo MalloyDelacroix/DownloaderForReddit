@@ -51,6 +51,8 @@ from ..database.filters import RedditObjectFilter
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
+from ..viewmodels.output_view_model import OutputViewModel
+from ..messaging.message import MessageType, MessagePriority
 from ..version import __version__
 
 
@@ -102,6 +104,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.queue = queue
         self.receiver = receiver
         self.scheduler = scheduler
+
+        self.output_view_model = OutputViewModel()
+        self.output_list_view.setModel(self.output_view_model)
 
         # region Main Menu
 
@@ -549,34 +554,32 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def finish_update(self):
         pass
 
-    def update_output(self, text):
-        self.output_box.append(text)
-
-    def handle_potential_extraction(self):
-        self.extend_progress()
-
-    def handle_extraction(self):
-        self.update_progress()
-
-    def handle_potential_download(self):
-        self.extend_progress()
-        self.potential_downloads += 1
-        self.update_status_bar()
-
-    def handle_download(self):
-        self.update_progress()
-        self.downloaded += 1
-        self.update_status_bar()
-
-    def handle_extraction_error(self, error_message):
-        self.extend_progress(forward=False)
-        # TODO: inform user somehow
-
-    def handle_download_error(self, error_message):
-        self.extend_progress(forward=False)
-        self.potential_downloads -= 1
-        self.update_status_bar()
-        # TODO: inform user somehow
+    def handle_progress(self, message):
+        """
+        Handles non-text style messages that it receives from the message receiver.  Decides what to update on the main
+        window based on the type of message received as well as the priority of that message.
+        :param message: The message sent from some part of the application to update the main window UI.
+        """
+        if message.message_type == MessageType.POTENTIAL_PROGRESS:
+            if message.priority != MessagePriority.ERROR:
+                self.extend_progress()
+            else:
+                self.extend_progress(forward=False)
+        elif message.message_type == MessageType.ACTUAL_PROGRESS:
+            self.update_progress()
+        elif message.message_type == MessageType.POTENTIAL_COUNT:
+            if message.priority != MessagePriority.ERROR:
+                self.extend_progress()
+                self.potential_downloads += 1
+                self.update_status_bar()
+            else:
+                self.extend_progress(forward=False)
+                self.potential_downloads -= 1
+                self.update_status_bar()
+        else:
+            self.update_progress()
+            self.downloaded += 1
+            self.update_status_bar()
 
     def start_spinner(self, list_model):
         if list_model == self.user_list_model:
@@ -970,10 +973,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def started_download_gui_shift(self):
         """Changes parts of the gui to display differently while there is a download session currently in progress."""
         self.running = True
+        if self.settings_manager.clear_messages_on_run:
+            self.output_view_model.clear()
         self.init_progress_bar()
         self.downloaded = 0
         self.potential_downloads = 0
-        self.output_box.clear()
         self.statusbar.clearMessage()
         self.progress_label.setVisible(False)
         self.progress_bar.setVisible(True)

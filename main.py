@@ -65,13 +65,8 @@ def main():
 
     window = DownloaderForRedditGUI(queue, receiver, scheduler)
 
-    receiver.text_output.connect(window.update_output)
-    receiver.potential_extraction.connect(window.handle_potential_extraction)
-    receiver.actual_extraction.connect(window.handle_extraction)
-    receiver.potential_download.connect(window.handle_potential_download)
-    receiver.actual_download.connect(window.handle_download)
-    receiver.extraction_error.connect(window.handle_extraction_error)
-    receiver.download_error.connect(window.handle_download_error)
+    receiver.text_output.connect(window.output_view_model.handle_message)
+    receiver.non_text_output.connect(window.handle_progress)
 
     receiver.moveToThread(message_thread)
     message_thread.started.connect(receiver.run)

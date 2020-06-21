@@ -5,13 +5,8 @@ from .message import MessageType
 
 class MessageReceiver(QObject):
 
-    text_output = pyqtSignal(str)
-    potential_extraction = pyqtSignal()
-    actual_extraction = pyqtSignal()
-    potential_download = pyqtSignal()
-    actual_download = pyqtSignal()
-    extraction_error = pyqtSignal(str)
-    download_error = pyqtSignal(str)
+    text_output = pyqtSignal(object)
+    non_text_output = pyqtSignal(object)
 
     finished = pyqtSignal()
 
@@ -27,26 +22,15 @@ class MessageReceiver(QObject):
         self.queue = queue
         self.continue_run = True
 
-        self.signal_dict = {
-            MessageType.TEXT_OUTPUT: self.text_output,
-            MessageType.POTENTIAL_EXTRACTION: self.potential_extraction,
-            MessageType.ACTUAL_EXTRACTION: self.actual_extraction,
-            MessageType.POTENTIAL_DOWNLOAD: self.potential_download,
-            MessageType.ACTUAL_DOWNLOAD: self.actual_download,
-            MessageType.EXTRACTION_ERROR: self.extraction_error,
-            MessageType.DOWNLOAD_ERROR: self.download_error
-        }
-
     def run(self):
         while self.continue_run:
             message = self.queue.get()
             if message is not None:
                 try:
-                    signal = self.signal_dict[message.message_type]
                     if message.message is None:
-                        signal.emit()
+                        self.non_text_output.emit()
                     else:
-                        signal.emit(message.message)
+                        self.text_output.emit(message)
                 except AttributeError:
                     print(f'\nFailed output:\n{message}\n')
         self.finished.emit()

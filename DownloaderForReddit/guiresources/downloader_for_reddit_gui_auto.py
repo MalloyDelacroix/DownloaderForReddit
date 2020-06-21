@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/Kyle/PycharmProjects/DownloaderForReddit/Resources/ui_files/downloader_for_reddit_gui.ui'
+# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\downloader_for_reddit_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1232, 836)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:/Users/Kyle/PycharmProjects/DownloaderForReddit/Resources/ui_files\\../Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("C:\\Users\\Kyle\\PycharmProjects\\DownloaderForReddit\\Resources\\ui_files\\../Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -181,12 +181,9 @@ class Ui_MainWindow(object):
         self.schedule_label.setObjectName("schedule_label")
         self.horizontalLayout_8.addWidget(self.schedule_label)
         self.verticalLayout_3.addWidget(self.schedule_widget)
-        self.output_box = QtWidgets.QTextBrowser(self.layoutWidget2)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.output_box.setFont(font)
-        self.output_box.setObjectName("output_box")
-        self.verticalLayout_3.addWidget(self.output_box)
+        self.output_list_view = QtWidgets.QListView(self.layoutWidget2)
+        self.output_list_view.setObjectName("output_list_view")
+        self.verticalLayout_3.addWidget(self.output_list_view)
         self.verticalLayout_4.addWidget(self.horz_splitter)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)

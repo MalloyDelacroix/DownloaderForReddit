@@ -111,6 +111,10 @@ class Converter:
         name = 'download_settings_widget'
         self.convert(name, 'settings')
 
+    def output_settings(self):
+        name = 'output_settings_widget'
+        self.convert(name, 'settings')
+
     def quick_filter_settings(self):
         name = 'quick_filter_settings_widget'
         self.convert(name, 'settings')

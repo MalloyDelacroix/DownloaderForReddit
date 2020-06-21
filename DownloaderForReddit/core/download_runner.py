@@ -79,7 +79,7 @@ class DownloadRunner(QObject):
     def validate_user(self, user_obj):
         redditor = self.reddit_instance.redditor(user_obj.name)
         if self.validate_object(redditor, user_obj):
-            Message.send_text(f'{user_obj.name} is valid')
+            Message.send_debug(f'{user_obj.name} is valid')
             return redditor
         else:
             return None
@@ -87,7 +87,7 @@ class DownloadRunner(QObject):
     def validate_subreddit(self, subreddit_obj):
         subreddit = self.reddit_instance.subreddit(subreddit_obj.name)
         if self.validate_object(subreddit, subreddit_obj):
-            Message.send_text(f'{subreddit_obj.name} is valid')
+            Message.send_debug(f'{subreddit_obj.name} is valid')
             return subreddit
         else:
             return None
@@ -111,26 +111,26 @@ class DownloadRunner(QObject):
     def handle_invalid_reddit_object(self, reddit_object):
         self.logger.warning('Invalid reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                      'reddit_object': reddit_object.name})
-        Message.send_text(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_info(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_invalid_object.emit(reddit_object.id)
 
     def handle_forbidden_reddit_object(self, reddit_object):
         self.logger.warning('Forbidden reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                        'reddit_object': reddit_object.name})
-        Message.send_text(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_info(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_forbidden_object.emit(reddit_object.id)
 
     def handle_failed_connection(self):
         if self.failed_connection_attempts >= 3:
             self.continue_run = False
             self.logger.error('Failed connection attempts exceeded.  Ending download session', exc_info=True)
-            Message.send_text('Failed connection attempts exceeded.  The download session has been canceled.  Please '
+            Message.send_critical('Failed connection attempts exceeded.  The download session has been canceled.  Please '
                               'try the download again later.')
         else:
             self.logger.error('Failed to connect to reddit',
                               extra={'connection_attempts': self.failed_connection_attempts})
-            Message.send_text(f'Failed to connect to reddit.  Connection attempts remaining: '
-                              f'{3 - self.failed_connection_attempts}')
+            Message.send_error(f'Failed to connect to reddit.  Connection attempts remaining: '
+                               f'{3 - self.failed_connection_attempts}')
             self.failed_connection_attempts += 1
 
     def handle_unknown_error(self, reddit_object):
@@ -465,11 +465,11 @@ class DownloadRunner(QObject):
             extra.update(download_stopped=True)
             message = f'\nDownload stopped{message}'
         self.logger.info('Download complete', extra=extra)
-        Message.send_text(message)
+        Message.send_info(message)
 
     def stop_download(self, hard_stop=False):
         self.stopped = True
         self.continue_run = False
         self.stop_run.set()
         self.downloader.hard_stop = hard_stop
-        Message.send_text('\nStopped\n')
+        Message.send_warning('\nStopped\n')

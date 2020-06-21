@@ -7,21 +7,21 @@ from ..messaging.message import Message, MessageType
 
 @event.listens_for(Post, 'after_insert')
 def post_created(mapper, connection, target):
-    Message.send(MessageType.POTENTIAL_EXTRACTION)
+    Message.send(MessageType.POTENTIAL_PROGRESS)
 
 
 @event.listens_for(Post.extracted, 'set')
 def post_extracted(target, value, oldValue, initiator):
     if value:
-        Message.send(MessageType.ACTUAL_EXTRACTION)
+        Message.send(MessageType.ACTUAL_PROGRESS)
 
 
 @event.listens_for(Content, 'after_insert')
 def content_created(mapper, connection, target):
-    Message.send(MessageType.POTENTIAL_DOWNLOAD)
+    Message.send(MessageType.POTENTIAL_COUNT)
 
 
 @event.listens_for(Content.downloaded, 'set')
 def content_downloaded(target, value, oldvalue, initiator):
     if value:
-        Message.send(MessageType.ACTUAL_DOWNLOAD)
+        Message.send(MessageType.ACTUAL_COUNT)

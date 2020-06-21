@@ -6,6 +6,7 @@ from ..utils import system_util
 from ..core import const
 from ..database.model_enums import *
 from ..database import model_enums
+from ..messaging.message import MessagePriority
 
 
 class SettingsManager:
@@ -107,6 +108,19 @@ class SettingsManager:
         self.subreddit_download_defaults = self.get('download_defaults', 'subreddit_download_defaults',
                                                     default_subreddit_download_dict,
                                                     converter=self.convert_download_dict)
+        # endregion
+
+        # region Output
+        self.output_priority_level = self.get('output', 'output_priority_level', 2,
+                                              converter=self.convert_message_priority)
+        self.use_color_output = self.get('output', 'use_color_output', False)
+        self.debug_color = self.get('output', 'debug_color', [0, 0, 255])
+        self.info_color = self.get('output', 'info_color', [0, 0, 0])
+        self.warning_color = self.get('output', 'warning_color', [255, 190, 0])
+        self.error_color = self.get('output', 'error_color', [255, 125, 0])
+        self.critical_color = self.get('output', 'critical_color', [255, 0, 0])
+        self.show_priority_level = self.get('output', 'show_priority_level', True)
+        self.clear_messages_on_run = self.get('output', 'clear_messages_on_run', True)
         # endregion
 
         # region Display Settings
@@ -410,3 +424,7 @@ class SettingsManager:
                 converts[key] = e
         download_dict.update(converts)
         return download_dict
+
+    def convert_message_priority(self, priority):
+        self.conversion_list.append('output_priority_level')
+        return MessagePriority(priority)

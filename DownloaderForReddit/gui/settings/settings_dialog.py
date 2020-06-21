@@ -4,6 +4,7 @@ from DownloaderForReddit.guiresources.settings.settings_dialog_auto import Ui_Se
 from .core_settings_widget import CoreSettingsWidget
 from .download_settings_widget import DownloadSettingsWidget
 from .display_settings_widget import DisplaySettingsWidget
+from .output_settings_widget import OutputSettingsWidget
 from .imgur_settings_widget import ImgurSettingsWidget
 from .database_settings_widget import DatabaseSettingsWidget
 from .schedule_settings_widget import ScheduleSettingsWidget
@@ -30,6 +31,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             'Core': CoreSettingsWidget(),
             'Download Defaults': DownloadSettingsWidget(**kwargs),
             'Display': DisplaySettingsWidget(self.parent),
+            'Output': OutputSettingsWidget(),
             'Imgur': ImgurSettingsWidget(),
             'Database': DatabaseSettingsWidget(),
             'Schedule': ScheduleSettingsWidget(),
