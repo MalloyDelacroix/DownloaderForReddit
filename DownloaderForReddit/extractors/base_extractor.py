@@ -226,6 +226,7 @@ class BaseExtractor:
         extra.update(kwargs)
         if log:
             self.logger.error(f'Failed to extract content: {message}', extra=extra, exc_info=log_exception)
+        message += f'\nTitle: {self.post.title}\nUrl: {self.url}'
         Message.send_extraction_error(message)
 
     def get_log_data(self):
