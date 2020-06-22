@@ -124,8 +124,8 @@ class DownloadRunner(QObject):
         if self.failed_connection_attempts >= 3:
             self.continue_run = False
             self.logger.error('Failed connection attempts exceeded.  Ending download session', exc_info=True)
-            Message.send_critical('Failed connection attempts exceeded.  The download session has been canceled.  Please '
-                              'try the download again later.')
+            Message.send_critical('Failed connection attempts exceeded.  The download session has been canceled.  '
+                                  'Please try the download again later.')
         else:
             self.logger.error('Failed to connect to reddit',
                               extra={'connection_attempts': self.failed_connection_attempts})
@@ -260,9 +260,6 @@ class DownloadRunner(QObject):
 
         if redditor is not None:
             self.handle_submissions(user, redditor)
-            if self.perpetual_download:
-                pair = RunPair(reddit_object_id=user_id, praw_object=redditor)
-                self.perpetual_queue.put(pair)
 
     @verify_run
     def get_subreddit_submissions(self, subreddit_id, session=None):
@@ -274,9 +271,6 @@ class DownloadRunner(QObject):
 
         if sub is not None:
             self.handle_submissions(subreddit, sub)
-            if self.perpetual_download:
-                pair = RunPair(reddit_object_id=subreddit_id, praw_object=sub)
-                self.perpetual_queue.put(pair)
 
     def handle_submissions(self, reddit_object, praw_object):
         submissions = self.get_submissions(praw_object, reddit_object)
