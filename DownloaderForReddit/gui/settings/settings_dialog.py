@@ -11,6 +11,7 @@ from .schedule_settings_widget import ScheduleSettingsWidget
 from .supported_video_settings_widget import SupportedVideoSettingsWidget
 from .quick_filter_settings_widget import QuickFilterSettingsWidget
 from .default_filter_settings_widget import DefaultFilterSettingsWidget
+from .notification_settings_widget import NotificationSettingsWidget
 from DownloaderForReddit.utils import injector
 
 
@@ -38,6 +39,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             'Supported Video Sites': SupportedVideoSettingsWidget(),
             'Quick Filters': QuickFilterSettingsWidget(),
             'Default Filters': DefaultFilterSettingsWidget(),
+            'Notifications': NotificationSettingsWidget(),
         }
 
         for item in self.settings_map.keys():

@@ -111,6 +111,10 @@ class Converter:
         name = 'download_settings_widget'
         self.convert(name, 'settings')
 
+    def notification_settings(self):
+        name = 'notification_settings_widget'
+        self.convert(name, 'settings')
+
     def output_settings(self):
         name = 'output_settings_widget'
         self.convert(name, 'settings')
