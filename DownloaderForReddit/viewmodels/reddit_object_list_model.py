@@ -111,8 +111,7 @@ class RedditObjectListModel(QAbstractListModel):
     def delete_reddit_object(self, reddit_object):
         self.list.reddit_objects.remove(reddit_object)
         self.session.commit()
-        # TODO: decide whether or not to delete the reddit object completely, or leave it in the database but removed
-        #       from the list
+        self.sort_list()
 
     def add_reddit_object(self, name: str):
         self.add_reddit_objects([name])
