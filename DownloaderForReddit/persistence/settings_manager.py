@@ -157,10 +157,13 @@ class SettingsManager:
         # endregion
 
         # region Notification Defaults
-        self.do_not_notify_update = self.get('notification_defaults', 'do_not_notify_update', True)
+        self.notify_update = self.get('notification_defaults', 'notify_update', True)
         self.auto_display_failed_downloads = self.get('notification_defaults', 'auto_display_failed_downloads', True)
         self.display_ffmpeg_warning = self.get('notification_defaults', 'display_ffmpeg_warning', True)
         self.large_post_update_warning = self.get('notification_defaults', 'large_post_update_warning', True)
+        self.remove_reddit_object_warning = self.get('notification_defaults', 'remove_reddit_object_warning', True)
+        self.remove_reddit_object_list_warning = self.get('notification_defaults', 'remove_reddit_object_list_warning',
+                                                          True)
         # endregion
 
         # region Imgur

@@ -674,7 +674,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def remove_user_list(self):
         try:
-            if message_dialogs.remove_user_list(self):
+            if self.verify_remove_list('user'):
                 current_user_list = self.user_lists_combo.currentText()
                 list_size = self.user_list_model.rowCount()
                 self.user_list_model.delete_current_list()
@@ -731,7 +731,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def remove_subreddit_list(self):
         try:
-            if message_dialogs.remove_subreddit_list(self):
+            if self.verify_remove_list('subreddit'):
                 current_sub_list = self.subreddit_list_combo.currentText()
                 list_size = self.subreddit_list_model.rowCount()
                 self.subreddit_list_model.delete_current_list()
@@ -745,6 +745,20 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         except KeyError:
             self.logger.warning('Unable to remove subreddit list: No list to remove', exc_info=True)
             message_dialogs.no_subreddit_list(self)
+
+    def verify_remove_list(self, list_type):
+        """
+        Checks the settings manager to see if the user should be asked before removing a reddit object list.  If the
+        user should not be asked, True is returned.  Otherwise the users answer is returned.
+        :param list_type: The type of list that is to be removed.
+        :return: True if the list should be removed, False if not.
+        """
+        if self.settings_manager.remove_reddit_object_list_warning:
+            remove, warn = message_dialogs.remove_list(self, list_type)
+            self.settings_manager.remove_reddit_object_list_warning = not warn
+            return remove
+        else:
+            return True
 
     def change_subreddit_list(self):
         new_list_name = self.subreddit_list_combo.currentText()
@@ -792,7 +806,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         :type list_model: ListModel
         """
         try:
-            if message_dialogs.remove_reddit_object(self, reddit_object.name):
+            remove = True
+            if self.settings_manager.remove_reddit_object_warning:
+                remove, warn = message_dialogs.remove_reddit_object(self, reddit_object.name)
+                self.settings_manager.remove_reddit_object_warning = not warn
+            if remove:
                 list_model.delete_reddit_object(reddit_object)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
@@ -1207,7 +1225,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.update_thread.start()
 
     def display_update(self, latest_version):
-        if self.settings_manager.do_not_notify_update != latest_version:
+        if self.settings_manager.notify_update != latest_version:
             self.update_dialog(latest_version)
 
     def update_dialog(self, update_variables):

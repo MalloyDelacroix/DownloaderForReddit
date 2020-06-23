@@ -51,21 +51,15 @@ def no_reddit_object_selected(parent, type):
 
 
 def remove_reddit_object(parent, name):
-    text = 'Are you sure you sure you want to remove %s from the list along with all associated information?' % name
-    reply = Message.question(parent, 'Remove %s' % name, text, Message.Yes, Message.No)
-    return reply == Message.Yes
+    text = f'Are you sure you sure you want to remove {name} from this list?  {name} will remain in the database ' \
+           f'all associated information'
+    return optional_question_dialog(parent, f'Remove {name}?', text)
 
 
-def remove_user_list(parent):
-    text = 'Are you sure you want to remove this list? Information for every user in the list will be lost'
-    reply = Message.warning(parent, 'Remove User List?', text, Message.Ok, Message.Cancel)
-    return reply == Message.Ok
-
-
-def remove_subreddit_list(parent):
-    text = 'Are you sure you want to remove this list? Information for every subreddit in the list will be lost'
-    reply = Message.warning(parent, 'Remove Subreddit List?', text, Message.Ok, Message.Cancel)
-    return reply == Message.Ok
+def remove_list(parent, list_type):
+    text = f'Are you sure you want to remove this list?  Only the list information will be deleted.  ' \
+           f'{list_type.title()}s in the list will remain in the database.'
+    return optional_question_dialog(parent, f'Remove {list_type.title()} List?', text)
 
 
 def reddit_object_not_valid(parent, name, type_):
@@ -160,12 +154,12 @@ def optional_info_dialog(parent, title, text):
     return checkbox.isChecked()
 
 
-def optional_question_dialog(parent, title, text):
+def optional_question_dialog(parent, title, text, checkbox_text='Do not show again'):
     dialog = Message(parent)
     dialog.setIcon(Message.Question)
     dialog.setWindowTitle(title)
     dialog.setText(text + '\n')
-    checkbox = QCheckBox('Do not show again')
+    checkbox = QCheckBox(checkbox_text)
     dialog.setCheckBox(checkbox)
     dialog.setStandardButtons(Message.Yes | Message.No)
     dialog.setDefaultButton(Message.No)
