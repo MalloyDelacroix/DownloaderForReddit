@@ -1,5 +1,5 @@
 from datetime import datetime
-from PyQt5.QtWidgets import QWidget, QMenu, QApplication, QPushButton
+from PyQt5.QtWidgets import QWidget, QMenu
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 
@@ -304,10 +304,3 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             visible = False
         self.date_limit_edit.setVisible(visible)
         self.date_limit_checkbox.setVisible(visible)
-
-    def setup_for_master_list(self):
-        post_naming_button = QPushButton('User')
-
-    def make_ro_toggle_button(self):
-        button = QPushButton('User')
-        button.setCheckable(True)
