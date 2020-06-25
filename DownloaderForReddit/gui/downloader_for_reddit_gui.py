@@ -114,8 +114,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # region File Menu
         self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
         self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
-        # self.exit_menu_item.triggered.connect(self.close_from_menu)
-        self.exit_menu_item.triggered.connect(lambda: self.fetch_new_post_comments(None))
+        self.exit_menu_item.triggered.connect(self.close)
         # endregion
 
         # region View Menu
@@ -279,7 +278,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         try:
             bar = self.output_list_view.verticalScrollBar()
-            if ((bar.value() / bar.maximum()) * 100) >= 95:
+            pos = bar.value()
+            max_ = bar.maximum()
+            if pos == max_ or ((pos / max_) * 100) >= 96:
                 self.output_list_view.scrollToBottom()
         except ZeroDivisionError:
             pass
@@ -1122,12 +1123,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             self.settings_manager.order_list_desc = desc
         self.user_list_model.sort_list()
         self.subreddit_list_model.sort_list()
-
-    def closeEvent(self, QCloseEvent):
-        self.close()
-
-    def close_from_menu(self):
-        self.close()
 
     def close(self):
         self.receiver.stop_run()
