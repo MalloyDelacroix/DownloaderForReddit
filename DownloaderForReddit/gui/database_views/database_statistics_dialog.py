@@ -53,7 +53,7 @@ class DatabaseStatisticsDialog(QDialog):
                 ('Total Users/Subreddits', total_reddit_objects),
                 ('Total Significant Users/Subreddits', total_significant,
                     '"Significant" indicates users/subreddits that you have added to a list yourself'),
-                ('Total Non-Significant Reddit Objects', total_reddit_objects - total_significant,
+                ('Total Non-Significant Users/Subreddits', total_reddit_objects - total_significant,
                     'Non-Significant users/subreddits are ones that have been added by the application'),
             ]
 
@@ -265,24 +265,24 @@ class DatabaseStatisticsDialog(QDialog):
                 ('List Created', newest_list.date_created),
 
                 ('SEPARATOR', None),
-                ('Average Items Per List', avg_items_in_list),
-                ('List With Most Items', list_with_most_items.RedditObjectList.name),
+                ('Average Items Per List', round(avg_items_in_list, 2)),
+                ('List With Most Items', list_with_most_items.RedditObjectList.display_name),
                 ('Items In List', list_with_most_items.count),
-                ('List With Fewest Items', list_with_fewest_items.RedditObjectList.name),
+                ('List With Fewest Items', list_with_fewest_items.RedditObjectList.display_name),
                 ('Items In List', list_with_fewest_items.count),
-                ('List With Most Posts', list_with_most_posts.RedditObjectList.name),
+                ('List With Most Posts', list_with_most_posts.RedditObjectList.display_name),
                 ('Posts In List',
                     f'{self.format_number(list_with_most_posts.count)}  '
                     f'({self.get_percentage(list_with_most_posts.count, post_count)} of all posts)'),
-                ('List With Fewest Posts', list_with_fewest_posts.RedditObjectList.name),
+                ('List With Fewest Posts', list_with_fewest_posts.RedditObjectList.display_name),
                 ('Posts In List',
                     f'{self.format_number(list_with_fewest_posts.count)}  '
                     f'({self.get_percentage(list_with_most_posts.count, post_count)} of all posts)'),
-                ('List With Highest Score', list_with_highest_score.RedditObjectList.name),
+                ('List With Highest Score', list_with_highest_score.RedditObjectList.display_name),
                 ('Total Score',
                     f'{self.format_number(list_with_highest_score.score)}  '
                     f'({self.get_percentage(list_with_highest_score.score, total_score)} of total score)'),
-                ('List With Lowest Score', list_with_lowest_score.RedditObjectList.name),
+                ('List With Lowest Score', list_with_lowest_score.RedditObjectList.display_name),
                 ('Total Score',
                     f'{self.format_number(list_with_lowest_score.score)}  '
                     f'({self.get_percentage(list_with_lowest_score.score, total_score)} of total score)')
@@ -512,11 +512,11 @@ class DatabaseStatisticsDialog(QDialog):
 
             self.content_map = [
                 ('Total Content', content_count),
-                ('Downloaded Content', downloaded_content_count),
-                ('Percentage Downloaded', f'{self.get_percentage(downloaded_content_count, content_count)}%'),
-                ('Content Not Downloaded\n(non-error)', content_count - downloaded_content_count),
-                ('Percentage Not Downloaded\n(non-error)',
-                 f'{self.get_percentage((content_count - downloaded_content_count), content_count)}%'),
+                ('Downloaded Content', f'{downloaded_content_count} '
+                                       f'({self.get_percentage(downloaded_content_count, content_count)})'),
+                ('Content Not Downloaded\n(non-error)',
+                    f'{content_count - downloaded_content_count} '
+                    f'({self.get_percentage((content_count - downloaded_content_count), content_count)})'),
                 ('SEPARATOR', None),
                 ('Most Common Extension', most_used_extension.ext),
                 ('Extension Used',
