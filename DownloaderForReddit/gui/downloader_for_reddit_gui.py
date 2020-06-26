@@ -562,15 +562,15 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             return True
 
     def run_update(self, update_runner):
-        self.update_thread = QThread()
-        update_runner.moveToThread(self.update_thread)
+        self.update_check_thread = QThread()
+        update_runner.moveToThread(self.update_check_thread)
         self.stop_download_signal.connect(update_runner.stop)
-        update_runner.finished.connect(self.update_thread.quit)
+        update_runner.finished.connect(self.update_check_thread.quit)
         update_runner.finished.connect(self.update_runner.deleteLater)
-        self.update_thread.finished.connect(self.update_thread.deleteLater)
-        self.update_thread.finished.connect(self.finish_update)
-        self.update_thread.started.connect(update_runner.run)
-        self.update_thread.start()
+        self.update_check_thread.finished.connect(self.update_check_thread.deleteLater)
+        self.update_check_thread.finished.connect(self.finish_update)
+        self.update_check_thread.started.connect(update_runner.run)
+        self.update_check_thread.start()
 
     def finish_update(self):
         pass
@@ -1124,9 +1124,20 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_list_model.sort_list()
         self.subreddit_list_model.sort_list()
 
+    def closeEvent(self, event):
+        """
+        As absolutely ridiculous as this is, for some reason if this close event is not set, PyQt outputs a QThread
+        error on application close stating that a thread has been destroyed while still running.  I'm not sure if
+        having to call this event gives what ever thread it is a couple more nanoseconds to close or if the universe
+        thought I had too much hair and decided I should pull it out whilst tracking this problem down.  Either way,
+        this useless method stays.
+        """
+        self.close()
+
     def close(self):
         self.receiver.stop_run()
         self.scheduler.stop_run()
+        self.run_timer.stop()
         self.save_main_window_settings()
         self.settings_manager.save_all()
         super().close()
@@ -1205,19 +1216,19 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Opens and runs the update checker on a separate thread. Sets self.from_menu so that other dialogs know the
         updater has been ran by the user, this will result in different dialog behaviour
         """
-        self.update_thread = QThread()
+        self.update_check_thread = QThread()
         self.update_checker = UpdateChecker(self.version)
-        self.update_checker.moveToThread(self.update_thread)
-        self.update_thread.started.connect(self.update_checker.run)
+        self.update_checker.moveToThread(self.update_check_thread)
+        self.update_check_thread.started.connect(self.update_checker.run)
         if from_menu:
             self.update_checker.update_available_signal.connect(self.update_dialog)
             self.update_checker.no_update_signal.connect(self.no_update_available_dialog)
         else:
             self.update_checker.update_available_signal.connect(self.display_update)
-        self.update_checker.finished.connect(self.update_thread.quit)
+        self.update_checker.finished.connect(self.update_check_thread.quit)
         self.update_checker.finished.connect(self.update_checker.deleteLater)
-        self.update_thread.finished.connect(self.update_thread.deleteLater)
-        self.update_thread.start()
+        self.update_check_thread.finished.connect(self.update_check_thread.deleteLater)
+        self.update_check_thread.start()
 
     def display_update(self, latest_version):
         if self.settings_manager.notify_update != latest_version:
