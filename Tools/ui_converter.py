@@ -36,17 +36,25 @@ class Converter:
     def run(self):
         if self.ui_file == 'list':
             self.list_methods()
-            return
+            self.ui_file = input('GUI file name (or number): ')
         try:
-            method = getattr(self, self.ui_file)
+            name = self.get_method()
+            method = getattr(self, name)
             method()
         except AttributeError:
             print(f'Command not recognized.  Choices are: ')
             self.list_methods()
 
+    def get_method(self):
+        try:
+            index = int(self.ui_file)
+            return self.callable_methods[index]
+        except ValueError:
+            return self.ui_file
+
     def list_methods(self):
-        for x in self.callable_methods:
-            print(x)
+        for x, y in enumerate(self.callable_methods):
+            print(f'{x}: {y}')
 
     def convert(self, name, *sub_paths):
         in_path = self.get_in_path(name, *sub_paths)
@@ -145,7 +153,7 @@ def main():
         command = sys.argv[1]
     except IndexError:
         print('No class specified')
-        command = input('GUI Name: ')
+        command = input('GUI Name (or number): ')
     converter = Converter(command)
     converter.run()
 
