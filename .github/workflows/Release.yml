@@ -66,7 +66,7 @@ jobs:
         tag_name: ${{ steps.changes.outputs.version }}
         release_name: ${{ steps.changes.outputs.version }}
         body: ${{ steps.changes.outputs.changes }}
-        draft: true
+        draft: false
         prerelease: false
     
     - name: Package Build
