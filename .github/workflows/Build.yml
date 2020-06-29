@@ -24,7 +24,6 @@ jobs:
         path: c:\hostedtoolcache\windows\python\3.7.5\x64\lib\site-packages
         key: ${{ runner.os }}-pip_build-${{ hashFiles('**/requirements.txt') }}
         restore-keys: ${{ runner.os }}-pip_build-${{ hashFiles('**/requirements.txt') }}
-          
     
     - name: Install dependencies
       run: |
