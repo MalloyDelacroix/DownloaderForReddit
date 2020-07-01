@@ -22,14 +22,10 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from ..utils import injector
 from ..database.model_enums import NsfwFilter, LimitOperator
 
 
 class SubmissionFilter:
-
-    def __init__(self):
-        self.settings_manager = injector.get_settings_manager()
 
     def filter_submission(self, submission, reddit_object):
         """
@@ -51,7 +47,7 @@ class SubmissionFilter:
         """
         if reddit_object.post_score_limit_operator == LimitOperator.NO_LIMIT:
             return True
-        elif reddit_object.score_limit_operator == LimitOperator.LESS_THAN:
+        elif reddit_object.post_score_limit_operator == LimitOperator.LESS_THAN:
             return submission.score <= reddit_object.post_score_limit
         else:
             return submission.score >= reddit_object.post_score_limit

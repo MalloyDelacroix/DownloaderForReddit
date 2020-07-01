@@ -1,13 +1,12 @@
 from unittest import TestCase
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import patch, MagicMock
 import logging
 from datetime import datetime, timedelta
 
 from DownloaderForReddit.core.download_runner import DownloadRunner
 from DownloaderForReddit.database.database_handler import DatabaseHandler
-from DownloaderForReddit.database.models import User, Subreddit, Post
 from DownloaderForReddit.utils import injector
-from Tests.mockobjects.MockObjects import MockPrawPost, get_blank_user, get_blank_subreddit
+from Tests.mockobjects.MockObjects import MockPrawSubmission, get_user, get_subreddit
 
 
 logging.disable(logging.CRITICAL)
@@ -81,12 +80,12 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_old_stickied_posts(self, get_raw_submissions, reddit_utils):
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=100), stickied=True))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=100), stickied=True))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x)))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x)))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(20, len(mock_submissions))
 
@@ -100,12 +99,12 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_new_stickied_posts(self, get_raw_submissions, reddit_utils):
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x), stickied=True))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x), stickied=True))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x)))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x)))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(20, len(mock_submissions))
 
@@ -122,10 +121,10 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_no_stickied_posts(self, get_raw_submissions, reddit_utils):
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x)))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x)))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(20, len(mock_submissions))
 
@@ -138,21 +137,21 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_old_stickied_posts_restricted_download(self, get_raw_submissions, reddit_utils):
-        allowed_subreddit = get_blank_subreddit(name='allowed')
+        allowed_subreddit = get_subreddit(name='allowed')
         setattr(allowed_subreddit, 'display_name', 'allowed')
-        forbidden_subreddit = get_blank_subreddit(name='forbidden')
+        forbidden_subreddit = get_subreddit(name='forbidden')
         setattr(forbidden_subreddit, 'display_name', 'forbidden')
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=100), stickied=True,
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=100), stickied=True,
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 18):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 18):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=forbidden_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=forbidden_subreddit))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(34, len(mock_submissions))
 
@@ -169,21 +168,21 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_new_stickied_posts_restricted_download(self, get_raw_submissions, reddit_utils):
-        allowed_subreddit = get_blank_subreddit(name='allowed')
+        allowed_subreddit = get_subreddit(name='allowed')
         setattr(allowed_subreddit, 'display_name', 'allowed')
-        forbidden_subreddit = get_blank_subreddit(name='forbidden')
+        forbidden_subreddit = get_subreddit(name='forbidden')
         setattr(forbidden_subreddit, 'display_name', 'forbidden')
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x), stickied=True,
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x), stickied=True,
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=forbidden_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=forbidden_subreddit))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(38, len(mock_submissions))
 
@@ -203,18 +202,18 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_no_stickied_posts_restricted_download(self, get_raw_submissions, reddit_utils):
-        allowed_subreddit = get_blank_subreddit(name='allowed')
+        allowed_subreddit = get_subreddit(name='allowed')
         setattr(allowed_subreddit, 'display_name', 'allowed')
-        forbidden_subreddit = get_blank_subreddit(name='forbidden')
+        forbidden_subreddit = get_subreddit(name='forbidden')
         setattr(forbidden_subreddit, 'display_name', 'forbidden')
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=allowed_subreddit))
         for x in range(20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=forbidden_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=forbidden_subreddit))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(40, len(mock_submissions))
 
@@ -252,12 +251,12 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_old_pinned_posts(self, get_raw_submissions, reddit_utils):
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=100), pinned=True))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=100), pinned=True))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x)))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x)))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(20, len(mock_submissions))
 
@@ -271,12 +270,12 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_new_pinned_posts(self, get_raw_submissions, reddit_utils):
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x), pinned=True))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x), pinned=True))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x)))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x)))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(20, len(mock_submissions))
 
@@ -293,21 +292,21 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_old_pinned_posts_restricted_download(self, get_raw_submissions, reddit_utils):
-        allowed_subreddit = get_blank_subreddit(name='allowed')
+        allowed_subreddit = get_subreddit(name='allowed')
         setattr(allowed_subreddit, 'display_name', 'allowed')
-        forbidden_subreddit = get_blank_subreddit(name='forbidden')
+        forbidden_subreddit = get_subreddit(name='forbidden')
         setattr(forbidden_subreddit, 'display_name', 'forbidden')
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=100), pinned=True,
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=100), pinned=True,
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 18):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 18):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=forbidden_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=forbidden_subreddit))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(34, len(mock_submissions))
 
@@ -324,21 +323,21 @@ class TestDownloadRunner(TestCase):
 
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_new_pinned_posts_restricted_download(self, get_raw_submissions, reddit_utils):
-        allowed_subreddit = get_blank_subreddit(name='allowed')
+        allowed_subreddit = get_subreddit(name='allowed')
         setattr(allowed_subreddit, 'display_name', 'allowed')
-        forbidden_subreddit = get_blank_subreddit(name='forbidden')
+        forbidden_subreddit = get_subreddit(name='forbidden')
         setattr(forbidden_subreddit, 'display_name', 'forbidden')
-        user = get_blank_user(absolute_date_limit=self.now - timedelta(days=10))
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
         mock_submissions = []
         for x in range(2):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x), pinned=True,
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x), pinned=True,
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=allowed_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=allowed_subreddit))
         for x in range(2, 20):
-            mock_submissions.append(MockPrawPost(created=self.now - timedelta(days=x),
-                                                 subreddit=forbidden_subreddit))
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x),
+                                                       subreddit=forbidden_subreddit))
         get_raw_submissions.return_value = self.submission_generator(mock_submissions)
         self.assertEqual(38, len(mock_submissions))
 
