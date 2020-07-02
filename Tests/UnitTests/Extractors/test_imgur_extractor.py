@@ -38,14 +38,14 @@ class TestImgurExtractor(unittest.TestCase):
 
     @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_album')
     def test_extract_content_assignment_album(self, ex_mock):
-        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_user())
         ie.extract_content()
 
         ex_mock.assert_called()
 
     @patch('DownloaderForReddit.Extractors.ImgurExtractor.extract_single')
     def test_extract_content_assignment_single(self, ex_mock):
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         ie.extract_content()
 
         ex_mock.assert_called()
@@ -54,7 +54,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_extract_content_assignment_direct(self, ex_mock):
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://imgur.com/fb2yRj0.jpg'
-        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_user())
         ie.extract_content()
 
         ex_mock.assert_called()
@@ -63,7 +63,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_extract_album(self, img_mock):
         print(img_mock)
         img_mock.return_value = self.url_extract_dict['ALBUM']
-        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_album_post(), MockObjects.get_user())
         ie.extract_album()
 
         img_mock.assert_called_with('Bi63r')
@@ -88,7 +88,7 @@ class TestImgurExtractor(unittest.TestCase):
         post.url = 'https://imgur.com/fb2yRj0'
         img_mock.return_value = 'https://i.imgur.com/fb2yRj0.jpg'
 
-        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_user())
         ie.extract_single()
 
         content = ie.extracted_content[0]
@@ -105,7 +105,7 @@ class TestImgurExtractor(unittest.TestCase):
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://imgur.com/fb2yRj0.jpg'
 
-        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_user())
         ie.extract_direct_link()
 
         content = ie.extracted_content[0]
@@ -121,7 +121,7 @@ class TestImgurExtractor(unittest.TestCase):
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://imgur.com/fb2yRj0.jpg?1'
 
-        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_user())
         ie.extract_direct_link()
 
         content = ie.extracted_content[0]
@@ -131,7 +131,7 @@ class TestImgurExtractor(unittest.TestCase):
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://i.imgur.com/mOlfhY3.gif'
 
-        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_user())
         ie.extract_direct_link()
 
         content = ie.extracted_content[0]
@@ -146,7 +146,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_extract_direct_unknown_ext(self, ):
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://i.imgur.com/fb2yRj0.foo'
-        ie = ImgurExtractor(post, MockObjects.get_blank_user())
+        ie = ImgurExtractor(post, MockObjects.get_user())
         ie.extract_direct_link()
         failed_post = ie.failed_extract_posts[0]
         self.assertTrue('Unrecognized extension' in failed_post.status)
@@ -157,7 +157,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_imgur_down_error(self, img_mock):
         img_mock.side_effect = ImgurError(status_code=500)
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         ie.extract_content()
 
         failed_post = ie.failed_extract_posts[0]
@@ -168,7 +168,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_imgur_client_connection_error_unknown(self, img_mock):
         img_mock.side_effect = ImgurError(status_code=900)
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         ie.extract_content()
 
         failed_post = ie.failed_extract_posts[0]
@@ -179,7 +179,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_imgur_runtime_unknown_error(self, img_mock):
         img_mock.side_effect = RuntimeError()
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         ie.extract_content()
 
         self.assertEqual(1, len(ie.failed_extract_posts))
@@ -194,7 +194,7 @@ class TestImgurExtractor(unittest.TestCase):
         img_mock.side_effect = ImgurError(status_code=429)
         credits_mock.return_value = 0
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         ie.extract_content()
 
         failed_post = ie.failed_extract_posts[0]
@@ -206,7 +206,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_imgur_down_error(self, img_mock):
         img_mock.side_effect = ImgurError(status_code=500)
 
-        extractor = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        extractor = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         extractor.extract_content()
 
         failed_post = extractor.failed_extract_posts[0]
@@ -218,7 +218,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_imgur_does_not_exist_error(self, img_mock):
         img_mock.side_effect = ImgurError(status_code=404)
 
-        extractor = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        extractor = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         extractor.extract_content()
 
         failed_post = extractor.failed_extract_posts[0]
@@ -229,7 +229,7 @@ class TestImgurExtractor(unittest.TestCase):
     def test_imgur_failed_to_locate_403_error(self, img_mock):
         img_mock.side_effect = ImgurError(status_code=403)
 
-        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_blank_user())
+        ie = ImgurExtractor(self.get_single_post(), MockObjects.get_user())
         ie.extract_content()
 
         failed_post = ie.failed_extract_posts[0]

@@ -5,13 +5,11 @@ from DownloaderForReddit.extractors.direct_extractor import DirectExtractor
 from Tests.mockobjects.MockObjects import get_post
 
 
+@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')
+@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_title')
+@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.check_duplicate_content')
 class TestDirectExtractor(ExtractorTest):
 
-    PATH = 'DownloaderForReddit.extractors.direct_extractor.DirectExtractor'
-
-    @patch(f'{PATH}.make_dir_path')
-    @patch(f'{PATH}.make_title')
-    @patch(f'{PATH}.check_duplicate_content')
     def test_extract_direct_link(self, check_duplicate, make_title, make_dir_path):
         url = 'https://unsupported_site.com/image/3jfd9nlksd.jpg'
         post = get_post(url=url)
@@ -24,10 +22,4 @@ class TestDirectExtractor(ExtractorTest):
         de = DirectExtractor(post)
         de.extract_content()
 
-        content = de.extracted_content[0]
-        self.assertEqual(url, content.url)
-        self.assertEqual(post.title, content.title)
-        self.assertEqual(post.author, content.user)
-        self.assertEqual(post.subreddit, content.subreddit)
-        self.assertEqual(post, content.post)
-        self.assertIsNotNone(content.id)
+        self.check_output(de, url, post)

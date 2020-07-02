@@ -19,7 +19,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         fallback_url = post.url + '/DASH_2_4_M?source=fallback'
         post.media = {'reddit_video': {'fallback_url': fallback_url}}
 
-        re = RedditVideoExtractor(post, MockObjects.get_blank_user())
+        re = RedditVideoExtractor(post, MockObjects.get_user())
         re.extract_content()
 
         self.assertEqual(1, len(re.extracted_content))
@@ -38,7 +38,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         fallback_url = post.url + '/DASH_2_4_M?source=fallback'
         post.media = {'reddit_video': {'fallback_url': fallback_url}}
 
-        re = RedditVideoExtractor(post, MockObjects.get_blank_user())
+        re = RedditVideoExtractor(post, MockObjects.get_user())
         re.extract_content()
 
         self.assertEqual(2, len(re.extracted_content))
@@ -72,7 +72,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         post.crosspost_parent = 'notsurewhatgoeshere_' + parent_id
         post.url = 'https://v.redd.it/nottherealurl'
 
-        re = RedditVideoExtractor(post, MockObjects.get_blank_user())
+        re = RedditVideoExtractor(post, MockObjects.get_user())
         re.extract_content()
 
         rv_mock.assert_called()
@@ -100,7 +100,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         fallback_url = post.url + '/DASH_2_4_M?source=fallback'
         post.media = {'reddit_video': {'fallback_url': fallback_url}}
 
-        re = RedditVideoExtractor(post, MockObjects.get_blank_user())
+        re = RedditVideoExtractor(post, MockObjects.get_user())
         re.extract_content()
 
         self.assertEqual(1, len(re.extracted_content))
@@ -119,7 +119,7 @@ class TestRedditVideoExtractor(unittest.TestCase):
         post = MockObjects.get_mock_post_reddit_video()
         post.is_video = True
 
-        re = RedditVideoExtractor(post, MockObjects.get_blank_user())
+        re = RedditVideoExtractor(post, MockObjects.get_user())
         re.extract_content()
 
         self.assertEqual(1, len(re.failed_extract_posts))
