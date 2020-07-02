@@ -35,14 +35,14 @@ defaults = {
 }
 
 
-def get_blank_user(**kwargs):
+def get_user(**kwargs):
     user = User(name=kwargs.pop('name', 'TestUser'), **defaults)
     for key, value in kwargs.items():
         setattr(user, key, value)
     return user
 
 
-def get_blank_subreddit(**kwargs):
+def get_subreddit(**kwargs):
     subreddit = Subreddit(name=kwargs.pop('name', 'TestSubreddit'), **defaults)
     for key, value in kwargs.items():
         setattr(subreddit, key, value)
@@ -50,8 +50,8 @@ def get_blank_subreddit(**kwargs):
 
 
 def get_post(**kwargs):
-    user = kwargs.pop('user', get_blank_user())
-    subreddit = kwargs.pop('subreddit', get_blank_subreddit())
+    user = kwargs.pop('user', get_user())
+    subreddit = kwargs.pop('subreddit', get_subreddit())
     return Post(
         title=kwargs.pop('title', 'Test Post'),
         date_posted=kwargs.pop('date_posted', datetime.now()),
@@ -74,8 +74,8 @@ def get_post(**kwargs):
 
 
 def create_content(**kwargs):
-    user = kwargs.pop('user', get_blank_user())
-    subreddit = kwargs.pop('subreddit', get_blank_subreddit())
+    user = kwargs.pop('user', get_user())
+    subreddit = kwargs.pop('subreddit', get_subreddit())
     post = kwargs.pop('post', get_post(user=user, subreddit=subreddit))
     return Content(
         title=kwargs.pop('title', 'Test Content'),
@@ -139,7 +139,7 @@ def get_mock_post_vidible_album(**kwargs):
 
 
 def get_mock_post_reddit_video():
-    post = MockPrawPost(
+    post = MockPrawSubmission(
         'https://v.redd.it/lkfmw864od1971',
         'Gorgoth',
         'Reddit Video Broh',
@@ -152,7 +152,7 @@ def get_mock_post_reddit_video():
     return post
 
 
-class MockPrawPost:
+class MockPrawSubmission:
 
     def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None,
                  is_video=False, crosspost_parent=None, media=None, stickied=False, pinned=False):
