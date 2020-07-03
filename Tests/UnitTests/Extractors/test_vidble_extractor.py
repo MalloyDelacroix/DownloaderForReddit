@@ -20,7 +20,7 @@ class TestVidbleExtractor(unittest.TestCase):
         s_mock.return_value = self.get_single_soup()
         post = MockObjects.get_mock_post_vidble()
         post.url = 'https://vidble.com/show/XOwqxH6Xz9'
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_single()
 
         content = ve.extracted_content[0]
@@ -32,7 +32,7 @@ class TestVidbleExtractor(unittest.TestCase):
         s_mock.return_value = self.get_single_soup()
         post = MockObjects.get_mock_post_vidble()
         post.url = 'https://vidble.com/explore/XOwqxH6Xz9'
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_single()
 
         content = ve.extracted_content[0]
@@ -47,7 +47,7 @@ class TestVidbleExtractor(unittest.TestCase):
                                     "//www.vidble.com/F5DgE2O64b.gif",
                                     "//www.vidble.com/XOwqxH6Xz9_med.jpg",
                                     "//www.vidble.com/3a4xNLuO9M_med.png"]}
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_album()
 
         contents = ve.extracted_content
@@ -58,7 +58,7 @@ class TestVidbleExtractor(unittest.TestCase):
     def test_extract_content_assignment_single_show(self, es_mock):
         post = MockObjects.get_mock_post_vidble()
         post.url = 'https://vidble.com/show/XOwqxH6Xz9'
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_content()
 
         es_mock.assert_called()
@@ -67,7 +67,7 @@ class TestVidbleExtractor(unittest.TestCase):
     def test_extract_content_assignment_single_explore(self, es_mock):
         post = MockObjects.get_mock_post_vidble()
         post.url = 'https://vidble.com/explore/XOwqxH6Xz9'
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_content()
 
         es_mock.assert_called()
@@ -76,7 +76,7 @@ class TestVidbleExtractor(unittest.TestCase):
     def test_extract_content_explore_direct(self, es_mock):
         post = MockObjects.get_mock_post_vidble()
         post.url = 'https://vidble.com/explore/XOwqxH6Xz9.jpg'
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_content()
 
         self.assertEqual('https://vidble.com/XOwqxH6Xz9.jpg', ve.url)
@@ -85,7 +85,7 @@ class TestVidbleExtractor(unittest.TestCase):
     @patch('DownloaderForReddit.Extractors.VidbleExtractor.extract_direct_link')
     def test_extract_content_assignment_direct(self, es_mock):
         post = MockObjects.get_mock_post_vidble_direct()
-        ve = VidbleExtractor(post, MockObjects.get_blank_user())
+        ve = VidbleExtractor(post, MockObjects.get_user())
         ve.extract_content()
 
         es_mock.assert_called()
