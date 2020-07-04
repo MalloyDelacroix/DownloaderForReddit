@@ -324,7 +324,7 @@ class SettingsManager:
             ],
         }
         self.database_view_quick_filters = self.get('database_view', 'database_view_quick_filters',
-                                                    default_quick_filters)
+                                                    default_quick_filters, self.convert_quick_filters)
 
         default_database_view_default_filters = {
             'database_view': [
@@ -431,3 +431,10 @@ class SettingsManager:
     def convert_message_priority(self, priority):
         self.conversion_list.append('output_priority_level')
         return MessagePriority(priority)
+
+    def convert_quick_filters(self, quick_filters):
+        for filter_list in quick_filters.values():
+            for filter_dict in filter_list:
+                if 'value' not in filter_dict:
+                    filter_dict['value'] = None
+        return quick_filters
