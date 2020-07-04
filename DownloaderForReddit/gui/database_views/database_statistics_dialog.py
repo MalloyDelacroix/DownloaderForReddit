@@ -8,6 +8,7 @@ from sqlalchemy import desc, extract
 from datetime import datetime
 import calendar
 from time import time
+from operator import attrgetter
 
 from DownloaderForReddit.database.models import (DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment,
                                                  RedditObjectList, ListAssociation)
@@ -72,8 +73,8 @@ class DatabaseStatisticsDialog(QDialog):
                 .outerjoin(user_count_sub, user_count_sub.c.significant_reddit_object_id == User.id) \
                 .order_by(desc('count')).first()
 
-            user_score = session.query(User, func.sum(Post.score).label('score')).join(Post, Post.author_id == User.id) \
-                .group_by(User.id)
+            user_score = session.query(User, func.sum(Post.score).label('score'))\
+                .join(Post, Post.author_id == User.id).group_by(User.id)
             significant_user_high_score = user_score.filter(User.significant == True).order_by(desc('score')).first()
             non_sig_user_high_score = user_score.filter(User.significant == False).order_by(desc('score')).first()
             significant_user_low_score = user_score.filter(User.significant == True).order_by('score').first()
@@ -131,14 +132,14 @@ class DatabaseStatisticsDialog(QDialog):
                 ('Comment Count', user_comment_query.count),
 
                 ('SEPARATOR', None),
-                ('Significant User With Highest Score', significant_user_high_score.User.name),
-                ('High Score', significant_user_high_score.score),
-                ('Non-Significant User With Highest Score', non_sig_user_high_score.User.name),
-                ('High Score', non_sig_user_high_score.score),
-                ('Significant User With Lowest Score', significant_user_low_score.User.name),
-                ('Low Score', significant_user_low_score.score),
-                ('Non-Significant User With Lowest Score', non_sig_user_low_score.User.name),
-                ('Low Score', non_sig_user_low_score.score),
+                ('Significant User With Highest Score', self.get(significant_user_high_score, 'User.name')),
+                ('High Score', self.get(significant_user_high_score, 'score')),
+                ('Non-Significant User With Highest Score', self.get(non_sig_user_high_score, 'User.name')),
+                ('High Score', self.get(non_sig_user_high_score, 'score')),
+                ('Significant User With Lowest Score', self.get(significant_user_low_score, 'User.name')),
+                ('Low Score', self.get(significant_user_low_score, 'score')),
+                ('Non-Significant User With Lowest Score', self.get(non_sig_user_low_score, 'User.name')),
+                ('Low Score', self.get(non_sig_user_low_score, 'score')),
             ]
 
             total_subreddits = session.query(Subreddit.id).count()
@@ -212,14 +213,14 @@ class DatabaseStatisticsDialog(QDialog):
                 ('Comment Count', sub_comment_query.count),
 
                 ('SEPARATOR', None),
-                ('Significant Subreddit With Highest Score', significant_sub_high_score.Subreddit.name),
-                ('High Score', significant_sub_high_score.score),
-                ('Non-Significant Subreddit With Highest Score', non_sig_sub_high_score.Subreddit.name),
-                ('High Score', non_sig_sub_high_score.score),
-                ('Significant Subreddit With Lowest Score', significant_sub_low_score.Subreddit.name),
-                ('Low Score', significant_sub_low_score.score),
-                ('Non-Significant Subreddit With Lowest Score', non_sig_sub_low_score.Subreddit.name),
-                ('Low Score', non_sig_sub_low_score.score),
+                ('Significant Subreddit With Highest Score', self.get(significant_sub_high_score, 'Subreddit.name')),
+                ('High Score', self.get(significant_sub_high_score, 'score')),
+                ('Non-Significant Subreddit With Highest Score', self.get(non_sig_sub_high_score, 'Subreddit.name')),
+                ('High Score', self.get(non_sig_sub_high_score, 'score')),
+                ('Significant Subreddit With Lowest Score', self.get(significant_sub_low_score, 'Subreddit.name')),
+                ('Low Score', self.get(significant_sub_low_score, 'score')),
+                ('Non-Significant Subreddit With Lowest Score', self.get(non_sig_sub_low_score, 'Subreddit.name')),
+                ('Low Score', self.get(non_sig_sub_low_score, 'score')),
             ]
 
             total_lists = session.query(RedditObjectList.id).count()
@@ -536,10 +537,10 @@ class DatabaseStatisticsDialog(QDialog):
 
                 ('SEPARATOR', None),
                 ('Download Errors', download_error_count),
-                ('Most Common Error', common_download_error_query.error),
-                ('Times Encountered', common_download_error_query.count),
-                ('Least Common Error', least_common_download_error_query.error),
-                ('Times Encountered', least_common_download_error_query.count),
+                ('Most Common Error', self.get(common_download_error_query, 'error')),
+                ('Times Encountered', self.get(common_download_error_query, 'count')),
+                ('Least Common Error', self.get(least_common_download_error_query, 'error')),
+                ('Times Encountered', self.get(least_common_download_error_query, 'count')),
 
                 ('SEPARATOR', None),
                 ('SUB_HEADER', 'Download Dates:'),
@@ -689,6 +690,13 @@ class DatabaseStatisticsDialog(QDialog):
                                                                   'setup_time': round(end_time - start_time, 3),
                                                                   'total_items': self.item_count,
                                                                   'database_file_size': self.database_size})
+
+    def get(self, query, attr):
+        try:
+            a = attrgetter(attr)
+            return a(query)
+        except AttributeError:
+            return None
 
     def get_percentage(self, x, y):
         """
