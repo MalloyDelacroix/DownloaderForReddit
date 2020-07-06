@@ -1,126 +1,124 @@
-import unittest
 from unittest.mock import patch
 
+from .abstract_extractor_test import ExtractorTest
+from Tests.mockobjects.MockObjects import get_post, get_mock_reddit_video_submission
 from DownloaderForReddit.extractors.reddit_video_extractor import RedditVideoExtractor
-from DownloaderForReddit.utils import injector
 from DownloaderForReddit.utils import video_merger
-from Tests.MockObjects.MockSettingsManager import MockSettingsManager
-from Tests.MockObjects import MockObjects
 
 
-class TestRedditVideoExtractor(unittest.TestCase):
+@patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')
+@patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_title')
+@patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.check_duplicate_content')
+class TestRedditVideoExtractor(ExtractorTest):
+
+    PATH = 'DownloaderForReddit.extractors.RedditVideoExtractor'
 
     def setUp(self):
-        injector.settings_manager = MockSettingsManager()
+        super().setUp()
         video_merger.videos_to_merge.clear()
+        self.settings.download_reddit_hosted_videos = True
 
-    def test_extract_gif(self):
-        post = MockObjects.get_mock_post_reddit_video()
-        fallback_url = post.url + '/DASH_2_4_M?source=fallback'
-        post.media = {'reddit_video': {'fallback_url': fallback_url}}
+    @patch(f'{PATH}.get_host_vid')
+    def test_extract_gif(self, get_host_vid, check_duplicate, make_title, make_dir_path):
+        url = 'https://v.redd.it/lkfmw864od1971'
+        fallback_url = url + '/DASH_2_4_M?source=fallback'
+        submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url}})
+        get_host_vid.return_value = submission
+        post = get_post(url=url, session=self.session, reddit_id=submission.id)
+        check_duplicate.return_value = True
+        make_title.return_value = post.title
+        make_dir_path.return_value = 'content_dir_path'
 
-        re = RedditVideoExtractor(post, MockObjects.get_user())
+        re = RedditVideoExtractor(post)
         re.extract_content()
 
-        self.assertEqual(1, len(re.extracted_content))
-        content = re.extracted_content[0]
-        self.assertEqual(fallback_url, content.url)
-        self.assertEqual('PublicFreakout', content.subreddit)
-        self.assertEqual('Reddit Video Broh', content.post_title)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde.mp4', content.make_filename())
+        self.check_output(re, fallback_url, post, title=f'{post.title}(video)')
 
-        self.assertEqual(0, len(re.failed_extract_posts))
-        self.assertEqual(0, len(video_merger.videos_to_merge))
+    @patch(f'{PATH}.get_host_vid')
+    def test_extract_video_with_audio(self, get_host_vid, check_duplicate, make_title, make_dir_path):
+        url = 'https://v.redd.it/lkfmw864od1971'
+        fallback_url = url + '/DASH_2_4_M?source=fallback'
+        submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url}},
+                                                      is_video=True)
+        get_host_vid.return_value = submission
+        post = get_post(url=url, session=self.session, reddit_id=submission.id)
+        check_duplicate.return_value = True
+        make_title.return_value = post.title
+        make_dir_path.return_value = 'content_dir_path'
 
-    def test_extract_video_with_audio(self):
-        post = MockObjects.get_mock_post_reddit_video()
-        post.is_video = True
-        fallback_url = post.url + '/DASH_2_4_M?source=fallback'
-        post.media = {'reddit_video': {'fallback_url': fallback_url}}
-
-        re = RedditVideoExtractor(post, MockObjects.get_user())
+        re = RedditVideoExtractor(post)
         re.extract_content()
 
         self.assertEqual(2, len(re.extracted_content))
-
         vid_content = re.extracted_content[0]
-        self.assertEqual(fallback_url, vid_content.url)
-        self.assertEqual('PublicFreakout', vid_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
-
+        self.check(vid_content, fallback_url, post, title=f'{post.title}(video)')
         audio_content = re.extracted_content[1]
-        self.assertEqual(post.url + '/audio', audio_content.url)
-        self.assertEqual('PublicFreakout', audio_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.make_filename())
-
-        self.assertEqual(0, len(re.failed_extract_posts))
+        self.check(audio_content, f'{url}/audio', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
-    @patch('DownloaderForReddit.Extractors.RedditVideoExtractor.get_host_vid')
-    def test_extract_video_with_audio_crossposted_post(self, rv_mock):
-        parent_post = MockObjects.get_mock_post_reddit_video()
-        parent_id = 'pppppp'
-        parent_post.id = parent_id
-        parent_post.is_video = True
-        parent_post.title = 'Whoa, Parent Vid'
-        parent_post.subreddit = 'DefinitelyNotPublicFreakout'
-        fallback_url = parent_post.url + '/DASH_2_4_M?source=fallback'
-        parent_post.media = {'reddit_video': {'fallback_url': fallback_url}}
-        rv_mock.return_value = parent_post
+    @patch(f'{PATH}.get_host_vid')
+    def test_extract_video_with_audio_crossposted_post(self, rv_mock, check_duplicate, make_title, make_dir_path):
+        url = 'https://v.redd.it/lkfmw864od1971'
+        fallback_url = url + '/DASH_2_4_M?source=fallback'
+        parent_submission = get_mock_reddit_video_submission(
+            _id='pppppp',
+            is_video=True,
+            title='A parent vid',
+            subreddit='DefinitelyNotPublicFreakout',
+            media={'reddit_video': {'fallback_url': fallback_url}}
+        )
+        rv_mock.return_value = parent_submission
 
-        post = MockObjects.get_mock_post_reddit_video()
-        post.crosspost_parent = 'notsurewhatgoeshere_' + parent_id
-        post.url = 'https://v.redd.it/nottherealurl'
+        submission = get_mock_reddit_video_submission(crosspost_parent=parent_submission,
+                                                      url='https://v.redd.it/nottherealurl')
+        post = get_post(url=url, session=self.session, reddit_id=submission.id, title=submission.title)
+        check_duplicate.return_value = True
+        make_title.return_value = post.title
+        make_dir_path.return_value = 'content_dir_path'
 
-        re = RedditVideoExtractor(post, MockObjects.get_user())
+        re = RedditVideoExtractor(post)
         re.extract_content()
 
         rv_mock.assert_called()
 
         self.assertEqual(2, (len(re.extracted_content)))
-
         vid_content = re.extracted_content[0]
-        self.assertEqual(fallback_url, vid_content.url)
-        self.assertEqual('PublicFreakout', vid_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
-
+        self.check(vid_content, fallback_url, post, title=f'{post.title}(video)')
         audio_content = re.extracted_content[1]
-        self.assertEqual(parent_post.url + '/audio', audio_content.url)
-        self.assertEqual('PublicFreakout', audio_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(audio).mp3', audio_content.make_filename())
-
-        self.assertEqual(0, len(re.failed_extract_posts))
+        self.check(audio_content, f'{url}/audio', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
-    @patch('DownloaderForReddit.Extractors.RedditVideoExtractor.get_audio_content')
-    def test_extract_video_with_audio_extract_exception(self, rv_mock):
+    @patch(f'{PATH}.get_audio_content')
+    @patch(f'{PATH}.get_host_vid')
+    def test_extract_video_with_audio_extract_exception(self, get_host_vid, rv_mock, check_duplicate, make_title,
+                                                        make_dir_path):
+        url = 'https://v.redd.it/lkfmw864od1971'
+        fallback_url = url + '/DASH_2_4_M?source=fallback'
         rv_mock.side_effect = AttributeError
-        post = MockObjects.get_mock_post_reddit_video()
-        post.is_video = True
-        fallback_url = post.url + '/DASH_2_4_M?source=fallback'
-        post.media = {'reddit_video': {'fallback_url': fallback_url}}
+        submission = get_mock_reddit_video_submission(is_video=True,
+                                                      media={'reddit_video': {'fallback_url': fallback_url}})
+        get_host_vid.return_value = submission
+        post = get_post(url=url, session=self.session, reddit_id=submission.id, title=submission.title)
+        check_duplicate.return_value = True
+        make_title.return_value = post.title
+        make_dir_path.return_value = 'content_dir_path'
 
-        re = RedditVideoExtractor(post, MockObjects.get_user())
+        re = RedditVideoExtractor(post)
         re.extract_content()
 
         self.assertEqual(1, len(re.extracted_content))
-
-        vid_content = re.extracted_content[0]
-        self.assertEqual(fallback_url, vid_content.url)
-        self.assertEqual('PublicFreakout', vid_content.subreddit)
-        self.assertEqual('C:/Users/Gorgoth/Downloads/JohnEveryman/abcde(video).mp4', vid_content.make_filename())
-
-        self.assertEqual(1, len(re.failed_extract_posts))
+        self.check_output(re, fallback_url, post, title=f'{post.title}(video)')
         self.assertEqual(0, len(video_merger.videos_to_merge))
 
-    @patch('DownloaderForReddit.Extractors.RedditVideoExtractor.get_vid_url')
-    def test_extract_video_failed_to_find_url(self, rv_mock):
+    @patch(f'{PATH}.get_vid_url')
+    def test_extract_video_failed_to_find_url(self, rv_mock, check_duplicate, make_title, make_dir_path):
         rv_mock.return_value = None
-        post = MockObjects.get_mock_post_reddit_video()
-        post.is_video = True
+        submission = get_mock_reddit_video_submission(is_video=True)
+        post = get_post(title=submission.title, session=self.session)
 
-        re = RedditVideoExtractor(post, MockObjects.get_user())
+        re = RedditVideoExtractor(post)
         re.extract_content()
 
-        self.assertEqual(1, len(re.failed_extract_posts))
         self.assertEqual(0, len(re.extracted_content))
+        self.assertTrue(re.failed_extraction)
+        self.assertIsNotNone(re.failed_extraction_message)

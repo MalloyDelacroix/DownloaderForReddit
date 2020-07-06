@@ -23,14 +23,14 @@ class ExtractorTest(TestCase):
         count = 1
         for content, url in zip(extractor.extracted_content, url_list):
             title = f'{post.title} {count}'
-            self._check(content, url, post, title=title)
+            self.check(content, url, post, title=title)
             count += 1
 
-    def check_output(self, extractor, url, post):
+    def check_output(self, extractor, url, post, **kwargs):
         content = extractor.extracted_content[0]
-        self._check(content, url, post)
+        self.check(content, url, post, **kwargs)
 
-    def _check(self, content, url, post, **kwargs):
+    def check(self, content, url, post, **kwargs):
         self.assertEqual(url, content.url)
         self.assertEqual(kwargs.get('title', post.title), content.title)
         self.assertEqual(post, content.post)
