@@ -52,7 +52,7 @@ def get_subreddit(**kwargs):
 def get_post(**kwargs):
     user = kwargs.pop('user', get_user())
     subreddit = kwargs.pop('subreddit', get_subreddit())
-    return Post(
+    post = Post(
         title=kwargs.pop('title', 'Test Post'),
         date_posted=kwargs.pop('date_posted', datetime.now()),
         domain=kwargs.pop('domain', 'fakesite.com'),
@@ -71,6 +71,10 @@ def get_post(**kwargs):
         subreddit=kwargs.pop('subreddit', subreddit),
         significant_reddit_object=kwargs.pop('significant', user),
     )
+    session = kwargs.get('session', None)
+    if session is not None:
+        session.add(post)
+    return post
 
 
 def create_content(**kwargs):
@@ -111,20 +115,24 @@ def get_mock_post_gfycat(**kwargs):
     post.url = 'https://gfycat.com/KindlyElderlyCony'
     return post
 
+
 def get_mock_post_gfycat_direct(**kwargs):
     post = get_post(**kwargs)
     post.url = 'https://giant.gfycat.com/KindlyElderlyCony.webm'
     return post
+
 
 def get_mock_post_gfycat_tagged(**kwargs):
     post = get_post(**kwargs)
     post.url = 'https://gfycat.com/anchoredenchantedamericanriverotter-saturday-exhausted-weekend-kitten-pissed'
     return post
 
+
 def get_mock_post_vidble_direct(**kwargs):
     post = get_post(**kwargs)
     post.url = 'https://vidble.com/XOwqxH6Xz9.jpg'
     return post
+
 
 def get_mock_post_vidble(**kwargs):
     post = get_post(**kwargs)

@@ -5,9 +5,9 @@ from Tests.mockobjects import MockObjects
 from DownloaderForReddit.extractors.gfycat_extractor import GfycatExtractor
 
 
-@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')
-@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_title')
-@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.check_duplicate_content')
+@patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')
+@patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_title')
+@patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.check_duplicate_content')
 class TestGfycatExtractor(ExtractorTest):
 
     @patch('requests.get')
@@ -19,8 +19,7 @@ class TestGfycatExtractor(ExtractorTest):
         mock_response.json.return_value = {'gfyItem': {'webmUrl': dir_url}}
         get.return_value = mock_response
 
-        post = MockObjects.get_mock_post_gfycat()
-        self.session.add(post)
+        post = MockObjects.get_mock_post_gfycat(session=self.session)
         check_duplicate.return_value = True
         make_title.return_value = post.title
         make_dir_path.return_value = 'content_dir_path'
@@ -39,8 +38,7 @@ class TestGfycatExtractor(ExtractorTest):
         mock_response.json.return_value = {'gfyItem': {'webmUrl': dir_url}}
         get.return_value = mock_response
 
-        post = MockObjects.get_mock_post_gfycat_tagged()
-        self.session.add(post)
+        post = MockObjects.get_mock_post_gfycat_tagged(session=self.session)
         check_duplicate.return_value = True
         make_title.return_value = post.title
         make_dir_path.return_value = 'content_dir_path'
@@ -51,8 +49,7 @@ class TestGfycatExtractor(ExtractorTest):
         self.check_output(ge, dir_url, post)
 
     def test_direct_extraction(self, check_duplicate, make_title, make_dir_path):
-        post = MockObjects.get_mock_post_gfycat_direct()
-        self.session.add(post)
+        post = MockObjects.get_mock_post_gfycat_direct(session=self.session)
         check_duplicate.return_value = True
         make_title.return_value = post.title
         make_dir_path.return_value = 'content_dir_path'

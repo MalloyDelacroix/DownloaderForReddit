@@ -19,10 +19,20 @@ class ExtractorTest(TestCase):
     def tearDown(self):
         self.session.close()
 
+    def check_output_multiple(self, extractor, url_list, post):
+        count = 1
+        for content, url in zip(extractor.extracted_content, url_list):
+            title = f'{post.title} {count}'
+            self._check(content, url, post, title=title)
+            count += 1
+
     def check_output(self, extractor, url, post):
         content = extractor.extracted_content[0]
+        self._check(content, url, post)
+
+    def _check(self, content, url, post, **kwargs):
         self.assertEqual(url, content.url)
-        self.assertEqual(post.title, content.title)
+        self.assertEqual(kwargs.get('title', post.title), content.title)
         self.assertEqual(post, content.post)
         self.assertEqual(post.author, content.user)
         self.assertEqual(post.subreddit, content.subreddit)

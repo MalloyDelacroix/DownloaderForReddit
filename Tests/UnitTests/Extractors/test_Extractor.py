@@ -40,7 +40,7 @@ class TestExtractor(unittest.TestCase):
 
     @patch('DownloaderForReddit.Extractors.DirectExtractor')
     def test_handle_content(self, ex_mock):
-        mock_user = MockObjects.get_blank_user()
+        mock_user = MockObjects.get_user()
         content_list = ['Failed extract one']
         content_list.extend(MockObjects.get_downloadable_content_list(mock_user))
         ex_mock.extracted_content = content_list
@@ -50,7 +50,7 @@ class TestExtractor(unittest.TestCase):
         self.assertTrue('Failed extract one' in mock_user.failed_extracts)
         self.assertTrue(len(mock_user.content) == 1)
 
-        mock_user = MockObjects.get_blank_user()
+        mock_user = MockObjects.get_user()
         mock_user.avoid_duplicates = False
         ex = Extractor(mock_user)
         ex.handle_content(ex_mock)
@@ -58,7 +58,7 @@ class TestExtractor(unittest.TestCase):
         self.assertTrue(len(mock_user.content) == 5)
 
     def test_filter_content(self):
-        user = MockObjects.get_blank_user()
+        user = MockObjects.get_user()
         ex = Extractor(user)
         img_content = MockObjects.create_content(user, None, None)
         vid_content = MockObjects.create_content(user, None, None)
@@ -86,7 +86,7 @@ class TestExtractor(unittest.TestCase):
         self.assertTrue(ex.filter_content(img_content))
 
     def test_unsupported_domain(self):
-        user = MockObjects.get_blank_user()
+        user = MockObjects.get_user()
         ex = Extractor(user)
         post = MockObjects.get_generic_mock_post()
         post.url = 'https://invalid-url.com/a/34ndkoij'
