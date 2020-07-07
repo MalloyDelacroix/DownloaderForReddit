@@ -146,24 +146,26 @@ def get_mock_post_vidible_album(**kwargs):
     return post
 
 
-def get_mock_post_reddit_video():
-    post = MockPrawSubmission(
-        'https://v.redd.it/lkfmw864od1971',
-        'Gorgoth',
-        'Reddit Video Broh',
-        'PublicFreakout',
-        1521473630.0,
-        3500,
-        False,
-        False
+def get_mock_reddit_video_submission(**kwargs):
+    return MockPrawSubmission(
+        url=kwargs.get('url', 'https://v.redd.it/lkfmw864od1971'),
+        author=kwargs.get('author', 'Gorgoth'),
+        title=kwargs.get('title', 'Reddit Video Broh'),
+        subreddit=kwargs.get('subreddit', 'PublicFreakout'),
+        created=kwargs.get('created', 1521473630.0),
+        score=kwargs.get('score', 3500),
+        over_18=kwargs.get('nsfw', False),
+        is_video=kwargs.get('is_video', False),
+        media=kwargs.get('media', None),
+        stickied=kwargs.get('stickied', False),
+        pinned=kwargs.get('pinned', False)
     )
-    return post
 
 
 class MockPrawSubmission:
 
     def __init__(self, url=None, author=None, title=None, subreddit=None, created=None, score=None, over_18=None,
-                 is_video=False, crosspost_parent=None, media=None, stickied=False, pinned=False):
+                 is_video=False, crosspost_parent=None, media=None, stickied=False, pinned=False, _id='abcde'):
         self.url = url
         self.author = author
         self.title = title
@@ -177,7 +179,7 @@ class MockPrawSubmission:
         self.stickied = stickied
         self.pinned = pinned
 
-        self.id = 'abcde'
+        self.id = _id
         self.domain = 'reddit'
 
 
