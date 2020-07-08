@@ -146,6 +146,18 @@ def get_mock_post_vidible_album(**kwargs):
     return post
 
 
+def get_mock_reddit_uploads_post(**kwargs):
+    post = get_post(**kwargs)
+    post.url = 'https://i.redd.it/ymsf8xwe5851.jpg'
+    return post
+
+
+def get_mock_reddit_video_post(**kwargs):
+    post = get_post(**kwargs)
+    post.url = 'https://v.redd.it/2439fd9lkdfg.mp4'
+    return post
+
+
 def get_mock_reddit_video_submission(**kwargs):
     return MockPrawSubmission(
         url=kwargs.get('url', 'https://v.redd.it/lkfmw864od1971'),

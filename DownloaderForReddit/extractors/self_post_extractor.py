@@ -7,6 +7,8 @@ from ..utils import system_util
 
 class SelfPostExtractor(BaseExtractor):
 
+    url_key = None
+
     def __init__(self, post, **kwargs):
         super().__init__(post, **kwargs)
         self.download_session_id = kwargs.get('download_session_id', None)
