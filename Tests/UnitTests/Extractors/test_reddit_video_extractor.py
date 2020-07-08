@@ -90,11 +90,11 @@ class TestRedditVideoExtractor(ExtractorTest):
 
     @patch(f'{PATH}.get_audio_content')
     @patch(f'{PATH}.get_host_vid')
-    def test_extract_video_with_audio_extract_exception(self, get_host_vid, rv_mock, check_duplicate, make_title,
+    def test_extract_video_with_audio_extract_exception(self, get_host_vid, get_audio, check_duplicate, make_title,
                                                         make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
         fallback_url = url + '/DASH_2_4_M?source=fallback'
-        rv_mock.side_effect = AttributeError
+        get_audio.side_effect = AttributeError
         submission = get_mock_reddit_video_submission(is_video=True,
                                                       media={'reddit_video': {'fallback_url': fallback_url}})
         get_host_vid.return_value = submission
@@ -110,10 +110,13 @@ class TestRedditVideoExtractor(ExtractorTest):
         self.check_output(re, fallback_url, post, title=f'{post.title}(video)')
         self.assertEqual(0, len(video_merger.videos_to_merge))
 
+    @patch(f'{PATH}.get_host_vid')
     @patch(f'{PATH}.get_vid_url')
-    def test_extract_video_failed_to_find_url(self, rv_mock, check_duplicate, make_title, make_dir_path):
-        rv_mock.return_value = None
+    def test_extract_video_failed_to_find_url(self, get_vid_url, get_host_vid, check_duplicate, make_title,
+                                              make_dir_path):
         submission = get_mock_reddit_video_submission(is_video=True)
+        get_vid_url.return_value = None
+        get_host_vid.return_value = submission
         post = get_post(title=submission.title, session=self.session)
 
         re = RedditVideoExtractor(post)

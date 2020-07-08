@@ -12,8 +12,7 @@ class TestDirectExtractor(ExtractorTest):
 
     def test_extract_direct_link(self, check_duplicate, make_title, make_dir_path):
         url = 'https://unsupported_site.com/image/3jfd9nlksd.jpg'
-        post = get_post(url=url)
-        self.session.add(post)
+        post = get_post(url=url, session=self.session)
 
         check_duplicate.return_value = True
         make_title.return_value = post.title
