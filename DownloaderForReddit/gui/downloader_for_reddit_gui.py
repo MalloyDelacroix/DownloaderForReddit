@@ -178,12 +178,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_list_model.finished_add.connect(self.stop_spinner)
         self.user_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.user_list_model.existing_object_added.connect(self.check_existing_object_for_download)
+        self.user_list_model.new_object_in_list.connect(lambda x: self.scroll_to_new(x, 'USER'))
         self.user_list_view.setModel(self.user_list_model)
         self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
         self.subreddit_list_model.starting_add.connect(self.start_spinner)
         self.subreddit_list_model.finished_add.connect(self.stop_spinner)
         self.subreddit_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.subreddit_list_model.existing_object_added.connect(self.check_existing_object_for_download)
+        self.subreddit_list_model.new_object_in_list.connect(lambda x: self.scroll_to_new(x, 'SUBREDDIT'))
         self.subreddit_list_view.setModel(self.subreddit_list_model)
 
         self.load_state()
@@ -915,6 +917,22 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def check_new_object_for_download(self, reddit_object_id):
         if self.settings_manager.download_on_add:
             self.add_to_download(reddit_object_id)
+
+    def scroll_to_new(self, index, list_type):
+        """
+        If specified in the settings manager to do so, the list view of the supplied list type will scroll to the
+        reddit object which was most recently added.
+        :param index: The index in the reddit object list of the most recent object.
+        :param list_type: The type of list to which a reddit object was added.  Used to decide which view should scroll.
+        """
+        if self.settings_manager.scroll_to_last_added:
+            if list_type == 'USER':
+                view = self.user_list_view
+                index = self.user_list_model.createIndex(index, 0)
+            else:
+                view = self.subreddit_list_view
+                index = self.subreddit_list_model.createIndex(index, 0)
+            view.scrollTo(index)
 
     def display_database_dialog(self, **kwargs):
         """
