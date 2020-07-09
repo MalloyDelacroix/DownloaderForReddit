@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'DownloadSettingsWidget.ui'
+# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\settings\download_settings_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -16,6 +16,9 @@ class Ui_DownloadSettingsWidget(object):
         DownloadSettingsWidget.resize(906, 709)
         self.verticalLayout = QtWidgets.QVBoxLayout(DownloadSettingsWidget)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.cascade_changes_checkbox = QtWidgets.QCheckBox(DownloadSettingsWidget)
+        self.cascade_changes_checkbox.setObjectName("cascade_changes_checkbox")
+        self.verticalLayout.addWidget(self.cascade_changes_checkbox)
         self.splitter = QtWidgets.QSplitter(DownloadSettingsWidget)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setObjectName("splitter")
@@ -31,7 +34,7 @@ class Ui_DownloadSettingsWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 637, 681))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 105, 649))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -52,4 +55,6 @@ class Ui_DownloadSettingsWidget(object):
     def retranslateUi(self, DownloadSettingsWidget):
         _translate = QtCore.QCoreApplication.translate
         DownloadSettingsWidget.setWindowTitle(_translate("DownloadSettingsWidget", "Download Settings"))
+        self.cascade_changes_checkbox.setToolTip(_translate("DownloadSettingsWidget", "<html><head/><body><p>When selected, changes that are made to the selected list will cascade down to each user/subreddit in the list unless that user/subreddit has its settings locked</p></body></html>"))
+        self.cascade_changes_checkbox.setText(_translate("DownloadSettingsWidget", "Cascade changes"))
 from DownloaderForReddit.gui.widgets.object_settings_widget import ObjectSettingsWidget

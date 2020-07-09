@@ -26,6 +26,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
 
         self.list_widget.currentItemChanged.connect(
             lambda x: self.list_settings_widget.set_objects([self.list_map[x.text()]]))
+        self.cascade_changes_checkbox.setChecked(self.settings.cascade_list_changes)
 
     @property
     def description(self):
@@ -60,10 +61,20 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
                 else:
                     index += 1
 
-
     def apply_settings(self):
+        if self.cascade_changes_checkbox.isChecked():
+            self.cascade_list_changes()
+        self.settings.cascade_list_changes = self.cascade_changes_checkbox.isChecked()
         self.set_from_master()
         self.session.commit()
+
+    def cascade_list_changes(self):
+        for ro_list in self.list_map.values():
+            if ro_list != self.master_user_list and ro_list != self.master_subreddit_list and ro_list.updated:
+                for ro in ro_list.reddit_objects:
+                    if not ro.lock_settings:
+                        for key, value in ro_list.get_default_dict().items():
+                            setattr(ro, key, value)
 
     def set_from_master(self):
         self.settings.user_download_defaults = self.master_user_list.get_default_dict()

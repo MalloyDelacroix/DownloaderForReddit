@@ -84,6 +84,7 @@ class RedditObjectList(BaseModel):
     object_type = 'REDDIT_OBJECT_LIST'
     download_enabled = True
     absolute_date_limit = None
+    updated = False
 
     def __str__(self):
         return f'{self.list_type} List: {self.name}'

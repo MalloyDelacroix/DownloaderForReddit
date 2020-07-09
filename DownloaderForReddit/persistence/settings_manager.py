@@ -41,6 +41,7 @@ class SettingsManager:
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
 
         self.perpetual_download = self.get('core', 'perpetual_download', False)
+        self.cascade_list_changes = self.get('core', 'cascade_list_changes', False)
         # endregion
 
         # region Download Defaults
