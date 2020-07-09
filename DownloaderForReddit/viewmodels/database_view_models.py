@@ -47,6 +47,12 @@ class CustomItemModel:
         except ValueError:
             return self.createIndex(0, 0)
 
+    def get_item_index_by_id(self, item_id):
+        for item in self.items:
+            if item.id == item_id:
+                return self.get_item_index(item)
+        return self.createIndex(0, 0)
+
     def set_data(self, query):
         self.total_items = query.count()
         data = query.limit(self.limit).all()

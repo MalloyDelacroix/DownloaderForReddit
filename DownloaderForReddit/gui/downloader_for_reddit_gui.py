@@ -359,6 +359,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         open_downloads = menu.addAction('Open Download Folder',
                                         lambda: self.open_reddit_object_download_folder(ros[0]))
         menu.addSeparator()
+        open_post_dialog = menu.addAction('Post View',
+                                             lambda: self.open_selected_reddit_object_dialog(ros[0].id, 'POST'))
+        open_content_dialog = menu.addAction('Content View',
+                                             lambda: self.open_selected_reddit_object_dialog(ros[0].id, 'CONTENT'))
+        menu.addSeparator()
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
         remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
         menu.addSeparator()
@@ -1021,6 +1026,16 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             ]
         }
         kwargs['filters'].extend(self.settings_manager.database_view_default_filters['failed_downloads_view'])
+        self.display_database_dialog(**kwargs)
+
+    def open_selected_reddit_object_dialog(self, selected_id, secondary_view):
+        kwargs = {
+            'focus_model': 'REDDIT_OBJECT',
+            'selected_model_id': selected_id,
+            'reddit_object_sort': 'name',
+            'visible_models': ['REDDIT_OBJECT', secondary_view],
+            'filters': self.settings_manager.database_view_default_filters['reddit_object_view']
+        }
         self.display_database_dialog(**kwargs)
 
     def open_database_statistics_dialog(self):
