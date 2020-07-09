@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, call
 
-from Tests.mockobjects import MockObjects
+from Tests.mockobjects import mock_objects
 from DownloaderForReddit.core.submission_handler import SubmissionHandler
 from DownloaderForReddit.utils import injector
 
@@ -24,32 +24,32 @@ class TestSubmissionHandler(TestCase):
         self.handler = SubmissionHandler(self.submission, self.post, 0, MagicMock(), self.mock_queue, stop_run)
 
     def test_assign_extractor_direct(self):
-        post = MockObjects.get_unsupported_direct_post()
+        post = mock_objects.get_unsupported_direct_post()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('DirectExtractor', ex.__name__)
 
     def test_assign_extractor_imgur(self):
-        post = MockObjects.get_mock_post_imgur()
+        post = mock_objects.get_mock_post_imgur()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('ImgurExtractor', ex.__name__)
 
     def test_assign_extractor_gfycat(self):
-        post = MockObjects.get_mock_post_gfycat()
+        post = mock_objects.get_mock_post_gfycat()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('GfycatExtractor', ex.__name__)
 
     def test_assign_extractor_vidble(self):
-        post = MockObjects.get_mock_post_vidble()
+        post = mock_objects.get_mock_post_vidble()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('VidbleExtractor', ex.__name__)
 
     def test_assign_extractor_reddit_uploads(self):
-        post = MockObjects.get_mock_reddit_uploads_post()
+        post = mock_objects.get_mock_reddit_uploads_post()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('RedditUploadsExtractor', ex.__name__)
 
     def test_assign_extractor_reddit_video(self):
-        post = MockObjects.get_mock_reddit_video_post()
+        post = mock_objects.get_mock_reddit_video_post()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('RedditVideoExtractor', ex.__name__)
 
@@ -93,7 +93,7 @@ class TestSubmissionHandler(TestCase):
     @patch(f'{PATH}.finish_extractor')
     @patch(f'{PATH}.assign_extractor')
     def test_extract_link_successful(self, assign, finish):
-        url = MockObjects.get_post().url
+        url = mock_objects.get_post().url
         extractor = MagicMock()
         extractor_class = MagicMock()
         extractor_class.return_value = extractor
@@ -108,7 +108,7 @@ class TestSubmissionHandler(TestCase):
     @patch(f'{PATH}.finish_extractor')
     @patch(f'{PATH}.assign_extractor')
     def test_extract_link_no_extractor_returned(self, assign, finish, handle_unsupported):
-        url = MockObjects.get_post().url
+        url = mock_objects.get_post().url
         assign.return_value = None
         self.handler.extract_link(url, extra_arg='extra')
 
@@ -120,7 +120,7 @@ class TestSubmissionHandler(TestCase):
     @patch(f'{PATH}.finish_extractor')
     @patch(f'{PATH}.assign_extractor')
     def test_extract_link_no_extractor_returned(self, assign, finish, handle_connection_error):
-        url = MockObjects.get_post().url
+        url = mock_objects.get_post().url
         extractor = MagicMock()
         extractor_class = MagicMock()
         extractor_class.return_value = extractor
@@ -136,7 +136,7 @@ class TestSubmissionHandler(TestCase):
     @patch(f'{PATH}.finish_extractor')
     @patch(f'{PATH}.assign_extractor')
     def test_extract_link_no_extractor_returned(self, assign, finish, handle_unknown_error):
-        url = MockObjects.get_post().url
+        url = mock_objects.get_post().url
         extractor = MagicMock()
         extractor_class = MagicMock()
         extractor_class.return_value = extractor

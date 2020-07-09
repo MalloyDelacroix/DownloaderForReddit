@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from .abstract_extractor_test import ExtractorTest
 from DownloaderForReddit.extractors.direct_extractor import DirectExtractor
-from Tests.mockobjects.MockObjects import get_post
+from Tests.mockobjects.mock_objects import get_post
 
 
 @patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')

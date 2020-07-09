@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from DownloaderForReddit.core.submission_filter import SubmissionFilter
 from DownloaderForReddit.database.model_enums import *
-from Tests.mockobjects.MockObjects import MockPrawSubmission, get_user
+from Tests.mockobjects.mock_objects import MockPrawSubmission, get_user
 
 
 class MyTestCase(TestCase):

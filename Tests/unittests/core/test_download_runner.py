@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from DownloaderForReddit.core.download_runner import DownloadRunner
 from DownloaderForReddit.database.database_handler import DatabaseHandler
 from DownloaderForReddit.utils import injector
-from Tests.mockobjects.MockObjects import MockPrawSubmission, get_user, get_subreddit
+from Tests.mockobjects.mock_objects import MockPrawSubmission, get_user, get_subreddit
 
 
 logging.disable(logging.CRITICAL)

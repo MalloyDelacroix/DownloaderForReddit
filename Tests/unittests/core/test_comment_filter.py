@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from Tests.mockobjects.MockObjects import get_user
+from Tests.mockobjects.mock_objects import get_user
 from DownloaderForReddit.core.comment_filter import CommentFilter
 from DownloaderForReddit.database.model_enums import CommentDownload, LimitOperator
 from DownloaderForReddit.utils import injector

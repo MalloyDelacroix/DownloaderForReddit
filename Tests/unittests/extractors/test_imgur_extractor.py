@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from .abstract_extractor_test import ExtractorTest
-from Tests.mockobjects.MockObjects import get_post
+from Tests.mockobjects.mock_objects import get_post
 from DownloaderForReddit.utils.imgur_utils import ImgurError
 from DownloaderForReddit.extractors.imgur_extractor import ImgurExtractor
 

@@ -4,8 +4,8 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 
 from .abstract_extractor_test import ExtractorTest
-from Tests.mockobjects.MockObjects import (get_post, get_mock_post_vidble, get_mock_post_vidible_album,
-                                           get_mock_post_vidble_direct)
+from Tests.mockobjects.mock_objects import (get_post, get_mock_post_vidble, get_mock_post_vidible_album,
+                                            get_mock_post_vidble_direct)
 from DownloaderForReddit.extractors.vidble_extractor import VidbleExtractor
 
 

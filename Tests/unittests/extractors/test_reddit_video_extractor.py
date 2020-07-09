@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from .abstract_extractor_test import ExtractorTest
-from Tests.mockobjects.MockObjects import get_post, get_mock_reddit_video_submission
+from Tests.mockobjects.mock_objects import get_post, get_mock_reddit_video_submission
 from DownloaderForReddit.extractors.reddit_video_extractor import RedditVideoExtractor
 from DownloaderForReddit.utils import video_merger
 
