@@ -255,6 +255,18 @@ class RedditObject(BaseModel):
     def total_score_display(self):
         return '{:,}'.format(self.total_score)
 
+    @property
+    def post_count(self):
+        return len(self.posts)
+
+    @property
+    def content_count(self):
+        return len(self.content)
+
+    @property
+    def comment_count(self):
+        return len(self.comments)
+
     def set_date_limit(self, epoch):
         """
         Tests the supplied epoch time to see if it is newer than the already established absolute date limit, and if so
@@ -280,25 +292,6 @@ class RedditObject(BaseModel):
     def toggle_enable_download(self):
         self.download_enabled = not self.download_enabled
         self.get_session().commit()
-
-    def get_post_count(self):
-        return len(self.posts)
-
-    def get_downloaded_posts(self):
-        session = self.get_session()
-        posts = session.query(Post).filter(Post.author == self)
-
-    def get_non_downloaded_posts(self):
-        pass
-
-    def get_downloaded_comments(self):
-        pass
-
-    def get_downloaded_content(self):
-        pass
-
-    def get_non_downloaded_content(self):
-        pass
 
 
 @event.listens_for(RedditObject.name, 'set')
@@ -361,12 +354,6 @@ class DownloadSession(BaseModel):
             return system_util.format_duration_full(self.duration)
         except AttributeError:
             return 'Never finished'
-
-    def get_session_users(self):
-        pass
-
-    def get_session_subreddits(self):
-        pass
 
     def get_downloaded_reddit_object_count(self, session=None):
         if session is None:

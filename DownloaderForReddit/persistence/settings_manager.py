@@ -140,7 +140,11 @@ class SettingsManager:
             'download_comments': False,
             'download_comment_content': False,
             'download_nsfw': False,
-            'date_added': False
+            'date_added': False,
+            'total_score': False,
+            'post_count': True,
+            'content_count': False,
+            'comment_count': False
         }
         self.main_window_tooltip_display_dict = self.get('display', 'main_window_tooltip_display_dict',
                                                          default_tooltip_display_dict)
