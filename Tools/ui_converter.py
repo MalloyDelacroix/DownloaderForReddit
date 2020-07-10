@@ -21,6 +21,8 @@ class Converter:
             'database_settings',
             'display_settings',
             'download_settings',
+            'notification_settings',
+            'output_settings',
             'filter_input',
             'filter_widget',
             'main_window',
