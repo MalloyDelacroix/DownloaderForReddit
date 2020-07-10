@@ -324,7 +324,27 @@
          </widget>
         </item>
         <item>
-         <widget class="QListView" name="output_list_view"/>
+         <widget class="QListView" name="output_list_view">
+          <property name="styleSheet">
+           <string notr="true">QListView {
+	outline: 0;
+}
+
+QListView::item:hover {
+    background: white;
+}
+
+QListView::item:selected {
+	color: black;
+	background: white;
+}
+
+QListView::item:active {
+	color: black;
+	background: white;
+}</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

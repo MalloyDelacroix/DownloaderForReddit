@@ -182,6 +182,23 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.addWidget(self.schedule_label)
         self.verticalLayout_3.addWidget(self.schedule_widget)
         self.output_list_view = QtWidgets.QListView(self.layoutWidget2)
+        self.output_list_view.setStyleSheet("QListView {\n"
+"    outline: 0;\n"
+"}\n"
+"\n"
+"QListView::item:hover {\n"
+"    background: white;\n"
+"}\n"
+"\n"
+"QListView::item:selected {\n"
+"    color: black;\n"
+"    background: white;\n"
+"}\n"
+"\n"
+"QListView::item:active {\n"
+"    color: black;\n"
+"    background: white;\n"
+"}")
         self.output_list_view.setObjectName("output_list_view")
         self.verticalLayout_3.addWidget(self.output_list_view)
         self.verticalLayout_4.addWidget(self.horz_splitter)
