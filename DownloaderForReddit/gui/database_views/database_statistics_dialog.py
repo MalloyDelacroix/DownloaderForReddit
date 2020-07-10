@@ -23,6 +23,7 @@ class DatabaseStatisticsDialog(QDialog):
         self.db = injector.get_database_handler()
         self.settings_manager = injector.get_settings_manager()
 
+        self.setWindowTitle('Database Statistics')
         icon = QIcon()
         icon.addPixmap(QPixmap('Resources/images/statistics_icon.png'), QIcon.Normal, QIcon.Off)
         self.setWindowIcon(icon)
