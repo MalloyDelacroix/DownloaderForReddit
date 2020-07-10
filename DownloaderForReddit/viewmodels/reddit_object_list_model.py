@@ -17,6 +17,7 @@ class RedditObjectListModel(QAbstractListModel):
     reddit_object_added = pyqtSignal(int)
     existing_object_added = pyqtSignal(tuple)
     new_object_in_list = pyqtSignal(int)
+    count_change = pyqtSignal(int)
 
     def __init__(self, list_type):
         """
@@ -54,7 +55,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.session.add(ro_list)
             self.list = ro_list
             self.sort_list()
-            self.row_count = self.list.reddit_objects.count()
+            self.update_row_count(self.list.reddit_objects.count())
             return True
         return False
 
@@ -68,7 +69,7 @@ class RedditObjectListModel(QAbstractListModel):
                 .filter(RedditObjectList.name == list_name)\
                 .filter(RedditObjectList.list_type == self.list_type)\
                 .one()
-            self.row_count = self.list.reddit_objects.count()
+            self.update_row_count(self.list.reddit_objects.count())
             self.sort_list()
         except NoResultFound:
             pass
@@ -118,7 +119,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.list.reddit_objects.remove(reddit_object)
         reddit_object.set_inactive(False)
         self.session.commit()
-        self.row_count -= 1
+        self.update_row_count(self.row_count - 1)
         self.sort_list()
 
     def add_reddit_object(self, name: str):
@@ -184,7 +185,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.session.commit()
         self.reddit_object_added.emit(item.id)
         self.last_added = item
-        self.row_count += 1
+        self.update_row_count(self.row_count + 1)
         return True
 
     def removeRows(self, position, rows, parent=QModelIndex(), *args):
@@ -193,7 +194,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.list.reddit_objects.remove(self.list.reddit_objects[position])
         self.endRemoveRows()
         self.session.commit()
-        self.row_count -= 1
+        self.update_row_count(self.row_count - 1)
         return True
 
     def removeRow(self, row, parent=QModelIndex(), *args):
@@ -208,6 +209,10 @@ class RedditObjectListModel(QAbstractListModel):
             return self.row_count
         except AttributeError:
             return 0
+
+    def update_row_count(self, value):
+        self.row_count = value
+        self.count_change.emit(value)
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()

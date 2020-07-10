@@ -179,6 +179,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.user_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.user_list_model.new_object_in_list.connect(lambda x: self.scroll_to_new(x, 'USER'))
+        self.user_list_model.count_change.connect(lambda x: self.user_count_label.setText(str(x)))
         self.user_list_view.setModel(self.user_list_model)
         self.subreddit_list_model = RedditObjectListModel('SUBREDDIT')
         self.subreddit_list_model.starting_add.connect(self.start_spinner)
@@ -186,12 +187,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_model.reddit_object_added.connect(self.check_new_object_for_download)
         self.subreddit_list_model.existing_object_added.connect(self.check_existing_object_for_download)
         self.subreddit_list_model.new_object_in_list.connect(lambda x: self.scroll_to_new(x, 'SUBREDDIT'))
+        self.subreddit_list_model.count_change.connect(lambda x: self.subreddit_count_label.setText(str(x)))
         self.subreddit_list_view.setModel(self.subreddit_list_model)
 
         self.load_state()
-
-        self.refresh_user_count()
-        self.refresh_subreddit_count()
 
         self.user_list_search_edit.textChanged.connect(
             lambda text: self.user_list_model.search_list(text))
@@ -538,7 +537,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             self.run(user_id_list=None, sub_id_list=None, reddit_object_id_list=args)
 
     def update_post_scores(self, post_id_list):
-        print('scores')
         post_count = len(post_id_list)
         if post_count < 200 or self.large_post_update_alert(post_count):
             self.update_runner = UpdateRunner(run_method='UPDATE_SCORES', post_id_list=post_id_list)
@@ -659,7 +657,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 if added:
                     self.user_lists_combo.addItem(list_name)
                     self.user_lists_combo.setCurrentText(list_name)
-                    self.refresh_user_count()
                 else:
                     text = f'A user list already exists with the name "{list_name}"'
                     message_dialogs.generic_message(self, title='List Name Exists', text=text)
@@ -690,7 +687,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 if self.user_lists_combo.currentText() != '':
                     self.user_list_model.set_list(self.user_lists_combo.currentText())
                     self.user_list_model.sort_list()
-                self.refresh_user_count()
                 self.logger.info('User list removed', extra={'list_name': current_user_list,
                                                              'previous_list_size': list_size})
         except KeyError:
@@ -702,7 +698,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         new_list_name = self.user_lists_combo.currentText()
         self.user_list_model.set_list(new_list_name)
         self.user_list_model.sort_list()
-        self.refresh_user_count()
         self.logger.info('User list changed to: %s' % new_list_name)
 
     def export_user_list_to_text(self):
@@ -728,7 +723,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 if added:
                     self.subreddit_list_combo.addItem(list_name)
                     self.subreddit_list_combo.setCurrentText(list_name)
-                    self.refresh_subreddit_count()
                 else:
                     text = f'A subreddit list already exists with the name "{list_name}"'
                     message_dialogs.generic_message(self, title='List Name Exists', text=text)
@@ -747,7 +741,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 if self.subreddit_list_combo.currentText() != '':
                     self.subreddit_list_model.set_list(self.subreddit_list_combo.currentText())
                     self.subreddit_list_model.sort_list()
-                self.refresh_subreddit_count()
                 self.logger.info('Subreddit list removed', extra={'list_name': current_sub_list,
                                                                   'previous_list_size': list_size})
         except KeyError:
@@ -772,7 +765,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         new_list_name = self.subreddit_list_combo.currentText()
         self.subreddit_list_model.set_list(new_list_name)
         self.subreddit_list_model.sort_list()
-        self.refresh_subreddit_count()
 
     def export_subreddit_list_to_text(self):
         current_list = self.subreddit_list_combo.currentText()
@@ -872,7 +864,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 message_dialogs.failed_to_rename_error(self, reddit_object.name)
             else:
                 rename_message = 'Success'
-        self.refresh_object_count()
         self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
                                                                  'folder_rename': rename_message,
                                                                  'removal_reason': reason})
@@ -1127,26 +1118,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         except FileNotFoundError:
             self.logger.error('Unable to open user manual: Manual file not found', exc_info=True)
             message_dialogs.user_manual_not_found(self)
-
-    def refresh_object_count(self):
-        self.refresh_user_count()
-        self.refresh_subreddit_count()
-
-    def refresh_user_count(self):
-        """Updates the shown user count seen in the list menu"""
-        try:
-            user_count = self.user_list_model.rowCount()
-        except:
-            user_count = 0
-        self.user_count_label.setText(str(user_count))
-
-    def refresh_subreddit_count(self):
-        """Updates the shown subreddit count seen in the list menu"""
-        try:
-            subreddit_count = self.subreddit_list_model.rowCount()
-        except:
-            subreddit_count = 0
-        self.subreddit_count_label.setText(str(subreddit_count))
 
     def set_list_order(self, order_by=None, desc=None):
         """Applies the sort and order function to each list model"""
