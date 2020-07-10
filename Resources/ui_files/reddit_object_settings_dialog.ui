@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../images/settings_three_gears.png</normaloff>../images/settings_three_gears.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QSplitter" name="splitter">
@@ -124,15 +128,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ObjectInfoWidget</class>
-   <extends>QWidget</extends>
-   <header>DownloaderForReddit/gui/widgets/object_info_widget</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ObjectSettingsWidget</class>
    <extends>QWidget</extends>
    <header>DownloaderForReddit/gui/widgets/object_settings_widget</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ObjectInfoWidget</class>
+   <extends>QWidget</extends>
+   <header>DownloaderForReddit/gui/widgets/object_info_widget</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

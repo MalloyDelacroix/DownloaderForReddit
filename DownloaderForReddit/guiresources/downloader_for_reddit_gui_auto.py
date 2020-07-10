@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\downloader_for_reddit_gui.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\downloader_for_reddit_gui.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -15,7 +15,7 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1232, 836)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:\\Users\\Kyle\\PycharmProjects\\DownloaderForReddit\\Resources\\ui_files\\../Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources\\ui_files\\../images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")

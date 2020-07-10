@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../Resources/Images/RedditDownloaderIcon.png</normaloff>../Resources/Images/RedditDownloaderIcon.png</iconset>
+    <normaloff>../images/RedditDownloaderIcon.png</normaloff>../images/RedditDownloaderIcon.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">

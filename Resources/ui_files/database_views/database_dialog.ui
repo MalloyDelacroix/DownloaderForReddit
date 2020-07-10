@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Database</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../../images/database_icon.png</normaloff>../../images/database_icon.png</iconset>
+  </property>
   <property name="styleSheet">
    <string notr="true"/>
   </property>

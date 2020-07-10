@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'SettingsDialog.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\settings\settings_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -15,7 +15,7 @@ class Ui_SettingsDialog(object):
         SettingsDialog.setObjectName("SettingsDialog")
         SettingsDialog.resize(1169, 820)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../../../Resources/images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources\\ui_files\\settings\\../../images/settings_single_gear.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         SettingsDialog.setWindowIcon(icon)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(SettingsDialog)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -30,15 +30,15 @@ class Ui_SettingsDialog(object):
         self.settings_list_widget.setSizePolicy(sizePolicy)
         self.settings_list_widget.setMaximumSize(QtCore.QSize(260, 16777215))
         self.settings_list_widget.setObjectName("settings_list_widget")
-        self.widget = QtWidgets.QWidget(self.splitter)
-        self.widget.setObjectName("widget")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget)
+        self.layoutWidget = QtWidgets.QWidget(self.splitter)
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setSpacing(16)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.title_label = QtWidgets.QLabel(self.widget)
+        self.title_label = QtWidgets.QLabel(self.layoutWidget)
         font = QtGui.QFont()
         font.setPointSize(13)
         font.setBold(True)
@@ -46,13 +46,13 @@ class Ui_SettingsDialog(object):
         self.title_label.setFont(font)
         self.title_label.setObjectName("title_label")
         self.verticalLayout.addWidget(self.title_label)
-        self.description_label = QtWidgets.QLabel(self.widget)
+        self.description_label = QtWidgets.QLabel(self.layoutWidget)
         self.description_label.setWordWrap(True)
         self.description_label.setOpenExternalLinks(True)
         self.description_label.setObjectName("description_label")
         self.verticalLayout.addWidget(self.description_label)
         self.verticalLayout_2.addLayout(self.verticalLayout)
-        self.frame = QtWidgets.QFrame(self.widget)
+        self.frame = QtWidgets.QFrame(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

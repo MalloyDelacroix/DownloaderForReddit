@@ -2,7 +2,7 @@ import os
 import logging
 from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QFormLayout, QScrollArea, QWidget, QFrame
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon, QPixmap
 from sqlalchemy.sql import func
 from sqlalchemy import desc, extract
 from datetime import datetime
@@ -22,6 +22,10 @@ class DatabaseStatisticsDialog(QDialog):
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.db = injector.get_database_handler()
         self.settings_manager = injector.get_settings_manager()
+
+        icon = QIcon()
+        icon.addPixmap(QPixmap('Resources/images/statistics_icon.png'), QIcon.Normal, QIcon.Off)
+        self.setWindowIcon(icon)
 
         geom = self.settings_manager.database_statistics_geom
         if geom is not None:

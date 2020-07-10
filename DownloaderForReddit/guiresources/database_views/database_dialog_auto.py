@@ -14,6 +14,9 @@ class Ui_DatabaseDialog(object):
     def setupUi(self, DatabaseDialog):
         DatabaseDialog.setObjectName("DatabaseDialog")
         DatabaseDialog.resize(1698, 981)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Resources/images/database_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        DatabaseDialog.setWindowIcon(icon)
         DatabaseDialog.setStyleSheet("")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(DatabaseDialog)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
