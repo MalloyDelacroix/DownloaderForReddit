@@ -435,23 +435,28 @@ class DownloadRunner(QObject):
         :param dl_session: The active download session for this run.
         :param session: The sqlalchemy session that is active for interacting with the database.
         """
-        extracted_post_count = session.query(Post.id).filter(Post.download_session_id == dl_session.id).count()
-        extracted_comment_count = \
-            session.query(Comment.id).filter(Comment.download_session_id == dl_session.id).count()
-        downloaded_content_count = \
-            session.query(Content.id).filter(Content.download_session_id == dl_session.id).count()
-        downloaded_object_count = \
-            session.query(Post.significant_reddit_object_id).filter(Post.download_session == dl_session) \
-            .distinct().count()
+        significant_user_count = dl_session.get_downloaded_user_count()
+        total_user_count = dl_session.get_downloaded_user_count(significant=False)
+        significant_subreddit_count = dl_session.get_downloaded_subreddit_count()
+        total_subreddit_count = dl_session.get_downloaded_subreddit_count(significant=False)
+        extracted_post_count = dl_session.get_extracted_post_count()
+        extracted_comment_count = dl_session.get_comment_count()
+        downloaded_content_count = dl_session.get_downloaded_content_count()
+        user = 'users' if significant_user_count != 1 else 'user'
+        sub = 'subreddits' if significant_subreddit_count != 1 else 'subreddit'
         extra = {
-            'download_time': dl_session.duration,
-            'downloaded_reddit_object_count': downloaded_object_count,
+            'download_time': dl_session.duration_display,
+            'significant_user_count': significant_user_count,
+            'significant_subreddit_count': significant_subreddit_count,
+            'total_user_count': total_user_count,
+            'total_subreddit_count': total_subreddit_count,
             'post_extraction_count': extracted_post_count,
             'comment_extraction_count': extracted_comment_count,
             'download_count': downloaded_content_count,
         }
-        message = f'\nFinished\nRun Time: {dl_session.duration}\n' \
-                  f'Downloaded {self.download_type.lower()}s: {downloaded_object_count}\n' \
+        message = f'\nFinished\nRun Time: {dl_session.duration_display}\n' \
+                  f'Downloaded {significant_user_count} {user}\n' \
+                  f'Downloaded {significant_subreddit_count} {sub}' \
                   f'Post Count: {extracted_post_count}\n' \
                   f'Comment Count: {extracted_comment_count}\n' \
                   f'Download Count: {downloaded_content_count}'

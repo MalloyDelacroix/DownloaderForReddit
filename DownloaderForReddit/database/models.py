@@ -359,8 +359,43 @@ class DownloadSession(BaseModel):
     def get_downloaded_reddit_object_count(self, session=None):
         if session is None:
             session = self.get_session()
-        subquery = session.query(Post.significant_reddit_object_id).filter(Post.download_session_id == self.id)
-        return session.query(RedditObject.id).filter(RedditObject.id.in_(subquery)).count()
+        return session.query(Post.significant_reddit_object_id)\
+            .filter(Post.download_session_id == self.id).distinct().count()
+
+    def get_downloaded_user_count(self, significant=True, session=None):
+        if session is None:
+            session = self.get_session()
+        if significant:
+            query = session.query(Post.significant_reddit_object_id) \
+                .filter(Post.author_id == Post.significant_reddit_object_id)
+        else:
+            query = session.query(Post.subreddit_id)
+        return query.filter(Post.download_session_id == self.id).distinct().count()
+
+    def get_downloaded_subreddit_count(self, significant=True, session=None):
+        if session is None:
+            session = self.get_session()
+        if significant:
+            query = session.query(Post.significant_reddit_object_id)\
+                .filter(Post.subreddit_id == Post.significant_reddit_object_id)
+        else:
+            query = session.query(Post.author_id)
+        return query.filter(Post.download_session_id == self.id).distinct().count()
+
+    def get_extracted_post_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        return session.query(Post.id).filter(Post.download_session_id == self.id).count()
+
+    def get_downloaded_content_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        return session.query(Content.id).filter(Content.download_session_id == self.id).count()
+
+    def get_comment_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        return session.query(Comment.id).filter(Comment.download_session_id == self.id).count()
 
     def get_downloaded_reddit_objects(self, session=None):
         if session is None:
