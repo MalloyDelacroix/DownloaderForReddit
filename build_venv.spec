@@ -2,9 +2,9 @@
 import os
 
 # work-around for https://github.com/pyinstaller/pyinstaller/issues/4064
-import distutils
-if distutils.distutils_path.endswith('__init__.py'):
-    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
+# import distutils
+# if distutils.distutils_path.endswith('__init__.py'):
+#    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
 
 
 block_cipher = None
@@ -27,7 +27,7 @@ a = Analysis([dir_path + '/main.py'],
 					 dir_path],
 			 binaries=[],
 			 datas=added_files,
-			 hiddenimports=['resource'],
+			 hiddenimports=['resource', 'pkg_resources.py2_warn', 'sqlalchemy.ext.baked'],
 			 hookspath=[],
 			 runtime_hooks=[],
 			 excludes=[],
@@ -43,7 +43,7 @@ exe = EXE(pyz,
           debug=False,
 		  strip=False,
 		  upx=True,
-          console=False, 
+          console=False,
 		  icon= dir_path + '/Resources/Images/RedditDownloaderIcon_48x48.ico')
 coll = COLLECT(exe,
 			   a.binaries,
