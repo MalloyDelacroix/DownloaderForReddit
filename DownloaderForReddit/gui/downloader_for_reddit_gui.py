@@ -607,6 +607,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             self.downloaded += 1
             self.update_status_bar()
 
+    def start_main_spinner(self):
+        self.spinner.setParent(self)
+        self.spinner.start()
+
     def start_spinner(self, list_model):
         if list_model == self.user_list_model:
             parent = self.user_list_view
@@ -1220,6 +1224,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Opens and runs the update checker on a separate thread. Sets self.from_menu so that other dialogs know the
         updater has been ran by the user, this will result in different dialog behaviour
         """
+        self.start_main_spinner()
         self.update_check_thread = QThread()
         self.update_checker = UpdateChecker(self.version)
         self.update_checker.moveToThread(self.update_check_thread)
@@ -1229,6 +1234,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             self.update_checker.no_update_signal.connect(self.no_update_available_dialog)
         else:
             self.update_checker.update_available_signal.connect(self.display_update)
+        self.update_checker.finished.connect(self.stop_spinner)
         self.update_checker.finished.connect(self.update_check_thread.quit)
         self.update_checker.finished.connect(self.update_checker.deleteLater)
         self.update_check_thread.finished.connect(self.update_check_thread.deleteLater)
