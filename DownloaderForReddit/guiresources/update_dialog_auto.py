@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'UpdateDialog.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\update_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_update_dialog_box(object):
     def setupUi(self, update_dialog_box):
@@ -16,7 +18,7 @@ class Ui_update_dialog_box(object):
         font.setPointSize(10)
         update_dialog_box.setFont(font)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("Resources/Images/update.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources\\ui_files\\../Resources/Images/update.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         update_dialog_box.setWindowIcon(icon)
         self.gridLayout_2 = QtWidgets.QGridLayout(update_dialog_box)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -56,4 +58,3 @@ class Ui_update_dialog_box(object):
         self.do_not_notify_checkbox.setText(_translate("update_dialog_box", "Do not notify me about this update again"))
         self.link_label.setText(_translate("update_dialog_box", "TextLabel"))
         self.direct_link_label.setText(_translate("update_dialog_box", "TextLabel"))
-
