@@ -13,7 +13,7 @@ dir_path = os.path.abspath(SPECPATH)
 venv_path = os.environ['VIRTUAL_ENV']
 
 
-added_files = [(dir_path + '/Resources/Images/*', 'Resources/Images'),
+added_files = [(dir_path + '/Resources/images/*', 'Resources/images'),
 			   (venv_path + '/Lib/site-packages/praw/praw.ini', '.'),
 			   (dir_path + '/README.md', '.'), 
 			   (dir_path + '/LICENSE', '.'), 
@@ -44,7 +44,7 @@ exe = EXE(pyz,
 		  strip=False,
 		  upx=True,
           console=False,
-		  icon= dir_path + '/Resources/Images/RedditDownloaderIcon_48x48.ico')
+		  icon= dir_path + '/Resources/images/RedditDownloaderIcon_48x48.ico')
 coll = COLLECT(exe,
 			   a.binaries,
 			   a.zipfiles,
