@@ -355,8 +355,6 @@ class SettingsManager:
         # region Misc Dialogs
         self.settings_dialog_geom = self.get('misc_dialogs', 'settings_dialog_geom',
                                              {'width': 1169, 'height': 820, 'x': 0, 'y': 0})
-        self.failed_downloads_dialog_geom = self.get('misc_dialogs', 'failed_downloads_dialog_geom')
-        self.failed_downloads_dialog_splitter_state = self.get('misc_dialogs', 'failed_downloads_dialog_splitter_state')
         self.database_statistics_geom = self.get('misc_dialogs', 'database_statistics_geom', None)
         # endregion
 
