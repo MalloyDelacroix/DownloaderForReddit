@@ -163,9 +163,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         for obj in self.selected_objects:
             setattr(obj, attr, value)
             if obj.object_type == 'REDDIT_OBJECT_LIST':
-                for ro in obj.reddit_objects:
-                    if not ro.lock_settings:
-                        setattr(ro, attr, value)
+                obj.updated = True
 
     def path_token_context_menu(self, line_edit):
         menu = QMenu()

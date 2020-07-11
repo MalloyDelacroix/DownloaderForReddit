@@ -69,7 +69,7 @@ class SubmissionHandler(Runner):
 
     @verify_run
     def extract_text_links(self, html_text, **kwargs):
-        links = BeautifulSoup(html_text, parse_only=SoupStrainer('a'), features='html.parser')
+        links = self.parse_html_links(html_text)
         track_count = len(links) > 1
         for link in links:
             if link.has_attr('href'):
@@ -77,6 +77,9 @@ class SubmissionHandler(Runner):
                 if track_count:
                     kwargs['count'] = links.index(link) + 1
                 self.extract_link(url, **kwargs)
+
+    def parse_html_links(self, html):
+        return BeautifulSoup(html, parse_only=SoupStrainer('a'), features='html.parser')
 
     @verify_run
     def extract_link(self, url, **kwargs):

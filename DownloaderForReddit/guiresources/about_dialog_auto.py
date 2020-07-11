@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\about_dialog.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\about_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -17,7 +17,7 @@ class Ui_About(object):
         About.setMinimumSize(QtCore.QSize(365, 230))
         About.setMaximumSize(QtCore.QSize(1000, 1000))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:\\Users\\Kyle\\PycharmProjects\\DownloaderForReddit\\Resources\\ui_files\\../Resources/Images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("Resources\\ui_files\\../images/RedditDownloaderIcon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         About.setWindowIcon(icon)
         self.gridLayout_3 = QtWidgets.QGridLayout(About)
         self.gridLayout_3.setObjectName("gridLayout_3")

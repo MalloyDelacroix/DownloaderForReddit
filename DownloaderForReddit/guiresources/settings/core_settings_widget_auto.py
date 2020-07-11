@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'CoreSettingsWidget.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\settings\core_settings_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -213,7 +213,7 @@ class Ui_CoreSettingsWidget(object):
 
     def retranslateUi(self, CoreSettingsWidget):
         _translate = QtCore.QCoreApplication.translate
-        CoreSettingsWidget.setWindowTitle(_translate("CoreSettingsWidget", "core Settings"))
+        CoreSettingsWidget.setWindowTitle(_translate("CoreSettingsWidget", "Core Settings"))
         self.file_group_box.setTitle(_translate("CoreSettingsWidget", "Files"))
         self.label.setToolTip(_translate("CoreSettingsWidget", "The base directory that user content will be saved to"))
         self.label.setText(_translate("CoreSettingsWidget", "User Base Save Directory:"))

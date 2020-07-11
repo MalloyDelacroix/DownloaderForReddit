@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'DatabaseSettingsWidget.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\settings\database_settings_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #

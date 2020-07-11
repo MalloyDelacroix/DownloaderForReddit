@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ObjectInfoWidget.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\widgets\object_info_widget.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ObjectInfoWidget(object):
     def setupUi(self, ObjectInfoWidget):
@@ -129,4 +131,3 @@ class Ui_ObjectInfoWidget(object):
         self.comment_author_label.setText(_translate("ObjectInfoWidget", "Comment Author Count:"))
         self.comment_author_count_label.setToolTip(_translate("ObjectInfoWidget", "Comments made by this user"))
         self.comment_author_count_label.setText(_translate("ObjectInfoWidget", "comment_count"))
-

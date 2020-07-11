@@ -41,6 +41,7 @@ class SettingsManager:
         self.download_reddit_hosted_videos = self.get('download_defaults', 'download_reddit_hosted_videos', True)
 
         self.perpetual_download = self.get('core', 'perpetual_download', False)
+        self.cascade_list_changes = self.get('core', 'cascade_list_changes', False)
         # endregion
 
         # region Download Defaults
@@ -140,12 +141,17 @@ class SettingsManager:
             'download_comments': False,
             'download_comment_content': False,
             'download_nsfw': False,
-            'date_added': False
+            'date_added': False,
+            'total_score': False,
+            'post_count': True,
+            'content_count': False,
+            'comment_count': False
         }
         self.main_window_tooltip_display_dict = self.get('display', 'main_window_tooltip_display_dict',
                                                          default_tooltip_display_dict)
         self.countdown_view_choices = ['DO_NOT_SHOW', 'ONLY_WHEN_ACTIVE', 'SHOW']
         self.show_schedule_countdown = self.get('display', 'show_schedule_countdown', 'ONLY_WHEN_ACTIVE')
+        self.scroll_to_last_added = self.get('display', 'scroll_to_last_added', True)
         # endregion
 
         # region Database
@@ -351,7 +357,6 @@ class SettingsManager:
                                              {'width': 1169, 'height': 820, 'x': 0, 'y': 0})
         self.failed_downloads_dialog_geom = self.get('misc_dialogs', 'failed_downloads_dialog_geom')
         self.failed_downloads_dialog_splitter_state = self.get('misc_dialogs', 'failed_downloads_dialog_splitter_state')
-        self.update_dialog_geom = self.get('misc_dialogs', 'update_dialog_geom')
         self.database_statistics_geom = self.get('misc_dialogs', 'database_statistics_geom', None)
         # endregion
 

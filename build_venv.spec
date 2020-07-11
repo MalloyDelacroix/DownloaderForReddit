@@ -2,9 +2,9 @@
 import os
 
 # work-around for https://github.com/pyinstaller/pyinstaller/issues/4064
-import distutils
-if distutils.distutils_path.endswith('__init__.py'):
-    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
+# import distutils
+# if distutils.distutils_path.endswith('__init__.py'):
+#    distutils.distutils_path = os.path.dirname(distutils.distutils_path)
 
 
 block_cipher = None
@@ -13,7 +13,7 @@ dir_path = os.path.abspath(SPECPATH)
 venv_path = os.environ['VIRTUAL_ENV']
 
 
-added_files = [(dir_path + '/Resources/Images/*', 'Resources/Images'),
+added_files = [(dir_path + '/Resources/images/*', 'Resources/images'),
 			   (venv_path + '/Lib/site-packages/praw/praw.ini', '.'),
 			   (dir_path + '/README.md', '.'), 
 			   (dir_path + '/LICENSE', '.'), 
@@ -27,7 +27,7 @@ a = Analysis([dir_path + '/main.py'],
 					 dir_path],
 			 binaries=[],
 			 datas=added_files,
-			 hiddenimports=['resource'],
+			 hiddenimports=['resource', 'pkg_resources.py2_warn', 'sqlalchemy.ext.baked'],
 			 hookspath=[],
 			 runtime_hooks=[],
 			 excludes=[],
@@ -43,8 +43,8 @@ exe = EXE(pyz,
           debug=False,
 		  strip=False,
 		  upx=True,
-          console=False, 
-		  icon= dir_path + '/Resources/Images/RedditDownloaderIcon_48x48.ico')
+          console=False,
+		  icon= dir_path + '/Resources/images/RedditDownloaderIcon_48x48.ico')
 coll = COLLECT(exe,
 			   a.binaries,
 			   a.zipfiles,

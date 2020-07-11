@@ -23,7 +23,7 @@ print(python_folder)
 import PyQt5
 
 
-added_files = [(dir_path + '/Resources/Images/*', 'Resources/Images'),
+added_files = [(dir_path + '/Resources/images/*', 'Resources/images'),
 			   (os.path.join(praw_path,'praw.ini'), '.'),
 			   (dir_path + '/README.md', '.'), 
 			   (dir_path + '/LICENSE', '.'), 
@@ -55,7 +55,7 @@ exe = EXE(pyz,
 		  strip=False,
 		  upx=True,
           console=False, 
-		  icon= dir_path + '/Resources/Images/RedditDownloaderIcon_48x48.ico')
+		  icon= dir_path + '/Resources/images/RedditDownloaderIcon_48x48.ico')
 coll = COLLECT(exe,
 			   a.binaries,
 			   a.zipfiles,

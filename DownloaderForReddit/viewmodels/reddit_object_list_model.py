@@ -16,6 +16,8 @@ class RedditObjectListModel(QAbstractListModel):
     finished_add = pyqtSignal()
     reddit_object_added = pyqtSignal(int)
     existing_object_added = pyqtSignal(tuple)
+    new_object_in_list = pyqtSignal(int)
+    count_change = pyqtSignal(int)
 
     def __init__(self, list_type):
         """
@@ -35,8 +37,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.validator = None
         self.validation_thread = None
         self.validating = False
-
-        # TODO: add waiting overlay to list while waiting on objects to validate
+        self.last_added = None
 
     def get_id_list(self):
         return [x.id for x in self.reddit_objects]
@@ -54,7 +55,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.session.add(ro_list)
             self.list = ro_list
             self.sort_list()
-            self.row_count = self.list.reddit_objects.count()
+            self.update_row_count(self.list.reddit_objects.count())
             return True
         return False
 
@@ -68,7 +69,7 @@ class RedditObjectListModel(QAbstractListModel):
                 .filter(RedditObjectList.name == list_name)\
                 .filter(RedditObjectList.list_type == self.list_type)\
                 .one()
-            self.row_count = self.list.reddit_objects.count()
+            self.update_row_count(self.list.reddit_objects.count())
             self.sort_list()
         except NoResultFound:
             pass
@@ -81,9 +82,15 @@ class RedditObjectListModel(QAbstractListModel):
             self.reddit_objects = \
                 f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc).all()
             self.refresh()
+            self.check_last_added()
         except AttributeError:
             # AttributeError indicates that no list is set for this view model
             pass
+
+    def check_last_added(self):
+        if self.last_added is not None:
+            self.new_object_in_list.emit(self.reddit_objects.index(self.last_added))
+            self.last_added = None
 
     def search_list(self, term):
         f = RedditObjectFilter()
@@ -112,6 +119,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.list.reddit_objects.remove(reddit_object)
         reddit_object.set_inactive(False)
         self.session.commit()
+        self.update_row_count(self.row_count - 1)
         self.sort_list()
 
     def add_reddit_object(self, name: str):
@@ -156,8 +164,10 @@ class RedditObjectListModel(QAbstractListModel):
                 existing_names.append(ro.name)
                 if ro in self.list.reddit_objects:
                     name_list.remove(name)
+                    self.last_added = ro
         if len(existing_names) > 0:
             self.existing_object_added.emit((self.list_type, existing_ids, existing_names))
+            self.check_last_added()
         return name_list
 
     def add_validated_reddit_object(self, ro_id):
@@ -174,7 +184,8 @@ class RedditObjectListModel(QAbstractListModel):
         self.endInsertRows()
         self.session.commit()
         self.reddit_object_added.emit(item.id)
-        self.row_count += 1
+        self.last_added = item
+        self.update_row_count(self.row_count + 1)
         return True
 
     def removeRows(self, position, rows, parent=QModelIndex(), *args):
@@ -183,7 +194,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.list.reddit_objects.remove(self.list.reddit_objects[position])
         self.endRemoveRows()
         self.session.commit()
-        self.row_count -= 1
+        self.update_row_count(self.row_count - 1)
         return True
 
     def removeRow(self, row, parent=QModelIndex(), *args):
@@ -198,6 +209,10 @@ class RedditObjectListModel(QAbstractListModel):
             return self.row_count
         except AttributeError:
             return 0
+
+    def update_row_count(self, value):
+        self.row_count = value
+        self.count_change.emit(value)
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
@@ -246,7 +261,11 @@ class RedditObjectListModel(QAbstractListModel):
             'download_images': f'Download Images: {reddit_object.download_images}',
             'download_videos': f'Download Videos: {reddit_object.download_videos}',
             'download_nsfw': f'NSFW Filter: {reddit_object.download_nsfw.display_name}',
-            'date_added': f'Date Added: {reddit_object.date_added}'
+            'date_added': f'Date Added: {reddit_object.date_added_display}',
+            'total_score': f'Total Score: {reddit_object.total_score_display}',
+            'post_count': f'Post Count: {reddit_object.post_count}',
+            'content_count': f'Content Count: {reddit_object.content_count}',
+            'comment_count': f'Comment Count: {reddit_object.comment_count}',
         }
         tooltip = ''
         for key, value in tooltip_dict.items():

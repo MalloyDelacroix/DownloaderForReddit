@@ -46,9 +46,6 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
         self.setupUi(self)
         self.settings_manager = injector.settings_manager
 
-        geom = self.settings_manager.update_dialog_geom
-        self.restoreGeometry(geom if geom is not None else self.saveGeometry())
-
         self.new_version = update_variables
         self.old_version = __version__
         self.new_version = update_variables

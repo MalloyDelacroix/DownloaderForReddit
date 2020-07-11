@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\database_views\database_dialog.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\database_views\database_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -14,6 +14,9 @@ class Ui_DatabaseDialog(object):
     def setupUi(self, DatabaseDialog):
         DatabaseDialog.setObjectName("DatabaseDialog")
         DatabaseDialog.resize(1698, 981)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Resources\\ui_files\\database_views\\../../images/database_icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        DatabaseDialog.setWindowIcon(icon)
         DatabaseDialog.setStyleSheet("")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(DatabaseDialog)
         self.verticalLayout_6.setObjectName("verticalLayout_6")

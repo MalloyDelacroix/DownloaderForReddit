@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:/Users/Kyle/PycharmProjects/DownloaderForReddit/Resources/ui_files//settings/quick_filter_settings_widget.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\settings\quick_filter_settings_widget.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #

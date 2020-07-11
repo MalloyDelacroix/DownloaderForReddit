@@ -84,6 +84,7 @@ class RedditObjectList(BaseModel):
     object_type = 'REDDIT_OBJECT_LIST'
     download_enabled = True
     absolute_date_limit = None
+    updated = False
 
     def __str__(self):
         return f'{self.list_type} List: {self.name}'
@@ -255,6 +256,18 @@ class RedditObject(BaseModel):
     def total_score_display(self):
         return '{:,}'.format(self.total_score)
 
+    @property
+    def post_count(self):
+        return len(self.posts)
+
+    @property
+    def content_count(self):
+        return len(self.content)
+
+    @property
+    def comment_count(self):
+        return len(self.comments)
+
     def set_date_limit(self, epoch):
         """
         Tests the supplied epoch time to see if it is newer than the already established absolute date limit, and if so
@@ -280,25 +293,6 @@ class RedditObject(BaseModel):
     def toggle_enable_download(self):
         self.download_enabled = not self.download_enabled
         self.get_session().commit()
-
-    def get_post_count(self):
-        return len(self.posts)
-
-    def get_downloaded_posts(self):
-        session = self.get_session()
-        posts = session.query(Post).filter(Post.author == self)
-
-    def get_non_downloaded_posts(self):
-        pass
-
-    def get_downloaded_comments(self):
-        pass
-
-    def get_downloaded_content(self):
-        pass
-
-    def get_non_downloaded_content(self):
-        pass
 
 
 @event.listens_for(RedditObject.name, 'set')
@@ -362,17 +356,46 @@ class DownloadSession(BaseModel):
         except AttributeError:
             return 'Never finished'
 
-    def get_session_users(self):
-        pass
-
-    def get_session_subreddits(self):
-        pass
-
     def get_downloaded_reddit_object_count(self, session=None):
         if session is None:
             session = self.get_session()
-        subquery = session.query(Post.significant_reddit_object_id).filter(Post.download_session_id == self.id)
-        return session.query(RedditObject.id).filter(RedditObject.id.in_(subquery)).count()
+        return session.query(Post.significant_reddit_object_id)\
+            .filter(Post.download_session_id == self.id).distinct().count()
+
+    def get_downloaded_user_count(self, significant=True, session=None):
+        if session is None:
+            session = self.get_session()
+        if significant:
+            query = session.query(Post.significant_reddit_object_id) \
+                .filter(Post.author_id == Post.significant_reddit_object_id)
+        else:
+            query = session.query(Post.subreddit_id)
+        return query.filter(Post.download_session_id == self.id).distinct().count()
+
+    def get_downloaded_subreddit_count(self, significant=True, session=None):
+        if session is None:
+            session = self.get_session()
+        if significant:
+            query = session.query(Post.significant_reddit_object_id)\
+                .filter(Post.subreddit_id == Post.significant_reddit_object_id)
+        else:
+            query = session.query(Post.author_id)
+        return query.filter(Post.download_session_id == self.id).distinct().count()
+
+    def get_extracted_post_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        return session.query(Post.id).filter(Post.download_session_id == self.id).count()
+
+    def get_downloaded_content_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        return session.query(Content.id).filter(Content.download_session_id == self.id).count()
+
+    def get_comment_count(self, session=None):
+        if session is None:
+            session = self.get_session()
+        return session.query(Comment.id).filter(Comment.download_session_id == self.id).count()
 
     def get_downloaded_reddit_objects(self, session=None):
         if session is None:

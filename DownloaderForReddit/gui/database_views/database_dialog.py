@@ -64,6 +64,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.save_settings = save_settings
         self.setup_kwargs = setup_kwargs
 
+
         self.setup_call_list = []
 
         geom = self.settings_manager.database_view_geom
@@ -289,6 +290,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         }
         self.focus_map[self.setup_kwargs.get('focus_model', self.settings_manager.database_view_focus_model)]\
             .setChecked(True)
+        selected_model_id = self.setup_kwargs.get('selected_model_id', None)
+        if selected_model_id is not None:
+            self.set_current_item(selected_model_id)
 
         self.download_session_list_view.verticalScrollBar().valueChanged.connect(lambda: self.monitor_scrollbar(
             self.download_session_list_view.verticalScrollBar(), self.download_session_model,
@@ -358,6 +362,32 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @property
     def comment_focus(self):
         return self.comment_focus_radio.isChecked()
+
+    @property
+    def current_focus_model(self):
+        if self.download_session_focus:
+            return self.download_session_model
+        elif self.reddit_object_focus:
+            return self.reddit_object_model
+        elif self.post_focus:
+            return self.post_model
+        elif self.content_focus:
+            return self.content_model
+        else:
+            return self.comment_tree_model
+
+    @property
+    def current_focus_view(self):
+        if self.download_session_focus:
+            return self.download_session_list_view
+        elif self.reddit_object_focus:
+            return self.reddit_object_list_view
+        elif self.post_focus:
+            return self.post_table_view
+        elif self.content_focus:
+            return self.content_list_view
+        else:
+            return self.comment_tree_view
 
     @property
     def show_download_sessions(self):
@@ -1263,6 +1293,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             current_index = self.comment_tree_model.get_item_index(self.current_comment)
             if self.comment_tree_view.currentIndex() != current_index:
                 self.comment_tree_view.setCurrentIndex(current_index)
+
+    def set_current_item(self, item_id):
+        index = self.current_focus_model.get_item_index_by_id(item_id)
+        self.current_focus_view.setCurrentIndex(index)
 
     def monitor_scrollbar(self, bar, model, load_method, load_percentage=90):
         """

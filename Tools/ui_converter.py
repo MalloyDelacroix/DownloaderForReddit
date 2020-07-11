@@ -7,8 +7,8 @@ import subprocess
 
 class Converter:
 
-    base_ui_path = os.path.realpath('../Resources/ui_files')
-    base_out_path = os.path.realpath('../DownloaderForReddit/guiresources')
+    base_ui_path = os.path.relpath('Resources/ui_files')
+    base_out_path = os.path.relpath('DownloaderForReddit/guiresources')
 
     def __init__(self, ui_file):
         self.ui_file = ui_file
@@ -21,6 +21,8 @@ class Converter:
             'database_settings',
             'display_settings',
             'download_settings',
+            'notification_settings',
+            'output_settings',
             'filter_input',
             'filter_widget',
             'main_window',
@@ -57,11 +59,14 @@ class Converter:
             print(f'{x}: {y}')
 
     def convert(self, name, *sub_paths):
+        original = os.getcwd()
+        os.chdir(os.path.dirname(original))  # change directories so that all file paths in created file are correct
         in_path = self.get_in_path(name, *sub_paths)
         out_path = self.get_out_path(name, *sub_paths)
         command = f'pyuic5 {in_path} -o {out_path}'
         # print(command)
         subprocess.run(command)
+        os.chdir(original)
 
     def get_in_path(self, name, *sub_paths):
         name = f'{name}.ui'

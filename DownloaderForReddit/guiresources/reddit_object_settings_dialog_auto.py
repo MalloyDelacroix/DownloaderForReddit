@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\Kyle\PycharmProjects\DownloaderForReddit\Resources\ui_files\reddit_object_settings_dialog.ui'
+# Form implementation generated from reading ui file 'Resources\ui_files\reddit_object_settings_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.1
 #
@@ -14,6 +14,9 @@ class Ui_RedditObjectSettingsDialog(object):
     def setupUi(self, RedditObjectSettingsDialog):
         RedditObjectSettingsDialog.setObjectName("RedditObjectSettingsDialog")
         RedditObjectSettingsDialog.resize(773, 940)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("Resources\\ui_files\\../images/settings_three_gears.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        RedditObjectSettingsDialog.setWindowIcon(icon)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(RedditObjectSettingsDialog)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.splitter = QtWidgets.QSplitter(RedditObjectSettingsDialog)

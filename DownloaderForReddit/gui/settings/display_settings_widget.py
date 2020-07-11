@@ -20,6 +20,7 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.short_title_length_spin_box.setValue(self.settings.short_title_char_length)
         self.schedule_countdown_combo.setCurrentIndex(
             self.settings.countdown_view_choices.index(self.settings.show_schedule_countdown))
+        self.scroll_to_last_added_checkbox.setChecked(self.settings.scroll_to_last_added)
 
         for key, value in self.settings.main_window_tooltip_display_dict.items():
             self.add_checkbox(key, value)
@@ -35,5 +36,6 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         show_countdown = self.schedule_countdown_combo.currentData(Qt.UserRole)
         self.settings.show_schedule_countdown = show_countdown
         self.main_window.schedule_widget.setVisible(show_countdown == 'SHOW')
+        self.settings.scroll_to_last_added = self.scroll_to_last_added_checkbox.isChecked()
         for attr, checkbox in self.tooltips.items():
             self.settings.main_window_tooltip_display_dict[attr] = checkbox.isChecked()
