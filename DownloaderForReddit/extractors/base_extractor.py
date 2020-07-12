@@ -130,12 +130,15 @@ class BaseExtractor:
         Takes content elements that are extracted and creates a Content object with the extracted parts and the global
         extractor items, then sends the new Content object to the extracted content list.
         :param url: The url of the content item.
-        :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
         :param extension: The extension of the supplied url and the url used for the downloaded file.
+        :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
+        :param name_modifier: A modifier to the name assigned for the content that will be appended after the name.
+                              This can be used to distinguish different parts of a downloaded file if necessary.
         :return: The content object that was created.
         :type url: str
-        :type extension: str
         :type count: int
+        :type extension: str
+        :type name_modifier: str
         :rtype: Content
         """
         if self.check_duplicate_content(url):
