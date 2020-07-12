@@ -34,7 +34,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
             'Display': DisplaySettingsWidget(main_window=self.parent),
             'Output': OutputSettingsWidget(main_window=self.parent),
             'Imgur': ImgurSettingsWidget(),
-            'Database': DatabaseSettingsWidget(),
+            'Database View': DatabaseSettingsWidget(),
             'Schedule': ScheduleSettingsWidget(),
             'Supported Video Sites': SupportedVideoSettingsWidget(),
             'Quick Filters': QuickFilterSettingsWidget(),

@@ -54,7 +54,7 @@ class Ui_DownloadSettingsWidget(object):
 
     def retranslateUi(self, DownloadSettingsWidget):
         _translate = QtCore.QCoreApplication.translate
-        DownloadSettingsWidget.setWindowTitle(_translate("DownloadSettingsWidget", "Download Settings"))
+        DownloadSettingsWidget.setWindowTitle(_translate("DownloadSettingsWidget", "Download Default Settings"))
         self.cascade_changes_checkbox.setToolTip(_translate("DownloadSettingsWidget", "<html><head/><body><p>When selected, changes that are made to the selected list will cascade down to each user/subreddit in the list unless that user/subreddit has its settings locked</p></body></html>"))
         self.cascade_changes_checkbox.setText(_translate("DownloadSettingsWidget", "Cascade changes"))
 from DownloaderForReddit.gui.widgets.object_settings_widget import ObjectSettingsWidget

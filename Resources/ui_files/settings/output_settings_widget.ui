@@ -25,7 +25,7 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The level of message that will be displayed in the output window.  All levels below the selected will be displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The level of message that will be displayed in the output window. All levels above the selected will be displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Output priority level:</string>

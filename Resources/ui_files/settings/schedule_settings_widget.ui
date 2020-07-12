@@ -7,13 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>906</width>
-    <height>709</height>
+    <height>673</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Schedule Settings</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
+   <property name="spacing">
+    <number>15</number>
+   </property>
    <item>
     <widget class="QCheckBox" name="perpetual_download_checkbox">
      <property name="toolTip">
@@ -30,6 +33,9 @@
       <string>Scheduling</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_6">
+      <property name="spacing">
+       <number>15</number>
+      </property>
       <item>
        <widget class="QLabel" name="label_7">
         <property name="text">
@@ -59,7 +65,7 @@
          <enum>Qt::Horizontal</enum>
         </property>
         <widget class="QListWidget" name="scheduled_downloads_list_widget"/>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <property name="spacing">
            <number>15</number>

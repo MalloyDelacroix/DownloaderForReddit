@@ -118,7 +118,7 @@ class Ui_OutputSettingsWidget(object):
         _translate = QtCore.QCoreApplication.translate
         OutputSettingsWidget.setWindowTitle(_translate("OutputSettingsWidget", "Output Settings"))
         self.output_display_groupbox.setTitle(_translate("OutputSettingsWidget", "Output Display"))
-        self.label.setToolTip(_translate("OutputSettingsWidget", "<html><head/><body><p>The level of message that will be displayed in the output window.  All levels below the selected will be displayed.</p></body></html>"))
+        self.label.setToolTip(_translate("OutputSettingsWidget", "<html><head/><body><p>The level of message that will be displayed in the output window. All levels above the selected will be displayed.</p></body></html>"))
         self.label.setText(_translate("OutputSettingsWidget", "Output priority level:"))
         self.label_2.setToolTip(_translate("OutputSettingsWidget", "<html><head/><body><p>If selected, each message shown in the output will start with the message\'s priority level</p></body></html>"))
         self.label_2.setText(_translate("OutputSettingsWidget", "Output priority level:"))

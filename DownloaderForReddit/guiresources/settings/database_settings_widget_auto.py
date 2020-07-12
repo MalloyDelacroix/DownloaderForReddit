@@ -103,7 +103,7 @@ class Ui_DatabaseSettingsWidget(object):
 
     def retranslateUi(self, DatabaseSettingsWidget):
         _translate = QtCore.QCoreApplication.translate
-        DatabaseSettingsWidget.setWindowTitle(_translate("DatabaseSettingsWidget", "Database Settings"))
+        DatabaseSettingsWidget.setWindowTitle(_translate("DatabaseSettingsWidget", "Database View Settings"))
         self.query_limit_groupbox.setToolTip(_translate("DatabaseSettingsWidget", "<html><head/><body><p>Set the number of items that will be queried from the database per page when using a database view</p></body></html>"))
         self.query_limit_groupbox.setTitle(_translate("DatabaseSettingsWidget", "Query Limits"))
         self.label.setText(_translate("DatabaseSettingsWidget", "Download sessions:"))

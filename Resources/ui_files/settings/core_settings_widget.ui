@@ -36,6 +36,9 @@
       <bool>false</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>15</number>
+      </property>
       <item>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="0">
@@ -239,6 +242,9 @@
       <bool>false</bool>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>15</number>
+      </property>
       <item>
        <layout class="QFormLayout" name="formLayout_3">
         <item row="0" column="0">
