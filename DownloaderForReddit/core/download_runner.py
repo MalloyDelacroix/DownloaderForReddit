@@ -442,8 +442,6 @@ class DownloadRunner(QObject):
         extracted_post_count = dl_session.get_extracted_post_count()
         extracted_comment_count = dl_session.get_comment_count()
         downloaded_content_count = dl_session.get_downloaded_content_count()
-        user = 'users' if significant_user_count != 1 else 'user'
-        sub = 'subreddits' if significant_subreddit_count != 1 else 'subreddit'
         extra = {
             'download_time': dl_session.duration_display,
             'significant_user_count': significant_user_count,
@@ -455,8 +453,8 @@ class DownloadRunner(QObject):
             'download_count': downloaded_content_count,
         }
         message = f'\nFinished\nRun Time: {dl_session.duration_display}\n' \
-                  f'Downloaded {significant_user_count} {user}\n' \
-                  f'Downloaded {significant_subreddit_count} {sub}' \
+                  f'Downloaded Users: {significant_user_count}\n' \
+                  f'Downloaded Subreddits: {significant_subreddit_count}\n' \
                   f'Post Count: {extracted_post_count}\n' \
                   f'Comment Count: {extracted_comment_count}\n' \
                   f'Download Count: {downloaded_content_count}'
