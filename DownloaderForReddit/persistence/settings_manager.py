@@ -352,6 +352,12 @@ class SettingsManager:
                                                       default_database_view_default_filters)
         # endregion
 
+        # region Export
+        self.export_file_path = self.get('export', 'export_file_path', self.user_save_directory)
+        self.export_file_type = self.get('export', 'export_file_type', 'JSON')
+        self.export_nested_objects = self.get('export', 'export_nested_objects', False)
+        # endregion
+
         # region Misc Dialogs
         self.settings_dialog_geom = self.get('misc_dialogs', 'settings_dialog_geom',
                                              {'width': 1169, 'height': 820, 'x': 0, 'y': 0})

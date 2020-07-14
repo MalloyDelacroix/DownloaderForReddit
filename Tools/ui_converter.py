@@ -21,6 +21,7 @@ class Converter:
             'database_settings',
             'display_settings',
             'download_settings',
+            'export_wizard',
             'notification_settings',
             'output_settings',
             'filter_input',
@@ -123,6 +124,10 @@ class Converter:
     def download_settings(self):
         name = 'download_settings_widget'
         self.convert(name, 'settings')
+
+    def export_wizard(self):
+        name = 'export_wizard'
+        self.convert(name)
 
     def notification_settings(self):
         name = 'notification_settings_widget'

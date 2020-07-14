@@ -39,6 +39,13 @@ class RedditObjectListModel(QAbstractListModel):
         self.validating = False
         self.last_added = None
 
+    @property
+    def name(self):
+        try:
+            return self.list.name
+        except AttributeError:
+            return None
+
     def get_id_list(self):
         return [x.id for x in self.reddit_objects]
 

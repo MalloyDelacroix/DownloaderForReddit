@@ -470,6 +470,10 @@ class Post(BaseModel):
     def score_display(self):
         return '{:,}'.format(self.score)
 
+    @property
+    def extraction_date_display(self):
+        return self.get_display_date(self.extraction_date)
+
     def set_extracted(self):
         self.extracted = True
         self.extraction_date = datetime.now()
@@ -516,12 +520,20 @@ class Comment(BaseModel):
         return f'Comment: {self.id}'
 
     @property
+    def date_added_display(self):
+        return self.get_display_date(self.date_added)
+
+    @property
     def date_posted_display(self):
         return self.get_display_date(self.date_posted)
 
     @property
     def score_display(self):
         return '{:,}'.format(self.score)
+
+    @property
+    def extraction_date_display(self):
+        return self.get_display_date(self.extraction_date)
 
     @property
     def post_title(self):
@@ -584,6 +596,10 @@ class Content(BaseModel):
             return self.title[:length]
         else:
             return self.title
+
+    @property
+    def download_date_display(self):
+        return self.get_display_date(self.download_date)
 
     def get_full_file_path(self, download_title=None):
         if not download_title:

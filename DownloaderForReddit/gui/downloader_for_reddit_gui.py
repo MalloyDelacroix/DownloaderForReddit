@@ -44,6 +44,7 @@ from ..gui.update_dialog_gui import UpdateDialog
 from ..gui.database_views.database_dialog import DatabaseDialog
 from ..gui.database_views.database_statistics_dialog import DatabaseStatisticsDialog
 from ..gui.settings.settings_dialog import SettingsDialog
+from ..gui.export_wizard import ExportWizard
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
 from ..database.models import RedditObject, RedditObjectList, ListAssociation
@@ -135,11 +136,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.add_subreddit_list_menu_item.triggered.connect(self.add_subreddit_list)
         self.remove_subreddit_list_menu_item.triggered.connect(self.remove_subreddit_list)
 
-        self.export_user_list_as_text_menu_item.triggered.connect(self.export_user_list_to_text)
-        self.export_user_list_as_json_menu_item.triggered.connect(self.export_user_list_to_json)
-
-        self.export_sub_list_as_text_menu_item.triggered.connect(self.export_subreddit_list_to_text)
-        self.export_sub_list_as_json_menu_item.triggered.connect(self.export_subreddit_list_to_json)
+        self.export_user_list_menu_item.triggered.connect(self.export_user_list)
+        self.export_subreddit_list_menu_item.triggered.connect(self.export_subreddit_list)
         # endregion
 
         # region Database Menu
@@ -357,6 +355,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addSeparator()
         open_downloads = menu.addAction('Open Download Folder',
                                         lambda: self.open_reddit_object_download_folder(ros[0]))
+        export_text = f'Export {ros[0].name}' if len(ros) == 1 else f'Export {len(ros)} {object_type.title()}s'
+        export = menu.addAction(export_text, lambda: self.export_reddit_objects(ros))
         menu.addSeparator()
         open_post_dialog = menu.addAction('Post View',
                                              lambda: self.open_selected_reddit_object_dialog(ros[0].id, 'POST'))
@@ -704,19 +704,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_list_model.sort_list()
         self.logger.info('User list changed to: %s' % new_list_name)
 
-    def export_user_list_to_text(self):
-        current_list = self.user_lists_combo.currentText()
-        path = system_util.join_path(self.settings_manager.user_save_directory, current_list)
-        file_path = self.get_file_path('Export Path', path, 'Text Files (*.txt)')
-        if file_path is not None:
-            text_exporter.export_reddit_objects_to_text(self.user_list_model.list, file_path)
+    def export_user_list(self):
+        wizard = ExportWizard(self.user_list_model.list, 'REDDIT_OBJECT_LIST', self.user_list_model.name)
+        wizard.exec_()
 
-    def export_user_list_to_json(self):
-        current_list = self.user_lists_combo.currentText()
-        path = system_util.join_path(self.settings_manager.user_save_directory, current_list)
-        file_path = self.get_file_path('Export Path', path, 'Json Files (*.json)')
-        if file_path is not None:
-            json_exporter.export_reddit_objects_to_json(self.user_list_model.list, file_path)
+    def export_reddit_objects(self, ro_list):
+        wizard = ExportWizard(ro_list, 'REDDIT_OBJECT', None)
+        wizard.exec_()
 
     def add_subreddit_list(self, *, list_name=None):
         if list_name is None:
@@ -770,23 +764,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_model.set_list(new_list_name)
         self.subreddit_list_model.sort_list()
 
-    def export_subreddit_list_to_text(self):
-        current_list = self.subreddit_list_combo.currentText()
-        path = system_util.join_path(self.settings_manager.user_save_directory, current_list)
-        file_path = self.get_file_path('Export Path', path, 'Text Files (*.txt)')
-        if file_path is not None:
-            text_exporter.export_reddit_objects_to_text(self.subreddit_list_model.list, file_path)
-
-    def export_subreddit_list_to_json(self):
-        current_list = self.subreddit_list_combo.currentText()
-        path = system_util.join_path(self.settings_manager.subreddit_save_directory, current_list)
-        file_path = self.get_file_path('Export Path', path, 'Json Files (*.json)')
-        if file_path is not None:
-            json_exporter.export_reddit_objects_to_json(self.subreddit_list_model.list, file_path)
-
-    def get_file_path(self, title, suggested_path, ext):
-        file_path, _ = QFileDialog.getSaveFileName(self, title, suggested_path, ext)
-        return file_path if file_path != '' else None
+    def export_subreddit_list(self):
+        wizard = ExportWizard(self.subreddit_list_model.reddit_objects, 'REDDIT_OBJECT', self.subreddit_list_model.name)
+        wizard.exec_()
 
     def add_user(self):
         if self.user_list_model.list is None:

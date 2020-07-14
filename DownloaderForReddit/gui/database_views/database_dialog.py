@@ -1,5 +1,7 @@
 import logging
-from PyQt5.QtWidgets import QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox
+from datetime import datetime
+from PyQt5.QtWidgets import (QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox,
+                             QFileDialog)
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 from sqlalchemy import or_
@@ -11,6 +13,7 @@ from DownloaderForReddit.database.filters import (DownloadSessionFilter, RedditO
 from DownloaderForReddit.viewmodels.database_view_models import (DownloadSessionModel, RedditObjectModel,
                                                                  PostTableModel, ContentListModel, CommentTreeModel)
 from DownloaderForReddit.gui.blank_dialog import BlankDialog
+from DownloaderForReddit.gui.export_wizard import ExportWizard
 from DownloaderForReddit.utils import injector, system_util, general_utils
 
 
@@ -556,7 +559,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             ro = None
         oepn_dl_folder = menu.addAction('Open Download Folder', self.open_download_folder)
         menu.addSeparator()
+        export_all = menu.addAction('Export All', self.export_all_reddit_objects)
+        export_selected = menu.addAction('Export Selected', self.export_selected_reddit_objects)
+        menu.addSeparator()
         download = menu.addAction('Download', self.download_reddit_object)
+        menu.addSeparator()
+        export_ro = menu.addAction('Export', self.export_reddit_object)
         menu.addSeparator()
         menu.addAction('Select All', lambda: self.reddit_object_list_view.selectAll())
 
@@ -569,9 +577,24 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         reddit_object = self.reddit_object_model.get_item(self.reddit_object_list_view.selectedIndexes()[0].row())
         general_utils.open_reddit_object_download_folder(reddit_object, self)
 
+    def export_all_reddit_objects(self):
+        self.export_reddit_objects(self.get_reddit_object_data())
+
+    def export_selected_reddit_objects(self):
+        selected = self.reddit_object_list_view.selectedIndexes()
+        self.export_reddit_objects(self.reddit_object_model.get_items(selected))
+
+    def export_reddit_objects(self, ro_list):
+        wizard = ExportWizard(ro_list, 'REDDIT_OBJECT')
+        wizard.exec_()
+
     def download_reddit_object(self):
         reddit_objects = self.reddit_object_model.get_item(self.reddit_object_list_view.selectedIndexes())
         self.download_signal.emit([x.id for x in reddit_objects])
+
+    def export_reddit_object(self):
+        wizard = ExportWizard(self.current_reddit_object, 'REDDIT_OBJECT')
+        wizard.exec_()
 
     def post_view_context_menu(self):
         menu = QMenu()
@@ -583,6 +606,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.addSeparator()
         update_score = menu.addAction('Update Score', self.update_post_scores)
         update_comments = menu.addAction('Fetch New Comments', self.update_post_comments)
+        menu.addSeparator()
+        export_all = menu.addAction('Export All Posts', self.export_all_posts)
+        export_selected = menu.addAction('Export Selected Posts', self.export_selected_posts)
         menu.addSeparator()
         menu.addAction('Select All', lambda: self.post_table_view.selectAll())
 
@@ -596,6 +622,17 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
     def update_post_comments(self):
         self.update_post_comments_signal.emit(self.current_post_id)
+
+    def export_all_posts(self):
+        self.export_posts(self.get_post_data().all())
+
+    def export_selected_posts(self):
+        selected_indices = self.post_table_view.selectedIndexes()
+        self.export_posts(self.post_model.get_items(selected_indices))
+
+    def export_posts(self, post_list):
+        wizard = ExportWizard(post_list, 'POST')
+        wizard.exec_()
 
     def post_headers_context_menu(self):
         """
@@ -660,6 +697,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
 
         open_directory = menu.addAction('Open Directory', lambda: system_util.open_in_system(content.directory_path))
         open_directory.setDisabled(content is None)
+        menu.addSeparator()
+        export_all = menu.addAction('Export All', self.export_all_content)
+        export_selected = menu.addAction('Export Selected', self.export_selected_content)
+        menu.addSeparator()
 
         icon_menu = QMenu('Icon Size')
         action_group = QActionGroup(self)
@@ -687,10 +728,34 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         action_group.addAction(item)
         return item
 
+    def export_all_content(self):
+        self.export_content(self.get_content_data())
+
+    def export_selected_content(self):
+        selected = self.content_list_view.selectedIndexes()
+        self.export_content(self.content_model.get_items(selected))
+
+    def export_content(self, content_list):
+        wizard = ExportWizard(content_list, 'CONTENT')
+        wizard.exec_()
+
     def comment_view_context_menu(self):
         menu = QMenu()
         menu.addAction('Select All', lambda: self.comment_tree_view.selectAll())
+        menu.addSeparator()
+
         menu.exec_(QCursor.pos())
+
+    def export_all_comments(self):
+        self.export_comments(self.get_comment_data())
+
+    def export_selected_comments(self):
+        selected = self.comment_tree_view.selectedIndexes()
+        self.export_comments(self.comment_tree_model.get_items(selected))
+
+    def export_comments(self, comment_list):
+        wizard = ExportWizard(comment_list, 'COMMENT')
+        wizard.exec_()
 
     def comment_header_context_menu(self):
         """
@@ -1081,15 +1146,13 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             self.download_session_model.load_next_page(final_query)
         self.check_load_more_button(self.download_session_model)
 
-    @check_hold
-    def set_reddit_object_data(self, extend=False):
-        """See set download session data."""
+    def get_reddit_object_data(self):
         f = RedditObjectFilter()
         filter_tups = self.filter_widget.filter('REDDIT_OBJECT')
         query = self.session.query(RedditObject)
         if self.download_session_focus:
-            subquery = self.session.query(Post.significant_reddit_object_id).join(Content)\
-                .filter(Content.download_session_id.in_(self.current_download_session_id))\
+            subquery = self.session.query(Post.significant_reddit_object_id).join(Content) \
+                .filter(Content.download_session_id.in_(self.current_download_session_id)) \
                 .union(
                 self.session.query(Post.significant_reddit_object_id)
                     .filter(Post.download_session_id.in_(self.current_download_session_id))
@@ -1105,6 +1168,12 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                 [x.post.significant_reddit_object_id for x in self.current_comment]))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.reddit_object_order,
                                desc=self.reddit_object_desc)
+        return final_query
+
+    @check_hold
+    def set_reddit_object_data(self, extend=False):
+        """See set download session data."""
+        final_query = self.get_reddit_object_data()
         if not extend:
             self.reddit_object_model.set_data(final_query)
         else:
@@ -1114,6 +1183,14 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     @check_hold
     def set_post_data(self, extend=False):
         """See set download session data."""
+        final_query = self.get_post_data()
+        if not extend:
+            self.post_model.set_data(final_query)
+        else:
+            self.post_model.load_next_page(final_query)
+        self.check_load_more_button(self.post_model)
+
+    def get_post_data(self):
         f = PostFilter()
         filter_tups = self.filter_widget.filter('POST')
         query = self.session.query(Post)
@@ -1138,15 +1215,9 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Post.id.in_(self.current_comment_attr('post_id')))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.post_order,
                                desc=self.post_desc)
-        if not extend:
-            self.post_model.set_data(final_query)
-        else:
-            self.post_model.load_next_page(final_query)
-        self.check_load_more_button(self.post_model)
+        return final_query
 
-    @check_hold
-    def set_content_data(self, extend=False):
-        """See set download session data."""
+    def get_content_data(self):
         f = ContentFilter()
         filter_tups = self.filter_widget.filter('CONTENT')
         query = self.session.query(Content)
@@ -1192,15 +1263,19 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Content.comment_id.in_(self.current_comment_id))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.content_order,
                                desc=self.content_desc)
+        return final_query
+
+    @check_hold
+    def set_content_data(self, extend=False):
+        """See set download session data."""
+        final_query = self.get_content_data()
         if not extend:
             self.content_model.set_data(final_query)
         else:
             self.content_model.load_next_page(final_query)
         self.check_load_more_button(self.content_model)
 
-    @check_hold
-    def set_comment_data(self, extend=False):
-        """See set download session data."""
+    def get_comment_data(self):
         f = CommentFilter()
         filter_tups = self.filter_widget.filter('COMMENT')
         query = self.session.query(Comment)
@@ -1208,7 +1283,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             if self.show_posts:
                 query = query.filter(Comment.post_id.in_(self.current_post_id))
             elif self.show_reddit_objects:
-                posts = self.session.query(Post.id)\
+                posts = self.session.query(Post.id) \
                     .filter(Post.significant_reddit_object_id.in_(self.current_reddit_object_id))
                 query = query.filter(Comment.post_id.in_(posts))
             else:
@@ -1219,10 +1294,16 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(Comment.post_id.in_(self.current_content_attr('comment_id')))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.comment_order,
                                desc=self.comment_desc)
+        return final_query
+
+    @check_hold
+    def set_comment_data(self, extend=False):
+        """See set download session data."""
+        final_query = self.get_comment_data()
         if not extend:
             self.comment_tree_model.set_data(final_query)
         else:
-            self.comment_tree_model.load_next_page(query)
+            self.comment_tree_model.load_next_page(final_query)
         self.check_load_more_button(self.comment_tree_model)
 
     def set_first_download_session_index(self):
