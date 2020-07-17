@@ -97,6 +97,14 @@ class RedditObjectList(BaseModel):
     def date_created_display(self):
         return self.get_display_date(self.date_created)
 
+    @property
+    def date_limit_display(self):
+        return self.get_display_date(self.date_limit)
+
+    @property
+    def absolute_date_limit_display(self):
+        return self.get_display_date(self.absolute_date_limit)
+
     def get_reddit_object_id_list(self):
         return [x.id for x in self.reddit_objects]
 
