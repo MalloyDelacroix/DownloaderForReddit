@@ -16,7 +16,7 @@
   <property name="wizardStyle">
    <enum>QWizard::ModernStyle</enum>
   </property>
-  <widget class="QWizardPage" name="wizardPage1">
+  <widget class="QWizardPage" name="page_one">
    <property name="title">
     <string>Export file type</string>
    </property>
@@ -37,7 +37,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="wizardPage2">
+  <widget class="QWizardPage" name="page_two">
    <property name="title">
     <string>Nested Object Export</string>
    </property>
@@ -74,7 +74,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWizardPage" name="wizardPage">
+  <widget class="QWizardPage" name="page_three">
    <property name="title">
     <string>Export Path</string>
    </property>

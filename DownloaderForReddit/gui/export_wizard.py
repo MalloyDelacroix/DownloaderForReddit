@@ -30,12 +30,26 @@ class ExportWizard(QWizard, Ui_ExportWizard):
             'Content': json_exporter.export_content_to_json,
         }
 
+        self.csv_export_radio.toggled.connect(self.toggle_nested_page)
+
     @property
     def extension(self):
         if self.csv_export_radio.isChecked():
             return 'csv'
         else:
             return 'json'
+
+    def toggle_nested_page(self):
+        """
+        Toggles the nested page settings page on or off depending on the type of export to be performed.  CSV export
+        files cannot be nested.
+        """
+        if self.csv_export_radio.isChecked():
+            self.removePage(self.nextId())
+        else:
+            self.addPage(self.page_two)
+            self.removePage(self.nextId())
+            self.addPage(self.page_three)
 
     def select_export_path(self):
         file_path, _ = QFileDialog.getSaveFileName(self, 'Export Path', self.export_path_line_edit.text(),
