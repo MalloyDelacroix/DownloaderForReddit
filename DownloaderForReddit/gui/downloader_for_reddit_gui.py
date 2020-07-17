@@ -50,7 +50,6 @@ from ..core.update_runner import UpdateRunner
 from ..database.models import RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
-from ..utils.exporters import json_exporter, text_exporter
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
 from ..messaging.message import MessageType, MessagePriority
@@ -705,11 +704,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.logger.info('User list changed to: %s' % new_list_name)
 
     def export_user_list(self):
-        wizard = ExportWizard(self.user_list_model.list, 'REDDIT_OBJECT_LIST', self.user_list_model.name)
+        wizard = ExportWizard(self.user_list_model.list, RedditObjectList, self.user_list_model.name)
         wizard.exec_()
 
     def export_reddit_objects(self, ro_list):
-        wizard = ExportWizard(ro_list, 'REDDIT_OBJECT', None)
+        wizard = ExportWizard(ro_list, RedditObject, None)
         wizard.exec_()
 
     def add_subreddit_list(self, *, list_name=None):
@@ -765,7 +764,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.subreddit_list_model.sort_list()
 
     def export_subreddit_list(self):
-        wizard = ExportWizard(self.subreddit_list_model.reddit_objects, 'REDDIT_OBJECT', self.subreddit_list_model.name)
+        wizard = ExportWizard(self.subreddit_list_model.reddit_objects, RedditObjectList,
+                              self.subreddit_list_model.name)
         wizard.exec_()
 
     def add_user(self):

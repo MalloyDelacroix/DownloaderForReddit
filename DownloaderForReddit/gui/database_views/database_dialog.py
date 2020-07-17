@@ -585,7 +585,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.export_reddit_objects(self.reddit_object_model.get_items(selected))
 
     def export_reddit_objects(self, ro_list):
-        wizard = ExportWizard(ro_list, 'REDDIT_OBJECT')
+        wizard = ExportWizard(ro_list, RedditObject)
         wizard.exec_()
 
     def download_reddit_object(self):
@@ -593,7 +593,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.download_signal.emit([x.id for x in reddit_objects])
 
     def export_reddit_object(self):
-        wizard = ExportWizard(self.current_reddit_object, 'REDDIT_OBJECT')
+        wizard = ExportWizard(self.current_reddit_object, RedditObject)
         wizard.exec_()
 
     def post_view_context_menu(self):
@@ -631,7 +631,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.export_posts(self.post_model.get_items(selected_indices))
 
     def export_posts(self, post_list):
-        wizard = ExportWizard(post_list, 'POST')
+        wizard = ExportWizard(post_list, Post)
         wizard.exec_()
 
     def post_headers_context_menu(self):
@@ -736,7 +736,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.export_content(self.content_model.get_items(selected))
 
     def export_content(self, content_list):
-        wizard = ExportWizard(content_list, 'CONTENT')
+        wizard = ExportWizard(content_list, Content)
         wizard.exec_()
 
     def comment_view_context_menu(self):
@@ -754,7 +754,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.export_comments(self.comment_tree_model.get_items(selected))
 
     def export_comments(self, comment_list):
-        wizard = ExportWizard(comment_list, 'COMMENT')
+        wizard = ExportWizard(comment_list, Comment)
         wizard.exec_()
 
     def comment_header_context_menu(self):
