@@ -295,15 +295,6 @@ class RedditObject(BaseModel):
         self.get_session().commit()
 
 
-@event.listens_for(RedditObject.name, 'set')
-def check_duplicate_name(target, value, oldValue, initiator):
-    match = target.get_session().query(RedditObject.id)\
-        .filter(RedditObject.object_type == target.object_type)\
-        .filter(RedditObject.name == value).first()
-    if match is not None:
-        raise ExistingNameException(f'A {target.object_type} with the name {value} already exists in the database')
-
-
 class User(RedditObject):
 
     __tablename__ = 'user'
