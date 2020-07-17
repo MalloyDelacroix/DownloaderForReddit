@@ -156,10 +156,16 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
     def data(self, index, role=None):
         col = index.column()
         if role == Qt.DisplayRole:
-            return self.header_map[self.headers[col]](self.items[index.row()])
+            try:
+                return self.header_map[self.headers[col]](self.items[index.row()])
+            except AttributeError:
+                pass
         if role == Qt.ToolTipRole:
             if col != self.headers.index('text'):
-                return self.header_map[self.headers[col]](self.items[index.row()])
+                try:
+                    return self.header_map[self.headers[col]](self.items[index.row()])
+                except AttributeError:
+                    pass
         return None
 
     def get_post_attribute(self, column, post):
