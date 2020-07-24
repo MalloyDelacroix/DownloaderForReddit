@@ -191,14 +191,14 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "QListView::item:selected {\n"
-"    color: black;\n"
 "    background: white;\n"
 "}\n"
 "\n"
 "QListView::item:active {\n"
-"    color: black;\n"
 "    background: white;\n"
 "}")
+        self.output_list_view.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.output_list_view.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.output_list_view.setObjectName("output_list_view")
         self.verticalLayout_3.addWidget(self.output_list_view)
         self.verticalLayout_4.addWidget(self.horz_splitter)
