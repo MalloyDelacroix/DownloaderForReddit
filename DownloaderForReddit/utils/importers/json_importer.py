@@ -24,76 +24,67 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import logging
+from datetime import datetime
 
 from DownloaderForReddit.database.models import User, Subreddit
+from DownloaderForReddit.database.model_enums import (LimitOperator, PostSortMethod, NsfwFilter, CommentDownload,
+                                                      CommentSortMethod)
 
 logger = logging.getLogger(__name__)
 
 
-# TODO: re work this module
-def import_list_from_json(file_path):
-    """
-    Imports a list of reddit objects from the json file at the supplied file path.
-    :param file_path: The path to the json file from which to build the user list.
-    :return: A list of RedditObjects built from the supplied json file.
-    """
-    with open(file_path, 'r') as file:
-        objects = json.load(file)['object_list']
+EXPELLED_KEYS = ['lists', 'posts', 'content', 'comments']
+TYPE_MAP = {
+    'date_created': lambda x: datetime.strptime(x, '%m/%d/%Y %I:%M %p'),
+    'post_score_limit_operator': lambda x: LimitOperator(x),
+    'post_sort_method': lambda x: PostSortMethod(x),
+    'download_nsfw': lambda x: NsfwFilter(x),
+    'extract_comments': lambda x: CommentDownload(x),
+    'download_comments': lambda x: CommentDownload(x),
+    'download_comment_content': lambda x: CommentDownload(x),
+    'comment_score_limit_operator': lambda x: LimitOperator(x),
+    'comment_sort_method': lambda x: CommentSortMethod(x),
+    'date_added': lambda x: datetime.strptime(x, '%m/%d/%Y %I:%M %p'),
+    'absolute_date_limit': lambda x: datetime.strptime(x, '%m/%d/%Y %I:%M %p'),
+    'date_limit': lambda x: datetime.strptime(x, '%m/%d/%Y %I:%M %p')
+}
 
+
+def import_json(file_path):
     reddit_objects = []
-    for ro in objects:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        j = json.load(file)
         try:
-            version = ro['version']
-            reddit_object = import_from_old_reddit_object(ro)
+            reddit_object_data = _get_reddit_objects(j)
+            objects_imported = 0
+            for ro_element in reddit_object_data:
+                model = User if ro_element['object_type'] == 'USER' else Subreddit
+                _clean_ro_element(ro_element)
+                reddit_object = model(**ro_element)
+                objects_imported += 1
+                reddit_objects.append(reddit_object)
+            logger.info('Imported reddit objects from json file', extra={'file_path': file_path,
+                                                                         'import_count': objects_imported})
         except KeyError:
-            reddit_object = import_from_new_reddit_object(ro)
-        if reddit_object is not None:
-            reddit_objects.append(reddit_object)
-    logger.info('Imported from file', extra={'import_count': len(reddit_objects)})
-    return reddit_objects if len(reddit_objects) > 0 else None
+            pass
+    return reddit_objects
 
 
-def import_from_new_reddit_object(element):
-    pass
-
-
-def import_from_old_reddit_object(element):
-    """
-    Creates a User or Subreddit object, depending on the object type of the supplied element, with the attributes
-    imported from the supplied json element.
-    :param element: The element that the reddit object is to be built from.
-    :return: A RedditObject build from the attributes of the supplied element.
-    """
+def _get_reddit_objects(json_element):
     try:
-        name = element['name']
-        version = element['version']
-        save_path = element['save_path']
-        post_limit = int(element['post_limit'])
-        avoid_duplicates = bool(element['avoid_duplicates'])
-        download_videos = bool(element['download_videos'])
-        download_images = bool(element['download_images'])
-        nsfw_filter = element['nsfw_filter']
-        name_downloads_by = element['name_downloads_by']
-        subreddit_save_method = element['subreddit_save_method']
-        date_limit = int(element['date_limit_epoch'])
-        custom_date_limit = element['custom_date_limit_epoch']
-        added_on = element['added_on_epoch']
-        do_not_edit = element['do_not_edit']
-        save_undownloaded_content = element['save_undownloaded_content']
-        download_enabled = element['download_enabled']
+        ros = json_element['reddit_objects']
+    except KeyError:
+        ros = []
+        for ro_list in json_element['reddit_object_lists']:
+            ros.extend(ro_list['reddit_objects'])
+    return ros
 
-        if element['object_type'] == 'USER':
-            reddit_object = User(version, name, save_path, post_limit, avoid_duplicates, download_videos, download_images,
-                                 nsfw_filter, name_downloads_by, added_on)
-        else:
-            reddit_object = Subreddit(version, name, save_path, post_limit, avoid_duplicates, download_videos,
-                                      download_images, nsfw_filter, subreddit_save_method, name_downloads_by, added_on)
-        reddit_object.date_limit = date_limit
-        reddit_object.custom_date_limit = int(custom_date_limit) if custom_date_limit is not None else None
-        reddit_object.do_not_edit = do_not_edit
-        reddit_object.save_undownloaded_content = save_undownloaded_content
-        reddit_object.enable_download = download_enabled
-        return reddit_object
-    except:
-        logger.warning('Failed to import reddit object from json element', exc_info=True)
-        return None
+
+def _clean_ro_element(ro_element):
+    for key in EXPELLED_KEYS:
+        del ro_element[key]
+    for key, value in ro_element.items():
+        try:
+            ro_element[key] = TYPE_MAP[key](value)
+        except (KeyError, TypeError):
+            pass

@@ -182,6 +182,10 @@ class RedditObjectListModel(QAbstractListModel):
         self.insertRow(reddit_object)
         self.sort_list()
 
+    def add_complete_reddit_object(self, reddit_object):
+        self.insertRow(reddit_object)
+        self.sort_list()
+
     def finish_adding(self):
         self.finished_add.emit()
 

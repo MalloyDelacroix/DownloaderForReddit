@@ -80,6 +80,12 @@ class NameChecker:
         self.continue_run = True
         self.object_type = object_type
 
+    def check_reddit_object_name(self, name):
+        if self.object_type == 'USER':
+            return self.check_user_name(name)
+        else:
+            return self.check_subreddit_name(name)
+
     def check_user_name(self, name):
         user = self.r.redditor(name)
         try:

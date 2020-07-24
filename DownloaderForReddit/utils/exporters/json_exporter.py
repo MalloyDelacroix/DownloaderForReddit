@@ -34,10 +34,10 @@ logger = logging.getLogger(__name__)
 class RedditObjectListCollection:
 
     def __init__(self, object_list):
-        self.object_list = object_list if isinstance(object_list, list) else [object_list]
+        self.reddit_object_lists = object_list if isinstance(object_list, list) else [object_list]
 
     def size(self):
-        return len(self.object_list)
+        return len(self.reddit_object_lists)
 
 
 class SimpleJSONRedditObjectListEncoder(json.JSONEncoder):
@@ -92,10 +92,10 @@ class NestedJSONRedditObjectListEncoder(SimpleJSONRedditObjectListEncoder):
 class RedditObjectCollection:
 
     def __init__(self, object_list):
-        self.object_list = object_list
+        self.reddit_objects = object_list
 
     def size(self):
-        return len(self.object_list)
+        return len(self.reddit_objects)
 
 
 class SimpleJSONRedditObjectEncoder(json.JSONEncoder):
@@ -139,6 +139,7 @@ class SimpleJSONRedditObjectEncoder(json.JSONEncoder):
                 'comment_naming_method': o.comment_naming_method,
                 'comment_save_structure': o.comment_save_structure,
                 'new': o.new,
+                'object_type': o.object_type,
             }
 
 
@@ -173,7 +174,7 @@ class SimpleJSONPostEncoder(json.JSONEncoder):
                 'score': o.score,
                 'reddit_id': o.reddit_id,
                 'nsfw': o.nsfw,
-                'created': o.date_posted_display,
+                'date_posted': o.date_posted_display,
                 'url': o.url,
                 'is_self': o.is_self,
                 'text': o.text,
