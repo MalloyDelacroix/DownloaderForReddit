@@ -8,6 +8,7 @@ from ..core.reddit_object_creator import RedditObjectCreator
 from ..utils import injector
 from ..database.models import RedditObject, RedditObjectList
 from ..database.filters import RedditObjectFilter
+from ..messaging.message import Message
 
 
 class RedditObjectListModel(QAbstractListModel):
@@ -148,7 +149,7 @@ class RedditObjectListModel(QAbstractListModel):
         self.validator.moveToThread(self.validation_thread)
         self.validation_thread.started.connect(self.validator.run)
         self.validator.new_object_signal.connect(self.add_validated_reddit_object)
-        self.validator.invalid_name_signal.connect(lambda name: print(f'Invalid name: {name}'))
+        self.validator.invalid_name_signal.connect(lambda name: Message.send_warning(f'Invalid name: {name}'))
         self.validator.finished.connect(self.validation_thread.quit)
         self.validator.finished.connect(self.validator.deleteLater)
         self.validator.finished.connect(self.finish_adding)
