@@ -372,8 +372,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 disable_enable_download_option = False
         else:
             enabled_text = 'Differing Download Enabled States'
-        enable_download = menu.addAction(enabled_text,
-                                         lambda: self.set_selection_attribute(ros, 'download_enabled', not enabled))
+        enable_download = menu.addAction(enabled_text, lambda: [ro.toggle_enable_download() for ro in ros])
         download = menu.addAction(download_text, lambda: self.add_to_download(*[x.id for x in ros]))
 
         for action in menu.actions():
@@ -382,10 +381,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         enable_download.setDisabled(disable_enable_download_option)
 
         menu.exec_(QCursor.pos())
-
-    def set_selection_attribute(self, selected, attr, value):
-        for x in selected:
-            setattr(x, attr, value)
 
     def user_list_combo_context_menu(self):
         menu = QMenu()
