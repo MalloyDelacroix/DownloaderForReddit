@@ -286,6 +286,11 @@ class RedditObject(BaseModel):
     def used(self):
         return self.list_count > 0
 
+    def set_existing(self):
+        if self.new:
+            self.new = False
+            self.get_session().commit()
+
     def set_date_limit(self, epoch):
         """
         Tests the supplied epoch time to see if it is newer than the already established absolute date limit, and if so

@@ -256,6 +256,7 @@ class DownloadRunner(QObject):
             with self.db.get_scoped_session() as session:
                 return self.get_user_submissions(user_id, session=session)
         user = session.query(User).get(user_id)
+        user.set_existing()
         redditor = self.validate_user(user)
 
         if redditor is not None:
@@ -267,6 +268,7 @@ class DownloadRunner(QObject):
             with self.db.get_scoped_session() as session:
                 return self.get_subreddit_submissions(subreddit_id, session=session)
         subreddit = session.query(Subreddit).get(subreddit_id)
+        subreddit.set_existing()
         sub = self.validate_subreddit(subreddit)
 
         if sub is not None:
