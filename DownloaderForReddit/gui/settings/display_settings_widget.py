@@ -20,6 +20,7 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
 
         self.choose_new_color_button.clicked.connect(self.choose_new_color)
         self.choose_disabled_color_button.clicked.connect(self.choose_disabled_color)
+        self.choose_inactive_color_button.clicked.connect(self.choose_inactive_color)
 
     def load_settings(self):
         self.short_title_length_spin_box.setValue(self.settings.short_title_char_length)
@@ -28,10 +29,13 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.scroll_to_last_added_checkbox.setChecked(self.settings.scroll_to_last_added)
         self.colors['new'] = self.settings.new_reddit_object_display_color
         self.colors['disabled'] = self.settings.disabled_reddit_object_display_color
+        self.colors['inactive'] = self.settings.inactive_reddit_object_display_color
         self.colorize_new_checkbox.setChecked(self.settings.colorize_new_reddit_objects)
         self.colorize_disabled_checkbox.setChecked(self.settings.colorize_disabled_reddit_objects)
+        self.colorize_inactive_checkbox.setChecked(self.settings.colorize_inactive_reddit_objects)
         self.set_new_color_label()
         self.set_disabled_color_label()
+        self.set_inactive_color_label()
 
         for key, value in self.settings.main_window_tooltip_display_dict.items():
             self.add_checkbox(key, value)
@@ -50,6 +54,13 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
             f'color: rgb({r}, {g}, {b});'
         )
 
+    def set_inactive_color_label(self):
+        r, g, b = self.colors['inactive']
+        self.inactive_ro_color_label.setStyleSheet(
+            f'background-color: white;'
+            f'color: rgb({r}, {g}, {b});'
+        )
+
     def choose_new_color(self):
         color = self.choose_color('new')
         if color is not None:
@@ -61,6 +72,12 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         if color is not None:
             self.colors['disabled'] = [color.red(), color.green(), color.blue()]
             self.set_disabled_color_label()
+
+    def choose_inactive_color(self):
+        color = self.choose_color('inactive')
+        if color is not None:
+            self.colors['inactive'] = [color.red(), color.green(), color.blue()]
+            self.set_inactive_color_label()
 
     def choose_color(self, key):
         init_color = QColor(*self.colors[key])
@@ -83,7 +100,9 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.settings.scroll_to_last_added = self.scroll_to_last_added_checkbox.isChecked()
         self.settings.colorize_new_reddit_objects = self.colorize_new_checkbox.isChecked()
         self.settings.colorize_disabled_reddit_objects = self.colorize_disabled_checkbox.isChecked()
+        self.settings.colorize_inactive_reddit_objects = self.colorize_inactive_checkbox.isChecked()
         self.settings.new_reddit_object_display_color = self.colors['new']
         self.settings.disabled_reddit_object_display_color = self.colors['disabled']
+        self.settings.inactive_reddit_object_display_color = self.colors['inactive']
         for attr, checkbox in self.tooltips.items():
             self.settings.main_window_tooltip_display_dict[attr] = checkbox.isChecked()

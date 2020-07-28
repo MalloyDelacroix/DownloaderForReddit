@@ -157,6 +157,9 @@ class SettingsManager:
         self.colorize_disabled_reddit_objects = self.get('display', 'colorize_disabled_reddit_objects', True)
         self.disabled_reddit_object_display_color = self.get('display', 'disabled_reddit_object_display_color',
                                                              [220, 0, 0])
+        self.colorize_inactive_reddit_objects = self.get('display', 'colorize_inactive_reddit_objects', True)
+        self.inactive_reddit_object_display_color = self.get('display', 'inactive_reddit_object_display_color',
+                                                             [0, 0, 200])
         # endregion
 
         # region Database

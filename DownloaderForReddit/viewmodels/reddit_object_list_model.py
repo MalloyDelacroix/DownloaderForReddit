@@ -236,6 +236,9 @@ class RedditObjectListModel(QAbstractListModel):
                             self.settings_manager.colorize_disabled_reddit_objects:
                         r, g, b = self.settings_manager.disabled_reddit_object_display_color
                         return QColor(r, g, b, 255)
+                    elif not self.reddit_objects[row].active and self.settings_manager.colorize_inactive_reddit_objects:
+                        r, g, b = self.settings_manager.inactive_reddit_object_display_color
+                        return QColor(r, g, b, 255)
                     elif self.reddit_objects[row].new and self.settings_manager.colorize_new_reddit_objects:
                         r, g, b = self.settings_manager.new_reddit_object_display_color
                         return QColor(r, g, b, 255)
