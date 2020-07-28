@@ -134,7 +134,7 @@ class RedditObjectListModel(QAbstractListModel):
 
     def add_reddit_objects(self, name_list: list):
         """
-        A long and complicated method so that name validation can be done in a separate thread.  Sqllite objects can't
+        A long and complicated method so that name validation can be done in a separate thread.  Sqlite objects can't
         be modified from a different thread than the one that they were created in.  This necessitates using PyQt's
         threading frame work, which is much more verbose than Python's standard, but which does support signaling.
         :param name_list: A list of names to be validated, made into reddit objects, and added to the current reddit
