@@ -217,11 +217,11 @@ class RedditObjectFilter(Filter):
     model = RedditObject
     default_order = 'name'
     filter_include = ['all', 'post_score', 'post_count', 'comment_score', 'comment_count', 'download_count',
-                      'last_post_date']
+                      'last_post_date', 'list_count']
     filter_exclude = ['post_score_limit_operator', 'comment_score_limit_operator', 'lists']
     order_by_include = ['id', 'name', 'last_download', 'date_added', 'absolute_date_limit', 'date_created',
                         'post_score', 'post_count', 'content_count', 'comment_count', 'download_count',
-                        'last_post_date']
+                        'last_post_date', 'list_count']
     choices = {'object_type': ['USER', 'SUBREDDIT']}
 
     def __init__(self):
@@ -233,7 +233,8 @@ class RedditObjectFilter(Filter):
             'comment_count': CustomItem(self.filter_comment_count, self.order_by_comment_count, Integer),
             'content_count': CustomItem(self.filter_content_count, self.order_by_content_count, Integer),
             'download_count': CustomItem(self.filter_download_count, self.order_by_download_count, Integer),
-            'last_post_date': CustomItem(self.filter_last_post_date, self.order_by_last_post_date, DateTime)
+            'last_post_date': CustomItem(self.filter_last_post_date, self.order_by_last_post_date, DateTime),
+            'list_count': CustomItem(self.filter_list_count, self.order_by_list_count, Integer),
         }
 
     def get_score_sum_sub(self):
@@ -265,6 +266,11 @@ class RedditObjectFilter(Filter):
         return self.session.query(Post.significant_reddit_object_id,
                                   func.max(Post.date_posted).label('last_post_date')) \
             .group_by(Post.significant_reddit_object_id).subquery()
+
+    def get_list_count_sub(self):
+        return self.session.query(ListAssociation.reddit_object_id,
+                                  func.count(ListAssociation.reddit_object_list_id.distinct()).label('list_count'))\
+               .group_by(ListAssociation.reddit_object_id).subquery()
 
     def join_queries(self, query, sub):
         return query.outerjoin(sub, RedditObject.id == sub.c.significant_reddit_object_id)
@@ -311,6 +317,12 @@ class RedditObjectFilter(Filter):
         query = self.join_queries(query, sub).filter(f)
         return query
 
+    def filter_list_count(self, query, operator, value):
+        sub = self.get_list_count_sub()
+        f = self.op_map[operator](sub.c.list_count, value)
+        query = query.outerjoin(sub, RedditObject.id == sub.c.reddit_object_id).filter(f)
+        return query
+
     def order_by_score(self, query):
         sub = self.get_score_sum_sub()
         query = self.join_queries(query, sub)
@@ -345,6 +357,11 @@ class RedditObjectFilter(Filter):
         sub = self.get_last_post_date_sub()
         query = self.join_queries(query, sub)
         return query, sub.c.last_post_date
+
+    def order_by_list_count(self, query):
+        sub = self.get_list_count_sub()
+        query = query.outerjoin(sub, RedditObject.id == sub.c.reddit_object_id)
+        return query, sub.c.list_count
 
 
 class DownloadSessionFilter(Filter):

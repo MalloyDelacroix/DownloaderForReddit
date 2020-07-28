@@ -315,6 +315,12 @@ class SettingsManager:
             'Non Significant Reddit Objects Only': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': False}
             ],
+            'Currently Used Reddit Objects Only': [
+                {'model': 'REDDIT_OBJECT', 'field': 'list_count', 'operator': 'gt', 'value': 0}
+            ],
+            'Currently Non-Used Reddit Objects Only': [
+                {'model': 'REDDIT_OBJECT', 'field': 'list_count', 'operator': 'lte', 'value': 0}
+            ],
             'Self Posts Only': [
                 {'model': 'POST', 'field': 'is_self', 'operator': 'eq', 'value': True}
             ],

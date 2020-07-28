@@ -278,6 +278,14 @@ class RedditObject(BaseModel):
     def comment_count(self):
         return len(self.comments)
 
+    @property
+    def list_count(self):
+        return self.lists.count()
+
+    @property
+    def used(self):
+        return self.list_count > 0
+
     def set_date_limit(self, epoch):
         """
         Tests the supplied epoch time to see if it is newer than the already established absolute date limit, and if so
