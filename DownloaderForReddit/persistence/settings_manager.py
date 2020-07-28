@@ -152,6 +152,11 @@ class SettingsManager:
         self.countdown_view_choices = ['DO_NOT_SHOW', 'ONLY_WHEN_ACTIVE', 'SHOW']
         self.show_schedule_countdown = self.get('display', 'show_schedule_countdown', 'ONLY_WHEN_ACTIVE')
         self.scroll_to_last_added = self.get('display', 'scroll_to_last_added', True)
+        self.colorize_new_reddit_objects = self.get('display', 'colorize_new_reddit_objects', True)
+        self.new_reddit_object_display_color = self.get('display', 'new_reddit_object_display_color', [0, 175, 0])
+        self.colorize_disabled_reddit_objects = self.get('display', 'colorize_disabled_reddit_objects', True)
+        self.disabled_reddit_object_display_color = self.get('display', 'disabled_reddit_object_display_color',
+                                                             [220, 0, 0])
         # endregion
 
         # region Database

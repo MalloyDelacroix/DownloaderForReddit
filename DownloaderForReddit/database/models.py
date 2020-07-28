@@ -181,6 +181,7 @@ class RedditObject(BaseModel):
     download_images = Column(Boolean, default=True)
     download_gifs = Column(Boolean, default=True)
     download_nsfw = Column(Enum(NsfwFilter), default=NsfwFilter.INCLUDE)
+
     extract_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comments = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
     download_comment_content = Column(Enum(CommentDownload), default=CommentDownload.DO_NOT_DOWNLOAD)
@@ -189,6 +190,7 @@ class RedditObject(BaseModel):
     comment_score_limit = Column(Integer, default=1000)
     comment_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
     comment_sort_method = Column(Enum(CommentSortMethod), default=CommentSortMethod.NEW)
+
     date_added = Column(DateTime, default=datetime.now())
     lock_settings = Column(Boolean, default=False)
     absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(const.FIRST_POST_EPOCH))

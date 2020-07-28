@@ -232,8 +232,13 @@ class RedditObjectListModel(QAbstractListModel):
                 if role == Qt.DisplayRole or role == Qt.EditRole:
                     return self.reddit_objects[row].name
                 elif role == Qt.ForegroundRole:
-                    if not self.reddit_objects[row].download_enabled:
-                        return QColor(255, 0, 0, 255)  # set name text to red if download is disabled
+                    if not self.reddit_objects[row].download_enabled and \
+                            self.settings_manager.colorize_disabled_reddit_objects:
+                        r, g, b = self.settings_manager.disabled_reddit_object_display_color
+                        return QColor(r, g, b, 255)
+                    elif self.reddit_objects[row].new and self.settings_manager.colorize_new_reddit_objects:
+                        r, g, b = self.settings_manager.new_reddit_object_display_color
+                        return QColor(r, g, b, 255)
                     else:
                         return None
                 elif role == Qt.ToolTipRole:
