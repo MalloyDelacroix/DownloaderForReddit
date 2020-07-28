@@ -1,6 +1,6 @@
 from PyQt5.QtCore import (QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant,
                           pyqtSignal)
-from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QIcon, QColor
 
 from ..utils import injector
 
@@ -121,6 +121,20 @@ class RedditObjectModel(QAbstractListModel, CustomItemModel):
     def data(self, index, role=None):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             return self.items[index.row()].name
+        elif role == Qt.ForegroundRole:
+            ro = self.items[index.row()]
+            if not ro.download_enabled and \
+                    self.settings_manager.colorize_disabled_reddit_objects:
+                r, g, b = self.settings_manager.disabled_reddit_object_display_color
+                return QColor(r, g, b, 255)
+            elif not ro.active and self.settings_manager.colorize_inactive_reddit_objects:
+                r, g, b = self.settings_manager.inactive_reddit_object_display_color
+                return QColor(r, g, b, 255)
+            elif ro.new and self.settings_manager.colorize_new_reddit_objects:
+                r, g, b = self.settings_manager.new_reddit_object_display_color
+                return QColor(r, g, b, 255)
+            else:
+                return None
         return None
 
 

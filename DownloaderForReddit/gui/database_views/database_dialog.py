@@ -67,7 +67,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         self.save_settings = save_settings
         self.setup_kwargs = setup_kwargs
 
-
         self.setup_call_list = []
 
         geom = self.settings_manager.database_view_geom
