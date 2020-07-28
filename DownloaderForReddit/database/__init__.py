@@ -22,6 +22,6 @@ def content_created(mapper, connection, target):
 
 
 @event.listens_for(Content.downloaded, 'set')
-def content_downloaded(target, value, oldvalue, initiator):
+def content_downloaded(target, value, oldValue, initiator):
     if value:
         Message.send(MessageType.ACTUAL_COUNT)

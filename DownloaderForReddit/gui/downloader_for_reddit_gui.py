@@ -839,7 +839,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         :type session: Session
         """
         session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object.id).delete()
-        reddit_object.set_inactive(commit=False)  # committing this is left to the update session
         rename_message = 'Not Attempted'
         if rename:
             path = general_utils.get_reddit_object_download_folder(reddit_object)

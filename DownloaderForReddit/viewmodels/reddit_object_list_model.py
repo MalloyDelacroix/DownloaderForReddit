@@ -125,7 +125,6 @@ class RedditObjectListModel(QAbstractListModel):
 
     def delete_reddit_object(self, reddit_object):
         self.list.reddit_objects.remove(reddit_object)
-        reddit_object.set_inactive(False)
         self.session.commit()
         self.update_row_count(self.row_count - 1)
         self.sort_list()
