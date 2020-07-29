@@ -316,6 +316,17 @@ class RedditObjectListModel(QAbstractListModel):
         second = self.createIndex(0, self.rowCount())
         self.dataChanged.emit(first, second)
 
+    def refresh_session(self):
+        try:
+            list_id = self.list.id
+            self.session.close()
+            self.session = self.db.get_session()
+            self.list = self.session.query(RedditObjectList).get(list_id)
+            self.sort_list()
+        except AttributeError:
+            # AttributeError here indicates that the list model is not currently being used
+            pass
+
 
 class ObjectValidator(QObject):
 

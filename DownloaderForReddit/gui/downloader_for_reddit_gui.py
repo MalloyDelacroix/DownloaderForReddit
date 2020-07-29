@@ -1033,6 +1033,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.shift_download_buttons()
         self.timer_widget.setVisible(False)
         self.run_time = 0
+        # list models are sorted to refresh the display list and
+        self.user_list_model.refresh_session()
+        self.subreddit_list_model.refresh_session()
 
     def shift_download_buttons(self):
         self.download_button.setVisible(not self.running)
