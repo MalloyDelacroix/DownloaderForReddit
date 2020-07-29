@@ -34,7 +34,7 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
         self.list_model.set_list(self.list_name)
         self.reddit_objects_list_view.setModel(self.list_model)
 
-        id_list = self.list_model.get_id_list()
+        id_list = self.list_model.get_id_list(download_enabled=False)
         indices = [id_list.index(x) for x in selected_object_ids]
         selected_objects = [self.list_model.reddit_objects[index] for index in indices]
         for row in indices:

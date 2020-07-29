@@ -47,8 +47,11 @@ class RedditObjectListModel(QAbstractListModel):
         except AttributeError:
             return None
 
-    def get_id_list(self):
-        return [x.id for x in self.reddit_objects]
+    def get_id_list(self, download_enabled=True):
+        if download_enabled:
+            return [x.id for x in self.reddit_objects if x.download_enabled]
+        else:
+            return [x.id for x in self.reddit_objects]
 
     def get_object(self, object_name):
         for ro in self.reddit_objects:
