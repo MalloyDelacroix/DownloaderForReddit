@@ -250,22 +250,79 @@
         <item row="0" column="0">
          <widget class="QLabel" name="label_6">
           <property name="text">
-           <string>Extraction thread count</string>
+           <string>Extraction thread count:</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QSpinBox" name="extraction_thread_count_spinbox"/>
+         <widget class="QSpinBox" name="extraction_thread_count_spinbox">
+          <property name="maximumSize">
+           <size>
+            <width>116</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>Download thread count</string>
+           <string>Download thread count:</string>
           </property>
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QSpinBox" name="download_thread_count_spinbox"/>
+         <widget class="QSpinBox" name="download_thread_count_spinbox">
+          <property name="maximumSize">
+           <size>
+            <width>116</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The size threshold at which a file is downloaded in parts in multiple threads.  Carefully adjust this number as there is a definite point of diminishing returns depending on your internet connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Multi-part download threshold:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QDoubleSpinBox" name="multipart_threshold_spinbox">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximum">
+             <double>10000000000.989999771118164</double>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="threshold_size_combo"/>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -316,7 +373,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If selected, downloads which are not complete will be downloaded at the start of each download session&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Finish incomplete downloads at start of session</string>
+           <string>Finish incomplete downloads at start of session:</string>
           </property>
           <property name="buddy">
            <cstring>finish_incomplete_extractions_checkbox</cstring>
@@ -336,7 +393,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If selected, posts that have not been extracted will be extracted then downloaded at the start of each download session&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Finish incomplete extractions at start of session</string>
+           <string>Finish incomplete extractions at start of session:</string>
           </property>
           <property name="buddy">
            <cstring>finish_incomplete_downloads_checkbox</cstring>
@@ -363,7 +420,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Videos hosted on reddit are downloaded in two parts and must be joined after the download session is complete.&lt;/p&gt;&lt;p&gt;Because of this extra step, downloading these videos is optional&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Download reddit hosted videos</string>
+           <string>Download reddit hosted videos:</string>
           </property>
          </widget>
         </item>

@@ -73,7 +73,7 @@ class Downloader(Runner):
                     file_size = int(response.headers['Content-Length'])
                     self.check_file_path(content)
                     file_path = content.get_full_file_path()
-                    if file_size > 3000000:
+                    if file_size > self.settings_manager.multi_part_threshold:
                         multi_part_downloader = MultipartDownloader(self.executor)
                         multi_part_downloader.run(content.url, file_path, file_size)
                         self.finish_multi_part_download(content, multi_part_downloader)

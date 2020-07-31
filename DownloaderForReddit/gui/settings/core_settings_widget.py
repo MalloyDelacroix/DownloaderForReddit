@@ -1,4 +1,5 @@
 from PyQt5.QtGui import QValidator
+from PyQt5.QtCore import Qt
 
 from DownloaderForReddit.guiresources.settings.core_settings_widget_auto import Ui_CoreSettingsWidget
 from .abstract_settings_widget import AbstractSettingsWidget
@@ -13,6 +14,9 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.invalid_rename_format_line_edit.setValidator(FormatValidator())
         self.invalid_rename_format_line_edit.textChanged.connect(self.set_example)
         self.user_save_dir_line_edit.textChanged.connect(self.set_example)
+        self.size_map = {x: 1024**(count + 1) for count, x in enumerate(['Bytes', 'KB', 'MB', 'GB'])}
+        for key, value in self.size_map.items():
+            self.threshold_size_combo.addItem(key, value)
 
     def load_settings(self):
         self.user_save_dir_line_edit.setText(self.settings.user_save_directory)
@@ -32,6 +36,14 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.finish_incomplete_downloads_checkbox.setChecked(
             self.settings.finish_incomplete_downloads_at_session_start)
         self.download_reddit_hosted_videos_checkbox.setChecked(self.settings.download_reddit_hosted_videos)
+        self.set_threshold_size(self.settings.multi_part_threshold)
+
+    def set_threshold_size(self, size):
+        for key, value in sorted(self.size_map.items(), key=lambda x: x[1], reverse=True):
+            if round(size / value, 2) > 0:
+                self.threshold_size_combo.setCurrentText(key)
+                break
+        self.multipart_threshold_spinbox.setValue(round(size / value, 2))
 
     def apply_settings(self):
         self.settings.user_save_directory = self.user_save_dir_line_edit.text()
@@ -47,6 +59,9 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.settings.finish_incomplete_downloads_at_session_start = \
             self.finish_incomplete_downloads_checkbox.isChecked()
         self.settings.download_reddit_hosted_videos = self.download_reddit_hosted_videos_checkbox.isChecked()
+        threshold_size = \
+            int(self.multipart_threshold_spinbox.value() * self.threshold_size_combo.currentData(Qt.UserRole))
+        self.settings.multi_part_threshold = threshold_size
 
     def toggle_invalid_name_options(self):
         enabled = not self.rename_invalid_download_folders_checkbox.isChecked()
