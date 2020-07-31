@@ -14,7 +14,7 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.invalid_rename_format_line_edit.setValidator(FormatValidator())
         self.invalid_rename_format_line_edit.textChanged.connect(self.set_example)
         self.user_save_dir_line_edit.textChanged.connect(self.set_example)
-        self.size_map = {x: 1024**(count + 1) for count, x in enumerate(['Bytes', 'KB', 'MB', 'GB'])}
+        self.size_map = {x: 1024**count for count, x in enumerate(['Bytes', 'KB', 'MB', 'GB'])}
         for key, value in self.size_map.items():
             self.threshold_size_combo.addItem(key, value)
 
