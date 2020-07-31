@@ -3,6 +3,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 
 from .runner import Runner, verify_run
+from .multipart_downloader import MultipartDownloader
 from ..utils import injector, system_util
 from ..database import Content
 from ..messaging.message import Message
@@ -69,14 +70,19 @@ class Downloader(Runner):
                 content = session.query(Content).get(content_id)
                 response = requests.get(content.url, stream=True, timeout=10)
                 if response.status_code == 200:
+                    file_size = int(response.headers['Content-Length'])
                     self.check_file_path(content)
                     file_path = content.get_full_file_path()
-                    with open(file_path, 'wb') as file:
-                        for chunk in response.iter_content(1024 * 1024):
-                            if not self.hard_stop:
-                                file.write(chunk)
-                            else:
-                                break
+                    if file_size > 3000000:
+                        multi_part_downloader = MultipartDownloader(self.executor)
+                        multi_part_downloader.run(content.url, file_path, file_size)
+                    else:
+                        with open(file_path, 'wb') as file:
+                            for chunk in response.iter_content(1024 * 1024):
+                                if not self.hard_stop:
+                                    file.write(chunk)
+                                else:
+                                    break
                     self.finish_download(content)
                 else:
                     self.handle_unsuccessful_response(content, response.status_code)
