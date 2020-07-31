@@ -842,7 +842,7 @@ class DatabaseStatisticsDialog(QDialog):
             t = const.VID_EXT
         else:
             t = const.GIF_EXT
-        return (x.replace('.', '') for x in t)
+        return t
 
     def get_total_row_count(self, session):
         count = 0

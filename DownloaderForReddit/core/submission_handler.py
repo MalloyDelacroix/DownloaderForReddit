@@ -5,13 +5,13 @@ from sqlalchemy.orm.session import Session
 from bs4 import BeautifulSoup, SoupStrainer
 
 from .runner import Runner, verify_run
+from . import const
 from .comment_handler import CommentHandler
 from ..database.models import Post
 from ..extractors.base_extractor import BaseExtractor
 from ..extractors.direct_extractor import DirectExtractor
 from ..extractors.self_post_extractor import SelfPostExtractor
 from ..extractors.comment_extractor import CommentExtractor
-from ..core import const
 from ..messaging.message import Message
 
 

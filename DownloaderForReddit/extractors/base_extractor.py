@@ -27,6 +27,7 @@ import requests
 import logging
 
 from ..database import Content, Post
+from ..core.content_filter import ContentFilter
 from ..utils import injector, system_util, TokenParser
 from ..messaging.message import Message
 
@@ -46,6 +47,7 @@ class BaseExtractor:
         """
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = injector.get_settings_manager()
+        self.content_filter = ContentFilter()
         self.post = post
         self.comment = kwargs.get('comment', None)
         self.url = kwargs.get('url', post.url)
@@ -141,7 +143,7 @@ class BaseExtractor:
         :type name_modifier: str
         :rtype: Content
         """
-        if self.check_duplicate_content(url):
+        if self.filter_content(url, extension):
             if count is None:
                 count = self.count
             count = f' {count}' if count and self.use_count else ''
@@ -188,14 +190,8 @@ class BaseExtractor:
         clean_sub_path = system_util.clean_path(sub_path)
         return os.path.join(base, clean_sub_path)
 
-    def check_duplicate_content(self, url: str) -> bool:
-        """
-        Checks the supplied contents url to see if content with the same url already exists in the database.
-        :param url: The url that will be searched for in the database to see if it already exists.
-        :return: True if the content DOES NOT exist in the database, False if the content DOES exist.
-        """
-        session = self.post.get_session()
-        return session.query(Content.id).filter(Content.url == url).scalar() is None
+    def filter_content(self, url, extension):
+        return self.content_filter.filter_content(self.post, url, extension)
 
     def get_save_path(self):
         """
