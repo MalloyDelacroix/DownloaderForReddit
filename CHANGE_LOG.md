@@ -2,6 +2,37 @@
 
 # Unreleased
 
+## v3.0.0
+
+### Major Changes
+* Entire application now uses an sqlite database on the backend for storage.
+    * With database storage, downloaded data is able to be organized and displayed in infinitely usable ways. Since
+    the database is local to your computer, the potential ways to analyse and use the data are endless.
+* Complete database view window lets you easily see and filter downloaded content, posts, comments, users, and subreddits.
+* New updated, easier to use GUI.
+* New expanded settings make it easy to download only the content you want and customize the display and function of the
+  application to suite your needs.
+* Self posts and comments can now be downloaded.
+    * As well as links in the text of both self posts and comments.
+* Large files can now be downloaded in multiple parts simultaneously.
+  * This dramatically improves download times when downloading large file such as videos.
+
+
+### Minor Changes
+* Downloads can now be scheduled to run incrementally or on a set time on a set day.
+* Video sites can be individually disabled from download.
+* File naming can be fully customized with a new token system so that downloads can be named practically anything you like
+  with included information from the download (ex: post title, post score, author name, subreddit name, etc...)
+* Output messages and display have been improved so that you only see the messages you want to see.
+* Extraction thread count is now user adjustable
+    * The number of threads used for content extraction is no longer tied to the download thread count and is adjustable
+    in the settings
+* Individual user/subreddit settings can now be adjusted in batches.  (Select multiple users/subreddits and use the context
+  menu to go to settings)
+
+
+
+
 # Released
 
 ## v2.3.4
