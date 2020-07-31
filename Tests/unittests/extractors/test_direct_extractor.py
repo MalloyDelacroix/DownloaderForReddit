@@ -7,14 +7,14 @@ from Tests.mockobjects.mock_objects import get_post
 
 @patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')
 @patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_title')
-@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.check_duplicate_content')
+@patch(f'DownloaderForReddit.extractors.base_extractor.BaseExtractor.filter_content')
 class TestDirectExtractor(ExtractorTest):
 
-    def test_extract_direct_link(self, check_duplicate, make_title, make_dir_path):
+    def test_extract_direct_link(self, filter_content, make_title, make_dir_path):
         url = 'https://unsupported_site.com/image/3jfd9nlksd.jpg'
         post = get_post(url=url, session=self.session)
 
-        check_duplicate.return_value = True
+        filter_content.return_value = True
         make_title.return_value = post.title
         make_dir_path.return_value = 'content_dir_path'
 

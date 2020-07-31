@@ -3,8 +3,6 @@ from unittest.mock import MagicMock, patch
 
 from DownloaderForReddit.extractors.base_extractor import BaseExtractor
 from DownloaderForReddit.utils import injector
-from DownloaderForReddit.database.database_handler import DatabaseHandler
-from Tests.mockobjects.mock_objects import get_post
 
 
 class TestDownloadRunner(TestCase):
