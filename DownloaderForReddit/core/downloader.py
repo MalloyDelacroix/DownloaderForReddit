@@ -76,6 +76,7 @@ class Downloader(Runner):
                     if file_size > 3000000:
                         multi_part_downloader = MultipartDownloader(self.executor)
                         multi_part_downloader.run(content.url, file_path, file_size)
+                        self.finish_multi_part_download(content, multi_part_downloader)
                     else:
                         with open(file_path, 'wb') as file:
                             for chunk in response.iter_content(1024 * 1024):
@@ -83,7 +84,7 @@ class Downloader(Runner):
                                     file.write(chunk)
                                 else:
                                     break
-                    self.finish_download(content)
+                        self.finish_download(content)
                 else:
                     self.handle_unsuccessful_response(content, response.status_code)
         except ConnectionError:
@@ -128,6 +129,15 @@ class Downloader(Runner):
             message = 'Download was stopped before finished'
             content.set_download_error(message)
             Message.send_download_error(f'{message}. File at path: "{content.get_full_file_path()}" may be corrupted')
+
+    def finish_multi_part_download(self, content: Content, multipart_downloader: MultipartDownloader):
+        parts = multipart_downloader.part_count
+        failed = multipart_downloader.failed_parts
+        if failed > 0:
+            failed_percent = round((failed / parts) * 100, 2)
+            content.set_download_error(f'{failed_percent} of multi-part download parts failed to download')
+        else:
+            self.finish_download(content)
 
     def handle_unsuccessful_response(self, content: Content, status_code):
         message = 'Failed Download: Unsuccessful response from server'
