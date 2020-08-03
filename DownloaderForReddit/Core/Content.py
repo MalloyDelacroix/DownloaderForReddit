@@ -105,24 +105,14 @@ class Content(QRunnable, QObject):
     def run(self):
         self.check_save_path_subreddit()
         try:
-            response = requests.get(self.url, stream=True, timeout=10)
+            response = requests.get(self.url, timeout=10)
             if response.status_code == 200:
-                # defer filename creation to last possible second so any duplicate file names should have already been
-                # written and can thus be avoided
-                self.filename = self.make_filename()
-                content_remaining = int(response.headers['content-length']) if 'content-length' in response.headers else None
-                with open(self.filename, 'wb') as file:
-                    for chunk in response.iter_content(1024):
-                        if content_remaining is not None:
-                            content_remaining -= len(chunk)
-                        if Const.RUN:
-                            file.write(chunk)
-                        else:
-                            break
-                if content_remaining:
-                    print('XXXXX incomplete download', content_remaining, self.filename)
-                    return None
-                    # raise ConnectionError
+                if Const.RUN:
+                    # defer filename creation to last possible second so any duplicate file names should have already been
+                    # written and can thus be avoided
+                    self.filename = self.make_filename()
+                    with open(self.filename, 'wb') as file:
+                        file.write(response.content)
                 self.finish_download()
                 return None
             else:
