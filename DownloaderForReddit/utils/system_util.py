@@ -175,6 +175,7 @@ def format_duration_full(duration: int):
     Calculates the duration of seconds between the supplied end and start times and returns the value in a human
     readable format with hour, min, second representation. Formatted with a full readout: 2 hours, 4 mins, 17 secs
     """
+    duration = int(duration)
     min_, sec = divmod(duration, 60)
     hour, min_ = divmod(min_, 60)
 
