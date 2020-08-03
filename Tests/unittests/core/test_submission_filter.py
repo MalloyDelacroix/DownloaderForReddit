@@ -7,7 +7,7 @@ from DownloaderForReddit.database.model_enums import *
 from Tests.mockobjects.mock_objects import MockPrawSubmission, get_user
 
 
-class MyTestCase(TestCase):
+class TestSubmissionFilter(TestCase):
 
     def setUp(self):
         self.sub_filter = SubmissionFilter()

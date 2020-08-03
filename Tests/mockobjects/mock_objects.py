@@ -77,11 +77,11 @@ def get_post(**kwargs):
     return post
 
 
-def create_content(**kwargs):
+def get_content(**kwargs):
     user = kwargs.pop('user', get_user())
     subreddit = kwargs.pop('subreddit', get_subreddit())
     post = kwargs.pop('post', get_post(user=user, subreddit=subreddit))
-    return Content(
+    content = Content(
         title=kwargs.pop('title', 'Test Content'),
         download_title=kwargs.pop('download_title', 'Test Content'),
         extension=kwargs.pop('extension', 'jpg'),
@@ -96,6 +96,10 @@ def create_content(**kwargs):
         post=kwargs.pop('post', post),
         comment=kwargs.pop('comment', None)
     )
+    session = kwargs.pop('session', None)
+    if session is not None:
+        session.add(content)
+    return content
 
 
 def get_unsupported_direct_post(**kwargs):
@@ -155,6 +159,7 @@ def get_mock_reddit_uploads_post(**kwargs):
 def get_mock_reddit_video_post(**kwargs):
     post = get_post(**kwargs)
     post.url = 'https://v.redd.it/2439fd9lkdfg.mp4'
+    post.domain = 'v.redd.it'
     return post
 
 
