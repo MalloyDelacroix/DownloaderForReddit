@@ -17,7 +17,7 @@ class SelfPostExtractor(BaseExtractor):
         try:
             ext = self.significant_reddit_object.self_post_file_format
             directory = self.make_dir_path()
-            if self.check_duplicate_content(self.url):
+            if self.content_filter.filter_duplicate(self.post, self.url):
                 self.create_dir_path(directory)
                 self.make_content(self.url, ext)
         except Exception as e:

@@ -41,13 +41,15 @@ class SubmissionHandler(Runner):
 
     @verify_run
     def extract_self_post(self):
-        try:
-            extractor = SelfPostExtractor(self.post, download_session_id=self.download_session_id)
-            self.finish_extractor(extractor)
-            if self.post.significant_reddit_object.extract_self_post_links:
-                self.extract_text_links(self.post.text_html)
-        except Exception as e:
-            self.handle_error(e)
+        significant_ro = self.post.significant_reddit_object
+        if significant_ro.download_self_post_text:
+            try:
+                extractor = SelfPostExtractor(self.post, download_session_id=self.download_session_id)
+                self.finish_extractor(extractor)
+                if self.post.significant_reddit_object.extract_self_post_links:
+                    self.extract_text_links(self.post.text_html)
+            except Exception as e:
+                self.handle_error(e)
 
     @verify_run
     def extract_comments(self):
