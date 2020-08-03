@@ -416,7 +416,7 @@ class DownloadRunner(QObject):
         video_merger.merge_videos()
         with self.db.get_scoped_session() as session:
             dl_session = self.finish_download_session(session)
-            self.finish_messages(dl_session, session)
+            self.finish_messages(dl_session)
         self.download_session_signal.emit(self.download_session_id)
         self.finished.emit()
 
@@ -431,11 +431,10 @@ class DownloadRunner(QObject):
         session.commit()
         return download_session
 
-    def finish_messages(self, dl_session, session):
+    def finish_messages(self, dl_session):
         """
         Constructs and displays a finish message to the user and a log message.
         :param dl_session: The active download session for this run.
-        :param session: The sqlalchemy session that is active for interacting with the database.
         """
         significant_user_count = dl_session.get_downloaded_user_count()
         total_user_count = dl_session.get_downloaded_user_count(significant=False)
