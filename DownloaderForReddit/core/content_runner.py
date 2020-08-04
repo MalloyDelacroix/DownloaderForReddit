@@ -21,13 +21,14 @@ class ContentRunner(Runner):
 
         self.thread_count = self.settings_manager.extraction_thread_count
         self.executor = ThreadPoolExecutor(max_workers=self.thread_count)
+        self.futures = []
         self.hold = False
         self.submit_hold = False
 
     @property
     def running(self):
         if self.hold:
-            return not self.executor._work_queue.empty()
+            return len(self.futures) == 0
         return True
 
     def run(self):
@@ -45,10 +46,12 @@ class ContentRunner(Runner):
                     else:
                         extraction_type, extraction_object, significant_id = item
                         if extraction_type == 'SUBMISSION':
-                            self.executor.submit(self.handle_submission, submission=extraction_object,
-                                                 significant_id=significant_id)
-                        elif extraction_type == 'POST':
-                            self.executor.submit(self.finish_post, post_id=extraction_object)
+                            future = self.executor.submit(self.handle_submission, submission=extraction_object,
+                                                          significant_id=significant_id)
+                        else:
+                            future = self.executor.submit(self.finish_post, post_id=extraction_object)
+                        future.add_done_callback(self.remove_future)
+                        self.futures.append(future)
                 else:
                     break
             except Empty:
@@ -58,6 +61,9 @@ class ContentRunner(Runner):
         self.executor.shutdown(wait=True)
         self.download_queue.put(None)
         self.logger.debug('Content extractor exiting')
+
+    def remove_future(self, future):
+        self.futures.remove(future)
 
     @verify_run
     def handle_submission(self, submission, significant_id):

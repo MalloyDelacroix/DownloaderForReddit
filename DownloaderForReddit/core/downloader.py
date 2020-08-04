@@ -30,6 +30,7 @@ class Downloader(Runner):
 
         self.thread_count = self.settings_manager.download_thread_count
         self.executor = ThreadPoolExecutor(self.thread_count)
+        self.futures = []
         self.hold = False
         self.hard_stop = False
         self.download_count = 0
@@ -37,7 +38,7 @@ class Downloader(Runner):
     @property
     def running(self):
         if self.hold:
-            return not self.executor._work_queue.empty()
+            return len(self.futures) == 0
         return True
 
     def run(self):
@@ -53,11 +54,16 @@ class Downloader(Runner):
                 elif item == 'RELEASE_HOLD':
                     self.hold = False
                 else:
-                    self.executor.submit(self.download, content_id=item)
+                    future = self.executor.submit(self.download, content_id=item)
+                    future.add_done_callback(self.remove_future)
+                    self.futures.append(future)
             else:
                 break
         self.executor.shutdown(wait=True)
         self.logger.debug('Downloader exiting')
+
+    def remove_future(self, future):
+        self.futures.remove(future)
 
     @verify_run
     def download(self, content_id: int):
