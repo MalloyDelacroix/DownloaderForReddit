@@ -46,8 +46,9 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         for value in LimitOperator:
             self.score_limit_operator_combo.addItem(value.display_name, value)
             self.comment_score_operator_combo.addItem(value.display_name, value)
-        self.self_post_file_format_combo.addItem('.txt', 'txt')
-        self.self_post_file_format_combo.addItem('.html', 'html')
+        for ext in ['txt', 'html']:
+            self.self_post_file_format_combo.addItem(f'.{ext}', ext)
+            self.comment_file_format_combo.addItem(f'.{ext}', ext)
         for value in NsfwFilter:
             self.nsfw_filter_combo.addItem(value.display_name, value)
         for value in PostSortMethod:
@@ -102,7 +103,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.setup_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
         self.self_post_file_format_combo.currentIndexChanged.connect(
             lambda: self.set_object_value('self_post_file_format',
-                                          self.self_post_file_format_combo.currentText().strip('.')))
+                                          self.self_post_file_format_combo.currentData(Qt.UserRole)))
         self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
         self.setup_checkbox(self.download_images_checkbox, 'download_images')
         self.nsfw_filter_combo.currentIndexChanged.connect(
@@ -134,6 +135,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         )
         self.comment_sort_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('comment_sort_method', self.comment_sort_combo.itemData(x))
+        )
+        self.comment_file_format_combo.currentIndexChanged.connect(
+            lambda: self.set_object_value('comment_file_format',
+                                          self.comment_file_format_combo.currentData(Qt.UserRole))
         )
         self.comment_download_naming_line_edit.textChanged.connect(self.sync_comment_path_example)
         self.comment_download_naming_line_edit.editingFinished.connect(
@@ -215,10 +220,11 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.comment_extract_combo, 'extract_comments')
         self.sync_combo(self.comment_download_combo, 'download_comments')
         self.sync_combo(self.comment_content_download_combo, 'download_comment_content')
-        self.sync_spin_box(self.comment_score_limit_spinbox, 'comment_limit')
+        self.sync_spin_box(self.comment_limit_spinbox, 'comment_limit')
         self.sync_spin_box(self.comment_score_limit_spinbox, 'comment_score_limit')
         self.sync_combo(self.comment_score_operator_combo, 'comment_score_limit_operator')
         self.sync_combo(self.comment_sort_combo, 'comment_sort_method')
+        self.sync_combo(self.comment_file_format_combo, 'comment_file_format')
         self.sync_line_edit(self.comment_download_naming_line_edit, 'comment_naming_method')
         self.sync_line_edit(self.comment_save_path_structure_line_edit, 'comment_save_structure')
         self.sync_comment_path_example()
