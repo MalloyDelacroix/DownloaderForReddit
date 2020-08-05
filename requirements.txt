@@ -1,5 +1,5 @@
 beautifulsoup4==4.6.3
-praw==6.0.0
+praw==7.1.0
 pyqt5==5.14.1
 python-json-logger==0.1.9
 requests==2.20.0
