@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>536</width>
-    <height>1073</height>
+    <height>1099</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -467,21 +467,21 @@
        <item row="2" column="1">
         <widget class="QComboBox" name="comment_extract_combo"/>
        </item>
-       <item row="9" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="comment_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="comment_save_structure_label">
          <property name="text">
           <string>Save Path Structure:</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="10" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QLineEdit" name="comment_download_naming_line_edit">
@@ -502,7 +502,7 @@
          </item>
         </layout>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
           <widget class="QLineEdit" name="comment_save_path_structure_line_edit">
@@ -523,12 +523,22 @@
          </item>
         </layout>
        </item>
-       <item row="11" column="0" colspan="2">
+       <item row="12" column="0" colspan="2">
         <widget class="QLabel" name="comment_path_example_label">
          <property name="text">
           <string>Comment path example</string>
          </property>
         </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Comment File Format:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QComboBox" name="comment_file_format_combo"/>
        </item>
       </layout>
      </item>
