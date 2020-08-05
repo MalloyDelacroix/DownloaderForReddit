@@ -28,7 +28,7 @@ class ContentRunner(Runner):
     @property
     def running(self):
         if self.hold:
-            return len(self.futures) == 0
+            return len(self.futures) > 0
         return True
 
     def run(self):
