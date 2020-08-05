@@ -11,10 +11,9 @@ class CommentExtractor(SelfPostExtractor):
 
     def extract_content(self):
         try:
-            ext = self.settings_manager.comment_file_format  # TODO: move this to reddit object
+            ext = self.post.significant_reddit_object.comment_file_format
             title = self.make_title()
             directory = self.make_dir_path()
-            self.create_dir_path(directory)
             self.download_text(directory, title, ext)
         except Exception as e:
             self.failed_extraction = True
@@ -27,7 +26,7 @@ class CommentExtractor(SelfPostExtractor):
 
     def download_text(self, dir_path, title, extension):
         try:
-            self.create_dir_path(dir_path)
+            self.check_file_path(dir_path, title, extension)
             path = os.path.join(dir_path, title) + f'.{extension}'
             with open(path, 'w', encoding='utf-8') as file:
                 text = self.get_text(extension)

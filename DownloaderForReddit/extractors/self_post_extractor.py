@@ -61,7 +61,7 @@ class SelfPostExtractor(BaseExtractor):
     def check_file_path(self, content):
         self.create_dir_path(content.directory_path)
         unique_count = 1
-        base_path = system_util.clean_path(content.title)
+        base_path = system_util.clean(content.title)
         download_title = base_path
         path = content.get_full_file_path(download_title)
         while os.path.exists(path):
