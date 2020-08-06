@@ -1,9 +1,4 @@
-from typing import Optional
-from praw.models import Comment as PrawComment
-from sqlalchemy.orm.session import Session
-
 from .runner import Runner, verify_run
-from ..database.models import Post
 from ..core.comment_filter import CommentFilter
 from ..core.submittable_creator import SubmittableCreator
 from ..utils import injector
@@ -16,12 +11,24 @@ class CommentHandler(Runner):
         self.db = injector.get_database_handler()
         self.submission = submission
         self.post = post
+        self.significant_ro = self.post.significant_reddit_object
+        self.sort_order = self.get_sort_order()
         self.download_session_id = download_session_id
         self.session = session
 
         self.comment_filter = CommentFilter()
         self.comments_to_download = []
         self.comments_to_extract_links = []
+
+        self.working_comments = {}
+        self.depth = 0
+
+    def get_sort_order(self):
+        sort_method = self.significant_ro.comment_sort_method
+        if sort_method.value == 6:
+            return 'q&a'
+        else:
+            return sort_method.name.lower()
 
     def run(self):
         if self.session is not None:
@@ -32,31 +39,42 @@ class CommentHandler(Runner):
 
     @verify_run
     def extract_comments(self, session):
-        significant_ro = self.post.significant_reddit_object
-        sort_method = significant_ro.comment_sort_method
-        if sort_method.value == 6:
-            sort_method = 'q&a'
-        else:
-            sort_method = sort_method.name.lower()
-        self.submission.comment_sort = sort_method
-        self.submission.comments.replace_more(limit=0)
-        for praw_comment in self.submission.comments[: significant_ro.comment_limit]:
-            self.cascade_comments(praw_comment, self.post, session)
+        self.submission.comment_sort = self.sort_order
+        self.submission.comment_limit = self.significant_ro.comment_limit
+        self.submission.comments.replace_more(limit=10)
+        for praw_comment in self.submission.comments:
+            comment_id = self.handle_found_comment(praw_comment, session)
+            if comment_id is not None:
+                self.working_comments[praw_comment] = comment_id
+        while len(self.working_comments) > 0:
+            self.cascade_comments(session)
 
     @verify_run
-    def cascade_comments(self, praw_comment: PrawComment, post: Post, session: Session,
-                         parent_id: Optional[int] = None):
-        significant_ro = post.significant_reddit_object
-        if self.comment_filter.filter_extraction(praw_comment, significant_ro) and \
-                self.comment_filter.filter_score_limit(praw_comment, significant_ro):
-            comment = SubmittableCreator.create_comment(praw_comment, post, session, self.download_session_id,
+    def cascade_comments(self, session):
+        self.depth += 1
+        if self.depth < 5:  # TODO: make this user adjustable
+            next_level_comments = {}
+            for praw_comment, comment_id in self.working_comments.items():
+                praw_comment.reply_sort = self.sort_order
+                # TODO: try adding replace more here
+                for reply in praw_comment.replies:
+                    reply_id = self.handle_found_comment(reply, session, comment_id)
+                    if reply_id is not None:
+                        next_level_comments[reply] = reply_id
+            self.working_comments = next_level_comments
+        else:
+            self.working_comments.clear()
+
+    @verify_run
+    def handle_found_comment(self, praw_comment, session, parent_id=None):
+        if self.comment_filter.filter_extraction(praw_comment, self.significant_ro) and \
+                self.comment_filter.filter_score_limit(praw_comment, self.significant_ro):
+            comment = SubmittableCreator.create_comment(praw_comment, self.post, session, self.download_session_id,
                                                         parent_comment_id=parent_id)
             if comment is not None:
-                if self.comment_filter.filter_download(comment, post.significant_reddit_object):
+                if self.comment_filter.filter_download(praw_comment, self.significant_ro):
                     self.comments_to_download.append(comment)
-                if self.comment_filter.filter_content_download(comment, post.significant_reddit_object):
+                if self.comment_filter.filter_content_download(praw_comment, self.significant_ro):
                     self.comments_to_extract_links.append(comment)
-
-                praw_comment.replies.replace_more(limit=0)
-                for sub_comment in praw_comment.replies:
-                    self.cascade_comments(sub_comment, post, session, parent_id=comment.id)
+                return comment.id
+        return None
