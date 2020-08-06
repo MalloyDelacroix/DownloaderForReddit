@@ -41,7 +41,7 @@ class CommentHandler(Runner):
     def extract_comments(self, session):
         self.submission.comment_sort = self.sort_order
         self.submission.comment_limit = self.significant_ro.comment_limit
-        self.submission.comments.replace_more(limit=10)
+        self.submission.comments.replace_more(limit=0)
         for praw_comment in self.submission.comments:
             comment_id = self.handle_found_comment(praw_comment, session)
             if comment_id is not None:
@@ -52,12 +52,13 @@ class CommentHandler(Runner):
     @verify_run
     def cascade_comments(self, session):
         self.depth += 1
-        if self.depth < 5:  # TODO: make this user adjustable
+        if self.depth < self.significant_ro.comment_depth:
             next_level_comments = {}
             for praw_comment, comment_id in self.working_comments.items():
                 praw_comment.reply_sort = self.sort_order
                 # TODO: try adding replace more here
-                for reply in praw_comment.replies:
+                praw_comment.replies.replace_more(limit=0)
+                for reply in praw_comment.replies[: self.significant_ro.comment_reply_limit]:
                     reply_id = self.handle_found_comment(reply, session, comment_id)
                     if reply_id is not None:
                         next_level_comments[reply] = reply_id

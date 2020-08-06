@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>536</width>
-    <height>1099</height>
+    <height>1189</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -402,38 +402,38 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_24">
          <property name="text">
           <string>Score Limit:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="8" column="1">
         <widget class="QSpinBox" name="comment_score_limit_spinbox">
          <property name="maximum">
           <number>10000000</number>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_25">
          <property name="text">
           <string>Score Limit Eval:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="9" column="1">
         <widget class="QComboBox" name="comment_score_operator_combo"/>
        </item>
-       <item row="8" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_18">
          <property name="text">
           <string>Sort Comments By:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="10" column="1">
         <widget class="QComboBox" name="comment_sort_combo"/>
        </item>
        <item row="5" column="1">
@@ -467,21 +467,21 @@
        <item row="2" column="1">
         <widget class="QComboBox" name="comment_extract_combo"/>
        </item>
-       <item row="10" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="comment_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="0">
+       <item row="15" column="0">
         <widget class="QLabel" name="comment_save_structure_label">
          <property name="text">
           <string>Save Path Structure:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="14" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_6">
          <item>
           <widget class="QLineEdit" name="comment_download_naming_line_edit">
@@ -502,7 +502,7 @@
          </item>
         </layout>
        </item>
-       <item row="11" column="1">
+       <item row="15" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
           <widget class="QLineEdit" name="comment_save_path_structure_line_edit">
@@ -523,22 +523,72 @@
          </item>
         </layout>
        </item>
-       <item row="12" column="0" colspan="2">
+       <item row="16" column="0" colspan="2">
         <widget class="QLabel" name="comment_path_example_label">
          <property name="text">
           <string>Comment path example</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="13" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Comment File Format:</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="13" column="1">
         <widget class="QComboBox" name="comment_file_format_combo"/>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Comment Depth:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Comment Reply Limit:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSpinBox" name="comment_depth_spinbox">
+           <property name="maximum">
+            <number>9999</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="comment_depth_max_button">
+           <property name="text">
+            <string>Max</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QSpinBox" name="comment_reply_limit_spinbox">
+           <property name="maximum">
+            <number>9999</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="comment_reply_max_button">
+           <property name="text">
+            <string>Max</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>

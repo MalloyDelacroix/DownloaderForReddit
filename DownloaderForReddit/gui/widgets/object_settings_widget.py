@@ -88,6 +88,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             lambda: self.post_limit_spinbox.setValue(self.post_limit_spinbox.maximum()))
         self.comment_limit_max_button.clicked.connect(
             lambda: self.comment_limit_spinbox.setValue(self.comment_limit_spinbox.maximum()))
+        self.comment_depth_max_button.clicked.connect(
+            lambda: self.comment_depth_spinbox.setValue(self.comment_depth_spinbox.maximum()))
+        self.comment_reply_max_button.clicked.connect(
+            lambda: self.comment_reply_limit_spinbox.setValue(self.comment_reply_limit_spinbox.maximum()))
 
     def connect_edit_widgets(self):
         self.setup_checkbox(self.lock_settings_checkbox, 'lock_settings')
@@ -128,6 +132,8 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             lambda x: self.set_object_value('download_comment_content', self.comment_content_download_combo.itemData(x))
         )
         self.comment_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('comment_limit', x))
+        self.comment_depth_spinbox.valueChanged.connect(lambda x: self.set_object_value('comment_depth', x))
+        self.comment_reply_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('comment_reply_limit', x))
         self.comment_score_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('comment_score_limit', x))
         self.comment_score_operator_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('comment_score_limit_operator',
@@ -221,6 +227,8 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.comment_download_combo, 'download_comments')
         self.sync_combo(self.comment_content_download_combo, 'download_comment_content')
         self.sync_spin_box(self.comment_limit_spinbox, 'comment_limit')
+        self.sync_spin_box(self.comment_depth_spinbox, 'comment_depth')
+        self.sync_spin_box(self.comment_reply_limit_spinbox, 'comment_reply_limit')
         self.sync_spin_box(self.comment_score_limit_spinbox, 'comment_score_limit')
         self.sync_combo(self.comment_score_operator_combo, 'comment_score_limit_operator')
         self.sync_combo(self.comment_sort_combo, 'comment_sort_method')
