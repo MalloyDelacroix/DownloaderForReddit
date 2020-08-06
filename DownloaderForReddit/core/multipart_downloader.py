@@ -24,11 +24,6 @@ class MultipartDownloader:
         finally:
             loop.close()
 
-    async def get_size(self, url):
-        response = requests.get(url, stream=True, timeout=10)
-        size = int(response.headers['Content-Length'])
-        return size
-
     async def download(self, url, path, file_size):
         loop = asyncio.get_event_loop()
         chunks = range(0, file_size, CHUNK_SIZE)
@@ -48,24 +43,38 @@ class MultipartDownloader:
 
         with open(path, 'wb') as file:
             for x in range(self.part_count):
-                chunk_path = f'{path}.part{x}'
-                with open(chunk_path, 'rb') as part_file:
-                    file.write(part_file.read())
-                os.remove(chunk_path)
+                try:
+                    chunk_path = f'{path}.part{x}'
+                    with open(chunk_path, 'rb') as part_file:
+                        file.write(part_file.read())
+                    os.remove(chunk_path)
+                except FileNotFoundError:
+                    self.logger.error('Failed to join multi-download part into complete file',
+                                      extra={'chunk_path': chunk_path}, exc_info=True)
 
     def download_part(self, url, start, end, path):
-        headers = {'Range': f'bytes={start}-{end}'}
-        response = requests.get(url, headers=headers, stream=True, timeout=10)
-        if response.status_code == 206:
-            with open(path, 'wb') as file:
-                for chunk in response.iter_content(CHUNK_SIZE):
-                    file.write(chunk)
-        else:
-            self.failed_parts += 1
-            if self.failed_parts <= 3:
-                self.logger.error('Failed to download chunk of muli-part download - bad response',
-                                  extra={'status_code': response.status_code})
+        try:
+            headers = {'Range': f'bytes={start}-{end}'}
+            response = requests.get(url, headers=headers, stream=True, timeout=10)
+            if response.status_code == 206:
+                with open(path, 'wb') as file:
+                    for chunk in response.iter_content(CHUNK_SIZE):
+                        file.write(chunk)
             else:
-                self.logger.error('Failed to download multiple chunks of multi-part download.  '
-                                  'No further errors will be logged for this download',
-                                  extra={'status_code': response.status_code})
+                self.log_part_error('Failed to download chunk of muli-part download - bad response',
+                                    extra={'status_code': response.status_code}, exc_info=False)
+        except requests.exceptions.ConnectTimeout:
+            self.log_part_error('Operation timed out before establishing a connection to the server',
+                                extra={'url': url})
+        except requests.exceptions.ReadTimeout:
+            self.log_part_error('Connection timed out while reading data from server',
+                                extra={'url': url, 'range': f'{start} - {end}'})
+
+    def log_part_error(self, message, extra=None, exc_info=True):
+        self.failed_parts += 1
+        if self.failed_parts <= 3:
+            self.logger.error(message, extra=extra, exc_info=exc_info)
+        else:
+            self.logger.error('Failed to download multiple chunks of multi-part download.  '
+                              'No further errors will be logged for this download',
+                              extra=extra, exc_info=exc_info)
