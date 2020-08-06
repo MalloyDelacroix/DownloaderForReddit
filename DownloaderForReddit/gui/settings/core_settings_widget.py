@@ -1,3 +1,5 @@
+import os
+from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QValidator
 from PyQt5.QtCore import Qt
 
@@ -17,6 +19,10 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.size_map = {x: 1024**count for count, x in enumerate(['Bytes', 'KB', 'MB', 'GB'])}
         for key, value in self.size_map.items():
             self.threshold_size_combo.addItem(key, value)
+        self.select_user_base_directory_button.clicked.connect(
+            lambda: self.select_directory_path(self.user_save_dir_line_edit))
+        self.select_subreddit_base_directory_button.clicked.connect(
+            lambda: self.select_directory_path(self.subreddit_save_dir_line_edit))
 
     def load_settings(self):
         self.user_save_dir_line_edit.setText(self.settings.user_save_directory)
@@ -62,6 +68,13 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         threshold_size = \
             int(self.multipart_threshold_spinbox.value() * self.threshold_size_combo.currentData(Qt.UserRole))
         self.settings.multi_part_threshold = threshold_size
+
+    def select_directory_path(self, line_edit):
+        text = line_edit.text()
+        current_path = text if os.path.isdir(text) else os.path.expanduser('~')
+        directory = QFileDialog.getExistingDirectory(self, 'Select Directory', current_path)
+        if directory != '' and directory is not None and os.path.isdir(directory):
+            line_edit.setText(directory)
 
     def toggle_invalid_name_options(self):
         enabled = not self.rename_invalid_download_folders_checkbox.isChecked()
