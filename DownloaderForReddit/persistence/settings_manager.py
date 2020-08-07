@@ -25,7 +25,8 @@ class SettingsManager:
         self.current_user_list = self.get('core', 'current_user_list', None)
         self.current_subreddit_list = self.get('core', 'current_subreddit_list', None)
 
-        default_save_path = system_util.join_path(os.path.expanduser('~'), 'Downloads', 'RedditDownloads')
+        base_path = os.path.expanduser('~').replace('\\', '/')
+        default_save_path = system_util.join_path(base_path, 'Downloads', 'RedditDownloads')
         self.user_save_directory = self.get('core', 'user_save_directory', default_save_path)
         self.subreddit_save_directory = self.get('core', 'subreddit_save_directory', default_save_path)
         self.match_file_modified_to_post_date = self.get('core', 'match_file_modified_to_post_date', True)
