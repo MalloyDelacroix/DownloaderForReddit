@@ -352,20 +352,20 @@ class SettingsManager:
                                                     default_quick_filters, self.convert_quick_filters)
 
         default_database_view_default_filters = {
-            'database_view': [
+            'Database View': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
             ],
-            'download_session_view': [
+            'Download Session View': [
                 {'model': 'DOWNLOAD_SESSION', 'field': 'total_activity_count', 'operator': 'gt', 'value': 0}
             ],
-            'reddit_object_view': [
+            'Reddit Object View': [
                 {'model': 'REDDIT_OBJECT', 'field': 'significant', 'operator': 'eq', 'value': True}
             ],
-            'post_view': [],
-            'content_view': [],
-            'comment_view': [],
-            'failed_extraction_view': [],
-            'failed_downloads_view': [],
+            'Post View': [],
+            'Content View': [],
+            'Comment View': [],
+            'Failed Extract View': [],
+            'Failed Downloads View': [],
         }
         self.database_view_default_filters = self.get('database_view', 'database_view_default_filters',
                                                       default_database_view_default_filters)
