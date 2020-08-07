@@ -40,11 +40,13 @@ class Filter(ABC):
 
     @classmethod
     def get_filter_fields(cls):
-        if len(cls.filter_include) == 0 or 'all' in cls.filter_include:
+        if len(cls.filter_include) == 0:
             cls.filter_include = cls.model.__table__.columns.keys()
-            for x in cls.filter_exclude:
-                cls.remove_item(cls.filter_include, x)
-            cls.remove_item(cls.filter_include, 'all')
+        elif 'all' in cls.filter_include:
+            cls.filter_include.remove('all')
+            cls.filter_include.extend(cls.model.__table__.columns.keys())
+        for x in cls.filter_exclude:
+            cls.remove_item(cls.filter_include, x)
         cls.filter_include.sort()
         return cls.filter_include
 
