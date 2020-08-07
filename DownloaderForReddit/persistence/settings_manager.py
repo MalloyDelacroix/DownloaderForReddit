@@ -387,17 +387,23 @@ class SettingsManager:
     def load_config_file(self):
         try:
             self.config = toml.load(self.config_file_path)
+        except FileNotFoundError:
+            self.logger.info('No config file found.  Generating new file')
+            self.generate_default_config()
         except:
             self.logger.warning('Failed to load config file', exc_info=True)
-            self.config = {
-                'title': 'Downloader For Reddit configuration file',
-                'warning': 'Users are free to change these values directly, but do so carefully.  Values that are '
-                           'directly modified in this file and not through an application window may cause '
-                           'unpredictable behavior (but most likely crashing) if the values entered are not accounted '
-                           'for by the application.'
-            }
-            with open(self.config_file_path, 'w') as file:
-                toml.dump(self.config, file)
+            self.generate_default_config()
+
+    def generate_default_config(self):
+        self.config = {
+            'title': 'Downloader For Reddit configuration file',
+            'warning': 'Users are free to change these values directly, but do so carefully.  Values that are '
+                       'directly modified in this file and not through an application window may cause '
+                       'unpredictable behavior (but most likely crashing) if the values entered are not accounted '
+                       'for by the application.'
+        }
+        with open(self.config_file_path, 'w') as file:
+            toml.dump(self.config, file)
 
     def save_all(self):
         for section, key_list in self.section_dict.items():
