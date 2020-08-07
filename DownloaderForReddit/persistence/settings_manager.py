@@ -387,7 +387,7 @@ class SettingsManager:
         try:
             self.config = toml.load(self.config_file_path)
         except:
-            print(f'\n\nfailure to load\n\n')
+            self.logger.warning('Failed to load config file', exc_info=True)
             self.config = {
                 'title': 'Downloader For Reddit configuration file',
                 'warning': 'Users are free to change these values directly, but do so carefully.  Values that are '
