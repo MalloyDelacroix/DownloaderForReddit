@@ -120,7 +120,7 @@ class SettingsManager:
         # region Output
         self.output_priority_level = self.get('output', 'output_priority_level', 2,
                                               converter=self.convert_message_priority)
-        self.use_color_output = self.get('output', 'use_color_output', False)
+        self.use_color_output = self.get('output', 'use_color_output', True)
         self.debug_color = self.get('output', 'debug_color', [0, 0, 255])
         self.info_color = self.get('output', 'info_color', [0, 0, 0])
         self.warning_color = self.get('output', 'warning_color', [255, 190, 0])
