@@ -980,7 +980,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 {'model': 'POST', 'field': 'extracted', 'operator': 'eq', 'value': False},
             ]
         }
-        kwargs['filters'].extend(self.settings_manager.database_view_default_filters['Failed Extraction View'])
+        kwargs['filters'].extend(self.settings_manager.database_view_default_filters['Failed Extract View'])
         self.display_database_dialog(**kwargs)
 
     def open_failed_downloads_dialog(self):
