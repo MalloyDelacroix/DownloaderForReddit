@@ -1,3 +1,5 @@
+from sqlalchemy.orm.exc import MultipleResultsFound
+
 from . import const
 from ..database.models import Content
 from ..utils import injector
@@ -14,11 +16,14 @@ class ContentFilter:
                self.filter_file_type(post, extension)
 
     def filter_duplicate(self, post, url):
-        if post.significant_reddit_object.avoid_duplicates:
-            session = post.get_session()
-            return session.query(Content.id).filter(Content.url == url).scalar() is None
-        else:
-            return True
+        try:
+            if post.significant_reddit_object.avoid_duplicates:
+                session = post.get_session()
+                return session.query(Content.id).filter(Content.url == url).scalar() is None
+            else:
+                return True
+        except MultipleResultsFound:
+            return False
 
     def filter_reddit_video(self, post):
         return self.settings_manager.download_reddit_hosted_videos or post.domain != 'v.redd.it'
