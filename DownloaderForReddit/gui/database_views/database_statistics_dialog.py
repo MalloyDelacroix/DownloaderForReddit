@@ -114,28 +114,28 @@ class DatabaseStatisticsDialog(QDialog):
                         f'{self.get_percentage(total_users - total_significant, total_users)} of users)'),
 
                     ('SEPARATOR', None),
-                    ('Oldest User', oldest_user.name),
-                    ('User Added', oldest_user.date_added),
-                    ('Newest User', newest_user.name),
-                    ('User Added', newest_user.date_added),
+                    ('Oldest User', self.get(oldest_user, 'name')),
+                    ('User Added', self.get(oldest_user, 'date_added')),
+                    ('Newest User', self.get(newest_user, 'name')),
+                    ('User Added', self.get(newest_user, 'date_added')),
 
                     ('SEPARATOR', None),
-                    ('User With Most Posts', user_count.User.name),
+                    ('User With Most Posts', self.get(user_count, 'User.name')),
                     ('Post Count',
                         f'{self.format_number(user_count.count)}  '
                         f'({self.get_percentage(user_count.count, post_count)} of all posts)'),
 
                     ('SEPARATOR', None),
-                    ('User With Most Images', user_image_query.User.name),
-                    ('Image Count', user_image_query.count),
-                    ('User With Most Videos', user_video_query.User.name),
-                    ('Video Count', user_video_query.count),
-                    ('User With Most Gifs', user_gif_query.User.name),
-                    ('Gif Count', user_gif_query.count),
-                    ('User With Most Self Posts', user_self_post_query.User.name),
-                    ('Self Posts', user_self_post_query.count),
-                    ('User With Most Comments', user_comment_query.User.name),
-                    ('Comment Count', user_comment_query.count),
+                    ('User With Most Images', self.get(user_image_query, 'User.name')),
+                    ('Image Count', self.get(user_image_query, 'count')),
+                    ('User With Most Videos', self.get(user_video_query, 'User.name')),
+                    ('Video Count', self.get(user_video_query, 'count')),
+                    ('User With Most Gifs', self.get(user_gif_query, 'User.name')),
+                    ('Gif Count', self.get(user_gif_query, 'count')),
+                    ('User With Most Self Posts', self.get(user_self_post_query, 'User.name')),
+                    ('Self Posts', self.get(user_self_post_query, 'count')),
+                    ('User With Most Comments', self.get(user_comment_query, 'User.name')),
+                    ('Comment Count', self.get(user_comment_query, 'count')),
 
                     ('SEPARATOR', None),
                     ('Significant User With Highest Score', self.get(significant_user_high_score, 'User.name')),
@@ -195,28 +195,28 @@ class DatabaseStatisticsDialog(QDialog):
                         f'({self.get_percentage(non_significant_subreddits, total_subreddits)} of subreddits)'),
 
                     ('SEPARATOR', None),
-                    ('Oldest Subreddit', oldest_sub.name),
-                    ('Subreddit Added', oldest_sub.date_added),
-                    ('Newest Subreddit', newest_sub.name),
-                    ('Subreddit Added', newest_sub.date_added),
+                    ('Oldest Subreddit', self.get(oldest_sub, 'name')),
+                    ('Subreddit Added', self.get(oldest_sub, 'date_added')),
+                    ('Newest Subreddit', self.get(newest_sub, 'name')),
+                    ('Subreddit Added', self.get(newest_sub, 'date_added')),
 
                     ('SEPARATOR', None),
-                    ('Subreddit With Most Posts', sub_count.Subreddit.name),
+                    ('Subreddit With Most Posts', self.get(sub_count, 'Subreddit.name')),
                     ('Post Count',
-                        f'{self.format_number(sub_count.count)}  '
-                        f'({self.get_percentage(sub_count.count, post_count)} of all posts)'),
+                        f'{self.format_number(self.get(sub_count, "count"))}  '
+                        f'({self.get_percentage(self.get(sub_count, "count"), post_count)} of all posts)'),
 
                     ('SEPARATOR', None),
-                    ('Subreddit With Most Images', subreddit_image_query.Subreddit.name),
-                    ('Image Count', subreddit_image_query.count),
-                    ('Subreddit With Most Videos', subreddit_video_query.Subreddit.name),
-                    ('Video Count', subreddit_video_query.count),
-                    ('Subreddit With Most Gifs', subreddit_gif_query.Subreddit.name),
-                    ('Gif Count', subreddit_gif_query.count),
-                    ('Subreddit With Most Self Posts', sub_self_post_query.Subreddit.name),
-                    ('Self Posts', sub_self_post_query.count),
-                    ('Subreddit With Most Comments', sub_comment_query.Subreddit.name),
-                    ('Comment Count', sub_comment_query.count),
+                    ('Subreddit With Most Images', self.get(subreddit_image_query, 'Subreddit.name')),
+                    ('Image Count', self.get(subreddit_image_query, 'count')),
+                    ('Subreddit With Most Videos', self.get(subreddit_video_query, 'Subreddit.name')),
+                    ('Video Count', self.get(subreddit_video_query, 'count')),
+                    ('Subreddit With Most Gifs', self.get(subreddit_gif_query, 'Subreddit.name')),
+                    ('Gif Count', self.get(subreddit_gif_query, 'count')),
+                    ('Subreddit With Most Self Posts', self.get(sub_self_post_query, 'Subreddit.name')),
+                    ('Self Posts', self.get(sub_self_post_query, 'count')),
+                    ('Subreddit With Most Comments', self.get(sub_comment_query, 'Subreddit.name')),
+                    ('Comment Count', self.get(sub_comment_query, 'count')),
 
                     ('SEPARATOR', None),
                     ('Significant Subreddit With Highest Score', self.get(significant_sub_high_score, 'Subreddit.name')),
@@ -266,33 +266,33 @@ class DatabaseStatisticsDialog(QDialog):
                     ('Total Number of Lists', total_lists),
                     ('Total User Lists', user_lists),
                     ('Total Subreddit Lists', sub_lists),
-                    ('Oldest List', oldest_list.name),
-                    ('List Created', oldest_list.date_created),
-                    ('Newest List', newest_list.name),
-                    ('List Created', newest_list.date_created),
+                    ('Oldest List', self.get(oldest_list, 'name')),
+                    ('List Created', self.get(oldest_list, 'date_created')),
+                    ('Newest List', self.get(newest_list, 'name')),
+                    ('List Created', self.get(newest_list, 'date_created')),
 
                     ('SEPARATOR', None),
                     ('Average Items Per List', round(avg_items_in_list, 2)),
-                    ('List With Most Items', list_with_most_items.RedditObjectList.display_name),
-                    ('Items In List', list_with_most_items.count),
-                    ('List With Fewest Items', list_with_fewest_items.RedditObjectList.display_name),
-                    ('Items In List', list_with_fewest_items.count),
-                    ('List With Most Posts', list_with_most_posts.RedditObjectList.display_name),
+                    ('List With Most Items', self.get(list_with_most_items, 'RedditObjectList.display_name')),
+                    ('Items In List', self.get(list_with_most_items, 'count')),
+                    ('List With Fewest Items', self.get(list_with_fewest_items, 'RedditObjectList.display_name')),
+                    ('Items In List', self.get(list_with_fewest_items, 'count')),
+                    ('List With Most Posts', self.get(list_with_most_posts, 'RedditObjectList.display_name')),
                     ('Posts In List',
-                        f'{self.format_number(list_with_most_posts.count)}  '
-                        f'({self.get_percentage(list_with_most_posts.count, post_count)} of all posts)'),
-                    ('List With Fewest Posts', list_with_fewest_posts.RedditObjectList.display_name),
+                        f'{self.format_number(self.get(list_with_most_posts, "count"))}  '
+                        f'({self.get_percentage(self.get(list_with_most_posts, "count"), post_count)} of all posts)'),
+                    ('List With Fewest Posts', self.get(list_with_fewest_posts, 'RedditObjectList.display_name')),
                     ('Posts In List',
-                        f'{self.format_number(list_with_fewest_posts.count)}  '
-                        f'({self.get_percentage(list_with_most_posts.count, post_count)} of all posts)'),
-                    ('List With Highest Score', list_with_highest_score.RedditObjectList.display_name),
+                        f'{self.format_number(self.get(list_with_fewest_posts, "count"))}  '
+                        f'({self.get_percentage(self.get(list_with_most_posts, "count"), post_count)} of all posts)'),
+                    ('List With Highest Score', self.get(list_with_highest_score, 'RedditObjectList.display_name')),
                     ('Total Score',
-                        f'{self.format_number(list_with_highest_score.score)}  '
-                        f'({self.get_percentage(list_with_highest_score.score, total_score)} of total score)'),
-                    ('List With Lowest Score', list_with_lowest_score.RedditObjectList.display_name),
+                        f'{self.format_number(self.get(list_with_highest_score, "score"))}  '
+                        f'({self.get_percentage(self.get(list_with_highest_score, "score"), total_score)} of total score)'),
+                    ('List With Lowest Score', self.get(list_with_lowest_score, 'RedditObjectList.display_name')),
                     ('Total Score',
-                        f'{self.format_number(list_with_lowest_score.score)}  '
-                        f'({self.get_percentage(list_with_lowest_score.score, total_score)} of total score)')
+                        f'{self.format_number(self.get(list_with_lowest_score, "score"))}  '
+                        f'({self.get_percentage(self.get(list_with_lowest_score, "score"), total_score)} of total score)')
                 ]
 
                 nsfw_post_count = session.query(Post.id).filter(Post.nsfw == True).count()
@@ -375,102 +375,105 @@ class DatabaseStatisticsDialog(QDialog):
                     ('Highest Score', session.query(func.max(Post.score)).first()[0]),
                     ('Lowest Score', session.query(func.min(Post.score)).first()[0]),
                     ('Average Score', round(session.query(func.avg(Post.score)).first()[0])),
-                    ('Most Common Title', common_title_query.title),
-                    ('Times Title Used', common_title_query.count),
+                    ('Most Common Title', self.get(common_title_query, 'title')),
+                    ('Times Title Used', self.get(common_title_query, 'count')),
                     ('Total Unique Post Domains', total_domains),
-                    ('Most Common Domain', domain_query.domain),
+                    ('Most Common Domain', self.get(domain_query, 'domain')),
                     ('Posts From Domain',
-                        f'{self.format_number(domain_query.count)}  '
-                        f'({self.get_percentage(domain_query.count, post_count)} of all posts)'),
+                        f'{self.format_number(self.get(domain_query, "count"))}  '
+                        f'({self.get_percentage(self.get(domain_query, "count"), post_count)} of all posts)'),
 
                     ('SEPARATOR', None),
                     ('Oldest Post by Extraction',
-                     f'Title: {oldest_extracted_post.title}\nAuthor: {oldest_extracted_post.author.name}'),
-                    ('Oldest Extraction Date', oldest_extracted_post.extraction_date),
+                     f'Title: {self.get(oldest_extracted_post, "title")}\nAuthor: {oldest_extracted_post.author.name}'),
+                    ('Oldest Extraction Date', self.get(oldest_extracted_post, 'extraction_date')),
                     ('Newest Post by Extraction',
-                     f'Title: {newest_extracted_post.title}\nAuthor: {newest_extracted_post.author.name}'),
-                    ('Newest Extraction Date', newest_extracted_post.extraction_date),
+                     f'Title: {self.get(newest_extracted_post, "title")}\n'
+                     f'Author: {self.get(newest_extracted_post, "author.name")}'),
+                    ('Newest Extraction Date', self.get(newest_extracted_post, 'extraction_date')),
                     ('Oldest Post by Post Date',
-                     f'Title: {oldest_posted_post.title}\nAuthor: {oldest_posted_post.author.name}'),
-                    ('Oldest Post Date', oldest_posted_post.date_posted),
+                     f'Title: {self.get(oldest_posted_post, "title")}\n'
+                     f'Author: {self.get(oldest_posted_post, "author.name")}'),
+                    ('Oldest Post Date', self.get(oldest_posted_post, 'date_posted')),
                     ('Newest Post by Post Date',
-                     f'Title: {newest_posted_post.title}\nAuthor: {newest_posted_post.author.name}'),
-                    ('Newest Post Date', newest_posted_post.date_posted),
+                     f'Title: {self.get(newest_posted_post, "title")}\n'
+                     f'Author: {self.get(newest_posted_post, "author.name")}'),
+                    ('Newest Post Date', self.get(newest_posted_post, 'date_posted')),
 
                     ('SEPARATOR', None),
                     ('Posts With Errors',
                         f'{self.format_number(error_count)}  '
                         f'({self.get_percentage(error_count, post_count)} of all posts)'),
-                    ('Most Common Error', common_error_query.error),
+                    ('Most Common Error', self.get(common_error_query, 'error') if common_error_query is not None else 'None'),
                     ('Times Error Encountered',
-                     f'{self.format_number(common_error_query.count)}  '
-                     f'({self.get_percentage(common_error_query.count, error_count)} of errors)'),
-                    ('Least Common Error', least_common_error_query.error),
+                     f'{self.format_number(self.get(common_error_query, "count"))}  '
+                     f'({self.get_percentage(self.get(common_error_query, "count"), error_count)} of errors)'),
+                    ('Least Common Error', self.get(least_common_error_query, 'error')),
                     ('Times Error Encountered',
-                     f'{self.format_number(least_common_error_query.count)}  '
-                     f'({self.get_percentage(least_common_error_query.count, error_count)} of errors)'),
+                     f'{self.format_number(self.get(least_common_error_query, "count"))}  '
+                     f'({self.get_percentage(self.get(least_common_error_query, "count"), error_count)} of errors)'),
 
                     ('SEPARATOR', None),
                     ('SUB_HEADER', 'Post Dates:'),
-                    ('Most Posted Date', self.format_date_string(most_posted_date.date)),
+                    ('Most Posted Date', self.format_date_string(self.get(most_posted_date, 'date'))),
                     ('Posts That Day',
-                     f'{self.format_number(most_posted_date.count)}  '
-                     f'({self.get_percentage(most_posted_date.count, post_count)})'),
-                    ('Least Posted Day', self.format_date_string(least_posted_date.date)),
+                     f'{self.format_number(self.get(most_posted_date, "count"))}  '
+                     f'({self.get_percentage(self.get(most_posted_date, "count"), post_count)})'),
+                    ('Least Posted Day', self.format_date_string(self.get(least_posted_date, 'date'))),
                     ('Posts That Day',
-                     f'{self.format_number(least_posted_date.count)}  '
-                     f'({self.get_percentage(least_posted_date.count, post_count)})'),
+                     f'{self.format_number(self.get(least_posted_date, "count"))}  '
+                     f'({self.get_percentage(self.get(least_posted_date, "count"), post_count)})'),
                     ('Most Common Post Month', calendar.month_name[top_month_query.month]),
                     ('Posts That Month',
-                     f'{self.format_number(top_month_query.count)}  '
-                     f'({self.get_percentage(top_month_query.count, post_count)})'),
+                     f'{self.format_number(self.get(top_month_query, "count"))}  '
+                     f'({self.get_percentage(self.get(top_month_query, "count"), post_count)})'),
                     ('Least Common Post Month', calendar.month_name[bottom_month_query.month]),
                     ('Posts That Month',
-                     f'{self.format_number(bottom_month_query.count)}  '
-                     f'({self.get_percentage(bottom_month_query.count, post_count)})'),
+                     f'{self.format_number(self.get(bottom_month_query, "count"))}  '
+                     f'({self.get_percentage(self.get(bottom_month_query, "count"), post_count)})'),
                     ('Most Popular Day of The Week', calendar.day_name[top_dow_query.dow]),
                     ('Posts That Day',
-                     f'{self.format_number(top_dow_query.count)}  '
-                     f'({self.get_percentage(top_dow_query.count, post_count)})'),
+                     f'{self.format_number(self.get(top_dow_query, "count"))}  '
+                     f'({self.get_percentage(self.get(top_dow_query, "count"), post_count)})'),
                     ('Least Popular Day of The Week', calendar.day_name[bottom_dow_query.dow]),
                     ('Posts That Day',
-                     f'{self.format_number(bottom_dow_query.count)}  '
-                     f'({self.get_percentage(bottom_dow_query.count, post_count)})'),
+                     f'{self.format_number(self.get(bottom_dow_query, "count"))}  '
+                     f'({self.get_percentage(self.get(bottom_dow_query, "count"), post_count)})'),
                     ('Most Common Post Year', str(top_year_query.year)),
                     ('Posts That Year',
-                     f'{self.format_number(top_year_query.count)}  '
-                     f'({self.get_percentage(top_year_query.count, post_count)})'),
-                    ('Least Common Year', str(bottom_year_query.year)),
+                     f'{self.format_number(self.get(top_year_query, "count"))}  '
+                     f'({self.get_percentage(self.get(top_year_query, "count"), post_count)})'),
+                    ('Least Common Year', str(self.get(top_year_query, "count"))),
                     ('Posts That Year',
-                     f'{self.format_number(bottom_year_query.count)}  '
-                     f'({self.get_percentage(bottom_year_query.count, post_count)})'),
+                     f'{self.format_number(self.get(bottom_year_query, "count"))}  '
+                     f'({self.get_percentage(self.get(bottom_year_query, "count"), post_count)})'),
 
                     ('SEPARATOR', None),
                     ('SUB_HEADER', 'Extraction Dates:'),
-                    ('Most Extracted Date', self.format_date_string(most_extracted_date.date)),
+                    ('Most Extracted Date', self.format_date_string(self.get(most_extracted_date, 'date'))),
                     ('Extracted That Day',
-                     f'{self.format_number(most_extracted_date.count)}  '
-                     f'({self.get_percentage(most_extracted_date.count, post_count)})'),
-                    ('Least Extracted Date', self.format_date_string(least_extracted_date.date)),
+                     f'{self.format_number(self.get(most_extracted_date, "count"))}  '
+                     f'({self.get_percentage(self.get(most_extracted_date, "count"), post_count)})'),
+                    ('Least Extracted Date', self.format_date_string(self.get(least_extracted_date, 'date'))),
                     ('Extracted That Day',
-                     f'{self.format_number(least_extracted_date.count)}  '
-                     f'({self.get_percentage(least_extracted_date.count, post_count)}'),
-                    ('Most Extracted Month', calendar.month_name[most_extracted_month.month]),
+                     f'{self.format_number(self.get(least_extracted_date, "count"))}  '
+                     f'({self.get_percentage(self.get(least_extracted_date, "count"), post_count)}'),
+                    ('Most Extracted Month', calendar.month_name[self.get(most_extracted_month, 'month')]),
                     ('Extractions That Month',
-                     f'{self.format_number(most_extracted_month.count)}  '
-                     f'({self.get_percentage(most_extracted_month.count, post_count)})'),
-                    ('Least Extracted Month', calendar.month_name[least_extracted_month.month]),
+                     f'{self.format_number(self.get(most_extracted_month, "count"))}  '
+                     f'({self.get_percentage(self.get(most_extracted_month, "count"), post_count)})'),
+                    ('Least Extracted Month', calendar.month_name[self.get(least_extracted_month, "month")]),
                     ('Extractions That Month',
-                     f'{self.format_number(least_extracted_month.count)}  '
-                     f'({self.get_percentage(least_extracted_month.count, post_count)})'),
-                    ('Most Extracted Day of The Week', calendar.day_name[top_dow_extraction.dow]),
+                     f'{self.format_number(self.get(least_extracted_month, "count"))}  '
+                     f'({self.get_percentage(self.get(least_extracted_month, "count"), post_count)})'),
+                    ('Most Extracted Day of The Week', calendar.day_name[self.get(top_dow_extraction, 'dow')]),
                     ('Posts That Day',
-                     f'{self.format_number(top_dow_extraction.count)}  '
-                     f'({self.get_percentage(top_dow_extraction.count, post_count)})'),
-                    ('Least Extracted Day of The Week', calendar.day_name[bottom_dow_extraction.dow]),
+                     f'{self.format_number(self.get(top_dow_extraction, "count"))}  '
+                     f'({self.get_percentage(self.get(top_dow_extraction, "count"), post_count)})'),
+                    ('Least Extracted Day of The Week', calendar.day_name[self.get(bottom_dow_extraction, 'dow')]),
                     ('Posts That Day',
-                     f'{self.format_number(bottom_dow_extraction.count)}  '
-                     f'({self.get_percentage(bottom_dow_extraction.count, post_count)})'),
+                     f'{self.format_number(self.get(bottom_dow_extraction, "count"))}  '
+                     f'({self.get_percentage(self.get(bottom_dow_extraction, "count"), post_count)})'),
 
                     ('SEPARATOR', None),
                     ('Fewest Content From Post', min_content_count),
@@ -525,13 +528,14 @@ class DatabaseStatisticsDialog(QDialog):
                         f'{content_count - downloaded_content_count} '
                         f'({self.get_percentage((content_count - downloaded_content_count), content_count)})'),
                     ('SEPARATOR', None),
-                    ('Most Common Extension', most_used_extension.ext),
+                    ('Most Common Extension', self.get(most_used_extension, 'ext')),
                     ('Extension Used',
-                     f'{most_used_extension.count}  ({self.get_percentage(most_used_extension.count, content_count)})'),
-                    ('Least Common Extension', least_used_extension.ext),
+                     f'{self.get(most_used_extension, "count")}  '
+                     f'({self.get_percentage(self.get(most_used_extension, "count"), content_count)})'),
+                    ('Least Common Extension', self.get(least_used_extension, 'ext')),
                     ('Extension Used',
-                     f'{least_used_extension.count}  '
-                     f'({self.get_percentage(least_used_extension.count, content_count)})'),
+                     f'{self.get(least_used_extension, "count")}  '
+                     f'({self.get_percentage(self.get(least_used_extension, "count"), content_count)})'),
 
                     ('SEPARATOR', None),
                     ('Content From Posts',
@@ -550,35 +554,35 @@ class DatabaseStatisticsDialog(QDialog):
 
                     ('SEPARATOR', None),
                     ('SUB_HEADER', 'Download Dates:'),
-                    ('Most Downloaded Date', self.format_date_string(most_downloaded_date.date)),
+                    ('Most Downloaded Date', self.format_date_string(self.get(most_downloaded_date, 'date'))),
                     ('Downloaded on This Date',
-                     f'{self.format_number(most_downloaded_date.count)}  '
-                     f'({self.get_percentage(most_downloaded_date.count, content_count)})'),
-                    ('Least Downloaded Date', self.format_date_string(least_downloaded_date.date)),
+                     f'{self.format_number(self.get(most_downloaded_date, "count"))}  '
+                     f'({self.get_percentage(self.get(most_downloaded_date, "count"), content_count)})'),
+                    ('Least Downloaded Date', self.format_date_string(self.get(least_downloaded_date, 'date'))),
                     ('Downloaded on This Date',
-                     f'{self.format_number(least_downloaded_date.count)}  '
-                     f'({self.get_percentage(least_downloaded_date.count, content_count)})'),
-                    ('Most Common Download Month', calendar.month_name[content_top_month_query.month]),
+                     f'{self.format_number(self.get(least_downloaded_date, "count"))}  '
+                     f'({self.get_percentage(self.get(least_downloaded_date, "count"), content_count)})'),
+                    ('Most Common Download Month', calendar.month_name[self.get(content_top_month_query, 'month')]),
                     ('Downloads That Month',
-                     f'{self.format_number(content_top_month_query.count)}  '
-                     f'({self.get_percentage(content_top_month_query.count, content_count)})'),
-                    ('Least Common Download Month', calendar.month_name[content_bottom_month_query.month]),
+                     f'{self.format_number(self.get(content_top_month_query, "count"))}  '
+                     f'({self.get_percentage(self.get(content_top_month_query, "count"), content_count)})'),
+                    ('Least Common Download Month', calendar.month_name[self.get(content_bottom_month_query, 'month')]),
                     ('Downloads That Month',
-                     f'{self.format_number(content_bottom_month_query.count)}  '
-                     f'({self.get_percentage(content_bottom_month_query.count, content_count)})'),
-                    ('Most Popular Day of The Week', calendar.day_name[content_top_dow_query.dow]),
-                    ('Downloads That Day', f'{self.format_number(content_top_dow_query.count)}  '
-                                           f'({self.get_percentage(content_top_dow_query.count, content_count)})'),
-                    ('Least Popular Day of The Week', calendar.day_name[content_bottom_dow_query.dow]),
+                     f'{self.format_number(self.get(content_bottom_month_query, "count"))}  '
+                     f'({self.get_percentage(self.get(content_bottom_month_query, "count"), content_count)})'),
+                    ('Most Popular Day of The Week', calendar.day_name[self.get(content_top_dow_query, 'dow')]),
+                    ('Downloads That Day', f'{self.format_number(self.get(content_top_dow_query, "count"))}  '
+                                           f'({self.get_percentage(self.get(content_top_dow_query, "count"), content_count)})'),
+                    ('Least Popular Day of The Week', calendar.day_name[self.get(content_bottom_dow_query, 'dow')]),
                     ('Downloads That Day',
-                     f'{self.format_number(content_bottom_dow_query.count)}  '
-                     f'({self.get_percentage(content_bottom_dow_query.count, content_count)})'),
-                    ('Most Common Download Year', str(content_top_year.year)),
-                    ('Downloads That Year', f'{self.format_number(content_top_year.count)}  '
-                                            f'({self.get_percentage(content_top_year.count, content_count)})'),
-                    ('Least Common Download Year', str(content_bottom_year.count)),
-                    ('Downloads That Year', f'{self.format_number(content_bottom_year.count)}  '
-                                            f'({self.get_percentage(content_bottom_year.count, content_count)})')
+                     f'{self.format_number(self.get(content_bottom_dow_query, "count"))}  '
+                     f'({self.get_percentage(self.get(content_bottom_dow_query, "count"), content_count)})'),
+                    ('Most Common Download Year', str(self.get(content_top_year, 'year'))),
+                    ('Downloads That Year', f'{self.format_number(self.get(content_top_year, "count"))}  '
+                                            f'({self.get_percentage(self.get(content_top_year, "count"), content_count)})'),
+                    ('Least Common Download Year', str(self.get(content_bottom_year, 'count'))),
+                    ('Downloads That Year', f'{self.format_number(self.get(content_bottom_year, "count"))}  '
+                                            f'({self.get_percentage(self.get(content_bottom_year, "count"), content_count)})')
                 ]
 
                 session_count = session.query(DownloadSession.id).count()
@@ -624,10 +628,10 @@ class DatabaseStatisticsDialog(QDialog):
                     ('Incomplete Sessions',
                         f'{self.format_number(incomplete_sessions)}  '
                         f'({self.get_percentage(incomplete_sessions, session_count)})'),
-                    ('Oldest Session', oldest_session.name),
-                    ('Run Date', oldest_session.start_time),
-                    ('Newest Session', newest_session.name),
-                    ('Run Date', newest_session.start_time),
+                    ('Oldest Session', self.get(oldest_session, 'name')),
+                    ('Run Date', self.get(oldest_session, 'start_time')),
+                    ('Newest Session', self.get(newest_session, 'name')),
+                    ('Run Date', self.get(newest_session, 'start_time')),
                     ('Most Extracted Posts', most_extracted),
                     ('Least Extracted Posts', least_extracted),
                     ('Most Downloaded Content', most_downloaded),
@@ -637,8 +641,9 @@ class DatabaseStatisticsDialog(QDialog):
                     ('Average Download Time',
                      system_util.format_duration_full(session.query(func.avg(DownloadSession.duration))
                                                       .filter(DownloadSession.duration >= 0).first()[0])),
-                    ('Shortest Download Session', shortest_download_session.name),
-                    ('Shorted Download Time', system_util.format_duration_full(shortest_download_session.duration)),
+                    ('Shortest Download Session', self.get(shortest_download_session, 'name')),
+                    ('Shorted Download Time',
+                     system_util.format_duration_full(self.get(shortest_download_session, 'duration'))),
                     ('Posts Extracted', session.query(Post.id)
                      .filter(Post.download_session_id == shortest_download_session.id)
                      .filter(Post.extracted == True).count()),
@@ -655,30 +660,30 @@ class DatabaseStatisticsDialog(QDialog):
                      .filter(Content.downloaded == True).count()),
 
                     ('SEPARATOR', None),
-                    ('Most Run Date', self.format_date_string(most_run_date.date)),
+                    ('Most Run Date', self.format_date_string(self.get(most_run_date, 'date'))),
                     ('Runs On This Date',
-                        f'{self.format_number(most_run_date.count)}  '
-                        f'({self.get_percentage(most_run_date.count, session_count)})'),
-                    ('Least Run Date', self.format_date_string(least_run_date.date)),
+                        f'{self.format_number(self.get(most_run_date, "count"))}  '
+                        f'({self.get_percentage(self.get(most_run_date, "count"), session_count)})'),
+                    ('Least Run Date', self.format_date_string(self.get(least_run_date, 'date'))),
                     ('Runs On This Date',
-                        f'{self.format_number(least_run_date.count)}  '
-                        f'({self.get_percentage(least_run_date.count, session_count)})'),
-                    ('Most Run Month', calendar.month_name[most_run_month.month]),
+                        f'{self.format_number(self.get(least_run_date, "count"))}  '
+                        f'({self.get_percentage(self.get(least_run_date, "count"), session_count)})'),
+                    ('Most Run Month', calendar.month_name[self.get(most_run_month, 'month')]),
                     ('Runs That Month',
-                        f'{self.format_number(most_run_month.count)}  '
-                        f'({self.get_percentage(most_run_month.count, session_count)})'),
-                    ('Least Run Month', calendar.month_name[least_run_month.month]),
+                        f'{self.format_number(self.get(most_run_month, "count"))}  '
+                        f'({self.get_percentage(self.get(most_run_month, "count"), session_count)})'),
+                    ('Least Run Month', calendar.month_name[self.get(least_run_month, 'month')]),
                     ('Runs That Month',
-                        f'{self.format_number(least_run_month.count)}  '
-                        f'({self.get_percentage(least_run_month.count, session_count)})'),
-                    ('Most Run Day of The Week', calendar.day_name[top_run_dow.dow]),
+                        f'{self.format_number(self.get(least_run_month, "count"))}  '
+                        f'({self.get_percentage(self.get(least_run_month, "count"), session_count)})'),
+                    ('Most Run Day of The Week', calendar.day_name[self.get(top_run_dow, 'dow')]),
                     ('Runs This Day',
-                        f'{self.format_number(top_run_dow.count)}  '
-                        f'({self.get_percentage(top_run_dow.count, session_count)})'),
-                    ('Least Run Day of The Week', calendar.day_name[bottom_run_dow.dow]),
+                        f'{self.format_number(self.get(top_run_dow, "count"))}  '
+                        f'({self.get_percentage(self.get(top_run_dow, "count"), session_count)})'),
+                    ('Least Run Day of The Week', calendar.day_name[self.get(bottom_run_dow, 'dow')]),
                     ('Runs This Day',
-                        f'{self.format_number(bottom_run_dow.count)}  '
-                        f'({self.get_percentage(bottom_run_dow.count, session_count)})')
+                        f'{self.format_number(self.get(bottom_run_dow, "count"))}  '
+                        f'({self.get_percentage(self.get(bottom_run_dow, "count"), session_count)})')
                 ]
 
                 self.item_count = self.format_number(self.get_total_row_count(session))
@@ -809,7 +814,7 @@ class DatabaseStatisticsDialog(QDialog):
     def format_number(self, number):
         try:
             return '{:,}'.format(number)
-        except TypeError:
+        except (TypeError, AttributeError):
             return None
 
     def format_datetime(self, date_time):
