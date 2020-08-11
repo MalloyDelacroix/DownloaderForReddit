@@ -78,28 +78,31 @@ class SubmissionHandler(Runner):
                 url = link['href']
                 if track_count:
                     kwargs['count'] = links.index(link) + 1
-                self.extract_link(url, **kwargs)
+                self.extract_link(url, **kwargs, text_link_extraction=True)
 
     def parse_html_links(self, html):
         return BeautifulSoup(html, parse_only=SoupStrainer('a'), features='html.parser')
 
     @verify_run
-    def extract_link(self, url, **kwargs):
+    def extract_link(self, url, text_link_extraction=False, **kwargs):
         try:
             extractor_class = self.assign_extractor(url)
             extractor = extractor_class(self.post, url=url, **kwargs)
-            self.finish_extractor(extractor)
+            self.finish_extractor(extractor, text_link_extraction=text_link_extraction)
         except Exception as e:
             self.handle_error(e)
 
     @verify_run
-    def finish_extractor(self, extractor):
+    def finish_extractor(self, extractor, text_link_extraction=False):
         if extractor is not None:
             extractor.extract_content()
             if not extractor.failed_extraction:
                 self.post.set_extracted()
             else:
-                self.post.set_extraction_failed(extractor.failed_extraction_message)
+                if not text_link_extraction:
+                    self.post.set_extraction_failed(extractor.failed_extraction_message)
+                else:
+                    self.post.extraction_error = 'Failed to extract link from text post'
             for content in extractor.extracted_content:
                 self.download_queue.put(content.id)
 
