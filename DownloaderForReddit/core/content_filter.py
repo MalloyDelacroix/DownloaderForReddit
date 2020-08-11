@@ -10,10 +10,19 @@ class ContentFilter:
     def __init__(self):
         self.settings_manager = injector.get_settings_manager()
         self.db = injector.get_database_handler()
+        self.filter_message = 'Passes filter'
 
     def filter_content(self, post, url, extension):
-        return self.filter_duplicate(post, url) and self.filter_reddit_video(post) and \
-               self.filter_file_type(post, extension)
+        dup_passes = self.filter_duplicate(post, url)
+        vid_passes = self.filter_reddit_video(post)
+        ext_passes = self.filter_file_type(post, extension)
+        if not dup_passes:
+            self.filter_message = 'Duplicate content'
+        if not vid_passes:
+            self.filter_message = 'Filtered against reddit video'
+        if not ext_passes:
+            self.filter_message = f'Filtered against extension {extension}'
+        return dup_passes and vid_passes and ext_passes
 
     def filter_duplicate(self, post, url):
         try:

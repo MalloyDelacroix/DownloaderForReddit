@@ -191,7 +191,18 @@ class BaseExtractor:
         return os.path.join(base, clean_sub_path)
 
     def filter_content(self, url, extension):
-        return self.content_filter.filter_content(self.post, url, extension)
+        """
+        Handles calling the content filter and setting the failed extraction message if the content does not pass the
+        fitler.
+        :param url: The url of the content that has been extracted.
+        :param extension: The extension of the file located at the url.
+        :return: True if the content passes the filter and should be extracted, False if it did not.
+        """
+        passes = self.content_filter.filter_content(self.post, url, extension)
+        if not passes:
+            self.failed_extraction = True
+            self.failed_extraction_message = self.content_filter.filter_message
+        return passes
 
     def get_save_path(self):
         """
