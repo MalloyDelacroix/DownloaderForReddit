@@ -117,10 +117,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             lambda x: self.set_object_value('post_sort_method', self.post_sort_combo.itemData(x))
         )
         self.post_download_naming_line_edit.textChanged.connect(self.sync_post_path_example)
-        self.post_download_naming_line_edit.editingFinished.connect(
+        self.post_download_naming_line_edit.textChanged.connect(
             lambda: self.set_object_value('post_download_naming_method', self.post_download_naming_line_edit.text()))
         self.post_save_path_structure_line_edit.textChanged.connect(self.sync_post_path_example)
-        self.post_save_path_structure_line_edit.editingFinished.connect(
+        self.post_save_path_structure_line_edit.textChanged.connect(
             lambda: self.set_object_value('post_save_structure', self.post_save_path_structure_line_edit.text()))
         self.comment_extract_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('extract_comments', self.comment_extract_combo.itemData(x))
@@ -147,11 +147,11 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
                                           self.comment_file_format_combo.currentData(Qt.UserRole))
         )
         self.comment_download_naming_line_edit.textChanged.connect(self.sync_comment_path_example)
-        self.comment_download_naming_line_edit.editingFinished.connect(
+        self.comment_download_naming_line_edit.textChanged.connect(
             lambda: self.set_object_value('comment_naming_method', self.comment_download_naming_line_edit.text())
         )
-        self.comment_download_naming_line_edit.textChanged.connect(self.sync_comment_path_example)
-        self.comment_save_path_structure_line_edit.editingFinished.connect(
+        self.comment_save_path_structure_line_edit.textChanged.connect(self.sync_comment_path_example)
+        self.comment_save_path_structure_line_edit.textChanged.connect(
             lambda: self.set_object_value('comment_save_structure', self.comment_save_path_structure_line_edit.text())
         )
 
