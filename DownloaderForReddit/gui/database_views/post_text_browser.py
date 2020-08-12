@@ -83,3 +83,7 @@ class PostTextBrowser(QTextBrowser):
             self.attach_signal.emit()
         else:
             self.detach_signal.emit()
+
+    def set_title(self, title):
+        if self.stand_alone:
+            self.parent().setWindowTitle(title)

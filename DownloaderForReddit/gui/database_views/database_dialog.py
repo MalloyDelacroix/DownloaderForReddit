@@ -657,6 +657,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def detach_post_text_browser(self):
         """Detaches the post text browser from the main dialog window and displays it as a separate dialog."""
         dialog = BlankDialog(parent=self)
+        dialog.setWindowTitle(self.current_post[0].title)
         dialog.add_widgets(self.post_text_browser)
         dialog.closing.connect(self.post_text_browser.handle_dialog_movement)
         dialog.setWhatsThis('Displays the text from the selected post.  Close dialog to re-attach text box.')
@@ -1054,9 +1055,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             else:
                 text = self.current_post[0].text_html
             if text is not None:
+                self.post_text_browser.set_title(self.current_post[0].title)
                 self.post_text_browser.setHtml(text)
                 self.post_text_browser.setVisible(True)
             else:
+                self.setWindowTitle('Post Text Browser')
                 self.post_text_browser.clear()
                 self.post_text_browser.setVisible(False)
         else:
