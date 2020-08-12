@@ -622,7 +622,7 @@ class Content(BaseModel):
     def get_full_file_path(self, download_title=None):
         if not download_title:
             download_title = self.download_title
-        return os.path.join(self.directory_path, f'{download_title}.{self.extension}')
+        return system_util.join_path(self.directory_path, f'{download_title}.{self.extension}')
 
     def set_downloaded(self, download_session_id):
         self.download_session_id = download_session_id
