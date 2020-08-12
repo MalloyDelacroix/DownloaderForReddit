@@ -210,7 +210,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_list_view.setContextMenuPolicy(Qt.CustomContextMenu)
         self.user_list_view.customContextMenuRequested.connect(lambda: self.reddit_object_list_context_menu('USER'))
 
-        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(self.get_selected_single_user()))
+        self.user_list_view.doubleClicked.connect(lambda: self.user_settings(self.get_selected_users()))
         self.user_list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.user_lists_combo.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -221,7 +221,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             lambda: self.reddit_object_list_context_menu('SUBREDDIT'))
 
         self.subreddit_list_view.doubleClicked.connect(
-            lambda: self.subreddit_settings(self.get_selected_single_subreddit()))
+            lambda: self.subreddit_settings(self.get_selected_subreddits()))
         self.subreddit_list_view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.subreddit_list_combo.setContextMenuPolicy(Qt.CustomContextMenu)
