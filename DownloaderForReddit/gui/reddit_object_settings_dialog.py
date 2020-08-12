@@ -11,8 +11,8 @@ class RedditObjectSettingsDialog(QtWidgets.QDialog, Ui_RedditObjectSettingsDialo
 
     download_signal = pyqtSignal(list)
 
-    def __init__(self, list_type, list_name, selected_object_ids: list):
-        QtWidgets.QDialog.__init__(self)
+    def __init__(self, list_type, list_name, selected_object_ids: list, parent=None):
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = injector.get_settings_manager()
