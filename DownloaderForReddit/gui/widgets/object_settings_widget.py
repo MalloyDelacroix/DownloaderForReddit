@@ -95,6 +95,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
 
     def connect_edit_widgets(self):
         self.setup_checkbox(self.lock_settings_checkbox, 'lock_settings')
+        self.setup_checkbox(self.enable_download_checkbox, 'download_enabled')
         self.post_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('post_limit', x))
         self.score_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('post_score_limit', x))
         self.score_limit_operator_combo.currentIndexChanged.connect(
