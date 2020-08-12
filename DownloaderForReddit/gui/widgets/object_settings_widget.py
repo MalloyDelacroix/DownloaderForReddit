@@ -33,7 +33,8 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             domain='i.imgur.com',
             extraction_date=datetime.now(),
             author=self.user,
-            subreddit=self.subreddit
+            subreddit=self.subreddit,
+            score=2573
         )
 
     def set_objects(self, object_list):
