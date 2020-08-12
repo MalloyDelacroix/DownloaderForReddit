@@ -38,8 +38,8 @@ class FfmpegInfoDialog(QtWidgets.QDialog):
             """
             <p><font size=4>
             Videos hosted on v.redd.it are hosted as two separate files.  A video file and an audio file.  The
-            Downloader For Reddit can download and save both files.  In order to join these files together to make a 
-            complete video file, this application must reply on FFmpeg.  
+            Downloader For Reddit can download and save both files.  However, in order to join these files together to 
+            make a complete video file, this application must reply on FFmpeg.  
             <br><br>
             FFmpeg is a cross platform open source application that plays and manipulates multimedia.  It is available
             for download <a href="http://ffmpeg.org/download.html">here.</a>
