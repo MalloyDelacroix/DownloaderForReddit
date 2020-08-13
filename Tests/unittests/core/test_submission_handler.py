@@ -65,11 +65,11 @@ class TestSubmissionHandler(TestCase):
 
         self.handler.extract_text_links(None)
 
-        extract_link.assert_called_with(url)
+        extract_link.assert_called_with(url, text_link_extraction=True)
 
     @patch(f'{PATH}.extract_link')
     @patch(f'{PATH}.parse_html_links')
-    def test_extract_text_links_single(self, get_links, extract_link):
+    def test_extract_text_links_multiple(self, get_links, extract_link):
         urls = ['https://gfycat.com/KindlyElderlyCony', 'https://invalid_site.com/image/3jfd9nlksd.jpg',
                 'https://vidble.com/XOwqxH6Xz9.jpg']
         links = []
@@ -86,7 +86,7 @@ class TestSubmissionHandler(TestCase):
         calls = []
         count = 1
         for url in urls:
-            calls.append(call(url, count=count))
+            calls.append(call(url, text_link_extraction=True, count=count))
             count += 1
         extract_link.assert_has_calls(calls)
 
@@ -102,7 +102,7 @@ class TestSubmissionHandler(TestCase):
 
         assign.assert_called_with(url)
         extractor_class.assert_called_with(self.post, url=url, extra_arg='extra')
-        finish.assert_called_with(extractor)
+        finish.assert_called_with(extractor, text_link_extraction=False)
 
     @patch(f'{PATH}.handle_unsupported_domain')
     @patch(f'{PATH}.finish_extractor')
