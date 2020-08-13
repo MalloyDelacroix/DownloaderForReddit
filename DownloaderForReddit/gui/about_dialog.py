@@ -32,11 +32,11 @@ from ..utils import injector
 
 class AboutDialog(QtWidgets.QDialog, Ui_About):
 
-    def __init__(self):
+    def __init__(self, parent=None):
         """
         Opens the "about" dialog box which displays the licensing information
         """
-        QtWidgets.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.settings_manager = injector.get_settings_manager()
 

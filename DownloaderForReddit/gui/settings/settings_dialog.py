@@ -18,7 +18,7 @@ from DownloaderForReddit.utils import injector
 class SettingsDialog(QDialog, Ui_SettingsDialog):
 
     def __init__(self, parent=None, **kwargs):
-        QDialog.__init__(self)
+        QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.parent = parent
         self.settings_manager = injector.get_settings_manager()

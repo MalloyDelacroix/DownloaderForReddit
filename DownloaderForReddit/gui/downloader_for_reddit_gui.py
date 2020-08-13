@@ -700,11 +700,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.logger.info('User list changed to: %s' % new_list_name)
 
     def export_user_list(self):
-        wizard = ExportWizard(self.user_list_model.list, RedditObjectList, self.user_list_model.name)
+        wizard = ExportWizard(self.user_list_model.list, RedditObjectList, self.user_list_model.name, parent=self)
         wizard.exec_()
 
     def export_reddit_objects(self, ro_list):
-        wizard = ExportWizard(ro_list, RedditObject, None)
+        wizard = ExportWizard(ro_list, RedditObject, None, parent=self)
         wizard.exec_()
 
     def add_subreddit_list(self, *, list_name=None):
@@ -761,13 +761,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def export_subreddit_list(self):
         wizard = ExportWizard(self.subreddit_list_model.reddit_objects, RedditObjectList,
-                              self.subreddit_list_model.name)
+                              self.subreddit_list_model.name, parent=self)
         wizard.exec_()
 
     def add_user(self):
         if self.user_list_model.list is None:
             self.add_user_list(list_name='Default')
-        dialog = AddRedditObjectDialog(self.user_list_model)
+        dialog = AddRedditObjectDialog(self.user_list_model, self)
         dialog.exec_()
 
     def remove_user(self):
@@ -850,7 +850,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def add_subreddit(self):
         if self.subreddit_list_model.list is None:
             self.add_subreddit_list(list_name='Default')
-        add_sub_dialog = AddRedditObjectDialog(self.subreddit_list_model)
+        add_sub_dialog = AddRedditObjectDialog(self.subreddit_list_model, self)
         add_sub_dialog.exec_()
 
     def remove_subreddit(self):
@@ -1066,7 +1066,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_settings_dialog(self, **kwargs):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
-        settings = SettingsDialog(self, **kwargs)
+        settings = SettingsDialog(parent=self, **kwargs)
         settings.exec_()
 
     def update_output(self):
@@ -1083,7 +1083,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         QMessageBox.information(self, 'Imgur Credits', dialog_text, QMessageBox.Ok)
 
     def display_about_dialog(self):
-        about_dialog = AboutDialog()
+        about_dialog = AboutDialog(self)
         about_dialog.exec_()
 
     def open_user_manual(self):
@@ -1224,7 +1224,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def update_dialog(self, update_variables):
         """Opens the update dialog"""
-        update_checker = UpdateDialog(update_variables)
+        update_checker = UpdateDialog(update_variables, self)
         update_checker.show()
         update_checker.exec_()
 
@@ -1232,7 +1232,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         message_dialogs.up_to_date_message(self)
 
     def display_ffmpeg_info_dialog(self):
-        dialog = FfmpegInfoDialog()
+        dialog = FfmpegInfoDialog(self)
         dialog.exec_()
 
     def check_ffmpeg(self):

@@ -32,7 +32,7 @@ from ..version import __version__
 
 class UpdateDialog(QDialog, Ui_update_dialog_box):
 
-    def __init__(self, update_variables):
+    def __init__(self, update_variables, parent=None):
         """
         Class that displays update information if it is available with a link to the github release page to download
         the new version of the application
@@ -42,7 +42,7 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
         Right now the update_variables are really only the new version number of the app that is available.  In the
         future this will hopefully be expanded
         """
-        super().__init__()
+        super().__init__(parent=parent)
         self.setupUi(self)
         self.settings_manager = injector.settings_manager
 

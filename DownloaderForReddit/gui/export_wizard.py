@@ -9,8 +9,8 @@ from ..utils.exporters import json_exporter, csv_exporter
 
 class ExportWizard(QWizard, Ui_ExportWizard):
 
-    def __init__(self, export_list, export_model, suggested_name=None):
-        QWizard.__init__(self)
+    def __init__(self, export_list, export_model, suggested_name=None, parent=None):
+        QWizard.__init__(self, parent=parent)
         self.setupUi(self)
         self.settings_manager = injector.get_settings_manager()
         self.export_list = export_list

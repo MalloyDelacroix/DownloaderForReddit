@@ -28,8 +28,8 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 class FfmpegInfoDialog(QtWidgets.QDialog):
 
-    def __init__(self):
-        QtWidgets.QDialog.__init__(self)
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.layout = QtWidgets.QVBoxLayout()
         self.setWindowTitle('FFmpeg Info')
         self.setWindowIcon(QtGui.QIcon('Resources/Images/RedditDownloaderIcon.png'))
