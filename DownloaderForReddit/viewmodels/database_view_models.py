@@ -273,7 +273,12 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
 
     def get_items(self, indices):
         try:
-            return [index.internalPointer().data(0, Qt.UserRole) for index in indices]
+            items = []
+            for index in indices:
+                item = index.internalPointer().data(0, Qt.UserRole)
+                if item not in items:
+                    items.append(item)
+            return items
         except AttributeError:
             return None
 
@@ -404,7 +409,10 @@ class TreeItem:
     def data(self, column, role):
         if role == Qt.DisplayRole or role == Qt.ToolTipRole:
             header = self.headers[column]
-            return self.header_map[header](self.comment)
+            try:
+                return self.header_map[header](self.comment)
+            except AttributeError:
+                return None
         elif role == Qt.UserRole:
             return self.comment
         return QVariant(self.headers[column])

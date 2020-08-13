@@ -1,7 +1,5 @@
 import logging
-from datetime import datetime
-from PyQt5.QtWidgets import (QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox,
-                             QFileDialog)
+from PyQt5.QtWidgets import (QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox)
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 from sqlalchemy import or_
@@ -1071,7 +1069,6 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         """See set current download session."""
         if self.show_content:
             try:
-                # self.current_content = self.content_model.get_item(self.content_list_view.currentIndex().row())
                 self.current_content = self.content_model.get_items(self.content_list_view.selectedIndexes())
             except IndexError:
                 self.current_content = []
@@ -1086,15 +1083,8 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         """See set current download session."""
         if self.show_comments:
             try:
-                # self.current_comment = self.comment_tree_model.get_item(self.comment_tree_view.currentIndex())
                 self.current_comment = self.comment_tree_model.get_items(self.comment_tree_view.selectedIndexes())
-                if self.current_comment.body_html is not None and self.current_comment.body_html != '':
-                    self.comment_text_browser.setVisible(True)
-                    self.comment_text_browser.setHtml(self.current_comment.body_html)
-                else:
-                    if not self.comment_text_browser.stand_alone and self.comment_text_browser.isVisible():
-                        self.comment_text_browser.setVisible(False)
-                    self.comment_text_browser.clear()
+                self.handle_comment_text_browser()
             except (IndexError, AttributeError):
                 self.current_comment = []
                 self.comment_text_browser.setVisible(False)
@@ -1105,6 +1095,27 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
                     self.setup_call_list.extend(['DOWNLOAD_SESSION', 'REDDIT_OBJECT', 'POST', 'COMMENT'])
                 self.cascade_setup()
                 self.setup_call_list.clear()
+
+    def handle_comment_text_browser(self):
+        comment_size = len(self.current_comment)
+        if comment_size >= 1:
+            if comment_size > 1:
+                parts = [f'<b>{comment.author}<b>\n{comment.body_html}' for comment in self.current_comment if
+                         comment.body_html is not None]
+                if len(parts) > 0:
+                    text = '\n\n'.join(parts)
+                else:
+                    text = None
+            else:
+                text = self.current_comment[0].body_html
+            if text is not None:
+                self.comment_text_browser.set_title(f'{self.current_comment[0].author} - comment')
+                self.comment_text_browser.setHtml(text)
+                self.comment_text_browser.setVisible(True)
+            else:
+                if not self.comment_text_browser.stand_alone and self.comment_text_browser.isVisible():
+                    self.comment_text_browser.setVisible(False)
+                self.comment_text_browser.clear()
 
     @check_hold
     def set_download_session_data(self, extend=False):
