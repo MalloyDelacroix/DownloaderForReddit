@@ -36,5 +36,3 @@ FIRST_POST_EPOCH = 1119537833
 RESOURCES = os.path.abspath('Resources/')
 SUPPORTED_SITES_FILE = os.path.join(RESOURCES, 'supported_video_sites.txt')
 TIMEOUT_INCREMENT = 0.25
-
-RUN = True
