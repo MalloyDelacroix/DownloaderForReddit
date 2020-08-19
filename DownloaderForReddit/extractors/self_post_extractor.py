@@ -2,6 +2,7 @@ import os
 
 from .base_extractor import BaseExtractor
 from ..database import Content
+from ..core.errors import Error
 from ..utils import system_util
 
 
@@ -50,7 +51,7 @@ class SelfPostExtractor(BaseExtractor):
                 file.write(text)
                 content.set_downloaded(self.download_session_id)
         except Exception as e:
-            content.set_download_error('Failed to save text post', extra={'error': e})
+            content.set_download_error(Error.TEXT_FAILURE, 'Failed to save text post', extra={'error': e})
 
     def get_text(self, ext):
         if ext == 'txt':

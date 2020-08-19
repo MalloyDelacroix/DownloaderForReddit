@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from .runner import Runner, verify_run
 from .multipart_downloader import MultipartDownloader
+from .errors import Error
 from ..utils import injector, system_util
 from ..database import Content
 from ..messaging.message import Message
@@ -133,15 +134,16 @@ class Downloader(Runner):
             self.download_count += 1
         else:
             message = 'Download was stopped before finished'
-            content.set_download_error(message)
+            content.set_download_error(Error.DOWNLOAD_STOPPED, message)
             Message.send_download_error(f'{message}. File at path: "{content.get_full_file_path()}" may be corrupted')
 
     def finish_multi_part_download(self, content: Content, multipart_downloader: MultipartDownloader):
         parts = multipart_downloader.part_count
         failed = multipart_downloader.failed_parts
         if failed > 0:
-            failed_percent = round((failed / parts) * 100, 2)
-            content.set_download_error(f'{failed_percent} of multi-part download parts failed to download')
+            failed_percent = round((failed / parts) * 100)
+            content.set_download_error(Error.MULTIPART_FAILURE,
+                                       f'{failed_percent}% of multi-part download parts failed to download')
         else:
             self.finish_download(content)
 
@@ -149,19 +151,19 @@ class Downloader(Runner):
         message = 'Failed Download: Unsuccessful response from server'
         self.log_errors(content, message, status_code=status_code)
         self.output_error(content, message)
-        content.set_download_error(f'{message}: status_code: {status_code}')
+        content.set_download_error(Error.UNSUCCESSFUL_RESPONSE, f'{message}: status_code: {status_code}')
 
     def handle_connection_error(self, content: Content):
         message = 'Failed Download: Failed to establish download connection'
         self.log_errors(content, message)
         self.output_error(content, message)
-        content.set_download_error(message)
+        content.set_download_error(Error.CONNECTION_ERROR, message)
 
     def handle_unknown_error(self, content: Content):
         message = 'An unknown error occurred during download'
         self.log_errors(content, message)
         self.output_error(content, message)
-        content.set_download_error(message)
+        content.set_download_error(Error.UNKNOWN_ERROR, message)
 
     def log_errors(self, content: Content, message, **kwargs):
         extra = {'url': content.url, 'submission_id': content.post.reddit_id, 'user': content.user,

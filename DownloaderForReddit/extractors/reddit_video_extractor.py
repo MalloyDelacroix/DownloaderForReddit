@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from .base_extractor import BaseExtractor
+from ..core.errors import Error
 from ..utils import reddit_utils, video_merger
 
 
@@ -81,10 +82,12 @@ class RedditVideoExtractor(BaseExtractor):
                             video_merger.videos_to_merge.append(merge_set)
                 except:
                     message = 'Failed to located content'
-                    self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
+                    self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, log_exception=True,
+                                               extractor_error_message=message)
             else:
                 message = 'Failed to find acceptable url for download'
-                self.handle_failed_extract(message=message, log_exception=True, extractor_error_message=message)
+                self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, log_exception=True,
+                                           extractor_error_message=message)
 
     def get_video_content(self):
         ext = 'mp4'

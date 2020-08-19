@@ -5,8 +5,9 @@ from sqlalchemy.orm.session import Session
 from bs4 import BeautifulSoup, SoupStrainer
 
 from .runner import Runner, verify_run
-from . import const
 from .comment_handler import CommentHandler
+from .errors import Error
+from . import const
 from ..database.models import Post
 from ..extractors.base_extractor import BaseExtractor
 from ..extractors.direct_extractor import DirectExtractor
@@ -100,7 +101,7 @@ class SubmissionHandler(Runner):
                 self.post.set_extracted()
             else:
                 if not text_link_extraction:
-                    self.post.set_extraction_failed(extractor.failed_extraction_message)
+                    self.post.set_extraction_failed(extractor.extraction_error, extractor.failed_extraction_message)
                 else:
                     self.post.extraction_error = 'Failed to extract link from text post'
             for content in extractor.extracted_content:
@@ -127,19 +128,19 @@ class SubmissionHandler(Runner):
     def handle_unsupported_domain(self, **kwargs):
         message = 'Unsupported domain'
         self.log_error(message, **kwargs)
-        self.post.set_extraction_failed(message)
+        self.post.set_extraction_failed(Error.UNSUPPORTED_DOMAIN, message)
         self.output_error(message, **kwargs)
 
     def handle_connection_error(self, **kwargs):
         message = 'Failed to establish a connection to the server'
         self.log_error(message, **kwargs)
-        self.post.set_extraction_failed(message)
+        self.post.set_extraction_failed(Error.CONNECTION_ERROR, message)
         self.output_error(message, **kwargs)
 
     def handle_unknown_error(self, **kwargs):
         message = 'Unknown error occurred'
         self.log_error(message, **kwargs)
-        self.post.set_extraction_failed(message)
+        self.post.set_extraction_failed(Error.UNKNOWN_ERROR, message)
         self.output_error(message, **kwargs)
 
     def log_error(self, message, **kwargs):

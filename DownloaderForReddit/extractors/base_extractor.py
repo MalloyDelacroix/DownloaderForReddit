@@ -22,12 +22,12 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
 import requests
 import logging
 
 from ..database import Content, Post
 from ..core.content_filter import ContentFilter
+from ..core.errors import Error
 from ..utils import injector, system_util, TokenParser
 from ..messaging.message import Message
 
@@ -58,6 +58,7 @@ class BaseExtractor:
         self.count = kwargs.get('count', None)
         self.extracted_content = []
         self.failed_extraction = False
+        self.extraction_error = None
         self.failed_extraction_message = None
         self.use_count = True
 
@@ -116,8 +117,8 @@ class BaseExtractor:
         if response.status_code == 200 and 'json' in response.headers['Content-Type']:
             return response.json()
         else:
-            self.handle_failed_extract(message='Failed to retrieve json data from link',
-                                       response_code=response.status_code)
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message='Failed to retrieve json data from link',
+                                       status_code=response.status_code)
 
     def get_text(self, url):
         """See get_json"""
@@ -125,7 +126,8 @@ class BaseExtractor:
         if response.status_code == 200 and 'text' in response.headers['Content-Type']:
             return response.text
         else:
-            self.handle_failed_extract(message='Failed to retrieve data from link', response_code=response.status_code)
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message='Failed to retrieve data from link',
+                                       status_code=response.status_code)
 
     def make_content(self, url, extension, count=None, name_modifier=''):
         """
@@ -201,6 +203,7 @@ class BaseExtractor:
         passes = self.content_filter.filter_content(self.post, url, extension)
         if not passes:
             self.failed_extraction = True
+            self.extraction_error = Error.FAILED_FILTER
             self.failed_extraction_message = self.content_filter.filter_message
         return passes
 
@@ -213,7 +216,7 @@ class BaseExtractor:
         else:
             return self.settings_manager.subreddit_save_directory
 
-    def handle_failed_extract(self, message=None, log=True, log_exception=False, **kwargs):
+    def handle_failed_extract(self, error, message=None, log=True, log_exception=False, **kwargs):
         """
         Handles the logging and output of error messages encountered while extracting content and saves posts if
         instructed to do so.
@@ -231,6 +234,7 @@ class BaseExtractor:
         :type log_exception: bool
         """
         self.failed_extraction = True
+        self.extraction_error = error
         self.failed_extraction_message = message
         extra = {'extractor_data': self.get_log_data()}
         extra.update(kwargs)

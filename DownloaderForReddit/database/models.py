@@ -7,7 +7,7 @@ from sqlalchemy.sql import func
 
 from .database_handler import DatabaseHandler
 from .model_enums import (CommentDownload, NsfwFilter, LimitOperator, PostSortMethod, CommentSortMethod)
-from .exceptions import ExistingNameException
+from ..core.errors import Error
 from ..core import const
 from ..utils import system_util, injector
 
@@ -456,7 +456,8 @@ class Post(BaseModel):
 
     extracted = Column(Boolean, default=False)
     extraction_date = Column(DateTime, nullable=True)
-    extraction_error = Column(String, nullable=True)
+    extraction_error = Column(Enum(Error), nullable=True)
+    error_message = Column(String, nullable=True)
     retry_attempts = Column(Integer, default=0)
 
     author_id = Column(ForeignKey('user.id'))
@@ -497,10 +498,11 @@ class Post(BaseModel):
         self.extraction_date = datetime.now()
         self.get_session().commit()
 
-    def set_extraction_failed(self, message):
+    def set_extraction_failed(self, error, message):
         self.extracted = False
         self.extraction_date = datetime.now()
-        self.extraction_error = message
+        self.extraction_error = error
+        self.error_message = message
         self.retry_attempts += 1
         self.get_session().commit()
 
@@ -520,7 +522,8 @@ class Comment(BaseModel):
     extracted = Column(Boolean, default=False)
     has_content = Column(Boolean, default=False)
     extraction_date = Column(DateTime, nullable=True)
-    extraction_error = Column(String, nullable=True)
+    extraction_error = Column(Enum(Error), nullable=True)
+    error_message = Column(String, nullable=True)
     retry_attempts = Column(Integer, default=0)
 
     author_id = Column(ForeignKey('user.id'))
@@ -566,10 +569,11 @@ class Comment(BaseModel):
         self.extraction_date = datetime.now()
         self.get_session().commit()
 
-    def set_extraction_failed(self, message):
+    def set_extraction_failed(self, error,  message):
         self.extracted = False
         self.extraction_date = datetime.now()
-        self.extraction_error = message
+        self.extraction_error = error
+        self.error_message = message
         self.retry_attempts += 1
         self.get_session().commit()
 
@@ -587,7 +591,8 @@ class Content(BaseModel):
 
     downloaded = Column(Boolean, default=False)
     download_date = Column(DateTime, nullable=True)
-    download_error = Column(String, nullable=True)
+    download_error = Column(Enum(Error), nullable=True)
+    error_message = Column(String, nullable=True)
     retry_attempts = Column(Integer, default=0)
 
     user_id = Column(ForeignKey('user.id'))
@@ -630,8 +635,9 @@ class Content(BaseModel):
         self.download_date = datetime.now()
         self.get_session().commit()
 
-    def set_download_error(self, message):
+    def set_download_error(self, error, message):
         self.downloaded = False
-        self.download_error = message
+        self.download_error = error
+        self.error_message = message
         self.retry_attempts = self.retry_attempts + 1
         self.get_session().commit()

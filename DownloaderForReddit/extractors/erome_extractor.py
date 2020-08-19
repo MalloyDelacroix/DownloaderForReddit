@@ -25,6 +25,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 from bs4 import BeautifulSoup
 
 from .base_extractor import BaseExtractor
+from ..core.errors import Error
 from ..core import const
 
 
@@ -63,7 +64,7 @@ class EromeExtractor(BaseExtractor):
                 self.extract_album()
         except Exception:
             message = 'Failed to locate content'
-            self.handle_failed_extract(message=message, extractor_error_message=message)
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message)
 
     def get_soup(self):
         soup = BeautifulSoup(self.get_text(self.url), 'html.parser')

@@ -27,6 +27,7 @@ from urllib.parse import urlparse
 import requests
 
 from .base_extractor import BaseExtractor
+from ..core.errors import Error
 from ..core import const
 
 _REDGIFS_ENDPOINT = "https://api.redgifs.com/v1/gfycats/"
@@ -58,7 +59,7 @@ class GfycatExtractor(BaseExtractor):
                 self.extract_single()
         except:
             message = 'Failed to locate content'
-            self.handle_failed_extract(message=message, extractor_error_message=message)
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message)
 
     def extract_single(self):
         item = urlparse(self.url)

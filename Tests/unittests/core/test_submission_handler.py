@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock, call
 
 from Tests.mockobjects import mock_objects
 from DownloaderForReddit.core.submission_handler import SubmissionHandler
+from DownloaderForReddit.core.errors import Error
 from DownloaderForReddit.utils import injector
 
 
@@ -165,13 +166,14 @@ class TestSubmissionHandler(TestCase):
     def test_finish_extractor_unsuccessful(self):
         extractor = MagicMock()
         extractor.failed_extraction = True
+        extractor.extraction_error = Error.FAILED_TO_LOCATE
         extractor.failed_extraction_message = 'Extraction failed'
 
         self.handler.finish_extractor(extractor)
 
         extractor.extract_content.assert_called()
         self.post.set_extracted.assert_not_called()
-        self.post.set_extraction_failed.assert_called_with(extractor.failed_extraction_message)
+        self.post.set_extraction_failed.assert_called_with(Error.FAILED_TO_LOCATE, extractor.failed_extraction_message)
         self.mock_queue.put.assert_not_called()
 
     def test_finish_extractor_null_extractor_value(self):

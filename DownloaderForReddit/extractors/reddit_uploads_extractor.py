@@ -26,6 +26,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 import re
 
 from .base_extractor import BaseExtractor
+from ..core.errors import Error
 from ..core import const
 
 
@@ -44,7 +45,8 @@ class RedditUploadsExtractor(BaseExtractor):
                 self.extract_single()
         except:
             message = 'Failed to locate content'
-            self.handle_failed_extract(message=message, extractor_error_message=message, exc_info=True)
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message,
+                                       exc_info=True)
 
     def extract_single(self):
         if not self.url.endswith(const.ALL_EXT):

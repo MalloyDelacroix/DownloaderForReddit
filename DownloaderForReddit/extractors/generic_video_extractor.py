@@ -27,6 +27,7 @@ from time import time
 import youtube_dl
 
 from .base_extractor import BaseExtractor
+from ..core.errors import Error
 from ..core import const
 from ..local_logging import log_utils
 from ..utils import injector
@@ -65,7 +66,8 @@ class GenericVideoExtractor(BaseExtractor):
                 self.extract_single_video(result)
         except:
             message = 'Failed to locate content'
-            self.handle_failed_extract(message=message, extractor_error_message=message, failed_domain=self.post.domain)
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message,
+                                       failed_domain=self.post.domain)
 
     def extract_single_video(self, entry):
         self.make_content(entry['url'], 'mp4')
