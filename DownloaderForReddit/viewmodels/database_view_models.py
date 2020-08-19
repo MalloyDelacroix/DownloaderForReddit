@@ -1,7 +1,9 @@
+import os
 from PyQt5.QtCore import (QAbstractListModel, QAbstractTableModel, QAbstractItemModel, Qt, QSize, QModelIndex, QVariant,
                           pyqtSignal)
 from PyQt5.QtGui import QPixmap, QIcon, QColor
 
+from ..core import const
 from ..utils import injector
 
 
@@ -220,9 +222,20 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         :return: An icon to be displayed.
         """
         try:
-            icon = self.icon_map[content.id]
+            if content.is_image:
+                icon = self.icon_map[content.id]
+            elif content.is_gif or content.is_video:
+                icon = self.icon_map['video_placeholder']
+            else:
+                icon = self.icon_map['text_placeholder']
         except KeyError:
-            pixmap = QPixmap(content.get_full_file_path()).scaled(QSize(500, 500), Qt.KeepAspectRatio)
+            if content.is_image:
+                path = content.get_full_file_path()
+            elif content.is_gif or content.is_video:
+                path = os.path.join(const.RESOURCES, 'Images', 'video_placeholder.png')
+            else:
+                path = os.path.join(const.RESOURCES, 'Images', 'text_placeholder.png')
+            pixmap = QPixmap(path).scaled(QSize(500, 500), Qt.KeepAspectRatio)
             icon = QIcon()
             icon.addPixmap(pixmap, QIcon.Normal)
             icon.addPixmap(pixmap, QIcon.Selected)

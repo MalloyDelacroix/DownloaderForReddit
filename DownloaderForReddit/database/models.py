@@ -624,6 +624,18 @@ class Content(BaseModel):
     def download_date_display(self):
         return self.get_display_date(self.download_date)
 
+    @property
+    def is_image(self):
+        return self.extension in const.IMAGE_EXT
+
+    @property
+    def is_gif(self):
+        return self.extension in const.GIF_EXT
+
+    @property
+    def is_video(self):
+        return self.extension in const.VID_EXT
+
     def get_full_file_path(self, download_title=None):
         if not download_title:
             download_title = self.download_title
