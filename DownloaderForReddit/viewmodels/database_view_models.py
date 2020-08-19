@@ -233,17 +233,21 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         try:
             if content.is_image:
                 icon = self.icon_map[content.id]
-            elif content.is_gif or content.is_video:
+            elif content.is_animated:
                 icon = self.icon_map['video_placeholder']
-            else:
+            elif content.is_text:
                 icon = self.icon_map['text_placeholder']
+            else:
+                icon = self.icon_map['missing_placeholder']
         except KeyError:
             if content.is_image:
                 path = content.get_full_file_path()
-            elif content.is_gif or content.is_video:
+            elif content.is_animated:
                 path = os.path.join(const.RESOURCES, 'Images', 'video_placeholder.png')
-            else:
+            elif content.is_text:
                 path = os.path.join(const.RESOURCES, 'Images', 'text_placeholder.png')
+            else:
+                path = os.path.join(const.RESOURCES, 'Images', 'missing_icon.png')
             pixmap = QPixmap(path).scaled(QSize(500, 500), Qt.KeepAspectRatio)
             icon = QIcon()
             icon.addPixmap(pixmap, QIcon.Normal)

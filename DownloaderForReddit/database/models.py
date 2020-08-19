@@ -636,6 +636,14 @@ class Content(BaseModel):
     def is_video(self):
         return self.extension in const.VID_EXT
 
+    @property
+    def is_animated(self):
+        return self.is_gif or self.is_video
+
+    @property
+    def is_text(self):
+        return self.extension in const.TEXT_EXT
+
     def get_full_file_path(self, download_title=None):
         if not download_title:
             download_title = self.download_title
