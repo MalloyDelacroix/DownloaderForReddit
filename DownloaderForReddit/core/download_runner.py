@@ -11,6 +11,7 @@ from .downloader import Downloader
 from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
 from .runner import verify_run
+from .errors import NON_DOWNLOADABLE
 from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
 from ..utils import injector, reddit_utils, video_merger
 from ..messaging.message import Message
@@ -144,9 +145,9 @@ class DownloadRunner(QObject):
         if post_id_list is None:
             with self.db.get_scoped_session() as session:
                 post_id_list = session.query(Post.id)\
-                    .filter(Post.extracted == False)\
-                    .filter(Post.extraction_error != 'Unsupported domain')\
-                    .filter(Post.retry_attempts <= 3)
+                    .filter(Post.extracted == False) \
+                    .filter(Post.retry_attempts <= 3) \
+                    .filter(Post.extraction_error.notin_(NON_DOWNLOADABLE))
         self.logger.debug(f'{post_id_list.count()} unfinished posts to download')
         for post_id, in post_id_list.all():  # comma used to unpack result tuple
             extraction_set = ExtractionSet(extraction_type='POST', extraction_object=post_id, significant_id=None)
@@ -159,9 +160,9 @@ class DownloadRunner(QObject):
         if content_id_list is None:
             with self.db.get_scoped_session() as session:
                 content_id_list = session.query(Content)\
-                    .filter(Content.downloaded == False)\
-                    .filter(Content.download_error == None)\
-                    .filter(Content.retry_attempts <= 3)
+                    .filter(Content.downloaded == False) \
+                    .filter(Content.retry_attempts <= 3) \
+                    .filter(Content.download_error.notin_(NON_DOWNLOADABLE))
         self.logger.debug(f'{content_id_list.count()} unfinished content items to download')
         for content in content_id_list.all():
             self.download_queue.put(content.id)
