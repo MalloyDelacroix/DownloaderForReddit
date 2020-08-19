@@ -205,13 +205,21 @@ class ContentListModel(QAbstractListModel, CustomItemModel):
         super().set_data(query)
 
     def data(self, index, role=None):
-        if role == Qt.DisplayRole:
-            return self.items[index.row()].title
-        elif role == Qt.DecorationRole:
-            icon = self.get_icon(self.items[index.row()])
-            return icon
-        elif role == Qt.ToolTipRole:
-            return self.items[index.row()].title
+        if index.isValid():
+            content = self.items[index.row()]
+            if role == Qt.DisplayRole:
+                return content.title
+            elif role == Qt.DecorationRole:
+                icon = self.get_icon(content)
+                return icon
+            elif role == Qt.ToolTipRole:
+                tip = f'Title: {content.title}\n' \
+                       f'Extension: {content.extension}\n' \
+                       f'Author: {content.user.name}\n' \
+                       f'Subreddit: {content.subreddit.name}'
+                if content.error_message is not None:
+                    tip += f'Error: {content.error_message}'
+                return tip
         return None
 
     def get_icon(self, content):
