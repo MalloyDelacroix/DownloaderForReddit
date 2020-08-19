@@ -288,7 +288,8 @@ class SettingsManager:
             'nsfw': True,
             'extracted': False,
             'extraction_date': True,
-            'extraction_error': False
+            'extraction_error': False,
+            'error_message': False,
         }
         self.database_view_post_table_headers = self.get('database_view', 'database_view_post_table_headers',
                                                          self.default_database_view_post_headers)

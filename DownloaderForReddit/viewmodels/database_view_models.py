@@ -156,13 +156,14 @@ class PostTableModel(QAbstractTableModel, CustomItemModel):
         'extracted': lambda x: x.extracted,
         'extraction_date': lambda x: x.extraction_date,
         'extraction_error': lambda x: x.extraction_error,
+        'error_message': lambda x: x.error_message,
     }
 
     def __init__(self):
         super().__init__()
         self.limit = self.settings_manager.post_query_limit
         self.headers = ['title', 'date_posted', 'score', 'self_post', 'text', 'url', 'domain', 'author',
-                        'subreddit', 'nsfw', 'extracted', 'extraction_date', 'extraction_error']
+                        'subreddit', 'nsfw', 'extracted', 'extraction_date', 'extraction_error', 'error_message']
 
     def headerData(self, row, orientation, role=None):
         if role == Qt.DisplayRole:
