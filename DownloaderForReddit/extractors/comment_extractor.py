@@ -1,6 +1,7 @@
 import os
 
 from .self_post_extractor import SelfPostExtractor
+from ..core.errors import Error
 from ..utils import system_util
 
 
@@ -17,6 +18,7 @@ class CommentExtractor(SelfPostExtractor):
             self.download_text(directory, title, ext)
         except Exception as e:
             self.failed_extraction = True
+            self.extraction_error = Error.TEXT_LINK_FAILURE
             self.failed_extraction_message = f'Failed to save comment text. ERROR: {e}'
             self.logger.error('Failed to save content text', extra={
                 'url': self.url, 'user': self.comment.url, 'subreddit': self.comment.subreddit,

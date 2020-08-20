@@ -68,7 +68,7 @@ class SubmissionHandler(Runner):
     @verify_run
     def download_comment(self, comment):
         extractor = CommentExtractor(post=self.post, comment=comment, download_session_id=self.download_session_id)
-        self.finish_extractor(extractor)
+        self.finish_extractor(extractor, text_link_extraction=True, comment=comment)
 
     @verify_run
     def extract_text_links(self, html_text, **kwargs):
@@ -94,7 +94,7 @@ class SubmissionHandler(Runner):
             self.handle_error(e)
 
     @verify_run
-    def finish_extractor(self, extractor, text_link_extraction=False):
+    def finish_extractor(self, extractor, text_link_extraction=False, comment=None):
         if extractor is not None:
             extractor.extract_content()
             if not extractor.failed_extraction:
@@ -103,7 +103,12 @@ class SubmissionHandler(Runner):
                 if not text_link_extraction:
                     self.post.set_extraction_failed(extractor.extraction_error, extractor.failed_extraction_message)
                 else:
-                    self.post.extraction_error = 'Failed to extract link from text post'
+                    if comment is None:
+                        self.post.set_extraction_failed(Error.TEXT_LINK_FAILURE,
+                                                        'Failed to extract link from text post')
+                    else:
+                        comment.set_extraction_failed(Error.TEXT_LINK_FAILURE,
+                                                      'Failed to extract links from comment text')
             for content in extractor.extracted_content:
                 self.download_queue.put(content.id)
 
