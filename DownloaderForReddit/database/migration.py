@@ -38,7 +38,10 @@ class Migrator:
                          }
                     )
             else:
-                self.logger.info('No cache version found in database.  Migration not performed')
+                session.add(Version(version=version.__version__))
+                session.commit()
+                self.logger.info(f'Migration not performed: no version information found in database.  Database entry'
+                                 f'for version {version.__version__} has been created.')
 
     def migrate(self):
         config = Config()
