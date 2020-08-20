@@ -163,6 +163,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # region Help Menu
         self.imgur_credit_dialog_menu_item.triggered.connect(self.display_imgur_client_information)
         self.user_manual_menu_item.triggered.connect(self.open_user_manual)
+        self.user_manual_menu_item.setDisabled(True)  # TODO: enable after online user manual is created
         self.ffmpeg_requirement_dialog_menu_item.triggered.connect(self.display_ffmpeg_info_dialog)
         self.check_for_updates_menu_item.triggered.connect(lambda: self.check_for_updates(True))
         self.about_menu_item.triggered.connect(self.display_about_dialog)
@@ -1088,18 +1089,19 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def open_user_manual(self):
         """Opens the user manual using the default PDF viewer"""
-        manual = 'The Downloader For Reddit - User Manual.pdf'
-        if os.path.isfile(os.path.join(os.getcwd(), manual)):
-            file = os.path.join(os.getcwd(), manual)
-        else:
-            separator = '/' if not sys.platform == 'win32' else '\\'
-            containing_folder, current = os.getcwd().rsplit(separator, 1)
-            file = os.path.join(containing_folder, manual)
-        try:
-            system_util.open_in_system(file)
-        except FileNotFoundError:
-            self.logger.error('Unable to open user manual: Manual file not found', exc_info=True)
-            message_dialogs.user_manual_not_found(self)
+        # manual = 'The Downloader For Reddit - User Manual.pdf'
+        # if os.path.isfile(os.path.join(os.getcwd(), manual)):
+        #     file = os.path.join(os.getcwd(), manual)
+        # else:
+        #     separator = '/' if not sys.platform == 'win32' else '\\'
+        #     containing_folder, current = os.getcwd().rsplit(separator, 1)
+        #     file = os.path.join(containing_folder, manual)
+        # try:
+        #     system_util.open_in_system(file)
+        # except FileNotFoundError:
+        #     self.logger.error('Unable to open user manual: Manual file not found', exc_info=True)
+        #     message_dialogs.user_manual_not_found(self)
+        self.logger.warning('Attempt was made to open user manual.  User manual has been removed for beta version.')
 
     def set_list_order(self, order_by=None, desc=None):
         """Applies the sort and order function to each list model"""
