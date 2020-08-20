@@ -258,8 +258,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
 
-        # self.check_ffmpeg()
-        # self.check_for_updates(False)  TODO: re-enable this
+        self.check_ffmpeg()
+        self.check_for_updates(False)
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)

@@ -51,4 +51,4 @@ def make_logger():
     file_handler.setFormatter(json_formatter)
 
     logger.addHandler(stream_handler)
-    # logger.addHandler(file_handler)  # TODO: re-enable this
+    logger.addHandler(file_handler)
