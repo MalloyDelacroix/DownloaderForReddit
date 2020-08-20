@@ -9,6 +9,7 @@ from .downloader import Downloader
 from .runner import verify_run
 from ..database.models import DownloadSession, Post
 from ..utils import injector, reddit_utils
+from ..messaging.message import Message
 
 
 class UpdateRunner(QObject):
@@ -85,12 +86,15 @@ class UpdateRunner(QObject):
             try:
                 post = session.query(Post).get(post_id)
                 submission = self.reddit_instance.submission(id=post.reddit_id)
+                old_score = post.score
                 post.score = submission.score
+                Message.send_info(f'{post.title} score updated\n'
+                                  f'    Old score: {old_score}  |  New Score: {post.score}')
             except:
                 self.logger.error('Failed to update post', extra={'post_id': post.id, 'post_title': post.title,
                                                                   'author': post.author.name,
                                                                   'subreddit': post.subreddit.name}, exc_info=True)
-        # TODO: inform user of success or failure
+                Message.send_warning(f'Failed to update score for {post.title}')
 
     @verify_run
     def update_comments(self):
