@@ -1204,7 +1204,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         self.start_main_spinner()
         self.update_check_thread = QThread()
-        self.update_checker = UpdateChecker(self.version)
+        self.update_checker = UpdateChecker()
         self.update_checker.moveToThread(self.update_check_thread)
         self.update_check_thread.started.connect(self.update_checker.run)
         if from_menu:

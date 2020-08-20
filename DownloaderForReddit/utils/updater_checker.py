@@ -28,6 +28,8 @@ import sys
 from PyQt5.QtCore import QObject, pyqtSignal
 import logging
 
+from .. import version
+
 
 class UpdateChecker(QObject):
 
@@ -35,15 +37,13 @@ class UpdateChecker(QObject):
     no_update_signal = pyqtSignal()
     finished = pyqtSignal()
 
-    def __init__(self, installed_version):
+    def __init__(self):
         """
         Class that runs on a separate thread from the main GUI and checks github for a newly released version of the
         program.
-        :param installed_version: The version of the application that is currently installed
         """
         super().__init__()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
-        self.installed_version = installed_version
         self.release_api_caller = 'https://api.github.com/repos/MalloyDelacroix/DownloaderForReddit/releases/latest'
         self._json = None
         self.download_type = 'zip' if sys.platform != 'linux' else 'tar.gz'
@@ -73,13 +73,13 @@ class UpdateChecker(QObject):
         """
         Checks the json content retrieved from github to see if there is an update available and information about it
         """
-        if self._json['tag_name'] != self.installed_version:
-            self.newest_version = self._json['tag_name']
+        server_version = self._json['tag_name']
+        if version.is_updated(server_version, version.__version__):
             for asset in self._json['assets']:
                 if asset['name'].endswith(self.download_type):
                     self.download_name = asset['name']
                     self.download_size = asset['size']
                     self.download_url = asset['browser_download_url']
-                    self.update_available_signal.emit(self.newest_version)
+                    self.update_available_signal.emit(server_version)
         else:
             self.no_update_signal.emit()

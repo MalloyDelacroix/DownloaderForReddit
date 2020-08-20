@@ -6,7 +6,7 @@ from sqlalchemy import desc
 
 from .models import Version
 from ..utils import injector, system_util
-from ..version import __version__
+from .. import version
 
 
 class Migrator:
@@ -25,16 +25,16 @@ class Migrator:
         with self.db.get_scoped_session() as session:
             cache_version = session.query(Version).order_by(desc(Version.id)).limit(1).first()
             if cache_version is not None:
-                if __version__ != cache_version.version:
+                if version.is_updated(version.__version__, cache_version.version):
                     self.migrate()
-                    session.add(Version(version=__version__))
+                    session.add(Version(version=version.__version__))
                     session.commit()
                     self.logger.info(
                         'New version detected.  Migration has been performed',
                          extra={
                              'cached_version': cache_version.version,
                              'cache_date': cache_version.date_added,
-                             'new_version': __version__
+                             'new_version': version.__version__
                          }
                     )
             else:
