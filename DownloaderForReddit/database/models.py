@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from sqlalchemy import Column, Integer, SmallInteger, String, Boolean, DateTime, ForeignKey, Text, Enum, event
 from sqlalchemy.orm import relationship, backref
@@ -27,6 +26,15 @@ class BaseModel(Base):
             return date_time.strftime('%m/%d/%Y %I:%M %p')
         except AttributeError:
             return None
+
+
+class Version(BaseModel):
+
+    __tablename__ = 'version'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    version = Column(String, default='0.0.0')
+    date_added = Column(DateTime, default=datetime.now())
 
 
 class ListAssociation(BaseModel):

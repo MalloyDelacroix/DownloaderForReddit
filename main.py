@@ -31,6 +31,7 @@ import logging
 
 from DownloaderForReddit.gui.downloader_for_reddit_gui import DownloaderForRedditGUI
 from DownloaderForReddit.messaging.message_receiver import MessageReceiver
+from DownloaderForReddit.database.migration import Migrator
 from DownloaderForReddit.utils import injector
 from DownloaderForReddit.local_logging import logger
 from DownloaderForReddit.version import __version__
@@ -52,9 +53,16 @@ def log_unhandled_exception(exc_type, value, traceback):
     sys.exit(-1)
 
 
+def check_migration():
+    migrator = Migrator()
+    migrator.check_migration()
+
+
 def main():
     logger.make_logger()
     sys.excepthook = log_unhandled_exception
+
+    check_migration()
 
     app = QtWidgets.QApplication(sys.argv)
 
