@@ -60,7 +60,6 @@ class DownloadRunner(QObject):
         self.continue_run = True
         self.stopped = False
         self.filter_subreddits = False
-        self.download_type = 'USER' if user_id_list is not None else 'SUBREDDIT'  # TODO: set for ro download
         self.validated_subreddits = []
 
         self.submission_queue = Queue(maxsize=-1)
