@@ -27,7 +27,7 @@ added_files = [(dir_path + '/Resources/images/*', 'Resources/images'),
 			   (os.path.join(praw_path,'praw.ini'), '.'),
 			   (dir_path + '/README.md', '.'), 
 			   (dir_path + '/LICENSE', '.'), 
-			   (dir_path + '/The Downloader For Reddit - User Manual.pdf', '.'),
+			   (dir_path + '/alembic', 'alembic'),
 			   (dir_path + '/Resources/supported_video_sites.txt', 'Resources')]
 print(added_files)
 

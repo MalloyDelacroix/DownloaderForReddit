@@ -17,7 +17,7 @@ added_files = [(dir_path + '/Resources/images/*', 'Resources/images'),
 			   (venv_path + '/Lib/site-packages/praw/praw.ini', '.'),
 			   (dir_path + '/README.md', '.'), 
 			   (dir_path + '/LICENSE', '.'), 
-			   (dir_path + '/The Downloader For Reddit - User Manual.pdf', '.'),
+			   (dir_path + '/alembic', 'alembic'),
 			   (dir_path + '/Resources/supported_video_sites.txt', 'Resources')]
 
 a = Analysis([dir_path + '/main.py'],
