@@ -388,7 +388,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addAction('Add User List', self.add_user_list)
         menu.addAction('Remove User List', self.remove_user_list)
         menu.addSeparator()
-        menu.addAction('List Settings', self.user_list_settings)
+        settings = menu.addAction('List Settings', self.user_list_settings)
+        settings.setDisabled(self.user_lists_combo.currentText() == '')
         menu.exec_(QCursor.pos())
 
     def subreddit_list_combo_context_menu(self):
@@ -396,7 +397,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addAction('Add Subreddit List', self.add_subreddit_list)
         menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
         menu.addSeparator()
-        menu.addAction('List Settings', self.subreddit_list_settings)
+        settings = menu.addAction('List Settings', self.subreddit_list_settings)
+        settings.setDisabled(self.user_lists_combo.currentText() == '')
         menu.exec_(QCursor.pos())
 
     def refresh_list_models(self):
@@ -447,10 +449,16 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         dialog.exec_()
 
     def user_list_settings(self):
-        self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.user_list_model.list.id)
+        try:
+            self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.user_list_model.list.id)
+        except AttributeError:
+            pass
 
     def subreddit_list_settings(self):
-        self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.subreddit_list_model.list.id)
+        try:
+            self.open_settings_dialog(open_display='Download Defaults', open_list_id=self.subreddit_list_model.list.id)
+        except AttributeError:
+            pass
 
     def open_reddit_object_download_folder(self, reddit_object: RedditObject):
         general_utils.open_reddit_object_download_folder(reddit_object, self)
