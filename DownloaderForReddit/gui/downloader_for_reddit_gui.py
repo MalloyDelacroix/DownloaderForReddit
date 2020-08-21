@@ -407,6 +407,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def output_context_menu(self):
         menu = QMenu()
         menu.addAction('Output Settings', lambda: self.open_settings_dialog(open_display='Output'))
+        menu.addSeparator()
+        menu.addAction('Clear Output', lambda: self.output_view_model.clear())
         menu.exec_(QCursor.pos())
     # endregion
 
