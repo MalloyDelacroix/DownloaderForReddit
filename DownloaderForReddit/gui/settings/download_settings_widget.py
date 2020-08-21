@@ -11,6 +11,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         super().__init__()
         self.db = injector.get_database_handler()
         self.session = self.db.get_session()
+        self.main_window = kwargs.pop('main_window', None)
         self.kwargs = kwargs
 
         self.list_map = {}
@@ -67,6 +68,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         self.settings.cascade_list_changes = self.cascade_changes_checkbox.isChecked()
         self.set_from_master()
         self.session.commit()
+        self.main_window.refresh_list_models()
 
     def cascade_list_changes(self):
         for ro_list in self.list_map.values():

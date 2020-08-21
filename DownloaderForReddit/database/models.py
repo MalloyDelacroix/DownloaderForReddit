@@ -163,6 +163,8 @@ class RedditObjectList(BaseModel):
             'download_comment_content': self.download_comment_content,
             'comment_file_format': self.comment_file_format,
             'comment_limit': self.comment_limit,
+            'comment_depth': self.comment_depth,
+            'comment_reply_limit': self.comment_reply_limit,
             'comment_score_limit': self.comment_score_limit,
             'comment_score_limit_operator': self.comment_score_limit_operator,
             'comment_sort_method': self.comment_sort_method,

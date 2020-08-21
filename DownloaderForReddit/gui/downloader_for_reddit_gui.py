@@ -399,6 +399,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addAction('List Settings', self.subreddit_list_settings)
         menu.exec_(QCursor.pos())
 
+    def refresh_list_models(self):
+        """
+        Refreshes the user and subreddit lists from the database.  Should be called after settings changes to lists are
+        made in other parts of the application.
+        """
+        self.user_list_model.refresh_session()
+        self.subreddit_list_model.refresh_session()
+
     def schedule_context_menu(self):
         menu = QMenu()
         menu.addAction('Schedule Settings', lambda: self.open_settings_dialog(open_display='Schedule'))
