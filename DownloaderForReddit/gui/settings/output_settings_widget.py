@@ -27,6 +27,7 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
         self.priority_level_combo.setCurrentText(self.settings.output_priority_level.name)
         self.show_priority_level_checkbox.setChecked(self.settings.show_priority_level)
         self.clear_on_run_checkbox.setChecked(self.settings.clear_messages_on_run)
+        self.output_saved_content_full_path_checkbox.setChecked(self.settings.output_saved_content_full_path)
         self.use_color_output_checkbox.setChecked(self.settings.use_color_output)
 
         for x in MessagePriority:
@@ -62,6 +63,7 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
             self.main_window.update_output()
         self.settings.show_priority_level = self.show_priority_level_checkbox.isChecked()
         self.settings.clear_messages_on_run = self.clear_on_run_checkbox.isChecked()
+        self.settings.output_saved_content_full_path = self.output_saved_content_full_path_checkbox.isChecked()
         self.settings.use_color_output = self.use_color_output_checkbox.isChecked()
         for key, value in self.colors.items():
             setattr(self.settings, f'{key}_color', value)

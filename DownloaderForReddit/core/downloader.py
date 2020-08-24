@@ -130,8 +130,11 @@ class Downloader(Runner):
             if self.settings_manager.match_file_modified_to_post_date:
                 system_util.set_file_modify_time(content.get_full_file_path(), content.post.date_posted.timestamp())
             content.set_downloaded(self.download_session_id)
-            Message.send_debug(f'Saved: {content.get_full_file_path()}')
             self.download_count += 1
+            if self.settings_manager.output_saved_content_full_path:
+                Message.send_debug(f'Saved: {content.get_full_file_path()}')
+            else:
+                Message.send_debug(f'Saved: {content.user.name}: {content.title}')
         else:
             message = 'Download was stopped before finished'
             content.set_download_error(Error.DOWNLOAD_STOPPED, message)
