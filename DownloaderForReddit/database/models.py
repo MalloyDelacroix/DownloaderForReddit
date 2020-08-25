@@ -506,6 +506,8 @@ class Post(BaseModel):
     def set_extracted(self):
         self.extracted = True
         self.extraction_date = datetime.now()
+        self.extraction_error = None
+        self.error_message = None
         self.get_session().commit()
 
     def set_extraction_failed(self, error, message):
@@ -577,6 +579,8 @@ class Comment(BaseModel):
     def set_extracted(self):
         self.extracted = True
         self.extraction_date = datetime.now()
+        self.extraction_error = None
+        self.error_message = None
         self.get_session().commit()
 
     def set_extraction_failed(self, error,  message):
@@ -663,6 +667,8 @@ class Content(BaseModel):
         self.download_session_id = download_session_id
         self.downloaded = True
         self.download_date = datetime.now()
+        self.download_error = None
+        self.error_message = None
         self.get_session().commit()
 
     def set_download_error(self, error, message):
