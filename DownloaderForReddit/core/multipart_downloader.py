@@ -53,28 +53,47 @@ class MultipartDownloader:
                                       extra={'chunk_path': chunk_path}, exc_info=True)
 
     def download_part(self, url, start, end, path):
-        try:
+        retry = True
+        tries = 0
+
+        def download():
             headers = {'Range': f'bytes={start}-{end}'}
             response = requests.get(url, headers=headers, stream=True, timeout=10)
             if response.status_code == 206:
                 with open(path, 'wb') as file:
                     for chunk in response.iter_content(CHUNK_SIZE):
                         file.write(chunk)
+                return True
             else:
                 self.log_part_error('Failed to download chunk of muli-part download - bad response',
                                     extra={'status_code': response.status_code}, exc_info=False)
-        except requests.exceptions.ConnectTimeout:
-            self.log_part_error('Operation timed out before establishing a connection to the server',
-                                extra={'url': url})
-        except requests.exceptions.ReadTimeout:
-            self.log_part_error('Connection timed out while reading data from server',
-                                extra={'url': url, 'range': f'{start} - {end}'})
+                return False
 
-    def log_part_error(self, message, extra=None, exc_info=True):
-        self.failed_parts += 1
-        if self.failed_parts <= 3:
-            self.logger.error(message, extra=extra, exc_info=exc_info)
-        else:
-            self.logger.error('Failed to download multiple chunks of multi-part download.  '
-                              'No further errors will be logged for this download',
-                              extra=extra, exc_info=exc_info)
+        while retry and tries < 3:
+            tries += 1
+            try:
+                success = download()
+                if success:
+                    retry = False
+            except requests.exceptions.ConnectTimeout:
+                self.log_part_error('Operation timed out before establishing a connection to the server',
+                                    extra={'url': url, 'range': f'{start} - {end}'}, log=tries >= 3)
+            except requests.exceptions.ReadTimeout:
+                self.log_part_error('Connection timed out while reading data from server',
+                                    extra={'url': url, 'range': f'{start} - {end}'}, log=tries >= 3)
+            except requests.exceptions.ChunkedEncodingError:
+                self.log_part_error('Connection experienced a chunk encoding error and closed before complete',
+                                    extra={'url': url, 'range': f'{start} - {end}'}, log=tries >= 3)
+            except:
+                self.log_part_error('Unknown error occurred', extra={'url': url, 'range': f'{start} - {end}'},
+                                    log=tries >= 3)
+
+    def log_part_error(self, message, extra=None, exc_info=True, log=True):
+        if log:
+            self.failed_parts += 1
+            if self.failed_parts <= 3:
+                self.logger.error(message, extra=extra, exc_info=exc_info)
+            else:
+                self.logger.error('Failed to download multiple chunks of multi-part download.  '
+                                  'No further errors will be logged for this download',
+                                  extra=extra, exc_info=exc_info)
