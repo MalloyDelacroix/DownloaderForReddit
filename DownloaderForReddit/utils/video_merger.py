@@ -80,10 +80,11 @@ def merge_videos():
                     clean_up(video_content, audio_content, session)
                 except:
                     failed_count += 1
-                    logger.error('Failed to merge video', extra={'video_id': ms.video_id, 'audio_id': ms.audio_id,
-                                                                 'output_path': output_path}, exc_info=True)
-            logger.info('Video merger complete', extra={'videos_successfully_merged': len(videos_to_merge) - failed_count,
-                                                        'videos_unsuccessfully_merged': failed_count})
+                    logger.error('Failed to merge video', extra={'video_id': ms.video_id, 'audio_id': ms.audio_id},
+                                 exc_info=True)
+            logger.info('Video merger complete',
+                        extra={'videos_successfully_merged': len(videos_to_merge) - failed_count,
+                               'videos_unsuccessfully_merged': failed_count})
             videos_to_merge.clear()
     else:
         logger.warning('Ffmpeg is not installed: unable to merge video and audio files',
