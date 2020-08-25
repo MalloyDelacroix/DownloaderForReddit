@@ -12,7 +12,7 @@ from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
 from .runner import verify_run
 from .errors import NON_DOWNLOADABLE
-from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment
+from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content
 from ..utils import injector, reddit_utils, video_merger
 from ..messaging.message import Message
 
