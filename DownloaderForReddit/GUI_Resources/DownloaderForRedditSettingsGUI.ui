@@ -279,7 +279,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Restrict downloads by cusom date:</string>
+            <string>Restrict downloads by custom date:</string>
            </property>
           </widget>
          </item>
