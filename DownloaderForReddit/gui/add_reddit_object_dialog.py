@@ -63,7 +63,7 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
 
     def import_list(self):
         file_path = self.get_import_file_path()
-        if file_path is not None:
+        if file_path is not None and os.stat(file_path).st_size > 0:
             if file_path.endswith('txt'):
                 import_list = text_importer.import_list_from_text_file(file_path)
                 self.added.extend(import_list)
