@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1232</width>
+    <height>836</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Downloader for Reddit</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../images/RedditDownloaderIcon.png</normaloff>../images/RedditDownloaderIcon.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
+    <item>
+     <widget class="QSplitter" name="horz_splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Users:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="user_count_label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="user_list_search_edit">
+          <property name="placeholderText">
+           <string>Search users</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListView" name="user_list_view">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="user_lists_combo">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Current user list</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="add_user_button">
+            <property name="text">
+             <string>Add User</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="remove_user_button">
+            <property name="text">
+             <string>Remove User</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>4</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Subreddits:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="subreddit_count_label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="subreddit_list_search_edit">
+          <property name="placeholderText">
+           <string>Search subreddits</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListView" name="subreddit_list_view">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="subreddit_list_combo">
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Current subreddit list</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="add_subreddit_button">
+            <property name="text">
+             <string>Add Subreddit</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="remove_subreddit_button">
+            <property name="text">
+             <string>Remove Subreddit</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="download_button_layout">
+          <item>
+           <widget class="QPushButton" name="download_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Download selected user or subreddit list</string>
+            </property>
+            <property name="text">
+             <string>Download</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="soft_stop_download_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Stops the current download, but allows in progress downloads to finish</string>
+            </property>
+            <property name="text">
+             <string>Stop Download</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="terminate_download_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Stops the download immediately and terminates in progress downloads (may result in corrupted files for downloads that were not complete)</string>
+            </property>
+            <property name="text">
+             <string>Terminate Download</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QRadioButton" name="download_users_radio">
+            <property name="toolTip">
+             <string>Download only user list</string>
+            </property>
+            <property name="text">
+             <string>Users</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="download_subreddits_radio">
+            <property name="toolTip">
+             <string>Download only subreddit list</string>
+            </property>
+            <property name="text">
+             <string>Subreddits</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="constain_to_sub_list_radio">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Download user list, but only extract posts made to subreddits in the subreddit list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Constrain Users To Subreddit List</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="Line" name="line">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="schedule_widget" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>15</height>
+           </size>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <property name="spacing">
+            <number>15</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Download Scheduled:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="schedule_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>00:00:00</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListView" name="output_list_view">
+          <property name="styleSheet">
+           <string notr="true">QListView {
+	outline: 0;
+}
+
+QListView::item:hover {
+    background: white;
+}
+
+QListView::item:selected {
+	background: white;
+}
+
+QListView::item:active {
+	background: white;
+}</string>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::NoSelection</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1232</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="file_menu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="open_settings_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="open_data_directory_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="exit_menu_item"/>
+   </widget>
+   <widget class="QMenu" name="lists_menu">
+    <property name="title">
+     <string>Lists</string>
+    </property>
+    <addaction name="add_user_list_menu_item"/>
+    <addaction name="add_subreddit_list_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="remove_user_list_menu_item"/>
+    <addaction name="remove_subreddit_list_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="export_user_list_menu_item"/>
+    <addaction name="export_subreddit_list_menu_item"/>
+   </widget>
+   <widget class="QMenu" name="help_menu">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="imgur_credit_dialog_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="user_manual_menu_item"/>
+    <addaction name="ffmpeg_requirement_dialog_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="check_for_updates_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="about_menu_item"/>
+   </widget>
+   <widget class="QMenu" name="view_menu">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <widget class="QMenu" name="list_sort_menu_item">
+     <property name="title">
+      <string>Sort Lists By</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="list_order_menu_item">
+     <property name="title">
+      <string>Sort Order</string>
+     </property>
+     <addaction name="sort_list_ascending_menu_item"/>
+     <addaction name="sort_list_descending_menu_item"/>
+    </widget>
+    <addaction name="list_sort_menu_item"/>
+    <addaction name="list_order_menu_item"/>
+   </widget>
+   <widget class="QMenu" name="menuDownload">
+    <property name="title">
+     <string>Download</string>
+    </property>
+    <addaction name="download_user_list_menu_item"/>
+    <addaction name="download_subreddit_list_menu_item"/>
+    <addaction name="download_user_list_constrained_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="run_unfinished_extractions_menu_item"/>
+    <addaction name="run_unfinished_downloads_menu_item"/>
+    <addaction name="run_all_unfiinished_menu_item"/>
+   </widget>
+   <widget class="QMenu" name="menuDatabase">
+    <property name="title">
+     <string>Database</string>
+    </property>
+    <addaction name="database_view_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="download_sessions_view_menu_item"/>
+    <addaction name="reddit_objects_view_menu_item"/>
+    <addaction name="posts_view_menu_item"/>
+    <addaction name="content_view_menu_item"/>
+    <addaction name="comments_view_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="failed_extraction_view_menu_item"/>
+    <addaction name="failed_download_view_menu_item"/>
+    <addaction name="separator"/>
+    <addaction name="statistics_view_menu_item"/>
+   </widget>
+   <addaction name="file_menu"/>
+   <addaction name="view_menu"/>
+   <addaction name="lists_menu"/>
+   <addaction name="menuDatabase"/>
+   <addaction name="menuDownload"/>
+   <addaction name="help_menu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="add_user_list_menu_item">
+   <property name="text">
+    <string>Add User List</string>
+   </property>
+  </action>
+  <action name="add_subreddit_list_menu_item">
+   <property name="text">
+    <string>Add Subreddit List</string>
+   </property>
+  </action>
+  <action name="file_save">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="remove_user_list_menu_item">
+   <property name="text">
+    <string>Remove User List</string>
+   </property>
+  </action>
+  <action name="remove_subreddit_list_menu_item">
+   <property name="text">
+    <string>Remove Subreddit List</string>
+   </property>
+  </action>
+  <action name="open_settings_menu_item">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="exit_menu_item">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="failed_download_view_menu_item">
+   <property name="text">
+    <string>Failed Download</string>
+   </property>
+   <property name="toolTip">
+    <string>Display the failed download list for the last download session</string>
+   </property>
+  </action>
+  <action name="file_open_user_finder">
+   <property name="text">
+    <string>Open User Finder</string>
+   </property>
+  </action>
+  <action name="download_session_menu_item">
+   <property name="text">
+    <string>Download Sessions</string>
+   </property>
+  </action>
+  <action name="failed_extraction_view_menu_item">
+   <property name="text">
+    <string>Failed Extractions</string>
+   </property>
+  </action>
+  <action name="imgur_credit_dialog_menu_item">
+   <property name="text">
+    <string>Imgur Credits</string>
+   </property>
+  </action>
+  <action name="about_menu_item">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="file_user_list_count">
+   <property name="text">
+    <string>User List Count:</string>
+   </property>
+  </action>
+  <action name="file_subreddit_list_count">
+   <property name="text">
+    <string>Subreddit List Count:</string>
+   </property>
+  </action>
+  <action name="user_manual_menu_item">
+   <property name="text">
+    <string>User Manual</string>
+   </property>
+  </action>
+  <action name="check_for_updates_menu_item">
+   <property name="text">
+    <string>Check For Update</string>
+   </property>
+  </action>
+  <action name="sort_list_by_name_menu_item">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Name</string>
+   </property>
+  </action>
+  <action name="sort_list_by_date_added_menu_item">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Date Added</string>
+   </property>
+  </action>
+  <action name="sort_list_by_post_count_menu_item">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Post Count</string>
+   </property>
+  </action>
+  <action name="sort_list_ascending_menu_item">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ascending</string>
+   </property>
+  </action>
+  <action name="sort_list_descending_menu_item">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Descending</string>
+   </property>
+  </action>
+  <action name="open_data_directory_menu_item">
+   <property name="text">
+    <string>Open Data Directory</string>
+   </property>
+  </action>
+  <action name="import_database_file_menu_item">
+   <property name="text">
+    <string>Import Save File</string>
+   </property>
+  </action>
+  <action name="ffmpeg_requirement_dialog_menu_item">
+   <property name="text">
+    <string>FFmpeg Requirement</string>
+   </property>
+  </action>
+  <action name="download_user_list_menu_item">
+   <property name="text">
+    <string>Download User List</string>
+   </property>
+  </action>
+  <action name="download_subreddit_list_menu_item">
+   <property name="text">
+    <string>Download Subreddit List</string>
+   </property>
+  </action>
+  <action name="download_user_list_constrained_menu_item">
+   <property name="text">
+    <string>Download User List Constrained</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Download user list, but only extract posts made to subreddits in the subreddit list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="run_unfinished_extractions_menu_item">
+   <property name="text">
+    <string>Run Unfinished Extractions</string>
+   </property>
+  </action>
+  <action name="run_unfinished_downloads_menu_item">
+   <property name="text">
+    <string>Run Unfinished Downloads</string>
+   </property>
+  </action>
+  <action name="sort_list_by_content_count_menu_item">
+   <property name="text">
+    <string>Content Count</string>
+   </property>
+  </action>
+  <action name="sort_list_by_comment_count_menu_item">
+   <property name="text">
+    <string>Comment Count</string>
+   </property>
+  </action>
+  <action name="sort_list_by_date_created_menu_item">
+   <property name="text">
+    <string>Date Created</string>
+   </property>
+   <property name="toolTip">
+    <string>Sort reddit objects by the date that the item was created on reddit</string>
+   </property>
+  </action>
+  <action name="sort_list_by_score_menu_item">
+   <property name="text">
+    <string>Total Score</string>
+   </property>
+  </action>
+  <action name="database_view_menu_item">
+   <property name="text">
+    <string>Database View</string>
+   </property>
+  </action>
+  <action name="download_sessions_view_menu_item">
+   <property name="text">
+    <string>Download Sessions</string>
+   </property>
+  </action>
+  <action name="reddit_objects_view_menu_item">
+   <property name="text">
+    <string>Reddit Objects</string>
+   </property>
+  </action>
+  <action name="posts_view_menu_item">
+   <property name="text">
+    <string>Posts</string>
+   </property>
+  </action>
+  <action name="content_view_menu_item">
+   <property name="text">
+    <string>Content</string>
+   </property>
+  </action>
+  <action name="comments_view_menu_item">
+   <property name="text">
+    <string>Comments</string>
+   </property>
+  </action>
+  <action name="statistics_view_menu_item">
+   <property name="text">
+    <string>Statistics</string>
+   </property>
+  </action>
+  <action name="run_all_unfiinished_menu_item">
+   <property name="text">
+    <string>Run All Unfinished</string>
+   </property>
+  </action>
+  <action name="export_user_list_menu_item">
+   <property name="text">
+    <string>Export User List</string>
+   </property>
+  </action>
+  <action name="export_subreddit_list_menu_item">
+   <property name="text">
+    <string>Export Subreddit List</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

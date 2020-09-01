@@ -29,9 +29,11 @@ import sys
 from PyQt5 import QtWidgets, QtCore
 import logging
 
-from DownloaderForReddit.GUI.DownloaderForRedditGUI import DownloaderForRedditGUI
-from DownloaderForReddit.Utils import Injector
-from DownloaderForReddit.Logging import Logger
+from DownloaderForReddit.gui.downloader_for_reddit_gui import DownloaderForRedditGUI
+from DownloaderForReddit.messaging.message_receiver import MessageReceiver
+from DownloaderForReddit.database.migration import Migrator
+from DownloaderForReddit.utils import injector
+from DownloaderForReddit.local_logging import logger
 from DownloaderForReddit.version import __version__
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
@@ -45,68 +47,51 @@ if sys.platform == 'win32':
     AppUserModelID = ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
-class MessageReceiver(QtCore.QObject):
-
-    output_signal = QtCore.pyqtSignal(str)
-    finished = QtCore.pyqtSignal()
-
-    def __init__(self, queue, *args, **kwargs):
-        """
-        A class monitors the supplied instance of the queue that is common throughout all parts of the program which
-        emits a signal to update the main GUI window when something comes through the queue.  This class will be moved
-        operate from another thread
-
-        This concept is taken directly from NSchrading's application "redditDataExtractor" which much of this
-        application is based on.  This is a brilliant way to solve many problems involved in sending messages between
-        parts of the application which are operating in different threads.
-
-        :param queue: An instance of the queue supplied in the "main" function
-        """
-        super().__init__(*args, **kwargs)
-        self.queue = queue
-        self.continue_run = True
-
-    def run(self):
-        while self.continue_run:
-            output = self.queue.get()
-            self.output_signal.emit(output)
-        self.finished.emit()
-
-    def stop_run(self):
-        """
-        Stops the receiver from running which allows threads to end cleanly.  '' is added to the queue because it will
-        block until it receives something
-        """
-        self.continue_run = False
-        self.queue.put('')
-
-
 def log_unhandled_exception(exc_type, value, traceback):
     logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
     logger.critical('Unhandled exception', exc_info=(exc_type, value, traceback))
     sys.exit(-1)
 
 
+def check_migration():
+    migrator = Migrator()
+    migrator.check_migration()
+
+
 def main():
-    Logger.make_logger()
+    logger.make_logger()
     sys.excepthook = log_unhandled_exception
+
+    check_migration()
 
     app = QtWidgets.QApplication(sys.argv)
 
-    queue = Injector.get_queue()
-    thread = QtCore.QThread()
+    queue = injector.get_message_queue()
+    message_thread = QtCore.QThread()
     receiver = MessageReceiver(queue)
+    scheduler = injector.get_scheduler()
 
-    window = DownloaderForRedditGUI(queue, receiver)
+    window = DownloaderForRedditGUI(queue, receiver, scheduler)
 
-    receiver.output_signal.connect(window.update_output)
-    receiver.moveToThread(thread)
-    thread.started.connect(receiver.run)
-    receiver.finished.connect(thread.quit)
+    receiver.text_output.connect(window.output_view_model.handle_message)
+    receiver.non_text_output.connect(window.handle_progress)
+
+    receiver.moveToThread(message_thread)
+    message_thread.started.connect(receiver.run)
+    receiver.finished.connect(message_thread.quit)
     receiver.finished.connect(receiver.deleteLater)
-    thread.finished.connect(thread.deleteLater)
+    message_thread.finished.connect(message_thread.deleteLater)
+    message_thread.start()
 
-    thread.start()
+    schedule_thread = QtCore.QThread()
+    scheduler.moveToThread(schedule_thread)
+    scheduler.run_task.connect(window.run_scheduled_download)
+    scheduler.countdown.connect(window.update_scheduled_download)
+    scheduler.finished.connect(schedule_thread.quit)
+    scheduler.finished.connect(scheduler.deleteLater)
+    schedule_thread.finished.connect(schedule_thread.deleteLater)
+    schedule_thread.started.connect(scheduler.run)
+    schedule_thread.start()
 
     window.show()
     sys.exit(app.exec_())
