@@ -1,8 +1,11 @@
 # Change Log
 
-# Unreleased
+## v3.0.1-beta
 
-## v3.0.0
+### Bug Fixes
+* Fix crashing due to ffmpeg warning dialog
+
+## v3.0.0-beta
 
 ### Major Changes
 * Entire application now uses an sqlite database on the backend for storage.

@@ -24,13 +24,11 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import subprocess
-import os
 import logging
 from distutils.spawn import find_executable
 
 from ..database.models import Content
 from ..utils import injector, system_util
-from ..messaging.message import Message
 
 
 logger = logging.getLogger(__name__)
