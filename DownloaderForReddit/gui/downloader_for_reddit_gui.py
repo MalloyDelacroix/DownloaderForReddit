@@ -1239,7 +1239,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.update_check_thread.start()
 
     def display_update(self, latest_version):
-        if self.settings_manager.notify_update != latest_version:
+        if self.settings_manager.ignore_update != latest_version:
             self.update_dialog(latest_version)
 
     def update_dialog(self, update_variables):

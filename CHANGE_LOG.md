@@ -1,6 +1,10 @@
 # Change Log
 
-## v3.0.1-beta
+## v3.1.0-beta
+
+### Minor Changes
+* Update notification can now be adjusted by the user to only display updates of a chosen level (major, minor, patch)
+  or not at all.
 
 ### Bug Fixes
 * Fix crashing due to ffmpeg warning dialog

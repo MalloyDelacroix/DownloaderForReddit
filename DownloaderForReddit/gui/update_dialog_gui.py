@@ -44,6 +44,7 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
         """
         super().__init__(parent=parent)
         self.setupUi(self)
+        self.parent = parent
         self.settings_manager = injector.settings_manager
 
         self.new_version = update_variables
@@ -65,11 +66,13 @@ class UpdateDialog(QDialog, Ui_update_dialog_box):
 
         self.buttonBox.accepted.connect(self.close_dialog)
 
+        self.go_to_settings_label.clicked.connect(
+            lambda: self.parent.open_settings_dialog(open_display='Notifications'))
+
     def close_dialog(self):
         self.close()
 
     def closeEvent(self, QCloseEvent):
         if self.do_not_notify_checkbox.isChecked():
-            self.settings_manager.do_not_notify_update = self.new_version
+            self.settings_manager.ignore_update = self.new_version
             self.settings_manager.update_dialog_geom = self.saveGeometry()
-            self.settings_manager.save_update_dialog()
