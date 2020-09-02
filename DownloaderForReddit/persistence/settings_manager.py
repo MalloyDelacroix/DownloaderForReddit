@@ -178,7 +178,8 @@ class SettingsManager:
         # endregion
 
         # region Notification Defaults
-        self.notify_update = self.get('notification_defaults', 'notify_update', True)
+        self.update_notification_level = self.get('notification_defaults', 'update_notification_level', 0)
+        self.ignore_update = self.get('notification_defaults', 'ignore_update', None)
         self.auto_display_failed_downloads = self.get('notification_defaults', 'auto_display_failed_downloads', True)
         self.display_ffmpeg_warning = self.get('notification_defaults', 'display_ffmpeg_warning', True)
         self.large_post_update_warning = self.get('notification_defaults', 'large_post_update_warning', True)

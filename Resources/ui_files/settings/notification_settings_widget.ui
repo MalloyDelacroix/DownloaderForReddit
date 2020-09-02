@@ -18,6 +18,43 @@
     <number>30</number>
    </property>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the update level at which an update must be before you will be notified of its release&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Update notification level:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="update_level_combo">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
     <widget class="QCheckBox" name="auto_display_failed_downloads_checkbox">
      <property name="text">
       <string>Show failed downloads dialog after download</string>
@@ -48,13 +85,6 @@
        <widget class="QCheckBox" name="large_post_update_warning_checkbox">
         <property name="text">
          <string>Ask before updating large number of posts</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="notify_available_updates_checkbox">
-        <property name="text">
-         <string>Notify of available updates</string>
         </property>
        </widget>
       </item>

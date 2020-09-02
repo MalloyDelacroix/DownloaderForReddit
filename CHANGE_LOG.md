@@ -1,8 +1,15 @@
 # Change Log
 
-# Unreleased
+## v3.1.0-beta
 
-## v3.0.0
+### Minor Changes
+* Update notification can now be adjusted by the user to only display updates of a chosen level (major, minor, patch)
+  or not at all.
+
+### Bug Fixes
+* Fix crashing due to ffmpeg warning dialog
+
+## v3.0.0-beta
 
 ### Major Changes
 * Entire application now uses an sqlite database on the backend for storage.

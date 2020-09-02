@@ -22,3 +22,11 @@ class TestVersion(TestCase):
         self.assertFalse(version.is_updated('v2.3.7', against))
         self.assertFalse(version.is_updated('v0.0.1', against))
         self.assertFalse(version.is_updated('v2.0.0-beta', against))
+
+    def test_update_type(self):
+        version.__version__ = 'v2.8.5'
+        self.assertEqual(version.update_type('v3.6.5'), 3)
+        self.assertEqual(version.update_type('v2.9.8'), 2)
+        self.assertEqual(version.update_type('v2.8.7'), 1)
+        self.assertEqual(version.update_type('v2.8.5'), 0)
+        self.assertEqual(version.update_type('v1.2.3'), 0)
