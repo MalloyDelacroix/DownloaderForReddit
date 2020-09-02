@@ -29,6 +29,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 import logging
 
 from .. import version
+from . import injector
 
 
 class UpdateChecker(QObject):
@@ -44,6 +45,7 @@ class UpdateChecker(QObject):
         """
         super().__init__()
         self.logger = logging.getLogger('DownloaderForReddit.%s' % __name__)
+        self.settings_manager = injector.get_settings_manager()
         self.release_api_caller = 'https://api.github.com/repos/MalloyDelacroix/DownloaderForReddit/releases/latest'
         self._json = None
         self.download_type = 'zip' if sys.platform != 'linux' else 'tar.gz'
@@ -74,7 +76,7 @@ class UpdateChecker(QObject):
         Checks the json content retrieved from github to see if there is an update available and information about it
         """
         server_version = self._json['tag_name']
-        if version.is_updated(server_version, version.__version__):
+        if version.is_updated(server_version, version.__version__) and self.check_notify(server_version):
             for asset in self._json['assets']:
                 if asset['name'].endswith(self.download_type):
                     self.download_name = asset['name']
@@ -83,3 +85,8 @@ class UpdateChecker(QObject):
                     self.update_available_signal.emit(server_version)
         else:
             self.no_update_signal.emit()
+
+    def check_notify(self, updated_version):
+        level = self.settings_manager.update_notification_level
+        update_type = version.update_type(updated_version)
+        return update_type > level
