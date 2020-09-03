@@ -1,4 +1,5 @@
 from sqlalchemy import event
+from sqlalchemy.ext import baked  # import so pyinstaller will pick up
 
 from ..scheduling.tasks import DownloadTask  # import here so the database table is created along with the others
 from .models import Post, Content
