@@ -1,5 +1,11 @@
 # Change Log
 
+## v3.1.1-beta
+
+### Bug Fixes
+* Fix crashing in database view dialog on some post items.
+* Fix settings migration issue
+
 ## v3.1.0-beta
 
 ### Minor Changes
