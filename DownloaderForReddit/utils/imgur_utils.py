@@ -79,12 +79,14 @@ def check_credits():
     }
     response = requests.get(url, headers=headers, timeout=10)
     if response.status_code != 200:
-        raise ImgurError(response.status_code)
-    result = response.json()
-    credits_data = result['data']
-    num_credits = min(credits_data['UserRemaining'], credits_data['ClientRemaining'])
-    credit_reset_time = credits_data['UserReset']
-    return num_credits
+        logger.error('Failed to check imgur credits, bad status code', extra={'status_code': response.status_code},
+                     exc_info=True)
+    else:
+        result = response.json()
+        credits_data = result['data']
+        num_credits = min(credits_data['UserRemaining'], credits_data['ClientRemaining'])
+        credit_reset_time = credits_data['UserReset']
+        return num_credits
 
 
 def get_link(json):
