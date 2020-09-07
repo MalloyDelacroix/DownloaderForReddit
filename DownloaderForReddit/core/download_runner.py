@@ -111,13 +111,13 @@ class DownloadRunner(QObject):
     def handle_invalid_reddit_object(self, reddit_object):
         self.logger.warning('Invalid reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                      'reddit_object': reddit_object.name})
-        Message.send_info(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_warning(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_invalid_object.emit(reddit_object.id)
 
     def handle_forbidden_reddit_object(self, reddit_object):
         self.logger.warning('Forbidden reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                        'reddit_object': reddit_object.name})
-        Message.send_info(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_warning(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_forbidden_object.emit(reddit_object.id)
 
     def handle_failed_connection(self):
