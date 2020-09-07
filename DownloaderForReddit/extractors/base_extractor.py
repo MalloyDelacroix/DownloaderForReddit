@@ -189,7 +189,7 @@ class BaseExtractor:
             base = self.settings_manager.user_save_directory
         else:
             base = self.settings_manager.subreddit_save_directory
-        clean_sub_path = system_util.clean_path(sub_path)
+        clean_sub_path = system_util.clean_path(sub_path, ends_with_dir=True)
         return system_util.join_path(base, clean_sub_path)
 
     def filter_content(self, url, extension):
