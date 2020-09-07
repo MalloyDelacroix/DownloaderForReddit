@@ -1,5 +1,13 @@
 # Change Log
 
+## v3.1.2-beta
+
+### Bug Fixes
+* Fix crashing when checking imgur credits with no valid imgur credentials.
+* Fix message level for invalid/forbidden users/subreddits.
+* Add progress bar handlers for comment extraction and download.
+* Fix comments not being downloaded for posts with very long titles.
+
 ## v3.1.1-beta
 
 ### Bug Fixes
