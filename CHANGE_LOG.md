@@ -1,12 +1,23 @@
 # Change Log
 
-## v3.1.2-beta
+## v3.2.0-beta
+
+### Minor Changes
+* New reddit galleries are now supported.
 
 ### Bug Fixes
 * Fix crashing when checking imgur credits with no valid imgur credentials.
+  * Fixes #133
 * Fix message level for invalid/forbidden users/subreddits.
 * Add progress bar handlers for comment extraction and download.
 * Fix comments not being downloaded for posts with very long titles.
+* Fix date limit display in user/subreddit settings dialog.
+  * Fixes 138.
+* Fix download problems with post titles containing "/" characters.
+* Fix crashing when searching user/subreddit list with no entries.
+* Fix crashing when initiating a download without a list set.
+* Fix errors in downloading and merging reddit video/audio files.
+  * Fixes #135.
 
 ## v3.1.1-beta
 
