@@ -92,6 +92,7 @@ def merge_videos():
 def clean_up(video_content, audio_content, session):
     content = Content(
         title=video_content.title.replace('(video)', ''),
+        download_title=video_content.download_title.replace('(video)', ''),
         extension='mp4',
         url=video_content.url,
         user=video_content.user,
