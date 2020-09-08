@@ -213,6 +213,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_spin_box(self.post_limit_spinbox, 'post_limit')
         self.sync_spin_box(self.score_limit_spinbox, 'post_score_limit')
         self.sync_combo(self.score_limit_operator_combo, 'post_score_limit_operator')
+        self.sync_date_limits()
         self.sync_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
         self.sync_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.sync_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')

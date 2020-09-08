@@ -53,7 +53,7 @@ class TestRedditVideoExtractor(ExtractorTest):
         vid_content = re.extracted_content[0]
         self.check(vid_content, fallback_url, post, title=f'{post.title}(video)')
         audio_content = re.extracted_content[1]
-        self.check(audio_content, f'{url}/audio', post, title=f'{post.title}(audio)')
+        self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
     @patch(f'{PATH}.get_host_vid')
@@ -85,7 +85,7 @@ class TestRedditVideoExtractor(ExtractorTest):
         vid_content = re.extracted_content[0]
         self.check(vid_content, fallback_url, post, title=f'{post.title}(video)')
         audio_content = re.extracted_content[1]
-        self.check(audio_content, f'{url}/audio', post, title=f'{post.title}(audio)')
+        self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
     @patch(f'{PATH}.get_audio_content')

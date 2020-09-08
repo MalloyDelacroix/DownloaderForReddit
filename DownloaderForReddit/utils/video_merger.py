@@ -74,7 +74,7 @@ def merge_videos():
                           (video_content.get_full_file_path(), audio_content.get_full_file_path(), output_path)
                     subprocess.call(cmd)
                     if injector.get_settings_manager().match_file_modified_to_post_date:
-                        system_util.set_file_modify_time(output_path, ms.date_modified)
+                        system_util.set_file_modify_time(output_path, ms.date_modified.timestamp())
                     clean_up(video_content, audio_content, session)
                 except:
                     failed_count += 1
@@ -92,6 +92,7 @@ def merge_videos():
 def clean_up(video_content, audio_content, session):
     content = Content(
         title=video_content.title.replace('(video)', ''),
+        download_title=video_content.download_title.replace('(video)', ''),
         extension='mp4',
         url=video_content.url,
         user=video_content.user,
@@ -107,7 +108,7 @@ def clean_up(video_content, audio_content, session):
     session.add(content)
     system_util.delete_file(video_content.get_full_file_path())
     system_util.delete_file(audio_content.get_full_file_path())
-    video_content.delete()
-    audio_content.delete()
+    session.delete(video_content)
+    session.delete(audio_content)
     session.commit()
 

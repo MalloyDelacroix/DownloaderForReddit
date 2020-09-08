@@ -492,6 +492,14 @@ class Post(BaseModel):
             return self.title
 
     @property
+    def sanitized_title(self):
+        return system_util.clean(self.title)
+
+    @property
+    def sanitized_short_title(self):
+        return system_util.clean(self.short_title)
+
+    @property
     def date_posted_display(self):
         return self.get_display_date(self.date_posted)
 

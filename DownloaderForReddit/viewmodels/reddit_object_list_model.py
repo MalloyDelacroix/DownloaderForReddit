@@ -48,10 +48,14 @@ class RedditObjectListModel(QAbstractListModel):
             return None
 
     def get_id_list(self, download_enabled=True):
-        if download_enabled:
-            return [x.id for x in self.reddit_objects if x.download_enabled]
-        else:
-            return [x.id for x in self.reddit_objects]
+        try:
+            if download_enabled:
+                return [x.id for x in self.reddit_objects if x.download_enabled]
+            else:
+                return [x.id for x in self.reddit_objects]
+        except TypeError:
+            # Indicates there is no list set for this model
+            return []
 
     def get_object(self, object_name):
         for ro in self.reddit_objects:
@@ -108,16 +112,19 @@ class RedditObjectListModel(QAbstractListModel):
             self.last_added = None
 
     def search_list(self, term):
-        f = RedditObjectFilter()
-        if term is not None and term != '':
-            self.reddit_objects = f.filter(self.session, ('name', 'like', term), query=self.list.reddit_objects,
-                                           order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.order_list_desc).all()
-        else:
-            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
-                                           order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.order_list_desc).all()
-        self.refresh()
+        try:
+            f = RedditObjectFilter()
+            if term is not None and term != '':
+                self.reddit_objects = f.filter(self.session, ('name', 'like', term), query=self.list.reddit_objects,
+                                               order_by=self.settings_manager.list_order_method,
+                                               desc=self.settings_manager.order_list_desc).all()
+            else:
+                self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
+                                               order_by=self.settings_manager.list_order_method,
+                                               desc=self.settings_manager.order_list_desc).all()
+            self.refresh()
+        except AttributeError:
+            pass
 
     def check_name(self, name):
         """

@@ -22,6 +22,7 @@ You should have received a copy of the GNU General Public License
 along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import re
 
 from .base_extractor import BaseExtractor
 from ..core.errors import Error
@@ -48,12 +49,12 @@ class RedditVideoExtractor(BaseExtractor):
         :return: The top level post which holds the video information to be downloaded if the supplied post is a
                  crosspost, otherwise None.
         """
-        r = reddit_utils.get_reddit_instance()
-        submission = r.submission(id=self.post.reddit_id)
+
         try:
-            return r.submission(submission.crosspost_parrent.split('_')[1])
+            r = reddit_utils.get_reddit_instance()
+            return r.submission(self.submission.crosspost_parrent.split('_')[1])
         except AttributeError:
-            return submission
+            return self.submission
 
     def get_vid_url(self):
         """
@@ -75,8 +76,8 @@ class RedditVideoExtractor(BaseExtractor):
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
                             merge_set = video_merger.MergeSet(
-                                video_id=video_content.get_full_file_path(),
-                                audio_id=audio_content.get_full_file_path(),
+                                video_id=video_content.id,
+                                audio_id=audio_content.id,
                                 date_modified=self.post.date_posted
                             )
                             video_merger.videos_to_merge.append(merge_set)
@@ -96,7 +97,6 @@ class RedditVideoExtractor(BaseExtractor):
 
     def get_audio_content(self):
         ext = 'mp3'
-        index = self.url.rfind('/')
-        url = self.url[:index] + '/audio'  # replace end of fallback url to target audio file
+        url = re.sub('DASH_[A-z 0-9]+', 'DASH_audio', self.url)
         content = self.make_content(url, ext, name_modifier='(audio)')
         return content

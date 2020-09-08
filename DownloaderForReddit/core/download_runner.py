@@ -111,13 +111,13 @@ class DownloadRunner(QObject):
     def handle_invalid_reddit_object(self, reddit_object):
         self.logger.warning('Invalid reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                      'reddit_object': reddit_object.name})
-        Message.send_info(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_warning(f'Invalid {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_invalid_object.emit(reddit_object.id)
 
     def handle_forbidden_reddit_object(self, reddit_object):
         self.logger.warning('Forbidden reddit object detected', extra={'object_type': reddit_object.object_type,
                                                                        'reddit_object': reddit_object.name})
-        Message.send_info(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
+        Message.send_warning(f'Forbidden {reddit_object.object_type.lower()}: {reddit_object.name}')
         self.remove_forbidden_object.emit(reddit_object.id)
 
     def handle_failed_connection(self):
@@ -181,6 +181,20 @@ class DownloadRunner(QObject):
             self.perpetuate_run()
         else:
             self.hold()
+
+    def log_download_settings(self):
+        self.logger.info('Download runner started.', extra={
+            'run_unextracted': self.run_unextracted,
+            'run_undownloaded': self.run_undownloaded,
+            'run_new': self.run_new,
+            'perpetual_download': self.perpetual_download,
+            'last_update': self.settings_manager.last_update,
+            'extraction_thread_count': self.settings_manager.extraction_thread_count,
+            'download_thread_count': self.settings_manager.download_thread_count,
+            'multi_part_threshold': self.settings_manager.multi_part_threshold,
+            'finish_incomplete_extractions': self.settings_manager.finish_incomplete_extractions_at_session_start,
+            'finish_incomplete_downloads': self.settings_manager.finish_incomplete_downloads_at_session_start,
+        })
 
     def create_download_session(self):
         with self.db.get_scoped_session() as session:

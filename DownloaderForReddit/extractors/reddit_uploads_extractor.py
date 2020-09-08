@@ -32,14 +32,16 @@ from ..core import const
 
 class RedditUploadsExtractor(BaseExtractor):
 
-    url_key = ['reddituploads', 'i.redd.it']
+    url_key = ['reddituploads', 'i.redd.it', 'reddit.com/gallery']
 
     def __init__(self, post, **kwargs):
         super().__init__(post, **kwargs)
 
     def extract_content(self):
         try:
-            if self.url.lower().endswith(const.ALL_EXT):
+            if 'gallery' in self.url:
+                self.extract_album()
+            elif self.url.lower().endswith(const.ALL_EXT):
                 self.extract_direct_link()
             else:
                 self.extract_single()
@@ -47,6 +49,22 @@ class RedditUploadsExtractor(BaseExtractor):
             message = 'Failed to locate content'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message,
                                        exc_info=True)
+
+    def extract_album(self):
+        try:
+            count = 1
+            for value in self.submission.media_metadata.values():
+                container = value['s']
+                url = container['u']
+                ext = url[url.rfind('.') + 1: url.rfind('?width')]
+                self.make_content(url, ext, count)
+                count += 1
+        except:
+            self.handle_failed_extract(
+                error=Error.FAILED_TO_EXTRACT,
+                message='Failed to extract images from reddit gallery',
+                log_exception=True,
+            )
 
     def extract_single(self):
         if not self.url.endswith(const.ALL_EXT):

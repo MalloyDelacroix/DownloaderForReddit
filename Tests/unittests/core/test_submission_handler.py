@@ -102,7 +102,7 @@ class TestSubmissionHandler(TestCase):
         self.handler.extract_link(url, extra_arg='extra')
 
         assign.assert_called_with(url)
-        extractor_class.assert_called_with(self.post, url=url, extra_arg='extra')
+        extractor_class.assert_called_with(self.post, url=url, submission=self.submission, extra_arg='extra')
         finish.assert_called_with(extractor, text_link_extraction=False)
 
     @patch(f'{PATH}.handle_unsupported_domain')

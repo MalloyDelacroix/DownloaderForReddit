@@ -60,22 +60,30 @@ def open_in_system(item):
         logger.error('Failed to open in system', extra={'item_url': item}, exc_info=True)
 
 
-def clean_path(path):
+def clean_path(path, ends_with_dir=False):
     """
     Cleans a path of all forbidden characters and shortens parts to a system appropriate length if they are too long.
     :param path: The path that is to be cleaned.
+    :param ends_with_dir: Indicates whether the supplied path ends with a directory.  Defaults to False because most
+                          most paths supplied with be a path to an actual file and the last part will be the name of
+                          the file.  If True, the last destination on the path will be treated as a directory and will
+                          not have the ellipsis appended to the end.
     :return:  A clean file path that can be used by the system.
     """
-    return '/'.join(clean(part) for part in re.split('[\\\\/]+', path))
+    parts = re.split('[\\\\/]+', path)
+    is_dir = ends_with_dir or parts[len(parts) - 1]
+    return '/'.join(clean(part, part != is_dir) for part in parts)
 
 
-def clean(part):
+def clean(part, directory=False):
     # For some reason the file system (Windows at least) is having trouble saving files that are over 180ish
     # characters.  I'm not sure why this is, as the file name limit should be around 240. But either way, this
     # method has been adapted to work with the results that I am consistently getting.
     clean_part = ''.join([x if x not in FORBIDDEN_CHARS else '#' for x in part])
     if len(clean_part) >= 176:
-        clean_part = clean_part[:170] + '...'
+        clean_part = clean_part[:170].strip()
+        if not directory:
+            clean_part += '...'
     return clean_part
 
 

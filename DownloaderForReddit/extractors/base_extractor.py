@@ -49,6 +49,7 @@ class BaseExtractor:
         self.settings_manager = injector.get_settings_manager()
         self.content_filter = ContentFilter()
         self.post = post
+        self.submission = kwargs.get('submission', None)
         self.comment = kwargs.get('comment', None)
         self.url = kwargs.get('url', post.url)
         self.user = kwargs.get('user', post.author)
@@ -189,7 +190,7 @@ class BaseExtractor:
             base = self.settings_manager.user_save_directory
         else:
             base = self.settings_manager.subreddit_save_directory
-        clean_sub_path = system_util.clean_path(sub_path)
+        clean_sub_path = system_util.clean_path(sub_path, ends_with_dir=True)
         return system_util.join_path(base, clean_sub_path)
 
     def filter_content(self, url, extension):

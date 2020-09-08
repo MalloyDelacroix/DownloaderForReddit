@@ -88,7 +88,7 @@ class SubmissionHandler(Runner):
     def extract_link(self, url, text_link_extraction=False, **kwargs):
         try:
             extractor_class = self.assign_extractor(url)
-            extractor = extractor_class(self.post, url=url, **kwargs)
+            extractor = extractor_class(self.post, url=url, submission=self.submission, **kwargs)
             self.finish_extractor(extractor, text_link_extraction=text_link_extraction)
         except Exception as e:
             self.handle_error(e)
