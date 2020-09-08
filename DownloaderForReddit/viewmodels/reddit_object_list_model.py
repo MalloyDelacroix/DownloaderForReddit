@@ -108,16 +108,19 @@ class RedditObjectListModel(QAbstractListModel):
             self.last_added = None
 
     def search_list(self, term):
-        f = RedditObjectFilter()
-        if term is not None and term != '':
-            self.reddit_objects = f.filter(self.session, ('name', 'like', term), query=self.list.reddit_objects,
-                                           order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.order_list_desc).all()
-        else:
-            self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
-                                           order_by=self.settings_manager.list_order_method,
-                                           desc=self.settings_manager.order_list_desc).all()
-        self.refresh()
+        try:
+            f = RedditObjectFilter()
+            if term is not None and term != '':
+                self.reddit_objects = f.filter(self.session, ('name', 'like', term), query=self.list.reddit_objects,
+                                               order_by=self.settings_manager.list_order_method,
+                                               desc=self.settings_manager.order_list_desc).all()
+            else:
+                self.reddit_objects = f.filter(self.session, query=self.list.reddit_objects,
+                                               order_by=self.settings_manager.list_order_method,
+                                               desc=self.settings_manager.order_list_desc).all()
+            self.refresh()
+        except AttributeError:
+            pass
 
     def check_name(self, name):
         """
