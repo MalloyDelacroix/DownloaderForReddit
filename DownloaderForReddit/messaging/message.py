@@ -71,4 +71,4 @@ class Message:
     @classmethod
     def send_download_error(cls, message: str):
         cls.send(MessageType.POTENTIAL_PROGRESS, priority=MessagePriority.ERROR)
-        cls.send(MessageType.DOWNLOAD_ERROR, message, MessagePriority.ERROR)
+        cls.send(MessageType.TEXT, message, MessagePriority.ERROR)
