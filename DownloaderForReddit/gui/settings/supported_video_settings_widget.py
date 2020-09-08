@@ -6,6 +6,7 @@ from PyQt5.QtGui import QColor
 
 from .abstract_settings_widget import AbstractSettingsWidget
 from DownloaderForReddit.core import const
+from DownloaderForReddit.gui import message_dialogs
 
 
 class SupportedVideoSettingsWidget(AbstractSettingsWidget):
@@ -80,12 +81,20 @@ class SupportedVideoSettingsWidget(AbstractSettingsWidget):
         setattr(item, 'site', site)
 
     def apply_settings(self):
-        with open(self.supported_sites_path, 'w') as file:
-            for site, checkbox in self.site_map.items():
-                if checkbox.isChecked():
-                    site = site + '*'
-                file.write(site + '\n')
-        self.settings.supported_videos_updated = time()
+        try:
+            with open(self.supported_sites_path, 'w') as file:
+                for site, checkbox in self.site_map.items():
+                    if checkbox.isChecked():
+                        site = site + '*'
+                    file.write(site + '\n')
+            self.settings.supported_videos_updated = time()
+        except PermissionError:
+            message_dialogs.error_dialog(
+                self,
+                'Permission Denied',
+                'Unable to save changes to supported video sites file.  Permission denied.\n\n'
+                'Please make sure you have write permission to the directory that the application files are located.'
+            )
 
     def search_sites(self, text):
         if text is not None and text != '':

@@ -166,3 +166,11 @@ def optional_question_dialog(parent, title, text, checkbox_text='Do not show aga
     dialog.setEscapeButton(Message.No)
     reply = dialog.exec_() == Message.Yes
     return reply, checkbox.isChecked()
+
+
+def error_dialog(parent, title, text):
+    dialog = Message(parent)
+    dialog.setWindowTitle(title)
+    dialog.setText(text)
+    reply = dialog.exec_()
+    return reply
