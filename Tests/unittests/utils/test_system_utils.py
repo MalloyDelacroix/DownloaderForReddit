@@ -25,6 +25,10 @@ class SystemUtilsTests(TestCase):
         file_name = 'This :?? is a.....file name'
         self.assertEqual('This ### is a#####file name', system_util.clean(file_name))
 
+    def test_clean_file_name_with_file_separator_characters(self):
+        file_name = 'This/is/a/file/name'
+        self.assertEqual('This#is#a#file#name', system_util.clean(file_name))
+
     def test_clean_directory_path(self):
         self.assertEqual(self.actual_dir_path + '...', system_util.clean_path(os.path.join(self.path, self.file_name)))
 

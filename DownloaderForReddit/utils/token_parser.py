@@ -7,15 +7,15 @@ class TokenParser:
     regex = '%\[(.*?)\]'
 
     token_dict = {
-        'title': lambda x: TokenParser.tokenize(x, 'title', 'post.title'),
-        'short_title': lambda x: TokenParser.tokenize(x, 'short_title', 'post.short_title'),
+        'title': lambda x: TokenParser.tokenize(x, 'sanitized_title', 'post.sanitized_title'),
+        'short_title': lambda x: TokenParser.tokenize(x, 'sanitized_short_title', 'post.sanitized_short_title'),
         'author_id': lambda x: TokenParser.tokenize(x, 'author.id', 'user.id'),
         'author_name': lambda x: TokenParser.tokenize(x, 'author.name', 'user.name', 'name'),
         'subreddit_id': lambda x: TokenParser.tokenize(x, 'subreddit.id'),
         'subreddit_name': lambda x: TokenParser.tokenize(x, 'subreddit.name', 'name'),
         'post_id': lambda x: TokenParser.tokenize(x, 'post.id', 'id'),
-        'post_title': lambda x: TokenParser.tokenize(x, 'post.title', 'title'),
-        'post_short_title': lambda x: TokenParser.tokenize(x, 'post.short_title', 'short_title'),
+        'post_title': lambda x: TokenParser.tokenize(x, 'post.sanitized_title', 'sanitized_title'),
+        'post_short_title': lambda x: TokenParser.tokenize(x, 'post.sanitized_short_title', 'sanitized_short_title'),
         'post_author_name': lambda x: TokenParser.tokenize(x, 'post.author.name', 'author.name'),
         'post_author_id': lambda x: TokenParser.tokenize(x, 'post.author.id', 'author.id'),
         'post_subreddit_name': lambda x: TokenParser.tokenize(x, 'post.subreddit.name', 'subreddit.name'),
