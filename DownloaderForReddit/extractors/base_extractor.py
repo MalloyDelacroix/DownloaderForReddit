@@ -49,6 +49,7 @@ class BaseExtractor:
         self.settings_manager = injector.get_settings_manager()
         self.content_filter = ContentFilter()
         self.post = post
+        self.submission = kwargs.get('submission', None)
         self.comment = kwargs.get('comment', None)
         self.url = kwargs.get('url', post.url)
         self.user = kwargs.get('user', post.author)
