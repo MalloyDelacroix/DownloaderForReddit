@@ -112,6 +112,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
                                           self.self_post_file_format_combo.currentData(Qt.UserRole)))
         self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
         self.setup_checkbox(self.download_images_checkbox, 'download_images')
+        self.setup_checkbox(self.download_gifs_checkbox, 'download_gifs')
         self.nsfw_filter_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('download_nsfw', self.nsfw_filter_combo.itemData(x))
         )
