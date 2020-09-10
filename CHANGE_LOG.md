@@ -1,5 +1,12 @@
 # Change Log
 
+## v3.2.1-beta
+
+### Bug Fixes
+* Fix some youtube videos not downloading correctly.
+* Fix error with some imgur links not extracting correctly.
+* Fix download gif checkbox not working.
+
 ## v3.2.0-beta
 
 ### Minor Changes

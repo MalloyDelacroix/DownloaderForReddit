@@ -41,8 +41,7 @@ class ImgurExtractor(BaseExtractor):
 
     def extract_content(self):
         """Dictates what type of page container a link is and then dictates which extraction method should be used"""
-        if '?' in self.url:
-            self.url = self.url.split('?')[0]
+        self.url = self.filter_url(self.url)
         try:
             if "/a/" in self.url:  # album extraction is tested for first because of incorrectly formatted urls
                 self.extract_album()
@@ -57,14 +56,25 @@ class ImgurExtractor(BaseExtractor):
         except Exception:
             message = 'Failed to extract content'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message,
-                                       extractor_error_message=message)
+                                       extractor_error_message=message, log_exception=True)
+
+    def filter_url(self, url):
+        """
+        Filter characters out of the supplied url that cause problems when trying to extract.
+        :param url: The url that is to be cleaned.
+        :return: The usable part of the supplied url if it contains certain characters or the whole url if it does not.
+        """
+        if '?' in url:
+            return url.split('?')[0]
+        if '#' in url:
+            return url.split('#')[0]
+        return url
 
     def extract_album(self):
         count = 1
         _, album_id = self.url.rsplit('/', 1)
         for url in imgur_utils.get_album_images(album_id):
-            if '?' in url:
-                url = url[:url.find('?')]
+            url = self.filter_url(url)
             _, extension = url.rsplit('.', 1)
             self.make_content(url, extension, count)
             count += 1
@@ -120,7 +130,8 @@ class ImgurExtractor(BaseExtractor):
         else:
             message = 'Imgur rate limit exceeded'
             error = Error.RATE_LIMIT_ERROR
-        self.handle_failed_extract(error=error, message=message, imgur_error_message='rate limit exceeded')
+        self.handle_failed_extract(error=error, message=message, imgur_error_message='rate limit exceeded',
+                                   log_exception=True)
 
     def no_credit_error(self):
         message = 'Not enough imgur credits to extract post'
