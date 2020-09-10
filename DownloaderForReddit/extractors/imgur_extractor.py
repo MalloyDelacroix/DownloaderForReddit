@@ -56,7 +56,7 @@ class ImgurExtractor(BaseExtractor):
         except Exception:
             message = 'Failed to extract content'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message,
-                                       extractor_error_message=message)
+                                       extractor_error_message=message, log_exception=True)
 
     def filter_url(self, url):
         """
@@ -130,7 +130,8 @@ class ImgurExtractor(BaseExtractor):
         else:
             message = 'Imgur rate limit exceeded'
             error = Error.RATE_LIMIT_ERROR
-        self.handle_failed_extract(error=error, message=message, imgur_error_message='rate limit exceeded')
+        self.handle_failed_extract(error=error, message=message, imgur_error_message='rate limit exceeded',
+                                   log_exception=True)
 
     def no_credit_error(self):
         message = 'Not enough imgur credits to extract post'
