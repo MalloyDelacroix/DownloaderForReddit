@@ -3,13 +3,16 @@ import requests
 import asyncio
 import logging
 
+from .runner import Runner, verify_run
+
 
 CHUNK_SIZE = 1024 * 1024
 
 
-class MultipartDownloader:
+class MultipartDownloader(Runner):
 
-    def __init__(self, executor):
+    def __init__(self, executor, stop_run):
+        super().__init__(stop_run)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.executor = executor
         self.part_count = 0
@@ -24,6 +27,7 @@ class MultipartDownloader:
         finally:
             loop.close()
 
+    @verify_run
     async def download(self, url, path, file_size):
         loop = asyncio.get_event_loop()
         chunks = range(0, file_size, CHUNK_SIZE)
@@ -52,10 +56,12 @@ class MultipartDownloader:
                     self.logger.error('Failed to join multi-download part into complete file',
                                       extra={'chunk_path': chunk_path}, exc_info=True)
 
+    @verify_run
     def download_part(self, url, start, end, path):
         retry = True
         tries = 0
 
+        @verify_run
         def download():
             headers = {'Range': f'bytes={start}-{end}'}
             response = requests.get(url, headers=headers, stream=True, timeout=10)
