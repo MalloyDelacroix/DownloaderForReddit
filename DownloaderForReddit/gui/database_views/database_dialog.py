@@ -1,5 +1,6 @@
 import logging
-from PyQt5.QtWidgets import (QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox)
+from PyQt5.QtWidgets import (QMenu, QActionGroup, QWidget, QInputDialog, QAbstractItemView, QWidgetAction, QCheckBox,
+                             QApplication)
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 from sqlalchemy import or_
@@ -600,6 +601,14 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         except:
             post = None
         open_post = menu.addAction('Visit Post', lambda: general_utils.open_post_in_browser(post))
+
+        copy_menu = menu.addMenu('Copy To Clipboard')
+        copy_menu.addAction('Title', lambda: self.copy_to_clipboard(post.title))
+        copy_menu.addAction('Url', lambda: self.copy_to_clipboard(post.url))
+        copy_menu.addAction('Domain', lambda: self.copy_to_clipboard(post.domain))
+        copy_menu.addAction('Author', lambda: self.copy_to_clipboard(post.author.name))
+        copy_menu.addAction('Subreddit', lambda: self.copy_to_clipboard(post.subreddit.name))
+
         menu.addSeparator()
         update_score = menu.addAction('Update Score', self.update_post_scores)
         update_comments = menu.addAction('Fetch New Comments', self.update_post_comments)
@@ -613,6 +622,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         update_score.setDisabled(post is None)
         update_comments.setDisabled(post is None)
         menu.exec_(QCursor.pos())
+
+    def copy_to_clipboard(self, text):
+        cb = QApplication.clipboard()
+        cb.clear(mode=cb.Clipboard)
+        cb.setText(text)
 
     def update_post_scores(self):
         self.update_post_score_signal.emit(self.current_post_id)
