@@ -61,7 +61,6 @@ class MultipartDownloader(Runner):
         retry = True
         tries = 0
 
-        @verify_run
         def download():
             headers = {'Range': f'bytes={start}-{end}'}
             response = requests.get(url, headers=headers, stream=True, timeout=10)
@@ -75,7 +74,7 @@ class MultipartDownloader(Runner):
                                     extra={'status_code': response.status_code}, exc_info=False)
                 return False
 
-        while retry and tries < 3:
+        while self.continue_run and retry and tries < 3:
             tries += 1
             try:
                 success = download()
