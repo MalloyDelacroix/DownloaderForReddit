@@ -76,8 +76,11 @@ class SubmittableCreator:
     @classmethod
     def get_author(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
-            author = cls.db.get_or_create(User, name=praw_object.author.name,
-                                          date_created=cls.get_created(praw_object.author), session=session)[0]
+            defaults = {}
+            date_created = cls.get_created(praw_object.author)
+            if date_created is not None:
+                defaults = {'date_created': date_created, 'active': False, 'inactive_date': datetime.now()}
+            author = cls.db.get_or_create(User, name=praw_object.author.name, defaults=defaults, session=session)[0]
         except AttributeError:
             author = cls.db.get_or_create(User, name='deleted', session=session)[0]
         return author
@@ -85,8 +88,11 @@ class SubmittableCreator:
     @classmethod
     def get_subreddit(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
-            subreddit = cls.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name,
-                                             date_created=cls.get_created(praw_object.subreddit),
+            defaults = {}
+            date_created = cls.get_created(praw_object.subreddit)
+            if date_created is None:
+                defaults = {'date_created': date_created, 'active': False, 'inactive_date': datetime.now()}
+            subreddit = cls.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name, defaults=defaults,
                                              session=session)[0]
         except AttributeError:
             subreddit = cls.db.get_or_create(Subreddit, name='deleted', session=session)[0]
@@ -98,3 +104,4 @@ class SubmittableCreator:
             return datetime.fromtimestamp(praw_object.created)
         except:
             cls.logger.error('Failed to get creation date for reddit object', exc_info=True)
+            return None
