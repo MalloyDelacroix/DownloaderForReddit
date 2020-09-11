@@ -123,9 +123,9 @@ class SubmissionHandler(Runner):
         return None
 
     def handle_error(self, exception):
-        if type(exception) == TypeError:
+        if isinstance(exception, TypeError):
             self.handle_unsupported_domain()
-        if type(exception) == ConnectionError:
+        elif isinstance(exception, ConnectionError):
             self.handle_connection_error()
         else:
             self.handle_unknown_error()
