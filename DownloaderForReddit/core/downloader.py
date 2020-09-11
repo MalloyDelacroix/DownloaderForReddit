@@ -81,7 +81,7 @@ class Downloader(Runner):
                     self.check_file_path(content)
                     file_path = content.get_full_file_path()
                     if file_size > self.settings_manager.multi_part_threshold:
-                        multi_part_downloader = MultipartDownloader(self.executor)
+                        multi_part_downloader = MultipartDownloader(self.executor, self.stop_run)
                         multi_part_downloader.run(content.url, file_path, file_size)
                         self.finish_multi_part_download(content, multi_part_downloader)
                     else:
