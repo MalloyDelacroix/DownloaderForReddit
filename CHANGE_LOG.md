@@ -1,5 +1,11 @@
 # Change Log
 
+## v3.2.2-beta
+
+### Bug Fixes
+* Make multi-part downloader stoppable with rest of download cycle.
+* Fix content not downloading correctly when the author's account has been deleted or suspended.
+
 ## v3.2.1-beta
 
 ### Bug Fixes
