@@ -103,5 +103,4 @@ class SubmittableCreator:
         try:
             return datetime.fromtimestamp(praw_object.created)
         except:
-            cls.logger.error('Failed to get creation date for reddit object', exc_info=True)
             return None
