@@ -137,7 +137,7 @@ class RedditObjectListModel(QAbstractListModel):
         ro = self.session.query(RedditObject).filter(func.lower(RedditObject.name) == func.lower(name)).scalar()
         return ro in self.reddit_objects
 
-    def delete_reddit_object(self, reddit_object):
+    def remove_reddit_object(self, reddit_object):
         self.list.reddit_objects.remove(reddit_object)
         self.session.commit()
         self.update_row_count(self.row_count - 1)
@@ -333,6 +333,16 @@ class RedditObjectListModel(QAbstractListModel):
         except AttributeError:
             # AttributeError here indicates that the list model is not currently being used
             pass
+
+    def close_session(self):
+        name = self.list.name
+        self.session.close()
+        return name
+
+    def open_session(self, list_name=None):
+        self.session = self.db.get_session()
+        if list_name is not None:
+            self.set_list(list_name)
 
 
 class ObjectValidator(QObject):

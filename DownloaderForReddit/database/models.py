@@ -331,6 +331,15 @@ class RedditObject(BaseModel):
         self.download_enabled = not self.download_enabled
         self.get_session().commit()
 
+    def get_stats(self):
+        session = self.get_session()
+        return {
+            'lists': session.query(ListAssociation).filter(ListAssociation.reddit_object_id == self.id).count(),
+            'posts': self.post_count,
+            'content': self.content_count,
+            'comments': self.comment_count
+        }
+
 
 class User(RedditObject):
 

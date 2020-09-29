@@ -51,7 +51,7 @@ def no_reddit_object_selected(parent, type):
 
 
 def remove_reddit_object(parent, name):
-    text = f'Are you sure you sure you want to remove {name} from this list?  {name} will remain in the database ' \
+    text = f'Are you sure you want to remove {name} from this list?  {name} will remain in the database ' \
            f'all associated information'
     return optional_question_dialog(parent, f'Remove {name}?', text)
 
@@ -152,6 +152,17 @@ def optional_info_dialog(parent, title, text):
     dialog.setCheckBox(checkbox)
     reply = dialog.exec_()
     return checkbox.isChecked()
+
+
+def warning_question_dialog(parent, title, text):
+    dialog = Message(parent)
+    dialog.setIcon(Message.Warning)
+    dialog.setWindowTitle(title)
+    dialog.setText(text + '\n')
+    dialog.setStandardButtons(Message.Yes | Message.No)
+    dialog.setDefaultButton(Message.No)
+    reply = dialog.exec_() == Message.Yes
+    return reply
 
 
 def optional_question_dialog(parent, title, text, checkbox_text='Do not show again'):

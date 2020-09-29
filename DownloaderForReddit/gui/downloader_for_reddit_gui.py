@@ -24,7 +24,6 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
-import sys
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QFileDialog, QMessageBox, QWidget, QHBoxLayout)
@@ -49,6 +48,7 @@ from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
 from ..database.models import RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
+from ..database.model_manager import ModelManger
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
@@ -365,6 +365,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addSeparator()
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
         remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
+        menu.addSeparator()
+        delete_object = menu.addAction(f'Delete {object_type.title()}', lambda: self.delete_reddit_object(ros[0]))
         menu.addSeparator()
         disable_enable_download_option = True
         if all(x.download_enabled == enabled for x in ros):
@@ -798,8 +800,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def remove_reddit_object(self, reddit_object, list_model):
         """
-        Removes the reddit object at the supplied index from the supplied list_model.
-        :param reddit_object: The index of the reddit object to be removed.
+        Removes the supplied reddit object from the supplied list_model.
+        :param reddit_object: The reddit object to be removed.
         :param list_model: The list model that the reddit object is to be removed from.
         :type reddit_object: RedditObject
         :type list_model: ListModel
@@ -810,7 +812,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                 remove, warn = message_dialogs.remove_reddit_object(self, reddit_object.name)
                 self.settings_manager.remove_reddit_object_warning = not warn
             if remove:
-                list_model.delete_reddit_object(reddit_object)
+                list_model.remove_reddit_object(reddit_object)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             message_dialogs.no_reddit_object_selected(self, list_model.list_type)
@@ -865,6 +867,26 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
                                                                  'folder_rename': rename_message,
                                                                  'removal_reason': reason})
+
+    def delete_reddit_object(self, reddit_object):
+        try:
+            stats = reddit_object.get_stats()
+            text = f'Are you sure you want to delete this user from the database?\n' \
+                   f'{reddit_object.name} will be removed from {stats["lists"]} lists and\n' \
+                   f'{stats["posts"]} posts\n' \
+                   f'{stats["content"]} content items\n' \
+                   f'{stats["comments"]} comments\n' \
+                   f'will also be deleted from the database.  This action is not reversible.\n\n' \
+                   f'Do you want to proceed?'
+            remove = message_dialogs.warning_question_dialog(self, f'Delete {reddit_object.name}?', text)
+            if remove:
+                list_model = self.user_list_model if reddit_object.object_type == 'USER' else self.subreddit_list_model
+                list_name = list_model.close_session()
+                ModelManger.delete_reddit_object(reddit_object)
+                list_model.open_session(list_name=list_name)
+        except:
+            self.logger.error('Failed to delete reddit object', extra={'reddit_object': reddit_object.name},
+                              exc_info=True)
 
     def add_subreddit(self):
         if self.subreddit_list_model.list is None:
