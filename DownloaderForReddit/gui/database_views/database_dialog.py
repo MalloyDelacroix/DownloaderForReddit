@@ -9,6 +9,7 @@ from DownloaderForReddit.guiresources.database_views.database_dialog_auto import
 from DownloaderForReddit.database.models import DownloadSession, RedditObject, Post, Content, Comment
 from DownloaderForReddit.database.filters import (DownloadSessionFilter, RedditObjectFilter, PostFilter, CommentFilter,
                                                   ContentFilter)
+from DownloaderForReddit.database.model_manager import ModelManger
 from DownloaderForReddit.viewmodels.database_view_models import (DownloadSessionModel, RedditObjectModel,
                                                                  PostTableModel, ContentListModel, CommentTreeModel)
 from DownloaderForReddit.gui.blank_dialog import BlankDialog
@@ -564,6 +565,11 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.addSeparator()
         export_ro = menu.addAction('Export', self.export_reddit_object)
         menu.addSeparator()
+        delete_menu = menu.addMenu('Delete Selected')
+        delete_menu.addAction('Reddit Objects', lambda: self.delete_selected_reddit_objects(delete_files=False))
+        delete_menu.addAction('Reddit Objects and Content Files',
+                              lambda: self.delete_selected_reddit_objects(delete_files=True))
+        menu.addSeparator()
         menu.addAction('Select All', lambda: self.reddit_object_list_view.selectAll())
 
         if ro is None:
@@ -594,6 +600,13 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         wizard = ExportWizard(self.current_reddit_object, RedditObject)
         wizard.exec_()
 
+    def delete_selected_reddit_objects(self, delete_files=False):
+        reddit_objects = self.reddit_object_model.get_items(self.reddit_object_list_view.selectedIndexes())
+        for ro in reddit_objects:
+            ModelManger.delete_reddit_object(ro, session=self.session, delete_files=delete_files)
+        self.reddit_object_model.remove_items(reddit_objects)
+        self.cascade_setup()
+
     def post_view_context_menu(self):
         menu = QMenu()
         try:
@@ -615,6 +628,10 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         menu.addSeparator()
         export_all = menu.addAction('Export All Posts', self.export_all_posts)
         export_selected = menu.addAction('Export Selected Posts', self.export_selected_posts)
+        menu.addSeparator()
+        delete_menu = menu.addMenu('Delete Selected')
+        delete_menu.addAction('Posts', lambda: self.delete_selected_posts(delete_files=False))
+        delete_menu.addAction('Posts and Files', lambda: self.delete_selected_posts(delete_files=True))
         menu.addSeparator()
         menu.addAction('Select All', lambda: self.post_table_view.selectAll())
 
@@ -640,6 +657,13 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def export_selected_posts(self):
         selected_indices = self.post_table_view.selectedIndexes()
         self.export_posts(self.post_model.get_items(selected_indices))
+
+    def delete_selected_posts(self, delete_files):
+        selected_posts = self.post_model.get_items(self.post_table_view.selectedIndexes())
+        for post in selected_posts:
+            ModelManger.delete_post(post, session=self.session, delete_files=delete_files)
+        self.post_model.remove_items(selected_posts)
+        self.cascade_setup()
 
     def export_posts(self, post_list):
         wizard = ExportWizard(post_list, Post)
@@ -713,6 +737,16 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         export_all = menu.addAction('Export All', self.export_all_content)
         export_selected = menu.addAction('Export Selected', self.export_selected_content)
         menu.addSeparator()
+        delete_menu = menu.addMenu('Delete Selected')
+        delete_menu.addAction('Content Only',
+                              lambda: self.delete_selected_content(delete_post=False, delete_file=False))
+        delete_menu.addAction('Content with Post',
+                              lambda: self.delete_selected_content(delete_post=True, delete_file=False))
+        delete_menu.addAction('Content with File',
+                              lambda: self.delete_selected_content(delete_post=False, delete_file=True))
+        delete_menu.addAction('Content with Post and File',
+                              lambda: self.delete_selected_content(delete_post=True, delete_file=True))
+        menu.addSeparator()
 
         icon_menu = QMenu('Icon Size')
         action_group = QActionGroup(self)
@@ -751,8 +785,26 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         wizard = ExportWizard(content_list, Content)
         wizard.exec_()
 
+    def delete_selected_content(self, delete_post, delete_file):
+        content_list = self.content_model.get_items(self.content_list_view.selectedIndexes())
+        for content in content_list:
+            ModelManger.delete_content(content, session=self.session, delete_post=delete_post,
+                                       delete_file=delete_file)
+        self.content_model.remove_items(content_list)
+        self.cascade_setup()
+
     def comment_view_context_menu(self):
         menu = QMenu()
+        delete_menu = menu.addMenu('Delete Selected')
+        delete_menu.addAction('Comments Only',
+                              lambda: self.delete_selected_comments(delete_posts=False, delete_files=False))
+        delete_menu.addAction('Comments with Posts',
+                              lambda: self.delete_selected_comments(delete_posts=True, delete_files=False))
+        delete_menu.addAction('Comments with Files',
+                              lambda: self.delete_selected_comments(delete_posts=False, delete_files=True))
+        delete_menu.addAction('Comments with Posts and Files',
+                              lambda: self.delete_selected_comments(delete_posts=True, delete_files=True))
+        menu.addSeparator()
         menu.addAction('Select All', lambda: self.comment_tree_view.selectAll())
         menu.addSeparator()
 
@@ -768,6 +820,14 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
     def export_comments(self, comment_list):
         wizard = ExportWizard(comment_list, Comment)
         wizard.exec_()
+
+    def delete_selected_comments(self, delete_posts, delete_files):
+        comments = self.comment_tree_model.get_items(self.comment_tree_view.selectedIndexes())
+        for comment in comments:
+            ModelManger.delete_comment(comment, session=self.session, delete_post=delete_posts,
+                                       delete_files=delete_files)
+        self.comment_tree_model.remove_items(comments)
+        self.cascade_setup()
 
     def comment_header_context_menu(self):
         """

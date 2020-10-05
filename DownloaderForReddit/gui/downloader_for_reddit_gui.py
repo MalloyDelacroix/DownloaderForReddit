@@ -366,7 +366,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
         remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
         menu.addSeparator()
-        delete_object = menu.addAction(f'Delete {object_type.title()}', lambda: self.delete_reddit_object(ros[0]))
+        delete_menu = menu.addMenu(f'Delete {object_type.title()}')
+        delete_menu.addAction(f'Delete {object_type.title()}',
+                              lambda: self.delete_reddit_object(ros[0], delete_files=False))
+        delete_menu.addAction(f'Delete {object_type.title()} with Files',
+                              lambda: self.delete_reddit_object(ros[0], delete_files=True))
         menu.addSeparator()
         disable_enable_download_option = True
         if all(x.download_enabled == enabled for x in ros):
@@ -868,7 +872,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                                                                  'folder_rename': rename_message,
                                                                  'removal_reason': reason})
 
-    def delete_reddit_object(self, reddit_object):
+    def delete_reddit_object(self, reddit_object, delete_files):
         try:
             stats = reddit_object.get_stats()
             text = f'Are you sure you want to delete this user from the database?\n' \
@@ -882,7 +886,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             if remove:
                 list_model = self.user_list_model if reddit_object.object_type == 'USER' else self.subreddit_list_model
                 list_name = list_model.close_session()
-                ModelManger.delete_reddit_object(reddit_object)
+                ModelManger.delete_reddit_object(reddit_object, delete_files=delete_files)
                 list_model.open_session(list_name=list_name)
         except:
             self.logger.error('Failed to delete reddit object', extra={'reddit_object': reddit_object.name},
