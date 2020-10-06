@@ -96,6 +96,8 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
         for ro in imported_objects:
             v_set = name_checker.check_reddit_object_name(ro.name)
             if v_set.valid:
+                ro.name = v_set.name
+                ro.date_created = v_set.date_created
                 self.imported.append(ro)
                 self.multi_object_list_widget.addItem(ro.name)
         self.validation_finished.emit()
