@@ -197,8 +197,11 @@ class RedditObjectListModel(QAbstractListModel):
         self.sort_list()
 
     def add_complete_reddit_object(self, reddit_object):
-        self.insertRow(reddit_object)
-        self.sort_list()
+        reddit_object, created = self.db.get_or_create(type(reddit_object), session=self.session,
+                                                       name=reddit_object.name)
+        if reddit_object.id not in self.get_id_list(download_enabled=False):
+            self.insertRow(reddit_object)
+            self.sort_list()
 
     def finish_adding(self):
         self.finished_add.emit()
