@@ -26,11 +26,12 @@ import json
 import logging
 from datetime import datetime
 
+from . import legacy_import
 from DownloaderForReddit.database.models import User, Subreddit
 from DownloaderForReddit.database.model_enums import (LimitOperator, PostSortMethod, NsfwFilter, CommentDownload,
                                                       CommentSortMethod)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
 
 
 EXPELLED_KEYS = ['lists', 'posts', 'content', 'comments']
@@ -55,34 +56,45 @@ def import_json(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         j = json.load(file)
         try:
-            reddit_object_data = _get_reddit_objects(j)
-            objects_imported = 0
-            for ro_element in reddit_object_data:
-                model = User if ro_element['object_type'] == 'USER' else Subreddit
-                _clean_ro_element(ro_element)
-                reddit_object = model(**ro_element)
-                objects_imported += 1
-                reddit_objects.append(reddit_object)
+            reddit_objects = import_reddit_objects(j)
             logger.info('Imported reddit objects from json file', extra={'file_path': file_path,
-                                                                         'import_count': objects_imported})
+                                                                         'import_count': len(reddit_objects)})
         except KeyError:
             pass
     return reddit_objects
 
 
-def _get_reddit_objects(json_element):
-    try:
-        ros = json_element['reddit_objects']
-    except KeyError:
+def import_reddit_objects(json_element):
+    new_ros = json_element.get('reddit_objects', None)
+    ro_lists = json_element.get('reddit_object_lists', None)
+    legacy_ros = json_element.get('object_list', None)
+    if new_ros is not None:
+        return _get_reddit_objects(new_ros)
+    elif ro_lists is not None:
         ros = []
-        for ro_list in json_element['reddit_object_lists']:
+        for ro_list in ro_lists:
             ros.extend(ro_list['reddit_objects'])
-    return ros
+        return _get_reddit_objects(ros)
+    else:
+        return legacy_import.import_legacy(legacy_ros)
+
+
+def _get_reddit_objects(ro_data):
+    reddit_objects = []
+    for ro in ro_data:
+        model = User if ro['object_type'] == 'USER' else Subreddit
+        _clean_ro_element(ro)
+        reddit_object = model(**ro)
+        reddit_objects.append(reddit_object)
+    return reddit_objects
 
 
 def _clean_ro_element(ro_element):
     for key in EXPELLED_KEYS:
-        del ro_element[key]
+        try:
+            del ro_element[key]
+        except KeyError:
+            pass
     for key, value in ro_element.items():
         try:
             ro_element[key] = TYPE_MAP[key](value)
