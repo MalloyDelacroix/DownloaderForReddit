@@ -19,6 +19,7 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.size_map = {x: 1024**count for count, x in enumerate(['Bytes', 'KB', 'MB', 'GB'])}
         for key, value in self.size_map.items():
             self.threshold_size_combo.addItem(key, value)
+            self.chunk_size_combo.addItem(key, value)
         self.select_user_base_directory_button.clicked.connect(
             lambda: self.select_directory_path(self.user_save_dir_line_edit))
         self.select_subreddit_base_directory_button.clicked.connect(
