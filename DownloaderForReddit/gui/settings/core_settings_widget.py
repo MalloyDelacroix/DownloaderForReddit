@@ -42,7 +42,9 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.finish_incomplete_downloads_checkbox.setChecked(
             self.settings.finish_incomplete_downloads_at_session_start)
         self.download_reddit_hosted_videos_checkbox.setChecked(self.settings.download_reddit_hosted_videos)
+        self.multi_part_download_groupbox.setChecked(self.settings.use_multi_part_downloader)
         self.set_threshold_size(self.settings.multi_part_threshold)
+        self.multi_part_thread_count_spinbox.setValue(self.settings.multi_part_thread_count)
 
     def set_threshold_size(self, size):
         for key, value in sorted(self.size_map.items(), key=lambda x: x[1], reverse=True):
@@ -65,9 +67,11 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.settings.finish_incomplete_downloads_at_session_start = \
             self.finish_incomplete_downloads_checkbox.isChecked()
         self.settings.download_reddit_hosted_videos = self.download_reddit_hosted_videos_checkbox.isChecked()
+        self.settings.use_multi_part_downloader = self.multi_part_download_groupbox.isChecked()
         threshold_size = \
             int(self.multipart_threshold_spinbox.value() * self.threshold_size_combo.currentData(Qt.UserRole))
         self.settings.multi_part_threshold = threshold_size
+        self.settings.multi_part_thread_count = self.multi_part_thread_count_spinbox.value()
 
     def select_directory_path(self, line_edit):
         text = line_edit.text()
