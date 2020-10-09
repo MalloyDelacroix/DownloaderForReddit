@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>906</width>
-    <height>721</height>
+    <height>760</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -353,6 +353,49 @@
            </item>
            <item>
             <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <widget class="QLabel" name="label_13">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The size threshold at which a file is downloaded in parts in multiple threads.  Carefully adjust this number as there is a definite point of diminishing returns depending on your internet connection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Multi-part download chunk size:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="multi_part_chunk_size_spinbox">
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximum">
+              <double>10000000000.989999771118164</double>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="chunk_size_combo"/>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>

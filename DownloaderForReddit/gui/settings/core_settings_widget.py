@@ -43,15 +43,18 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             self.settings.finish_incomplete_downloads_at_session_start)
         self.download_reddit_hosted_videos_checkbox.setChecked(self.settings.download_reddit_hosted_videos)
         self.multi_part_download_groupbox.setChecked(self.settings.use_multi_part_downloader)
-        self.set_threshold_size(self.settings.multi_part_threshold)
+        self.set_size_options(self.settings.multi_part_threshold, self.threshold_size_combo,
+                              self.multipart_threshold_spinbox)
+        self.set_size_options(self.settings.multi_part_chunk_size, self.chunk_size_combo,
+                              self.multi_part_chunk_size_spinbox)
         self.multi_part_thread_count_spinbox.setValue(self.settings.multi_part_thread_count)
 
-    def set_threshold_size(self, size):
+    def set_size_options(self, size, combo, spinbox):
         for key, value in sorted(self.size_map.items(), key=lambda x: x[1], reverse=True):
             if round(size / value, 2) > 0:
-                self.threshold_size_combo.setCurrentText(key)
+                combo.setCurrentText(key)
                 break
-        self.multipart_threshold_spinbox.setValue(round(size / value, 2))
+        spinbox.setValue(round(size / value, 2))
 
     def apply_settings(self):
         self.settings.user_save_directory = self.user_save_dir_line_edit.text()
