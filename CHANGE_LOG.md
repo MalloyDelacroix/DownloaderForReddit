@@ -7,6 +7,7 @@
 associated files.
 * Json imports now support legacy export files from previous versions.
 * More aspects of multi-part download option is now user controllable.
+* Improve user/subreddit date limit controls
 
 ### Bug Fixes
 * Make multi-part downloader stoppable with rest of download cycle.
