@@ -1,5 +1,5 @@
 from datetime import datetime
-from PyQt5.QtWidgets import QWidget, QMenu
+from PyQt5.QtWidgets import QWidget, QMenu, QButtonGroup
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 
@@ -7,6 +7,7 @@ from ...guiresources.widgets.object_settings_widget_auto import Ui_ObjectSetting
 from ...database.models import User, Subreddit, Post
 from ...database.model_enums import *
 from ...utils import TokenParser
+from ...core import const
 
 
 class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
@@ -36,6 +37,14 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             subreddit=self.subreddit,
             score=2573
         )
+
+        date_limit_group = QButtonGroup(self)
+        date_limit_group.addButton(self.absolute_date_limit_radio)
+        date_limit_group.addButton(self.custom_date_limit_radio)
+
+        date_lock_group = QButtonGroup(self)
+        date_lock_group.addButton(self.update_custom_date_limit_radio)
+        date_lock_group.addButton(self.do_not_update_custom_date_limit_radio)
 
     def set_objects(self, object_list):
         if object_list:
@@ -102,8 +111,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.score_limit_operator_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('post_score_limit_operator', self.score_limit_operator_combo.itemData(x))
         )
-        self.date_limit_checkbox.stateChanged.connect(self.date_limit_checkbox_toggled)
-        self.date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
+        self.limit_date_checkbox.stateChanged.connect(self.limit_date_checkbox_toggled)
+        self.custom_date_limit_radio.toggled.connect(self.custom_date_limit_toggled)
+        self.custom_date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
+        self.update_custom_date_limit_radio.toggled.connect(lambda x: self.set_object_value('update_date_limit', x))
         self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
         self.setup_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.setup_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
@@ -161,16 +172,30 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
     def setup_checkbox(self, checkbox, attribute):
         checkbox.stateChanged.connect(lambda: self.set_object_value(attribute, checkbox.isChecked()))
 
-    def date_limit_checkbox_toggled(self):
-        checked = self.date_limit_checkbox.isChecked()
-        self.date_limit_edit.setDisabled(not checked)
+    def limit_date_checkbox_toggled(self):
+        checked = self.limit_date_checkbox.isChecked()
+        self.absolute_date_limit_radio.setEnabled(checked)
+        self.custom_date_limit_radio.setEnabled(checked)
+        self.custom_date_limit_edit.setEnabled(checked)
+        self.update_custom_date_limit_radio.setEnabled(checked)
+        self.do_not_update_custom_date_limit_radio.setEnabled(checked)
+        if not checked:
+            self.set_object_value('date_limit', datetime.fromtimestamp(const.FIRST_POST_EPOCH - 2000))
+        else:
+            self.custom_date_limit_edit.setDateTime(datetime.fromtimestamp(const.FIRST_POST_EPOCH))
+
+    def custom_date_limit_toggled(self):
+        checked = self.custom_date_limit_radio.isChecked() and self.limit_date_checkbox.isChecked()
+        self.custom_date_limit_edit.setEnabled(checked)
+        self.update_custom_date_limit_radio.setEnabled(checked)
+        self.do_not_update_custom_date_limit_radio.setEnabled(checked)
         if checked:
             self.set_date_limit_from_edit()
         else:
             self.set_object_value('date_limit', None)
 
     def set_date_limit_from_edit(self):
-        epoch = self.date_limit_edit.dateTime().toSecsSinceEpoch()
+        epoch = self.custom_date_limit_edit.dateTime().toSecsSinceEpoch()
         self.set_object_value('date_limit', datetime.fromtimestamp(epoch))
 
     def set_object_value(self, attr, value):
@@ -297,26 +322,32 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
     def sync_date_limits(self):
         date_limit = getattr(self.selected_objects[0], 'date_limit')
         if all(getattr(x, 'date_limit') == date_limit for x in self.selected_objects):
-            self.date_limit_checkbox.setChecked(date_limit is not None)
-            self.date_limit_edit.setDisabled(date_limit is None)
             if date_limit is not None:
-                self.date_limit_edit.setDateTime(date_limit)
+                if date_limit.timestamp() < const.FIRST_POST_EPOCH:
+                    self.limit_date_checkbox.setChecked(False)
+                else:
+                    self.limit_date_checkbox.setChecked(True)
+                    self.custom_date_limit_radio.setChecked(True)
+                    self.custom_date_limit_edit.setDateTime(date_limit)
             else:
-                self.set_absolute_date_limit()
-        else:
-            self.date_limit_checkbox.setChecked(False)
-            self.date_limit_edit.setDisabled(False)
-            self.date_limit_edit.lineEdit().setText('-')
+                self.limit_date_checkbox.setChecked(True)
+                self.absolute_date_limit_radio.setChecked(True)
+                self.custom_date_limit_edit.setDisabled(True)
+                self.update_custom_date_limit_radio.setDisabled(True)
+                self.do_not_update_custom_date_limit_radio.setDisabled(True)
 
-    def set_absolute_date_limit(self):
-        try:
-            absolute_date_limit = getattr(self.selected_objects[0], 'absolute_date_limit')
-            if all(getattr(x, 'absolute_date_limit') == absolute_date_limit for x in self.selected_objects):
-                self.date_limit_edit.setDateTime(absolute_date_limit)
+        abs_date_limit = getattr(self.selected_objects[0], 'absolute_date_limit')
+        if all(getattr(x, 'absolute_date_limit') == abs_date_limit for x in self.selected_objects):
+            self.absolute_date_limit_label.setText(self.selected_objects[0].absolute_date_limit_display)
+        else:
+            self.absolute_date_limit_label.setText('---')
+
+        update_limit = getattr(self.selected_objects[0], 'update_date_limit')
+        if all(getattr(x, 'update_date_limit') == update_limit for x in self.selected_objects):
+            if update_limit:
+                self.update_custom_date_limit_radio.setChecked(True)
             else:
-                self.date_limit_edit.lineEdit().setText('-')
-            visible = True
-        except TypeError:
-            visible = False
-        self.date_limit_edit.setVisible(visible)
-        self.date_limit_checkbox.setVisible(visible)
+                self.do_not_update_custom_date_limit_radio.setChecked(True)
+        else:
+            self.update_custom_date_limit_radio.setChecked(False)
+            self.do_not_update_custom_date_limit_radio.setChecked(False)

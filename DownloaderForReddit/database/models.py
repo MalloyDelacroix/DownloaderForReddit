@@ -211,6 +211,7 @@ class RedditObject(BaseModel):
     lock_settings = Column(Boolean, default=False)
     absolute_date_limit = Column(DateTime, default=datetime.fromtimestamp(const.FIRST_POST_EPOCH))
     date_limit = Column(DateTime, nullable=True)
+    update_date_limit = Column(Boolean, default=True)
     download_enabled = Column(Boolean, default=True)
     significant = Column(Boolean, default=False)
     active = Column(Boolean, default=True)
@@ -316,7 +317,7 @@ class RedditObject(BaseModel):
         date_limit_epoch = self.absolute_date_limit.timestamp()
         if epoch > date_limit_epoch:
             self.absolute_date_limit = datetime.fromtimestamp(epoch)
-            if not self.lock_settings:
+            if self.update_date_limit:
                 self.date_limit = None
             self.get_session().commit()
 
