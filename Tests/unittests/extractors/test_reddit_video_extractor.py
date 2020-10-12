@@ -38,8 +38,8 @@ class TestRedditVideoExtractor(ExtractorTest):
     def test_extract_video_with_audio(self, get_host_vid, filter_content, make_title, make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
         fallback_url = url + '/DASH_2_4_M?source=fallback'
-        submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url}},
-                                                      is_video=True)
+        submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url,
+                                                                              'is_gif': False}})
         get_host_vid.return_value = submission
         post = get_post(url=url, session=self.session, reddit_id=submission.id)
         filter_content.return_value = True
@@ -62,10 +62,9 @@ class TestRedditVideoExtractor(ExtractorTest):
         fallback_url = url + '/DASH_2_4_M?source=fallback'
         parent_submission = get_mock_reddit_video_submission(
             _id='pppppp',
-            is_video=True,
             title='A parent vid',
             subreddit='DefinitelyNotPublicFreakout',
-            media={'reddit_video': {'fallback_url': fallback_url}}
+            media={'reddit_video': {'fallback_url': fallback_url, 'is_gif': False}}
         )
         rv_mock.return_value = parent_submission
 
