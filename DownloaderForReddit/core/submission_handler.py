@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from queue import Queue
 from praw.models import Submission
@@ -21,6 +22,7 @@ class SubmissionHandler(Runner):
     def __init__(self, submission: Optional[Submission], post: Post, download_session_id: int, session: Session,
                  download_queue: Queue, stop_run):
         super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
         self.submission = submission
         self.post = post
         self.download_session_id = download_session_id
@@ -123,9 +125,9 @@ class SubmissionHandler(Runner):
         return None
 
     def handle_error(self, exception):
-        if type(exception) == TypeError:
+        if isinstance(exception, TypeError):
             self.handle_unsupported_domain()
-        if type(exception) == ConnectionError:
+        elif isinstance(exception, ConnectionError):
             self.handle_connection_error()
         else:
             self.handle_unknown_error()
@@ -149,9 +151,9 @@ class SubmissionHandler(Runner):
         self.output_error(message, **kwargs)
 
     def log_error(self, message, **kwargs):
-        extra = {'self.post_title': self.post.title, 'user': self.post.author.name,
+        extra = {'post_title': self.post.title, 'user': self.post.author.name,
                  'subreddit': self.post.subreddit.name, 'url': self.post.url,
-                 'date_self.posted': self.post.date_posted, **kwargs}
+                 'date_posted': self.post.date_posted, **kwargs}
         self.logger.error(message, extra=extra, exc_info=True)
 
     def output_error(self, message, **kwargs):

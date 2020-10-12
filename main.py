@@ -36,11 +36,6 @@ from DownloaderForReddit.utils import injector
 from DownloaderForReddit.local_logging import logger
 from DownloaderForReddit.version import __version__
 
-# if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
-#   QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-
-# if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
-#     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 if sys.platform == 'win32':
     myappid = 'SomeGuySoftware.DownloaderForReddit.%s' % __version__

@@ -72,7 +72,10 @@ def merge_videos():
                     output_path = video_content.get_full_file_path().replace('(video)', '')
                     cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
                           (video_content.get_full_file_path(), audio_content.get_full_file_path(), output_path)
-                    subprocess.call(cmd)
+                    si = subprocess.STARTUPINFO()
+                    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                    CREATE_NO_WINDOW = 0x08000000
+                    subprocess.call(cmd, startupinfo=si, creationflags=CREATE_NO_WINDOW)
                     if injector.get_settings_manager().match_file_modified_to_post_date:
                         system_util.set_file_modify_time(output_path, ms.date_modified.timestamp())
                     clean_up(video_content, audio_content, session)

@@ -2,16 +2,20 @@ import os
 import requests
 import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
+
+from .runner import Runner, verify_run
+from ..utils import injector
 
 
-CHUNK_SIZE = 1024 * 1024
+class MultipartDownloader(Runner):
 
-
-class MultipartDownloader:
-
-    def __init__(self, executor):
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
-        self.executor = executor
+    def __init__(self, stop_run):
+        super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
+        self.settings_manager = injector.get_settings_manager()
+        self.executor = ThreadPoolExecutor(self.settings_manager.multi_part_thread_count)
+        self.chunk_size = self.settings_manager.multi_part_chunk_size
         self.part_count = 0
         self.failed_parts = 0
 
@@ -24,9 +28,10 @@ class MultipartDownloader:
         finally:
             loop.close()
 
+    @verify_run
     async def download(self, url, path, file_size):
         loop = asyncio.get_event_loop()
-        chunks = range(0, file_size, CHUNK_SIZE)
+        chunks = range(0, file_size, self.chunk_size)
         self.part_count = len(chunks)
         tasks = [
             loop.run_in_executor(
@@ -34,7 +39,7 @@ class MultipartDownloader:
                 self.download_part,
                 url,
                 start,
-                start + CHUNK_SIZE - 1,
+                start + self.chunk_size - 1,
                 f'{path}.part{x}'
             )
             for x, start in enumerate(chunks)
@@ -52,6 +57,7 @@ class MultipartDownloader:
                     self.logger.error('Failed to join multi-download part into complete file',
                                       extra={'chunk_path': chunk_path}, exc_info=True)
 
+    @verify_run
     def download_part(self, url, start, end, path):
         retry = True
         tries = 0
@@ -61,7 +67,7 @@ class MultipartDownloader:
             response = requests.get(url, headers=headers, stream=True, timeout=10)
             if response.status_code == 206:
                 with open(path, 'wb') as file:
-                    for chunk in response.iter_content(CHUNK_SIZE):
+                    for chunk in response.iter_content(self.chunk_size):
                         file.write(chunk)
                 return True
             else:
@@ -69,7 +75,7 @@ class MultipartDownloader:
                                     extra={'status_code': response.status_code}, exc_info=False)
                 return False
 
-        while retry and tries < 3:
+        while self.continue_run and retry and tries < 3:
             tries += 1
             try:
                 success = download()

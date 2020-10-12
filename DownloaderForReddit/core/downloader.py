@@ -1,5 +1,6 @@
 import os
 import requests
+import logging
 from concurrent.futures import ThreadPoolExecutor
 
 from .runner import Runner, verify_run
@@ -23,6 +24,7 @@ class Downloader(Runner):
         :type download_queue: Queue
         """
         super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
         self.download_queue = download_queue  # contains the id of content created elsewhere that is to be downloaded
         self.download_session_id = download_session_id
         self.output_queue = injector.get_message_queue()
@@ -31,6 +33,7 @@ class Downloader(Runner):
 
         self.thread_count = self.settings_manager.download_thread_count
         self.executor = ThreadPoolExecutor(self.thread_count)
+        self.multi_part_executor = ThreadPoolExecutor(8)
         self.futures = []
         self.hold = False
         self.hard_stop = False
@@ -80,8 +83,9 @@ class Downloader(Runner):
                     file_size = int(response.headers['Content-Length'])
                     self.check_file_path(content)
                     file_path = content.get_full_file_path()
-                    if file_size > self.settings_manager.multi_part_threshold:
-                        multi_part_downloader = MultipartDownloader(self.executor)
+                    if self.settings_manager.use_multi_part_downloader and \
+                            file_size > self.settings_manager.multi_part_threshold:
+                        multi_part_downloader = MultipartDownloader(self.stop_run)
                         multi_part_downloader.run(content.url, file_path, file_size)
                         self.finish_multi_part_download(content, multi_part_downloader)
                     else:
@@ -169,8 +173,15 @@ class Downloader(Runner):
         content.set_download_error(Error.UNKNOWN_ERROR, message)
 
     def log_errors(self, content: Content, message, **kwargs):
-        extra = {'url': content.url, 'submission_id': content.post.reddit_id, 'user': content.user,
-                 'subreddit': content.subreddit, 'save_path': content.get_full_file_path(), **kwargs}
+        extra = {
+            'url': content.url,
+            'title': content.title,
+            'submission_id': content.post.reddit_id,
+            'user': content.user,
+            'subreddit': content.subreddit,
+            'save_path': content.get_full_file_path(),
+            **kwargs
+        }
         self.logger.error(message, extra=extra, exc_info=True)
 
     def output_error(self, content, message):

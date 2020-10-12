@@ -55,6 +55,16 @@ class CustomItemModel:
                 return self.get_item_index(item)
         return self.createIndex(0, 0)
 
+    def remove_items(self, items: list):
+        for item in items:
+            self.remove_item(item)
+
+    def remove_item(self, item):
+        try:
+            self.items.remove(item)
+        except:
+            pass
+
     def set_data(self, query):
         self.total_items = query.count()
         data = query.limit(self.limit).all()
@@ -386,16 +396,19 @@ class CommentTreeModel(QAbstractItemModel, CustomItemModel):
         return self.createIndex(parent.row(), 0, parent)
 
     def rowCount(self, parent=None):
-        if parent.column() > 0:
-            row_count = 0
-        else:
-            if not parent.isValid():
-                item = self.root
+        try:
+            if parent.column() > 0:
+                row_count = 0
             else:
-                item = parent.internalPointer()
-            row_count = item.childCount()
-        self.update_count.emit((row_count, self.total_items))
-        return row_count
+                if not parent.isValid():
+                    item = self.root
+                else:
+                    item = parent.internalPointer()
+                row_count = item.childCount()
+            self.update_count.emit((row_count, self.total_items))
+            return row_count
+        except AttributeError:
+            return 0
 
 
 class TreeItem:

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>536</width>
-    <height>1189</height>
+    <width>577</width>
+    <height>1330</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,185 +111,151 @@
         </layout>
        </item>
        <item row="4" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Score Limit:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QSpinBox" name="score_limit_spinbox">
-         <property name="maximum">
-          <number>10000000</number>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
         <widget class="QLabel" name="label_11">
          <property name="text">
           <string>Score Limit Eval:</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="4" column="1">
         <widget class="QComboBox" name="score_limit_operator_combo"/>
        </item>
-       <item row="6" column="0">
-        <widget class="QCheckBox" name="date_limit_checkbox">
-         <property name="layoutDirection">
-          <enum>Qt::RightToLeft</enum>
-         </property>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>Date Limit:    </string>
+          <string>Score Limit:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
-        <widget class="QDateTimeEdit" name="date_limit_edit">
-         <property name="dateTime">
-          <datetime>
-           <hour>14</hour>
-           <minute>43</minute>
-           <second>53</second>
-           <year>2005</year>
-           <month>6</month>
-           <day>23</day>
-          </datetime>
-         </property>
-         <property name="minimumDateTime">
-          <datetime>
-           <hour>14</hour>
-           <minute>43</minute>
-           <second>53</second>
-           <year>2005</year>
-           <month>6</month>
-           <day>23</day>
-          </datetime>
+       <item row="5" column="1">
+        <widget class="QSpinBox" name="score_limit_spinbox">
+         <property name="maximum">
+          <number>10000000</number>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
           <string>Avoid Duplicates:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="avoid_duplicates_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="12" column="0">
         <widget class="QLabel" name="label_30">
          <property name="text">
           <string>Extract Self Post Content:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="extract_self_post_content_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="9" column="0">
+       <item row="13" column="0">
         <widget class="QLabel" name="label_15">
          <property name="text">
           <string>Download Self Post Text:</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="download_self_post_text_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_31">
          <property name="text">
           <string>Self Post File Format:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="14" column="1">
         <widget class="QComboBox" name="self_post_file_format_combo"/>
        </item>
-       <item row="11" column="0">
+       <item row="15" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
           <string>Download Videos:</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="download_videos_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
+       <item row="16" column="0">
         <widget class="QLabel" name="label_14">
          <property name="text">
           <string>Download Images:</string>
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="download_images_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
+       <item row="17" column="0">
         <widget class="QLabel" name="label_29">
          <property name="text">
           <string>Download Gifs:</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="17" column="1">
         <widget class="QCheckBox" name="download_gifs_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
+       <item row="18" column="0">
         <widget class="QLabel" name="label_28">
          <property name="text">
           <string>NSFW Filter:</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="18" column="1">
         <widget class="QComboBox" name="nsfw_filter_combo"/>
        </item>
-       <item row="15" column="0">
+       <item row="19" column="0">
         <widget class="QLabel" name="label_16">
          <property name="text">
           <string>Sort Posts By:</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="19" column="1">
         <widget class="QComboBox" name="post_sort_combo"/>
        </item>
-       <item row="18" column="0">
+       <item row="22" column="0">
         <widget class="QLabel" name="post_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="22" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="spacing">
           <number>2</number>
@@ -313,14 +279,14 @@
          </item>
         </layout>
        </item>
-       <item row="19" column="0">
+       <item row="23" column="0">
         <widget class="QLabel" name="post_save_structure_label">
          <property name="text">
           <string>Save Path Structure:</string>
          </property>
         </widget>
        </item>
-       <item row="19" column="1">
+       <item row="23" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <property name="spacing">
           <number>2</number>
@@ -344,12 +310,91 @@
          </item>
         </layout>
        </item>
-       <item row="20" column="0" colspan="2">
+       <item row="24" column="0" colspan="2">
         <widget class="QLabel" name="post_path_example_label">
          <property name="text">
           <string>Post path example</string>
          </property>
         </widget>
+       </item>
+       <item row="8" column="0">
+        <widget class="QRadioButton" name="absolute_date_limit_radio">
+         <property name="text">
+          <string>Last Post Date:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QRadioButton" name="custom_date_limit_radio">
+         <property name="text">
+          <string>Custom Date Limit:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QDateTimeEdit" name="custom_date_limit_edit">
+         <property name="dateTime">
+          <datetime>
+           <hour>14</hour>
+           <minute>43</minute>
+           <second>53</second>
+           <year>2005</year>
+           <month>6</month>
+           <day>23</day>
+          </datetime>
+         </property>
+         <property name="minimumDateTime">
+          <datetime>
+           <hour>12</hour>
+           <minute>0</minute>
+           <second>0</second>
+           <year>2005</year>
+           <month>6</month>
+           <day>1</day>
+          </datetime>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLabel" name="absolute_date_limit_label">
+         <property name="text">
+          <string>Absolute date limit</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QCheckBox" name="limit_date_checkbox">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="text">
+          <string>Limit by Date</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QRadioButton" name="update_custom_date_limit_radio">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The custom date limit will be overridden upon the first download to the date of the latest extracted post&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Update custom limit </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="do_not_update_custom_date_limit_radio">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a name=&quot;inside&quot;/&gt;The custom date limit will not be overridden. This will result in slightly longer download times for repeat downloads.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Keep custom limit</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </item>

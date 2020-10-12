@@ -1,3 +1,5 @@
+import logging
+
 from .runner import Runner, verify_run
 from ..core.comment_filter import CommentFilter
 from ..core.submittable_creator import SubmittableCreator
@@ -8,6 +10,7 @@ class CommentHandler(Runner):
 
     def __init__(self, submission, post, download_session_id, stop_run, session=None):
         super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
         self.db = injector.get_database_handler()
         self.submission = submission
         self.post = post

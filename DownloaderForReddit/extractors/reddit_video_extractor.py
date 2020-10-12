@@ -38,7 +38,6 @@ class RedditVideoExtractor(BaseExtractor):
         self.post = post
         self.host_vid = self.get_host_vid()
         self.url = None
-        self.contains_audio = False
         self.get_vid_url()
 
     def get_host_vid(self):
@@ -52,7 +51,9 @@ class RedditVideoExtractor(BaseExtractor):
 
         try:
             r = reddit_utils.get_reddit_instance()
-            return r.submission(self.submission.crosspost_parrent.split('_')[1])
+            parent_submission = r.submission(self.submission.crosspost_parrent.split('_')[1])
+            parent_submission.title  # fetch info from server to load submission
+            return parent_submission
         except AttributeError:
             return self.submission
 
@@ -63,16 +64,18 @@ class RedditVideoExtractor(BaseExtractor):
         """
         try:
             self.url = self.host_vid.media['reddit_video']['fallback_url']
-            self.contains_audio = self.host_vid.is_video
-        except AttributeError:
+        except (AttributeError, TypeError):
             self.url = self.host_vid.url
+
+    def is_gif(self):
+        return self.host_vid.media['reddit_video']['is_gif']
 
     def extract_content(self):
         if self.settings_manager.download_reddit_hosted_videos:
             if self.url is not None:
                 video_content = self.get_video_content()
                 try:
-                    if self.contains_audio:
+                    if not self.is_gif():
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
                             merge_set = video_merger.MergeSet(

@@ -34,7 +34,10 @@ class SettingsManager:
         self.invalid_rename_format = self.get('core', 'invalid_rename_format', '%[dir_name](deleted)')
         self.extraction_thread_count = self.get('core', 'extraction_thread_count', 4)
         self.download_thread_count = self.get('core', 'download_thread_count', 4)
+        self.use_multi_part_downloader = self.get('core', 'use_multi_part_downloader', True)
         self.multi_part_threshold = self.get('core', 'multi_part_threshold', 3 * 1024 * 1024)
+        self.multi_part_chunk_size = self.get('core', 'multi_part_chunk_size', 1024 * 1024)
+        self.multi_part_thread_count = self.get('core', 'multi_part_thread_count', 4)
         self.download_on_add = self.get('core', 'download_on_add', False)
         self.finish_incomplete_extractions_at_session_start = \
             self.get('core', 'finish_incomplete_extractions_at_session_start', False)
