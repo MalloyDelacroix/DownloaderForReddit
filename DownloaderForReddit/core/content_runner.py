@@ -1,3 +1,4 @@
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from queue import Empty
 
@@ -12,6 +13,7 @@ class ContentRunner(Runner):
 
     def __init__(self, submission_queue, download_queue, download_session_id, stop_run):
         super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
         self.submission_queue = submission_queue
         self.download_queue = download_queue
         self.download_session_id = download_session_id

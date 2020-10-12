@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 from queue import Queue
 from praw.models import Submission
@@ -21,6 +22,7 @@ class SubmissionHandler(Runner):
     def __init__(self, submission: Optional[Submission], post: Post, download_session_id: int, session: Session,
                  download_queue: Queue, stop_run):
         super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
         self.submission = submission
         self.post = post
         self.download_session_id = download_session_id

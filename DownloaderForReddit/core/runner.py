@@ -1,5 +1,4 @@
 from abc import ABC
-import logging
 
 
 def verify_run(method):
@@ -18,7 +17,6 @@ def verify_run(method):
 class Runner(ABC):
 
     def __init__(self, stop_run):
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.stop_run = stop_run
 
     @property

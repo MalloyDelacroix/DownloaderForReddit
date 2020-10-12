@@ -12,7 +12,7 @@ class MultipartDownloader(Runner):
 
     def __init__(self, stop_run):
         super().__init__(stop_run)
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+        self.logger = logging.getLogger(__name__)
         self.settings_manager = injector.get_settings_manager()
         self.executor = ThreadPoolExecutor(self.settings_manager.multi_part_thread_count)
         self.chunk_size = self.settings_manager.multi_part_chunk_size

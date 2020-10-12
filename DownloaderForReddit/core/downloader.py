@@ -1,5 +1,6 @@
 import os
 import requests
+import logging
 from concurrent.futures import ThreadPoolExecutor
 
 from .runner import Runner, verify_run
@@ -23,6 +24,7 @@ class Downloader(Runner):
         :type download_queue: Queue
         """
         super().__init__(stop_run)
+        self.logger = logging.getLogger(__name__)
         self.download_queue = download_queue  # contains the id of content created elsewhere that is to be downloaded
         self.download_session_id = download_session_id
         self.output_queue = injector.get_message_queue()
@@ -171,8 +173,15 @@ class Downloader(Runner):
         content.set_download_error(Error.UNKNOWN_ERROR, message)
 
     def log_errors(self, content: Content, message, **kwargs):
-        extra = {'url': content.url, 'submission_id': content.post.reddit_id, 'user': content.user,
-                 'subreddit': content.subreddit, 'save_path': content.get_full_file_path(), **kwargs}
+        extra = {
+            'url': content.url,
+            'title': content.title,
+            'submission_id': content.post.reddit_id,
+            'user': content.user,
+            'subreddit': content.subreddit,
+            'save_path': content.get_full_file_path(),
+            **kwargs
+        }
         self.logger.error(message, extra=extra, exc_info=True)
 
     def output_error(self, content, message):
