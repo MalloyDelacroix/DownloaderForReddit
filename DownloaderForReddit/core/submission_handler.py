@@ -149,9 +149,9 @@ class SubmissionHandler(Runner):
         self.output_error(message, **kwargs)
 
     def log_error(self, message, **kwargs):
-        extra = {'self.post_title': self.post.title, 'user': self.post.author.name,
+        extra = {'post_title': self.post.title, 'user': self.post.author.name,
                  'subreddit': self.post.subreddit.name, 'url': self.post.url,
-                 'date_self.posted': self.post.date_posted, **kwargs}
+                 'date_posted': self.post.date_posted, **kwargs}
         self.logger.error(message, extra=extra, exc_info=True)
 
     def output_error(self, message, **kwargs):
