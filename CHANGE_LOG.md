@@ -13,6 +13,7 @@ associated files.
 * Make multi-part downloader stoppable with rest of download cycle.
 * Fix content not downloading correctly when the author's account has been deleted or suspended.
 * Fix issue that caused application lock due to malfunctioning multi-part download.
+* Fix issues with extracting and downloading reddit videos
 
 
 
