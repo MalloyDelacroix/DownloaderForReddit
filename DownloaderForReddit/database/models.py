@@ -87,6 +87,7 @@ class RedditObjectList(BaseModel):
     comment_sort_method = Column(Enum(CommentSortMethod), default=CommentSortMethod.NEW)
 
     date_limit = Column(DateTime, nullable=True)
+    update_date_limit = Column(Boolean, default=True)
     post_download_naming_method = Column(String, default='%[title]')
     post_save_structure = Column(String, default='%[author_name]')
     comment_naming_method = Column(String, default='%[author_name]-comment')
@@ -169,6 +170,7 @@ class RedditObjectList(BaseModel):
             'comment_score_limit_operator': self.comment_score_limit_operator,
             'comment_sort_method': self.comment_sort_method,
             'date_limit': self.date_limit,
+            'update_date_limit': self.update_date_limit,
             'post_download_naming_method': self.post_download_naming_method,
             'post_save_structure': self.post_save_structure,
             'comment_naming_method': self.comment_naming_method,
