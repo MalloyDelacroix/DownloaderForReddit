@@ -58,14 +58,19 @@ class ExportWizard(QWizard, Ui_ExportWizard):
             self.export_path_line_edit.setText(file_path)
 
     def accept(self):
-        self.export()
-        super().accept()
+        if self.export():
+            super().accept()
 
     def export(self):
-        if self.json_export_radio.isChecked():
-            self.export_json()
+        if os.path.isdir(os.path.dirname(self.export_path_line_edit.text())):
+            if self.json_export_radio.isChecked():
+                self.export_json()
+            else:
+                self.export_csv()
+            return True
         else:
-            self.export_csv()
+            self.export_path_line_edit.setStyleSheet('border: 1px solid red;')
+            return False
 
     def export_json(self):
         export_method = self.json_export_map[self.export_model.__name__]
