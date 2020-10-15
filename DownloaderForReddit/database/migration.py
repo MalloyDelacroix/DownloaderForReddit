@@ -69,7 +69,7 @@ class Migrator:
         databases.  If this version is not stored when created, the application will not be able to migrate future
         versions of the database in the event that it is updated again.
         """
-        if version.is_updated(cache_version.version, 'v3.2.1'):
+        if cache_version is None or version.is_updated(cache_version.version, 'v3.2.1'):
             if not self.check_version_three_three_zero():
                 cached_revision = self.get_cached_revision()
                 if cached_revision is None:
