@@ -6,6 +6,7 @@
 * Fix crashing when trying to view list settings.
 * Fix crashing when attempting to export to a directory that does not exist.
 * Fix crashing when attempting to order user/subreddit lists by the count of related objects.
+* Fix errors in attempting to download audio from reddit videos which do not contain audio.
 
 ## v3.3.0-beta
 
