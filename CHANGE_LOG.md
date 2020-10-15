@@ -1,6 +1,14 @@
 # Change Log
 
-## v3.2.2-beta
+## v3.3.1-beta
+
+### Bug Fixes
+* Fix crashing when trying to view list settings.
+* Fix crashing when attempting to export to a directory that does not exist.
+* Fix crashing when attempting to order user/subreddit lists by the count of related objects.
+* Fix errors in attempting to download audio from reddit videos which do not contain audio.
+
+## v3.3.0-beta
 
 ### Minor Changes
 * Users, subreddits, posts, content, and comments can now be permanently deleted from the database along with any

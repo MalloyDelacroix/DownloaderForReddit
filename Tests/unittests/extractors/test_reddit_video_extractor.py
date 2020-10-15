@@ -34,13 +34,14 @@ class TestRedditVideoExtractor(ExtractorTest):
 
         self.check_output(re, fallback_url, post, title=f'{post.title}(video)')
 
+    @patch(f'{PATH}.check_audio_content')
     @patch(f'{PATH}.get_host_vid')
-    def test_extract_video_with_audio(self, get_host_vid, filter_content, make_title, make_dir_path):
+    def test_extract_video_with_audio(self, get_host_vid, check_audio, filter_content, make_title, make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
         fallback_url = url + '/DASH_2_4_M?source=fallback'
-        submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url,
-                                                                              'is_gif': False}})
+        submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url}})
         get_host_vid.return_value = submission
+        check_audio.return_value = True
         post = get_post(url=url, session=self.session, reddit_id=submission.id)
         filter_content.return_value = True
         make_title.return_value = post.title
@@ -56,17 +57,20 @@ class TestRedditVideoExtractor(ExtractorTest):
         self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
+    @patch(f'{PATH}.check_audio_content')
     @patch(f'{PATH}.get_host_vid')
-    def test_extract_video_with_audio_crossposted_post(self, rv_mock, filter_content, make_title, make_dir_path):
+    def test_extract_video_with_audio_crossposted_post(self, rv_mock, check_audio, filter_content, make_title,
+                                                       make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
         fallback_url = url + '/DASH_2_4_M?source=fallback'
         parent_submission = get_mock_reddit_video_submission(
             _id='pppppp',
             title='A parent vid',
             subreddit='DefinitelyNotPublicFreakout',
-            media={'reddit_video': {'fallback_url': fallback_url, 'is_gif': False}}
+            media={'reddit_video': {'fallback_url': fallback_url}}
         )
         rv_mock.return_value = parent_submission
+        check_audio.return_value = True
 
         submission = get_mock_reddit_video_submission(crosspost_parent=parent_submission,
                                                       url='https://v.redd.it/nottherealurl')

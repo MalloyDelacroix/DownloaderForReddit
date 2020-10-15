@@ -95,7 +95,7 @@ class Filter(ABC):
         if order is None:
             order = self.default_order
         order_by = getattr(self.model, order, None)
-        if order_by is None:
+        if order_by is None or isinstance(order_by, property):
             try:
                 query, order_by = self.custom_filter_map[order].order_method(query)
             except KeyError:

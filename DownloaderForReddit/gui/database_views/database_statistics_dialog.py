@@ -443,7 +443,7 @@ class DatabaseStatisticsDialog(QDialog):
                     ('Posts That Year',
                      f'{self.format_number(self.get(top_year_query, "count"))}  '
                      f'({self.get_percentage(self.get(top_year_query, "count"), post_count)})'),
-                    ('Least Common Year', str(self.get(top_year_query, "count"))),
+                    ('Least Common Year', str(self.get(top_year_query, "year"))),
                     ('Posts That Year',
                      f'{self.format_number(self.get(bottom_year_query, "count"))}  '
                      f'({self.get_percentage(self.get(bottom_year_query, "count"), post_count)})'),
@@ -522,7 +522,7 @@ class DatabaseStatisticsDialog(QDialog):
 
                 self.content_map = [
                     ('Total Content', content_count),
-                    ('Downloaded Content', f'{downloaded_content_count} '
+                    ('Downloaded Content', f'{self.format_number(downloaded_content_count)} '
                                            f'({self.get_percentage(downloaded_content_count, content_count)})'),
                     ('Content Not Downloaded\n(non-error)',
                         f'{content_count - downloaded_content_count} '
@@ -530,11 +530,11 @@ class DatabaseStatisticsDialog(QDialog):
                     ('SEPARATOR', None),
                     ('Most Common Extension', self.get(most_used_extension, 'ext')),
                     ('Extension Used',
-                     f'{self.get(most_used_extension, "count")}  '
+                     f'{self.format_number(self.get(most_used_extension, "count"))}  '
                      f'({self.get_percentage(self.get(most_used_extension, "count"), content_count)})'),
                     ('Least Common Extension', self.get(least_used_extension, 'ext')),
                     ('Extension Used',
-                     f'{self.get(least_used_extension, "count")}  '
+                     f'{self.format_number(self.get(least_used_extension, "count"))}  '
                      f'({self.get_percentage(self.get(least_used_extension, "count"), content_count)})'),
 
                     ('SEPARATOR', None),
@@ -580,7 +580,7 @@ class DatabaseStatisticsDialog(QDialog):
                     ('Most Common Download Year', str(self.get(content_top_year, 'year'))),
                     ('Downloads That Year', f'{self.format_number(self.get(content_top_year, "count"))}  '
                                             f'({self.get_percentage(self.get(content_top_year, "count"), content_count)})'),
-                    ('Least Common Download Year', str(self.get(content_bottom_year, 'count'))),
+                    ('Least Common Download Year', str(self.get(content_bottom_year, 'year'))),
                     ('Downloads That Year', f'{self.format_number(self.get(content_bottom_year, "count"))}  '
                                             f'({self.get_percentage(self.get(content_bottom_year, "count"), content_count)})')
                 ]

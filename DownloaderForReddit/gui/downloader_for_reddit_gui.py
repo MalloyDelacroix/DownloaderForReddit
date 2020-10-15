@@ -404,7 +404,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
         menu.addSeparator()
         settings = menu.addAction('List Settings', self.subreddit_list_settings)
-        settings.setDisabled(self.user_lists_combo.currentText() == '')
+        settings.setDisabled(self.subreddit_list_combo.currentText() == '')
         menu.exec_(QCursor.pos())
 
     def refresh_list_models(self):
