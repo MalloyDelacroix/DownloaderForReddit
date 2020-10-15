@@ -23,6 +23,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import re
+import requests
 
 from .base_extractor import BaseExtractor
 from ..core.errors import Error
@@ -38,6 +39,7 @@ class RedditVideoExtractor(BaseExtractor):
         self.post = post
         self.host_vid = self.get_host_vid()
         self.url = None
+        self.audio_url = None
         self.get_vid_url()
 
     def get_host_vid(self):
@@ -66,6 +68,8 @@ class RedditVideoExtractor(BaseExtractor):
             self.url = self.host_vid.media['reddit_video']['fallback_url']
         except (AttributeError, TypeError):
             self.url = self.host_vid.url
+        if self.url is not None:
+            self.audio_url = re.sub('DASH_[A-z 0-9]+', 'DASH_audio', self.url)
 
     def is_gif(self):
         return self.host_vid.media['reddit_video']['is_gif']
@@ -75,7 +79,7 @@ class RedditVideoExtractor(BaseExtractor):
             if self.url is not None:
                 video_content = self.get_video_content()
                 try:
-                    if not self.is_gif():
+                    if self.check_audio_content():
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
                             merge_set = video_merger.MergeSet(
@@ -98,8 +102,18 @@ class RedditVideoExtractor(BaseExtractor):
         content = self.make_content(self.url, ext, name_modifier='(video)')
         return content
 
+    def check_audio_content(self):
+        """
+        Checks the extracted audio url to make sure that a valid status code is returned.  Reddit videos are being
+        mislabeled by reddit as being videos when they are in fact gifs.  This rectifies the problem by checking that
+        the audio link is valid before trying to make content from the audio portion of a video which does not have
+        audio.
+        :return: True if the audio link is valid, False if not.
+        """
+        response = requests.head(self.audio_url)
+        return response.status_code == 200
+
     def get_audio_content(self):
         ext = 'mp3'
-        url = re.sub('DASH_[A-z 0-9]+', 'DASH_audio', self.url)
-        content = self.make_content(url, ext, name_modifier='(audio)')
+        content = self.make_content(self.audio_url, ext, name_modifier='(audio)')
         return content
