@@ -5,6 +5,7 @@
 ### Bug Fixes
 * Fix crashing when trying to view list settings.
 * Fix crashing when attempting to export to a directory that does not exist.
+* Fix crashing when attempting to order user/subreddit lists by the count of related objects.
 
 ## v3.3.0-beta
 
