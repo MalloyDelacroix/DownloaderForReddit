@@ -9,6 +9,7 @@ from DownloaderForReddit.utils import video_merger
 @patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_dir_path')
 @patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.make_title')
 @patch('DownloaderForReddit.extractors.base_extractor.BaseExtractor.filter_content')
+@patch('DownloaderForReddit.extractors.reddit_video_extractor.RedditVideoExtractor.check_audio_content')
 class TestRedditVideoExtractor(ExtractorTest):
 
     PATH = 'DownloaderForReddit.extractors.RedditVideoExtractor'
@@ -19,7 +20,7 @@ class TestRedditVideoExtractor(ExtractorTest):
         self.settings.download_reddit_hosted_videos = True
 
     @patch(f'{PATH}.get_host_vid')
-    def test_extract_gif(self, get_host_vid, filter_content, make_title, make_dir_path):
+    def test_extract_gif(self, get_host_vid, check_audio, filter_content, make_title, make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
         fallback_url = url + '/DASH_2_4_M?source=fallback'
         submission = get_mock_reddit_video_submission(media={'reddit_video': {'fallback_url': fallback_url}})
@@ -34,7 +35,6 @@ class TestRedditVideoExtractor(ExtractorTest):
 
         self.check_output(re, fallback_url, post, title=f'{post.title}(video)')
 
-    @patch(f'{PATH}.check_audio_content')
     @patch(f'{PATH}.get_host_vid')
     def test_extract_video_with_audio(self, get_host_vid, check_audio, filter_content, make_title, make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
@@ -57,7 +57,6 @@ class TestRedditVideoExtractor(ExtractorTest):
         self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
-    @patch(f'{PATH}.check_audio_content')
     @patch(f'{PATH}.get_host_vid')
     def test_extract_video_with_audio_crossposted_post(self, rv_mock, check_audio, filter_content, make_title,
                                                        make_dir_path):
@@ -91,7 +90,6 @@ class TestRedditVideoExtractor(ExtractorTest):
         self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
-    @patch(f'{PATH}.get_audio_content')
     @patch(f'{PATH}.get_host_vid')
     def test_extract_video_with_audio_extract_exception(self, get_host_vid, get_audio, filter_content, make_title,
                                                         make_dir_path):
@@ -115,7 +113,7 @@ class TestRedditVideoExtractor(ExtractorTest):
 
     @patch(f'{PATH}.get_host_vid')
     @patch(f'{PATH}.get_vid_url')
-    def test_extract_video_failed_to_find_url(self, get_vid_url, get_host_vid, filter_content, make_title,
+    def test_extract_video_failed_to_find_url(self, get_vid_url, get_host_vid, check_audio, filter_content, make_title,
                                               make_dir_path):
         submission = get_mock_reddit_video_submission(is_video=True)
         get_vid_url.return_value = None
