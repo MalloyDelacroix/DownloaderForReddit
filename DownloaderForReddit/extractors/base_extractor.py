@@ -253,6 +253,7 @@ class BaseExtractor:
             'user': self.user.name,
             'subreddit': self.subreddit.name,
             'post_title': self.post.title,
+            'submission_id': self.post.reddit_id,
             'extracted_content_count': len(self.extracted_content),
             'extraction_failed': self.failed_extraction,
         }
