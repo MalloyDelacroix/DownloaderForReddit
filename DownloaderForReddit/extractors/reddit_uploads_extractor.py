@@ -54,11 +54,15 @@ class RedditUploadsExtractor(BaseExtractor):
         try:
             count = 1
             for value in self.submission.media_metadata.values():
-                container = value['s']
-                url = container['u']
-                ext = url[url.rfind('.') + 1: url.rfind('?width')]
-                self.make_content(url, ext, count)
-                count += 1
+                try:
+                    container = value['s']
+                    url = container['u']
+                    ext = url[url.rfind('.') + 1: url.rfind('?width')]
+                    self.make_content(url, ext, count)
+                    count += 1
+                except KeyError:
+                    # some images in albums are not valid for whatever reason, so we ignore them and move on
+                    pass
         except:
             self.handle_failed_extract(
                 error=Error.FAILED_TO_EXTRACT,
