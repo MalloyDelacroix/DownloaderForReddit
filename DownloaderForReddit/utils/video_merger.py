@@ -28,7 +28,7 @@ import logging
 from distutils.spawn import find_executable
 
 from ..database.models import Content
-from ..utils import injector, system_util
+from ..utils import injector, system_util, general_utils
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 ffmpeg_valid = find_executable('ffmpeg') is not None
 
 
-# A dict of MergeSet's containing the path of the video and audio files that are to be merged.
+# A list of MergeSet's containing the path of the video and audio files that are to be merged.
 videos_to_merge = []
 
 
@@ -69,16 +69,20 @@ def merge_videos():
                 try:
                     video_content = session.query(Content).get(ms.video_id)
                     audio_content = session.query(Content).get(ms.audio_id)
-                    output_path = video_content.get_full_file_path().replace('(video)', '')
-                    cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s"' % \
-                          (video_content.get_full_file_path(), audio_content.get_full_file_path(), output_path)
+                    merged_content = create_merged_content(video_content)
+                    merged_content.download_title = general_utils.check_file_path(merged_content)
+
+                    cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s" -y' % \
+                          (video_content.get_full_file_path(), audio_content.get_full_file_path(),
+                           merged_content.get_full_file_path())
                     si = subprocess.STARTUPINFO()
                     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                     CREATE_NO_WINDOW = 0x08000000
                     subprocess.call(cmd, startupinfo=si, creationflags=CREATE_NO_WINDOW)
                     if injector.get_settings_manager().match_file_modified_to_post_date:
-                        system_util.set_file_modify_time(output_path, ms.date_modified.timestamp())
-                    clean_up(video_content, audio_content, session)
+                        system_util.set_file_modify_time(merged_content.get_full_file_path(),
+                                                         ms.date_modified.timestamp())
+                    clean_up(video_content, audio_content, merged_content, session)
                 except:
                     failed_count += 1
                     logger.error('Failed to merge video', extra={'video_id': ms.video_id, 'audio_id': ms.audio_id},
@@ -92,8 +96,17 @@ def merge_videos():
                        extra={'videos_to_merge': len(videos_to_merge)})
 
 
-def clean_up(video_content, audio_content, session):
-    content = Content(
+def clean_up(video_content, audio_content, merged_content, session):
+    session.add(merged_content)
+    system_util.delete_file(video_content.get_full_file_path())
+    system_util.delete_file(audio_content.get_full_file_path())
+    session.delete(video_content)
+    session.delete(audio_content)
+    session.commit()
+
+
+def create_merged_content(video_content):
+    return Content(
         title=video_content.title.replace('(video)', ''),
         download_title=video_content.download_title.replace('(video)', ''),
         extension='mp4',
@@ -108,10 +121,3 @@ def clean_up(video_content, audio_content, session):
         download_session_id=video_content.download_session_id,
         comment_id=video_content.comment_id
     )
-    session.add(content)
-    system_util.delete_file(video_content.get_full_file_path())
-    system_util.delete_file(audio_content.get_full_file_path())
-    session.delete(video_content)
-    session.delete(audio_content)
-    session.commit()
-
