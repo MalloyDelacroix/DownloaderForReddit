@@ -6,6 +6,7 @@
 ### Bug Fixes
 * Fix errors downloading image albums.
 * Fix errors downloading reddit gallery albums.
+* Fix freezing when merging some reddit video files.
 
 
 
