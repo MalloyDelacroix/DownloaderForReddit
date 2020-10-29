@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from .runner import Runner, verify_run
 from .multipart_downloader import MultipartDownloader
 from .errors import Error
-from ..utils import injector, system_util
+from ..utils import injector, system_util, general_utils
 from ..database import Content
 from ..messaging.message import Message
 
@@ -81,7 +81,7 @@ class Downloader(Runner):
                 response = requests.get(content.url, stream=True, timeout=10)
                 if response.status_code == 200:
                     file_size = int(response.headers['Content-Length'])
-                    self.check_file_path(content)
+                    content.download_title = general_utils.check_file_path(content)
                     file_path = content.get_full_file_path()
                     if self.settings_manager.use_multi_part_downloader and \
                             file_size > self.settings_manager.multi_part_threshold:
@@ -102,27 +102,6 @@ class Downloader(Runner):
             self.handle_connection_error(content)
         except:
             self.handle_unknown_error(content)
-
-    def check_file_path(self, content: Content):
-        """
-        Checks the content's full file path to make sure there are no naming conflicts.  If there are, a number is
-        incremented and appended to the contents title until a naming conflict no longer exists.
-        :param content: The Content item who's path is to be checked.
-        """
-        try:
-            system_util.create_directory(content.directory_path)
-        except PermissionError:
-            self.logger.error('Could not create directory path', extra={'directory_path': content.directory_path},
-                              exc_info=True)
-        unique_count = 1
-        clean_title = system_util.clean(content.title)
-        download_title = clean_title
-        path = content.get_full_file_path(download_title)
-        while os.path.exists(path):
-            download_title = f'{clean_title}({unique_count})'
-            path = content.get_full_file_path(download_title)
-            unique_count += 1
-        content.download_title = download_title
 
     def finish_download(self, content: Content):
         """

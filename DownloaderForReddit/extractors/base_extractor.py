@@ -196,7 +196,7 @@ class BaseExtractor:
     def filter_content(self, url, extension):
         """
         Handles calling the content filter and setting the failed extraction message if the content does not pass the
-        fitler.
+        filter.
         :param url: The url of the content that has been extracted.
         :param extension: The extension of the file located at the url.
         :return: True if the content passes the filter and should be extracted, False if it did not.
@@ -253,6 +253,7 @@ class BaseExtractor:
             'user': self.user.name,
             'subreddit': self.subreddit.name,
             'post_title': self.post.title,
+            'submission_id': self.post.reddit_id,
             'extracted_content_count': len(self.extracted_content),
             'extraction_failed': self.failed_extraction,
         }

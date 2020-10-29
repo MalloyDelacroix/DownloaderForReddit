@@ -1,5 +1,15 @@
 # Change Log
 
+
+## v3.3.2-beta
+
+### Bug Fixes
+* Fix errors downloading image albums.
+* Fix errors downloading reddit gallery albums.
+* Fix freezing when merging some reddit video files.
+
+
+
 ## v3.3.1-beta
 
 ### Bug Fixes
