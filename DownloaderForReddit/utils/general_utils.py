@@ -1,9 +1,13 @@
 import os
+import logging
 
 from . import injector
 from . import system_util
 from .token_parser import TokenParser
 from ..gui import message_dialogs
+
+
+logger = logging.getLogger(__name__)
 
 
 def rename_invalid_directory(path):
@@ -53,3 +57,25 @@ def open_post_in_browser(post):
         system_util.open_in_system(url)
     except Exception as e:
         print(e)
+
+
+def check_file_path(content):
+    """
+    Checks the content's full file path to make sure there are no naming conflicts.  If there are, a number is
+    incremented and appended to the contents title until a naming conflict no longer exists.
+    :param content: The Content item who's path is to be checked.
+    """
+    try:
+        system_util.create_directory(content.directory_path)
+    except PermissionError:
+        logger.error('Could not create directory path', extra={'directory_path': content.directory_path}, exc_info=True)
+    unique_count = 1
+    clean_title = system_util.clean(content.title)
+    download_title = clean_title
+    path = content.get_full_file_path(download_title)
+    while os.path.exists(path):
+        download_title = f'{clean_title}({unique_count})'
+        path = content.get_full_file_path(download_title)
+        unique_count += 1
+    # content.download_title = download_title
+    return download_title
