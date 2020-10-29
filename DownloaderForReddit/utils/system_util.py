@@ -81,9 +81,14 @@ def clean(part, directory=False):
     # method has been adapted to work with the results that I am consistently getting.
     clean_part = ''.join([x if x not in FORBIDDEN_CHARS else '#' for x in part])
     if len(clean_part) >= 176:
-        clean_part = clean_part[:170].strip()
+        ending = '...'
+        if clean_part.endswith('(video)'):
+            ending += '(video)'
+        elif clean_part.endswith('(audio)'):
+            ending += '(audio)'
+        clean_part = clean_part[:173 - len(ending)].strip()
         if not directory:
-            clean_part += '...'
+            clean_part += ending
     return clean_part
 
 
