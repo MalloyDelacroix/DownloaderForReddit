@@ -28,6 +28,7 @@ import re
 from .base_extractor import BaseExtractor
 from ..core.errors import Error
 from ..core import const
+from ..utils import reddit_utils
 
 
 class RedditUploadsExtractor(BaseExtractor):
@@ -36,6 +37,16 @@ class RedditUploadsExtractor(BaseExtractor):
 
     def __init__(self, post, **kwargs):
         super().__init__(post, **kwargs)
+        self.submission = self.get_host_submission()
+
+    def get_host_submission(self):
+        try:
+            r = reddit_utils.get_reddit_instance()
+            parent_submission = r.submission(self.submission.crosspost_parent.split('_')[1])
+            parent_submission.title
+            return parent_submission
+        except AttributeError:
+            return self.submission
 
     def extract_content(self):
         try:

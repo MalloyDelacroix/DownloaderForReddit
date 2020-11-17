@@ -5,6 +5,7 @@
 
 ### Bug Fixes
 * Fix crashing when removing user/subreddit with over 1,000 posts or content items
+* Fix failed cross-posted reddit gallery downloads.
 
 
 ## v3.3.2-beta
