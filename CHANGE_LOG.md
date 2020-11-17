@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.3.3-beta
+
+### Bug Fixes
+* Fix crashing when removing user/subreddit with over 1,000 posts or content items
+
+
 ## v3.3.2-beta
 
 ### Bug Fixes

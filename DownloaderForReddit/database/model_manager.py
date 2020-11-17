@@ -1,3 +1,5 @@
+import math
+
 from ..utils import injector, system_util
 from .models import Post, Content, Comment, ListAssociation
 
@@ -29,36 +31,38 @@ class ModelManger:
     @classmethod
     @check_session
     def delete_reddit_object(cls, reddit_object, session=None, delete_files=False):
-        """
-        Deletes the supplied reddit object and all associated posts, content, and comment items.
-        :param reddit_object: The reddit object to be deleted.
-        :param session: The currently open session to use for the interaction.  Defaults to None.
-        :return: True if the operation was successful, false if not.
-        """
         posts = session.query(Post).filter(Post.significant_reddit_object_id == reddit_object.id)
-        post_ids = [x.id for x in posts]
-        content = session.query(Content).filter(Content.post_id.in_(post_ids))
-        files = []
-        if delete_files:
-            files = [c.get_full_file_path() for c in content]
-        content.delete(synchronize_session='fetch')
-        session.query(Comment).filter(Comment.post_id.in_(post_ids)).delete(synchronize_session='fetch')
-        posts.delete(synchronize_session='fetch')
+
+        def delete_posts(post_query, session, delete_files):
+            for post in post_query:
+                content = session.query(Content).filter(Content.post_id == post.id)
+                if delete_files:
+                    for c in content:
+                        system_util.delete_file(c.get_full_file_path())
+                content.delete(synchronize_session='fetch')
+                comments = session.query(Comment).filter(Comment.post_id == post.id)
+                comments.delete(synchronize_session='fetch')
+            # SqlAlchemy is being a real pain in the ass about deleting these posts easily.  So this is a ridiculous,
+            # convoluted way to do it instead.
+            post_ids = [x.id for x in post_query]
+            session.query(Post).filter(Post.id.in_(post_ids)).delete(synchronize_session='fetch')
+
+        cls.batch_operation(posts, delete_posts, session=session, delete_files=delete_files)
+
         session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object.id).delete()
         session.delete(reddit_object)
-        for file in files:
-            system_util.delete_file(file)
         session.commit()
 
     @classmethod
     @check_session
     def delete_post(cls, post, session=None, delete_files=False):
-        session.query(Comment).filter(Comment.post_id == post.id).delete(synchronize_session='fetch')
+        comments = session.query(Comment).filter(Comment.post_id == post.id)
+        cls.batch_operation(comments, cls.delete_query)
         content = session.query(Content).filter(Content.post_id == post.id)
         files = []
         if delete_files:
             files = [c.get_full_file_path() for c in content]
-        content.delete(synchronize_session='fetch')
+        cls.batch_operation(content, cls.delete_query)
         session.delete(post)
         for file in files:
             system_util.delete_file(file)
@@ -83,3 +87,16 @@ class ModelManger:
             cls.delete_content(content, delete_file=delete_files, session=session)
         session.delete(comment)
         session.commit()
+
+    @classmethod
+    def delete_query(cls, query):
+        query.delete(synchronize_session='fetch')
+
+    @classmethod
+    def batch_operation(cls, query, method, *args, **kwargs):
+        batch_count = math.ceil(query.count() / 999)
+        offset = 0
+        for batch in range(batch_count):
+            batch_query = query.offset(offset).limit(999)
+            method(batch_query, *args, **kwargs)
+            offset += 1000
