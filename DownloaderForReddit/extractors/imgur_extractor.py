@@ -78,14 +78,14 @@ class ImgurExtractor(BaseExtractor):
         for url in imgur_utils.get_album_images(album_id):
             url = self.filter_url(url)
             _, extension = url.rsplit('.', 1)
-            self.make_content(url, extension, count)
+            self.make_content(url, extension, count, media_id=album_id)
             count += 1
 
     def extract_single(self):
         _, image_id = self.url.rsplit('/', 1)
         url = imgur_utils.get_single_image(image_id)
         _, extension = url.rsplit('.', 1)
-        self.make_content(url, extension)
+        self.make_content(url, extension, media_id=image_id)
 
     def extract_direct_link(self):
         try:
@@ -95,7 +95,7 @@ class ImgurExtractor(BaseExtractor):
             if extension == 'gif':
                 extension = 'mp4'
             url = "{}/{}.{}".format(domain, image_id, extension)
-            self.make_content(url, extension)
+            self.make_content(url, extension, media_id=image_id)
         except (AttributeError, NameError, TypeError):
             message = 'Unrecognized extension'
             self.handle_failed_extract(error=Error.UNRECOGNIZED_EXTENSION, message=message,

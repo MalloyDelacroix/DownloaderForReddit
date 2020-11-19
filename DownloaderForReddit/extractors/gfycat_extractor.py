@@ -76,4 +76,4 @@ class GfycatExtractor(BaseExtractor):
                 gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
 
         gfy_url = gfy_json.get('gfyItem').get('webmUrl')
-        self.make_content(gfy_url, 'webm')
+        self.make_content(gfy_url, 'webm', media_id=gif_id)

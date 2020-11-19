@@ -69,7 +69,8 @@ class RedditUploadsExtractor(BaseExtractor):
                     container = value['s']
                     url = container['u']
                     ext = url[url.rfind('.') + 1: url.rfind('?width')]
-                    self.make_content(url, ext, count)
+                    media_id = getattr(value, 'id', None)
+                    self.make_content(url, ext, count, media_id=media_id)
                     count += 1
                 except KeyError:
                     # some images in albums are not valid for whatever reason, so we ignore them and move on
@@ -85,13 +86,13 @@ class RedditUploadsExtractor(BaseExtractor):
         if not self.url.endswith(const.ALL_EXT):
             self.url = self.url + '.jpg'  # add jpg extension here for direct download
         media_id = self.clean_ext(self.get_link_id())
-        self.make_content(self.url, 'jpg')
+        self.make_content(self.url, 'jpg', media_id=media_id)
 
     def extract_direct_link(self):
         """This is overridden here so that a proper media id can be extracted."""
         ext = self.url.rsplit('.', 1)[1]
         media_id = self.clean_ext(self.get_link_id())
-        self.make_content(self.url, ext)
+        self.make_content(self.url, ext, media_id=media_id)
 
     def get_link_id(self):
         """
