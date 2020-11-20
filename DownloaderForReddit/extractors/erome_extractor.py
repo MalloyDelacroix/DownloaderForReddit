@@ -84,5 +84,5 @@ class EromeExtractor(BaseExtractor):
         for url in urls:
             _, hosted_id = url.rsplit('/', 1)
             base, extension = hosted_id.rsplit('.', 1)
-            self.make_content(url, extension, count=count if count > 0 else None)
+            self.make_content(url, extension, count=count if count > 0 else None, media_id=base)
             count += 1

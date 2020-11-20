@@ -130,7 +130,7 @@ class BaseExtractor:
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message='Failed to retrieve data from link',
                                        status_code=response.status_code)
 
-    def make_content(self, url, extension, count=None, name_modifier=''):
+    def make_content(self, url, extension, count=None, name_modifier='', **kwargs):
         """
         Takes content elements that are extracted and creates a Content object with the extracted parts and the global
         extractor items, then sends the new Content object to the extracted content list.
@@ -139,6 +139,7 @@ class BaseExtractor:
         :param count: The number in an album sequence that the supplied url belongs.  Used to number the file.
         :param name_modifier: A modifier to the name assigned for the content that will be appended after the name.
                               This can be used to distinguish different parts of a downloaded file if necessary.
+        :param kwargs: Extra key value pairs that can be used by the tokenizer system for naming the content.
         :return: The content object that was created.
         :type url: str
         :type count: int
@@ -150,7 +151,7 @@ class BaseExtractor:
             if count is None:
                 count = self.count
             count = f' {count}' if count and self.use_count else ''
-            title = f'{self.make_title()}{name_modifier}{count}'
+            title = f'{self.make_title(**kwargs)}{name_modifier}{count}'
             directory = self.make_dir_path()
             comment_id = self.comment.id if self.comment is not None else None
             content = Content(
@@ -170,14 +171,29 @@ class BaseExtractor:
             return content
         return None
 
-    def make_title(self) -> str:
+    def make_title(self, **kwargs) -> str:
         if self.comment is None:
+            self.add_extra_title_attributes(self.post, **kwargs)
             token_string = self.significant_reddit_object.post_download_naming_method
             title = TokenParser.parse_tokens(self.post, token_string)
         else:
+            self.add_extra_title_attributes(self.comment, **kwargs)
             token_string = self.significant_reddit_object.comment_naming_method
             title = TokenParser.parse_tokens(self.comment, token_string)
         return title
+
+    @staticmethod
+    def add_extra_title_attributes(obj, **kwargs):
+        """
+        Dynamically adds the attributes in kwargs and assigns them the related value.  This is used to add extra
+        information to a post that is used only for naming purposes.  Doing this is not a great practice, but this is
+        only used by one class that has solid fallbacks.
+        :param obj: The post or comment that is to have extra attributes added.
+        :param kwargs: Key value pairs that represent the attributes to be added and their corresponding values to be
+                       assigned.
+        """
+        for key, value in kwargs.items():
+            setattr(obj, key, value)
 
     def make_dir_path(self) -> str:
         if self.comment is None:

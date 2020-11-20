@@ -28,6 +28,7 @@ import re
 from .base_extractor import BaseExtractor
 from ..core.errors import Error
 from ..core import const
+from ..utils import reddit_utils
 
 
 class RedditUploadsExtractor(BaseExtractor):
@@ -36,6 +37,16 @@ class RedditUploadsExtractor(BaseExtractor):
 
     def __init__(self, post, **kwargs):
         super().__init__(post, **kwargs)
+        self.submission = self.get_host_submission()
+
+    def get_host_submission(self):
+        try:
+            r = reddit_utils.get_reddit_instance()
+            parent_submission = r.submission(self.submission.crosspost_parent.split('_')[1])
+            parent_submission.title
+            return parent_submission
+        except AttributeError:
+            return self.submission
 
     def extract_content(self):
         try:
@@ -58,7 +69,8 @@ class RedditUploadsExtractor(BaseExtractor):
                     container = value['s']
                     url = container['u']
                     ext = url[url.rfind('.') + 1: url.rfind('?width')]
-                    self.make_content(url, ext, count)
+                    media_id = getattr(value, 'id', None)
+                    self.make_content(url, ext, count, media_id=media_id)
                     count += 1
                 except KeyError:
                     # some images in albums are not valid for whatever reason, so we ignore them and move on
@@ -74,13 +86,13 @@ class RedditUploadsExtractor(BaseExtractor):
         if not self.url.endswith(const.ALL_EXT):
             self.url = self.url + '.jpg'  # add jpg extension here for direct download
         media_id = self.clean_ext(self.get_link_id())
-        self.make_content(self.url, 'jpg')
+        self.make_content(self.url, 'jpg', media_id=media_id)
 
     def extract_direct_link(self):
         """This is overridden here so that a proper media id can be extracted."""
         ext = self.url.rsplit('.', 1)[1]
         media_id = self.clean_ext(self.get_link_id())
-        self.make_content(self.url, ext)
+        self.make_content(self.url, ext, media_id=media_id)
 
     def get_link_id(self):
         """

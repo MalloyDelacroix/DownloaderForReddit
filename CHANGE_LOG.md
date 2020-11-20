@@ -1,6 +1,16 @@
 # Change Log
 
 
+## v3.4.0-beta
+
+### Minor Changes
+* Add naming options for individual media id or reddit submission id.
+
+### Bug Fixes
+* Fix crashing when removing user/subreddit with over 1,000 posts or content items.
+* Fix failed cross-posted reddit gallery downloads.
+
+
 ## v3.3.2-beta
 
 ### Bug Fixes
