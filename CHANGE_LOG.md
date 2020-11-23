@@ -1,6 +1,16 @@
 # Change Log
 
 
+## v3.5.0-beta
+
+### Minor Changes
+* Make date display format user adjustable.
+
+### Bug Fixes
+* Fix being able to sort user submissions by "rising', which is not a valid sort method for users.
+* Fix some date display formats creating extra folders.
+
+
 ## v3.4.0-beta
 
 ### Minor Changes
