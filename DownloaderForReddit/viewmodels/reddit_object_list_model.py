@@ -75,12 +75,15 @@ class RedditObjectListModel(QAbstractListModel):
         return False
 
     def delete_current_list(self):
-        list_id = self.list.id
-        self.reddit_objects.clear()
-        self.list = None
-        self.session.query(ListAssociation).filter(ListAssociation.reddit_object_list_id == list_id).delete()
-        self.session.query(RedditObjectList).filter(RedditObjectList.id == list_id).delete()
-        self.session.commit()
+        try:
+            list_id = self.list.id
+            self.reddit_objects.clear()
+            self.list = None
+            self.session.query(ListAssociation).filter(ListAssociation.reddit_object_list_id == list_id).delete()
+            self.session.query(RedditObjectList).filter(RedditObjectList.id == list_id).delete()
+            self.session.commit()
+        except AttributeError:
+            pass
 
     def set_list(self, list_name):
         try:

@@ -392,7 +392,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def user_list_combo_context_menu(self):
         menu = QMenu()
         menu.addAction('Add User List', self.add_user_list)
-        menu.addAction('Remove User List', self.remove_user_list)
+        remove = menu.addAction('Remove User List', self.remove_user_list)
+        remove.setDisabled(self.user_lists_combo.currentText() == '')
         menu.addSeparator()
         settings = menu.addAction('List Settings', self.user_list_settings)
         settings.setDisabled(self.user_lists_combo.currentText() == '')
@@ -401,7 +402,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def subreddit_list_combo_context_menu(self):
         menu = QMenu()
         menu.addAction('Add Subreddit List', self.add_subreddit_list)
-        menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
+        remove = menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
+        remove.setDisabled(self.subreddit_list_combo.currentText() == '')
         menu.addSeparator()
         settings = menu.addAction('List Settings', self.subreddit_list_settings)
         settings.setDisabled(self.subreddit_list_combo.currentText() == '')

@@ -9,6 +9,9 @@
 ### Bug Fixes
 * Fix being able to sort user submissions by "rising', which is not a valid sort method for users.
 * Fix some date display formats creating extra folders.
+* Fix crashing when trying to remove a user/subreddit list when there are none available
+
+
 
 
 ## v3.4.0-beta
