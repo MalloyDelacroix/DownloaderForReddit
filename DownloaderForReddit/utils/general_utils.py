@@ -1,5 +1,6 @@
 import os
 import logging
+from datetime import datetime, date
 
 from . import injector
 from . import system_util
@@ -79,3 +80,15 @@ def check_file_path(content):
         unique_count += 1
     # content.download_title = download_title
     return download_title
+
+
+def format_datetime(date_time: datetime):
+    settings_manager = injector.get_settings_manager()
+    datetime_format = settings_manager.datetime_display_format
+    return date_time.strftime(datetime_format)
+
+
+def format_date(raw_date: date):
+    settings_manager = injector.get_settings_manager()
+    date_format = settings_manager.date_display_format
+    return raw_date.strftime(date_format)

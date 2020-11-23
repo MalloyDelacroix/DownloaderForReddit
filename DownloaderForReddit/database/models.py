@@ -8,7 +8,7 @@ from .database_handler import DatabaseHandler
 from .model_enums import (CommentDownload, NsfwFilter, LimitOperator, PostSortMethod, CommentSortMethod)
 from ..core.errors import Error
 from ..core import const
-from ..utils import system_util, injector
+from ..utils import system_util, injector, general_utils
 
 
 Base = DatabaseHandler.base
@@ -23,7 +23,13 @@ class BaseModel(Base):
 
     def get_display_date(self, date_time):
         try:
-            return date_time.strftime('%m/%d/%Y %I:%M %p')
+            return general_utils.format_datetime(date_time)
+        except AttributeError:
+            return None
+
+    def get_path_date(self, date_time):
+        try:
+            return self.get_display_date(date_time).replace('/', '-').replace('\\', '-')
         except AttributeError:
             return None
 
@@ -514,6 +520,10 @@ class Post(BaseModel):
     @property
     def date_posted_display(self):
         return self.get_display_date(self.date_posted)
+
+    @property
+    def date_posted_path(self):
+        return self.get_path_date(self.date_posted)
 
     @property
     def score_display(self):

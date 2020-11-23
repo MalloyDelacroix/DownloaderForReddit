@@ -170,6 +170,8 @@ class SettingsManager:
         self.colorize_inactive_reddit_objects = self.get('display', 'colorize_inactive_reddit_objects', True)
         self.inactive_reddit_object_display_color = self.get('display', 'inactive_reddit_object_display_color',
                                                              [0, 0, 200])
+        self.datetime_display_format = self.get('display', 'datetime_display_format', '%m/%d/%Y %I:%M %p')
+        self.date_display_format = self.get('display', 'date_display_format', '%m/%d/%Y')
         # endregion
 
         # region Database

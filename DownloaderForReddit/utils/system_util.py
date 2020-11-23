@@ -175,10 +175,6 @@ def epoch_to_datetime(epoch_time):
         return None
 
 
-def epoch_to_str(epoch_time):
-    return epoch_to_datetime(epoch_time).strftime('%m/%d/%Y %I:%M %p')
-
-
 def format_time_delta(td: datetime.timedelta):
     if td.days > 0:
         return f'{td.days} days, {format_duration_full(td.seconds)}'

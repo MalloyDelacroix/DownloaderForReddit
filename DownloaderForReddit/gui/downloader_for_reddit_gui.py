@@ -1120,7 +1120,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
         imgur_utils.check_credits()
-        reset_time = datetime.strftime(datetime.fromtimestamp(imgur_utils.credit_reset_time), '%m-%d-%Y at %I:%M %p')
+        reset_date_time = datetime.fromtimestamp(imgur_utils.credit_reset_time)
+        reset_time = general_utils.format_datetime(reset_date_time)
         dialog_text = "Remaining Credits: {}\n" \
                       "Reset Time: {}\n".format(imgur_utils.num_credits, reset_time)
         if injector.get_settings_manager().imgur_mashape_key:
