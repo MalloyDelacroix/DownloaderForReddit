@@ -92,3 +92,7 @@ def format_date(raw_date: date):
     settings_manager = injector.get_settings_manager()
     date_format = settings_manager.date_display_format
     return raw_date.strftime(date_format)
+
+
+def format_raw_datetime(datetime, format_str):
+    return datetime.strftime(format_str)
