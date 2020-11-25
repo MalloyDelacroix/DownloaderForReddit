@@ -50,11 +50,12 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
         self.name_count_label.setText(str(self.multi_object_list_widget.count()))
 
     def add_object_to_list(self):
-        name = self.multi_object_line_edit.text()
-        self.added.append(name)
-        self.multi_object_list_widget.addItem(name)
-        self.multi_object_line_edit.clear()
-        self.refresh_name_count()
+        name = self.multi_object_line_edit.text().strip()
+        if name != '' and name not in self.added:
+            self.added.append(name)
+            self.multi_object_list_widget.addItem(name)
+            self.multi_object_line_edit.clear()
+            self.refresh_name_count()
 
     def remove_object_from_list(self):
         for index in self.multi_object_list_widget.selectedIndexes():
@@ -108,7 +109,7 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
 
     def add_reddit_objects(self):
         if self.tab_widget.currentIndex() == 0:
-            name = self.single_object_line_edit.text()
+            name = self.single_object_line_edit.text().strip()
             if name is not None and name != '':
                 self.list_model.add_reddit_object(name)
         else:
@@ -125,12 +126,13 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
             if self.tab_widget.currentIndex() == 0:
                 shift = QApplication.keyboardModifiers() == Qt.ShiftModifier
                 if shift:
-                    name = self.single_object_line_edit.text()
-                    self.added.append(name)
-                    self.multi_object_list_widget.addItem(name)
-                    self.single_object_line_edit.clear()
-                    self.tab_widget.setCurrentIndex(1)
-                    self.refresh_name_count()
+                    name = self.single_object_line_edit.text().strip()
+                    if name != '' and name not in self.added:
+                        self.added.append(name)
+                        self.multi_object_list_widget.addItem(name)
+                        self.single_object_line_edit.clear()
+                        self.tab_widget.setCurrentIndex(1)
+                        self.refresh_name_count()
                 else:
                     self.accept()
             else:
