@@ -10,7 +10,7 @@
 * Fix being able to sort user submissions by "rising', which is not a valid sort method for users.
 * Fix some date display formats creating extra folders.
 * Fix crashing when trying to remove a user/subreddit list when there are none available
-
+* Fix errors when importing users/subreddit names with spaces, blank lines, and duplicates form a text file.
 
 
 

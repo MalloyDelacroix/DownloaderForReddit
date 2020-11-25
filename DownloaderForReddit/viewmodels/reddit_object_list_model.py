@@ -195,9 +195,11 @@ class RedditObjectListModel(QAbstractListModel):
         return name_list
 
     def add_validated_reddit_object(self, ro_id):
-        reddit_object = self.session.query(RedditObject).get(ro_id)
-        self.insertRow(reddit_object)
-        self.sort_list()
+        id_list = self.get_id_list(download_enabled=False)
+        if ro_id not in id_list:
+            reddit_object = self.session.query(RedditObject).get(ro_id)
+            self.insertRow(reddit_object)
+            self.sort_list()
 
     def add_complete_reddit_object(self, reddit_object):
         reddit_object, created = self.db.get_or_create(type(reddit_object), session=self.session,
@@ -210,14 +212,16 @@ class RedditObjectListModel(QAbstractListModel):
         self.finished_add.emit()
 
     def insertRow(self, item, parent=QModelIndex(), *args, **kwargs):
-        self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
-        self.list.reddit_objects.append(item)
-        self.endInsertRows()
-        self.session.commit()
-        self.reddit_object_added.emit(item.id)
-        self.last_added = item
-        self.update_row_count(self.row_count + 1)
-        return True
+        if item is not None:
+            self.beginInsertRows(parent, self.rowCount() - 1, self.rowCount())
+            self.list.reddit_objects.append(item)
+            self.endInsertRows()
+            self.session.commit()
+            self.reddit_object_added.emit(item.id)
+            self.last_added = item
+            self.update_row_count(self.row_count + 1)
+            return True
+        return False
 
     def removeRows(self, position, rows, parent=QModelIndex(), *args):
         self.beginRemoveRows(parent, position, position - 1)
@@ -366,7 +370,7 @@ class ObjectValidator(QObject):
     def run(self):
         object_creator = RedditObjectCreator(self.list_type)
         for name in self.name_list:
-            reddit_object_id = object_creator.create_reddit_object(name, self.list_defaults)
+            reddit_object_id, created = object_creator.create_reddit_object(name, self.list_defaults)
             if reddit_object_id is not None:
                 self.new_object_signal.emit(reddit_object_id)
             else:
