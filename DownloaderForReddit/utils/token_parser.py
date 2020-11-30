@@ -27,8 +27,8 @@ class TokenParser:
         'download_date': lambda x: TokenParser.tokenize(x, 'download_date', 'post.download_date'),
         'id': lambda x: TokenParser.tokenize(x, 'id', 'post.id', 'author.id', 'user.id', 'subreddit.id',
                                              'reddit_object.id'),
-        'submission_id': lambda x: TokenParser.tokenize(x, 'post.reddit_id', 'post.id', 'id'),
-        'media_id': lambda x: TokenParser.tokenize(x, 'media_id', 'post.reddit_id', 'post.id', 'id'),
+        'submission_id': lambda x: TokenParser.tokenize(x, 'reddit_id', 'post.reddit_id', 'post.id', 'id'),
+        'media_id': lambda x: TokenParser.tokenize(x, 'media_id', 'reddit_id', 'post.reddit_id', 'post.id', 'id'),
     }
 
     @classmethod
