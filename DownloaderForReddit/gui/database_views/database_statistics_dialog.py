@@ -12,7 +12,7 @@ from operator import attrgetter
 
 from DownloaderForReddit.database.models import (DownloadSession, RedditObject, User, Subreddit, Post, Content, Comment,
                                                  RedditObjectList, ListAssociation)
-from DownloaderForReddit.utils import injector, system_util
+from DownloaderForReddit.utils import injector, system_util, general_utils
 from DownloaderForReddit.core import const
 
 
@@ -798,7 +798,7 @@ class DatabaseStatisticsDialog(QDialog):
                 if value_type == int:
                     value = self.format_number(value)
                 elif value_type == datetime:
-                    value = self.format_datetime(value)
+                    value = general_utils.format_datetime(value)
                 key_label = QLabel(key + ':')
                 value_label = QLabel(str(value))
                 if tooltip is not None:
@@ -817,11 +817,9 @@ class DatabaseStatisticsDialog(QDialog):
         except (TypeError, AttributeError):
             return None
 
-    def format_datetime(self, date_time):
-        return date_time.strftime('%m/%d/%Y %I:%M %p')
-
     def format_date_string(self, date_string):
-        return datetime.strptime(date_string, '%Y-%m-%d').date().strftime('%m/%d/%Y')
+        date = datetime.strptime(date_string, '%Y-%m-%d').date()
+        return general_utils.format_date(date)
 
     def get_user_content_count_sub(self, session, ext):
         return session.query(Content.user_id, func.count(Content.id).label('count')) \

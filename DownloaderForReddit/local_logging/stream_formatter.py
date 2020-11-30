@@ -67,5 +67,5 @@ class JsonStreamFormatter(jsonlogger.JsonFormatter):
         """Formats the log_record to display each item on a new line to increase readability"""
         ret_list = []
         for key, value in log_record.items():
-            ret_list.append('%s: %s\n' % (key, value))
-        return ''.join(ret_list)
+            ret_list.append('%s: %s' % (key, value))
+        return '\n'.join(ret_list)

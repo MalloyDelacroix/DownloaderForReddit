@@ -392,7 +392,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def user_list_combo_context_menu(self):
         menu = QMenu()
         menu.addAction('Add User List', self.add_user_list)
-        menu.addAction('Remove User List', self.remove_user_list)
+        remove = menu.addAction('Remove User List', self.remove_user_list)
+        remove.setDisabled(self.user_lists_combo.currentText() == '')
         menu.addSeparator()
         settings = menu.addAction('List Settings', self.user_list_settings)
         settings.setDisabled(self.user_lists_combo.currentText() == '')
@@ -401,7 +402,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def subreddit_list_combo_context_menu(self):
         menu = QMenu()
         menu.addAction('Add Subreddit List', self.add_subreddit_list)
-        menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
+        remove = menu.addAction('Remove Subreddit List', self.remove_subreddit_list)
+        remove.setDisabled(self.subreddit_list_combo.currentText() == '')
         menu.addSeparator()
         settings = menu.addAction('List Settings', self.subreddit_list_settings)
         settings.setDisabled(self.subreddit_list_combo.currentText() == '')
@@ -1120,7 +1122,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def display_imgur_client_information(self):
         """Opens a dialog that tells the user how many imgur credits they have remaining"""
         imgur_utils.check_credits()
-        reset_time = datetime.strftime(datetime.fromtimestamp(imgur_utils.credit_reset_time), '%m-%d-%Y at %I:%M %p')
+        reset_date_time = datetime.fromtimestamp(imgur_utils.credit_reset_time)
+        reset_time = general_utils.format_datetime(reset_date_time)
         dialog_text = "Remaining Credits: {}\n" \
                       "Reset Time: {}\n".format(imgur_utils.num_credits, reset_time)
         if injector.get_settings_manager().imgur_mashape_key:

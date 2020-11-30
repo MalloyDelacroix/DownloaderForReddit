@@ -28,6 +28,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             name='SubredditName'
         )
         self.post = Post(
+            id=42,
             title='Example_Post_Title',
             date_posted=datetime.now(),
             reddit_id='23sdf9lksdf',
@@ -51,6 +52,16 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             self.selected_objects = object_list
             self.sync_post()
             self.sync_widgets_to_object()
+            self.sync_sort_methods(self.selected_objects[0].object_type)
+
+    def sync_sort_methods(self, object_type):
+        pos = self.post_sort_combo.findData(PostSortMethod.RISING, Qt.UserRole)
+        if object_type == 'SUBREDDIT':
+            if pos < 0:
+                self.post_sort_combo.insertItem(2, 'RISING', PostSortMethod.RISING)
+        else:
+            if pos >= 0:
+                self.post_sort_combo.removeItem(pos)
 
     def setup_widgets(self):
         for value in LimitOperator:

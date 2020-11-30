@@ -30,6 +30,19 @@ class RedditObjectCreator:
             return self.create_subreddit(name, list_defaults)
 
     def create_user(self, user_name, list_defaults):
+        """
+        Takes a given user name and first searches in the database for its existence.  If it is already in the database
+        the existing objects id is returned.  If it is not already in the database, the name is validated with reddit
+        to ensure that it is a valid name, then a new database object is created for the user and the id is returned.
+        :param user_name: The name of the User that is to be validated and created.
+        :param list_defaults: A dict of default values to be used in the creation of a new User object.  These defaults
+                              come from the settings of the list in which the user is being added.
+        :return: A tuple in which the first value is the id of the existing or created user, and the second is a bool
+                 indicating whether or not the user was created. True if the user was created, False if it was existing.
+        :type user_name: str
+        :type list_defaults: dict
+        :rtype: tuple
+        """
         with self.db.get_scoped_session() as session:
             user = session.query(User).filter(func.lower(User.name) == user_name.lower()).first()
             if user is None:
@@ -39,12 +52,13 @@ class RedditObjectCreator:
                     user = User(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
                     session.add(user)
                     session.commit()
-                    return user.id
+                    return user.id, True
             if user is not None:
-                return user.id
+                return user.id, False
             return None
 
     def create_subreddit(self, sub_name, list_defaults):
+        """See create_user above."""
         with self.db.get_scoped_session() as session:
             subreddit = session.query(Subreddit).filter(func.lower(Subreddit.name) == sub_name.lower()).first()
             if subreddit is None:
@@ -55,9 +69,9 @@ class RedditObjectCreator:
                         Subreddit(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
                     session.add(subreddit)
                     session.commit()
-                    return subreddit.id
+                    return subreddit.id, True
             if subreddit is not None:
-                return subreddit.id
+                return subreddit.id, False
             return None
 
     def create_reddit_object_list(self, name, commit=True):
