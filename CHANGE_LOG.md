@@ -12,6 +12,8 @@
 * Fix crashing when trying to remove a user/subreddit list when there are none available
 * Fix errors when importing users/subreddit names with spaces, blank lines, and duplicates form a text file.
 * Fix errors when adding user/subreddit names with spaces and duplicate names in the add user/subreddit dialog.
+* Fix crashing when exporting posts or content that have errors.
+* Fix submission id naming token.
 
 
 
