@@ -28,6 +28,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             name='SubredditName'
         )
         self.post = Post(
+            id=42,
             title='Example_Post_Title',
             date_posted=datetime.now(),
             reddit_id='23sdf9lksdf',
