@@ -370,8 +370,9 @@ class ObjectValidator(QObject):
     def run(self):
         object_creator = RedditObjectCreator(self.list_type)
         for name in self.name_list:
-            reddit_object_id, created = object_creator.create_reddit_object(name, self.list_defaults)
-            if reddit_object_id is not None:
+            creation_tuple = object_creator.create_reddit_object(name, self.list_defaults)
+            if creation_tuple is not None:
+                reddit_object_id, created = creation_tuple
                 self.new_object_signal.emit(reddit_object_id)
             else:
                 self.invalid_name_signal.emit(name)
