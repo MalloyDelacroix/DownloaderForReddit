@@ -4,7 +4,7 @@ from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
 from sqlalchemy import desc
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, IntegrityError
 
 from .models import Version
 from ..utils import injector, system_util
@@ -115,9 +115,12 @@ class Migrator:
         end user wants to go through the trouble to figure out how to inject this and sabotage their own database, then
         far be it from me to stand in their way.
         """
-        with self.db.engine.connect() as con:
-            statement = f'INSERT INTO alembic_version(version_num) VALUES("{version_num}")'
-            con.execute(statement)
+        try:
+            with self.db.engine.connect() as con:
+                statement = f'INSERT INTO alembic_version(version_num) VALUES("{version_num}")'
+                con.execute(statement)
+        except IntegrityError:
+            pass
 
     def check_version_three_three_zero(self):
         """
