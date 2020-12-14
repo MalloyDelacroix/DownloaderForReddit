@@ -186,6 +186,7 @@ class RedditObjectListModel(QAbstractListModel):
             if ro is not None:
                 existing_ids.append(ro.id)
                 existing_names.append(ro.name)
+                self.sync_existing_ro_to_list(ro)
                 if ro in self.list.reddit_objects:
                     name_list.remove(name)
                     self.last_added = ro
@@ -193,6 +194,13 @@ class RedditObjectListModel(QAbstractListModel):
             self.existing_object_added.emit((self.list_type, existing_ids, existing_names))
             self.check_last_added()
         return name_list
+
+    def sync_existing_ro_to_list(self, reddit_object):
+        if not reddit_object.significant:
+            for key, value in self.list.get_default_dict().items():
+                setattr(reddit_object, key, value)
+            reddit_object.significant = True
+            reddit_object.save()
 
     def add_validated_reddit_object(self, ro_id):
         id_list = self.get_id_list(download_enabled=False)

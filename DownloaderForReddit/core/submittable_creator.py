@@ -78,8 +78,8 @@ class SubmittableCreator:
         try:
             defaults = {}
             date_created = cls.get_created(praw_object.author)
-            if date_created is not None:
-                defaults = {'date_created': date_created, 'active': False, 'inactive_date': datetime.now()}
+            if date_created is None:
+                defaults = {'date_created': None, 'active': False, 'inactive_date': datetime.now()}
             author = cls.db.get_or_create(User, name=praw_object.author.name, defaults=defaults, session=session)[0]
         except AttributeError:
             author = cls.db.get_or_create(User, name='deleted', session=session)[0]
@@ -91,7 +91,7 @@ class SubmittableCreator:
             defaults = {}
             date_created = cls.get_created(praw_object.subreddit)
             if date_created is None:
-                defaults = {'date_created': date_created, 'active': False, 'inactive_date': datetime.now()}
+                defaults = {'date_created': None, 'active': False, 'inactive_date': datetime.now()}
             subreddit = cls.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name, defaults=defaults,
                                              session=session)[0]
         except AttributeError:
