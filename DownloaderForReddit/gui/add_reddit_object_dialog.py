@@ -69,9 +69,11 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
                 import_list = text_importer.import_list_from_text_file(file_path)
                 self.added.extend(import_list)
                 self.multi_object_list_widget.addItems(import_list)
+                self.refresh_name_count()
             elif file_path.endswith('json'):
                 imported_objects = json_importer.import_json(file_path)
                 self.validate_imported_objects(imported_objects)
+                self.refresh_name_count()
 
     def get_import_file_path(self):
         file_path = QFileDialog.getOpenFileName(self, 'Select Import File', system_util.get_data_directory(),
