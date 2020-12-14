@@ -1,6 +1,19 @@
 # Change Log
 
 
+## v3.5.1-beta
+
+### Bug Fixes
+* Fix user/subreddit count label in add dialog when importing from file.
+* Fix list syncing errors when adding users/subreddits that may already be in the database, but not included on any
+download lists.
+  * Ex: A subreddit download is performed and a post is downloaded where the author is User-A.  Later, User-A is added 
+  to a user list for download.  User-A's download settings will now be synced with the user list they have now been 
+  added to, even though they were previously in the database with default settings.
+* Fix ability to delete multiple users/subreddits at the same time.
+
+
+
 ## v3.5.0-beta
 
 ### Minor Changes
