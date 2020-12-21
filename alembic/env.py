@@ -3,9 +3,10 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
-sys.path = ['', '..'] + sys.path[1:]
-
 from DownloaderForReddit.database.database_handler import DatabaseHandler
+from DownloaderForReddit.utils import injector
+
+sys.path = ['', '..'] + sys.path[1:]
 
 
 # this is the Alembic Config object, which provides
@@ -22,7 +23,13 @@ config = context.config
 # target_metadata = mymodel.Base.metadata
 target_metadata = DatabaseHandler.base.metadata
 
-config.set_main_option('sqlalchemy.url', DatabaseHandler.database_url)
+
+def get_database_url():
+    db = injector.get_database_handler()
+    return db.database_url
+
+
+config.set_main_option('sqlalchemy.url', get_database_url())
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
