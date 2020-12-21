@@ -1,3 +1,5 @@
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MalloyDelacroix/DownloaderForReddit)
+
 # Downloader For Reddit
 Downloader for Reddit is a GUI application for downloading content, self text, and comments submitted to reddit.  
 It has many advanced features and customizable settings to extract only content that you want and avoid duplicate 
