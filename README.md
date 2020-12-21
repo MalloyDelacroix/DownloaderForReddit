@@ -5,10 +5,12 @@ downloads.  Everything that is extracted is stored in an sqlite database.  A bui
 viewing and filtering all of the stored data.  The database can also be accessed with any software capable of reading 
 an sqlite database so the data you extract can be used and analysed in limitless ways.
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/MalloyDelacroix)
+
+
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MalloyDelacroix/DownloaderForReddit)
 ![BuildStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Build/badge.svg)
 ![TestStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Test/badge.svg)
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MalloyDelacroix/DownloaderForReddit)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XJQS23G9SN79G&currency_code=USD)
 ------------
 <br>
 
