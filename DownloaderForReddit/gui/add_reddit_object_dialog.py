@@ -50,12 +50,15 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
         self.name_count_label.setText(str(self.multi_object_list_widget.count()))
 
     def add_object_to_list(self):
-        name = self.multi_object_line_edit.text().strip()
-        if name != '' and name not in self.added:
-            self.added.append(name)
-            self.multi_object_list_widget.addItem(name)
-            self.multi_object_line_edit.clear()
-            self.refresh_name_count()
+        text = self.multi_object_line_edit.text().strip()
+        names = text.replace('\n', ',').split(',')
+        for name in names:
+            name = name.strip()
+            if name != '' and name not in self.added:
+                self.added.append(name)
+                self.multi_object_list_widget.addItem(name)
+                self.multi_object_line_edit.clear()
+                self.refresh_name_count()
 
     def remove_object_from_list(self):
         for index in self.multi_object_list_widget.selectedIndexes():
