@@ -1,7 +1,14 @@
 # Change Log
 
 
-## v3.5.1-beta
+## v3.6.0-beta
+
+### Minor Changes
+* Add command line arguments for ability to specify application data directory as well as user and subreddit download
+directories before the application starts.
+* Multiple user/subreddit names can now be added in one line in the add user/subreddit dialog.  Names are separated by
+either a comma or a newline character.  This enables names to be copy and pasted into the multi-add input and added
+all at once.
 
 ### Bug Fixes
 * Fix user/subreddit count label in add dialog when importing from file.
