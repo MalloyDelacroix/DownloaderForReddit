@@ -1,5 +1,3 @@
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MalloyDelacroix/DownloaderForReddit)
-
 # Downloader For Reddit
 Downloader for Reddit is a GUI application for downloading content, self text, and comments submitted to reddit.  
 It has many advanced features and customizable settings to extract only content that you want and avoid duplicate 
@@ -7,8 +5,10 @@ downloads.  Everything that is extracted is stored in an sqlite database.  A bui
 viewing and filtering all of the stored data.  The database can also be accessed with any software capable of reading 
 an sqlite database so the data you extract can be used and analysed in limitless ways.
 
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/MalloyDelacroix)
 ![BuildStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Build/badge.svg)
 ![TestStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Test/badge.svg)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MalloyDelacroix/DownloaderForReddit)
 ------------
 <br>
 
