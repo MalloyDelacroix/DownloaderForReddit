@@ -42,6 +42,8 @@ MB = KB * KB
 GB = MB * KB
 TB = GB * KB
 
+DATA_DIR = None
+
 
 def open_in_system(item):
     """
@@ -137,17 +139,20 @@ def get_data_directory():
     :return: The path to the DownloaderForReddit data directory for the users system.
     :rtype: str
     """
-    data_dir = os.path.join('SomeGuySoftware', 'DownloaderForReddit')
-    if sys.platform == 'win32':
-        path = os.path.join(os.getenv('APPDATA'), data_dir)
-    elif sys.platform.startswith('linux'):
-        path = os.path.join(os.path.expanduser('~'), '.%s' % data_dir)
-    elif sys.platform == 'darwin':
-        path = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', data_dir)
+    if DATA_DIR is None:
+        data_dir = os.path.join('SomeGuySoftware', 'DownloaderForReddit')
+        if sys.platform == 'win32':
+            path = os.path.join(os.getenv('APPDATA'), data_dir)
+        elif sys.platform.startswith('linux'):
+            path = os.path.join(os.path.expanduser('~'), '.%s' % data_dir)
+        elif sys.platform == 'darwin':
+            path = os.path.join(os.path.expanduser('~'), 'Library', 'Application Support', data_dir)
+        else:
+            path = 'Data'
+        create_directory(path)
+        return path
     else:
-        path = 'Data'
-    create_directory(path)
-    return path
+        return DATA_DIR
 
 
 def import_data_file(directory, file):

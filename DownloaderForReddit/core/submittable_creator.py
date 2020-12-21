@@ -11,7 +11,13 @@ from ..utils import injector
 class SubmittableCreator:
 
     logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
-    db = injector.get_database_handler()
+    db = None
+
+    @classmethod
+    def get_db(cls):
+        if cls.db is None:
+            cls.db = injector.get_database_handler()
+        return cls.db
 
     @classmethod
     def create_post(cls, submission: Submission, significant_id: int, session: Session, download_session_id: int) \
@@ -80,9 +86,9 @@ class SubmittableCreator:
             date_created = cls.get_created(praw_object.author)
             if date_created is None:
                 defaults = {'date_created': None, 'active': False, 'inactive_date': datetime.now()}
-            author = cls.db.get_or_create(User, name=praw_object.author.name, defaults=defaults, session=session)[0]
+            author = cls.get_db().get_or_create(User, name=praw_object.author.name, defaults=defaults, session=session)[0]
         except AttributeError:
-            author = cls.db.get_or_create(User, name='deleted', session=session)[0]
+            author = cls.get_db().get_or_create(User, name='deleted', session=session)[0]
         return author
 
     @classmethod
@@ -92,10 +98,10 @@ class SubmittableCreator:
             date_created = cls.get_created(praw_object.subreddit)
             if date_created is None:
                 defaults = {'date_created': None, 'active': False, 'inactive_date': datetime.now()}
-            subreddit = cls.db.get_or_create(Subreddit, name=praw_object.subreddit.display_name, defaults=defaults,
+            subreddit = cls.get_db().get_or_create(Subreddit, name=praw_object.subreddit.display_name, defaults=defaults,
                                              session=session)[0]
         except AttributeError:
-            subreddit = cls.db.get_or_create(Subreddit, name='deleted', session=session)[0]
+            subreddit = cls.get_db().get_or_create(Subreddit, name='deleted', session=session)[0]
         return subreddit
 
     @classmethod

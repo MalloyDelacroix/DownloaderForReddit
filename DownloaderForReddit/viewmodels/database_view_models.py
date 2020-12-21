@@ -11,11 +11,10 @@ class CustomItemModel:
 
     update_count = pyqtSignal(tuple)
 
-    settings_manager = injector.get_settings_manager()
-    db = injector.get_database_handler()
-
     def __init__(self):
         super().__init__()
+        self.settings_manager = injector.get_settings_manager()
+        self.db = injector.get_database_handler()
         self.limit = 50
         self.headers = []
         self.items = []

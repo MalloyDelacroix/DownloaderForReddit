@@ -26,14 +26,15 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 import ctypes
 import sys
-from PyQt5 import QtWidgets, QtCore
 import logging
+from PyQt5 import QtWidgets, QtCore
 
 from DownloaderForReddit.gui.downloader_for_reddit_gui import DownloaderForRedditGUI
 from DownloaderForReddit.messaging.message_receiver import MessageReceiver
 from DownloaderForReddit.database.migration import Migrator
 from DownloaderForReddit.utils import injector
 from DownloaderForReddit.local_logging import logger
+from DownloaderForReddit.core.cli import CLI
 from DownloaderForReddit.version import __version__
 
 
@@ -53,9 +54,16 @@ def check_migration():
     migrator.check_migration()
 
 
+def check_args(args):
+    cli = CLI()
+    cli.parse_args(args)
+
+
 def main():
     logger.make_logger()
     sys.excepthook = log_unhandled_exception
+
+    check_args(sys.argv[1:])
 
     check_migration()
 

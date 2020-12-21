@@ -10,11 +10,11 @@ from ..utils import system_util
 
 class DatabaseHandler:
 
-    database_path = os.path.join(system_util.get_data_directory(), const.DATABASE_NAME)
-    database_url = f'sqlite:///{database_path}'
     base = declarative_base()
 
     def __init__(self, *, in_memory=False):
+        self.database_path = os.path.join(system_util.get_data_directory(), const.DATABASE_NAME)
+        self.database_url = f'sqlite:///{self.database_path}'
         if not in_memory:
             self.engine = sqlalchemy.create_engine(self.database_url, echo=False,
                                                    connect_args={'check_same_thread': False})

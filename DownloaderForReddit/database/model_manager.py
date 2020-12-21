@@ -7,7 +7,7 @@ from .models import Post, Content, Comment, ListAssociation
 def check_session(method):
     def check(*args, **kwargs):
         if kwargs.get('session', None) is None:
-            with ModelManger.db.get_scoped_session() as session:
+            with injector.get_database_handler().get_scoped_session() as session:
                 kwargs['session'] = session
                 return method(*args, **kwargs)
         return method(*args, **kwargs)
@@ -16,8 +16,6 @@ def check_session(method):
 
 
 class ModelManger:
-
-    db = injector.get_database_handler()
 
     @classmethod
     @check_session
