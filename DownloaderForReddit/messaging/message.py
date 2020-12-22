@@ -21,6 +21,7 @@ class MessagePriority(Enum):
     WARNING = 3
     ERROR = 4
     CRITICAL = 5
+    REQUESTED = 10
 
 
 class Message:
@@ -62,6 +63,10 @@ class Message:
     @classmethod
     def send_critical(cls, message: str) -> None:
         cls.send(MessageType.TEXT, message, MessagePriority.CRITICAL)
+
+    @classmethod
+    def send_requested(cls, message: str) -> None:
+        cls.send(MessageType.TEXT, message, MessagePriority.REQUESTED)
 
     @classmethod
     def send_extraction_error(cls, message: str):

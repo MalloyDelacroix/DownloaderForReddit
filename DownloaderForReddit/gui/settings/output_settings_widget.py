@@ -38,6 +38,7 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
         self.set_label_stylesheet('warning')
         self.set_label_stylesheet('error')
         self.set_label_stylesheet('critical')
+        self.set_label_stylesheet('requested')
 
     def set_label_stylesheet(self, priority):
         r, g, b = self.colors[priority]

@@ -129,6 +129,7 @@ class SettingsManager:
         self.warning_color = self.get('output', 'warning_color', [255, 190, 0])
         self.error_color = self.get('output', 'error_color', [255, 125, 0])
         self.critical_color = self.get('output', 'critical_color', [255, 0, 0])
+        self.requested_color = self.get('output', 'requested_color', [0, 0, 0])
         self.show_priority_level = self.get('output', 'show_priority_level', True)
         self.clear_messages_on_run = self.get('output', 'clear_messages_on_run', True)
         self.output_saved_content_full_path = self.get('output', 'output_saved_content_full_path', False)
