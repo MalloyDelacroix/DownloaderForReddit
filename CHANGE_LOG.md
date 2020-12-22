@@ -18,6 +18,7 @@ download lists.
   to a user list for download.  User-A's download settings will now be synced with the user list they have now been 
   added to, even though they were previously in the database with default settings.
 * Fix ability to delete multiple users/subreddits at the same time.
+* Fix audio downloads for reddit hosted videos.
 
 
 
