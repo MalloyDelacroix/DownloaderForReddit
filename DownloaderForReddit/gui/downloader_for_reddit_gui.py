@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
+import io
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QFileDialog, QMessageBox, QWidget, QHBoxLayout)
@@ -46,13 +47,14 @@ from ..gui.settings.settings_dialog import SettingsDialog
 from ..gui.export_wizard import ExportWizard
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
+from ..core.cli import CLI
 from ..database.models import RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
 from ..database.model_manager import ModelManger
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
-from ..messaging.message import MessageType, MessagePriority
+from ..messaging.message import MessageType, MessagePriority, Message
 from ..version import __version__
 
 
@@ -165,6 +167,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_manual_menu_item.triggered.connect(self.open_user_manual)
         self.user_manual_menu_item.setDisabled(True)  # TODO: enable after online user manual is created
         self.ffmpeg_requirement_dialog_menu_item.triggered.connect(self.display_ffmpeg_info_dialog)
+        self.command_line_options_menu_item.triggered.connect(self.output_command_line_options)
         self.check_for_updates_menu_item.triggered.connect(lambda: self.check_for_updates(True))
         self.about_menu_item.triggered.connect(self.display_about_dialog)
         # endregion
@@ -1290,3 +1293,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             disable = message_dialogs.ffmpeg_warning(self)
             self.settings_manager.download_reddit_hosted_videos = not disable
             self.settings_manager.display_ffmpeg_warning = False
+
+    def output_command_line_options(self):
+        """
+        Outputs the command line options for users that run a compiled version of the application.  When compiled, the
+        cli output will not be seen by the user.  This shows them what options are available.
+        """
+        faux_file = io.StringIO()
+        cli = CLI()
+        cli.parser.print_help(faux_file)
+        Message.send_requested(faux_file.getvalue())

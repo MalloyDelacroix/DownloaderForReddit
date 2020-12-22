@@ -396,6 +396,7 @@ QListView::item:active {
     <addaction name="separator"/>
     <addaction name="user_manual_menu_item"/>
     <addaction name="ffmpeg_requirement_dialog_menu_item"/>
+    <addaction name="command_line_options_menu_item"/>
     <addaction name="separator"/>
     <addaction name="check_for_updates_menu_item"/>
     <addaction name="separator"/>
@@ -699,6 +700,11 @@ QListView::item:active {
   <action name="export_subreddit_list_menu_item">
    <property name="text">
     <string>Export Subreddit List</string>
+   </property>
+  </action>
+  <action name="command_line_options_menu_item">
+   <property name="text">
+    <string>Command Line Options</string>
    </property>
   </action>
  </widget>
