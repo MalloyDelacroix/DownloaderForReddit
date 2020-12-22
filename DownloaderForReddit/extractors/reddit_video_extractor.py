@@ -113,10 +113,13 @@ class RedditVideoExtractor(BaseExtractor):
             lambda url: re.sub('DASH_[A-z 0-9]+', 'DASH_audio', url)
         ]
         for parser in parsers:
-            url = parser(self.url)
-            if self.check_audio_content(url):
-                self.audio_url = url
-                return
+            try:
+                url = parser(self.url)
+                if self.check_audio_content(url):
+                    self.audio_url = url
+                    return
+            except AttributeError:
+                self.logger.error('Failed to get audio link for reddit video.', extra=self.get_log_data())
 
     def check_audio_content(self, audio_url):
         """

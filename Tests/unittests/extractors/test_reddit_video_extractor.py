@@ -54,7 +54,7 @@ class TestRedditVideoExtractor(ExtractorTest):
         vid_content = re.extracted_content[0]
         self.check(vid_content, fallback_url, post, title=f'{post.title}(video)')
         audio_content = re.extracted_content[1]
-        self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
+        self.check(audio_content, f'{url}/audio', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
     @patch(f'{PATH}.get_host_vid')
@@ -87,15 +87,15 @@ class TestRedditVideoExtractor(ExtractorTest):
         vid_content = re.extracted_content[0]
         self.check(vid_content, fallback_url, post, title=f'{post.title}(video)')
         audio_content = re.extracted_content[1]
-        self.check(audio_content, f'{url}/DASH_audio?source=fallback', post, title=f'{post.title}(audio)')
+        self.check(audio_content, f'{url}/audio', post, title=f'{post.title}(audio)')
         self.assertEqual(1, len(video_merger.videos_to_merge))
 
     @patch(f'{PATH}.get_host_vid')
-    def test_extract_video_with_audio_extract_exception(self, get_host_vid, get_audio, filter_content, make_title,
+    def test_extract_video_with_audio_extract_exception(self, get_host_vid, check_audio, filter_content, make_title,
                                                         make_dir_path):
         url = 'https://v.redd.it/lkfmw864od1971'
         fallback_url = url + '/DASH_2_4_M?source=fallback'
-        get_audio.side_effect = AttributeError
+        check_audio.side_effect = AttributeError
         submission = get_mock_reddit_video_submission(is_video=True,
                                                       media={'reddit_video': {'fallback_url': fallback_url}})
         get_host_vid.return_value = submission
@@ -108,7 +108,7 @@ class TestRedditVideoExtractor(ExtractorTest):
         re.extract_content()
 
         self.assertEqual(1, len(re.extracted_content))
-        self.check_output(re, fallback_url, post, title=f'{post.title}(video)')
+        self.check_output(re, fallback_url, post, title=f'{post.title}')
         self.assertEqual(0, len(video_merger.videos_to_merge))
 
     @patch(f'{PATH}.get_host_vid')
