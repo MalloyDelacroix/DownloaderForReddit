@@ -134,8 +134,8 @@ def set_file_modify_time(file_path, epoch):
 def get_data_directory():
     """
     Builds and returns a path the DownloaderForReddit data files location based on the users OS.  This will either be
-    in the AppData directory if using Windows, or a sub-directory directory named 'Data' in the applications directory
-    if using Linux.
+    in the AppData directory if using Windows, a hidden sub-directory in the home directory if using Linux, or in the
+    Applications directory on MacOS.
     :return: The path to the DownloaderForReddit data directory for the users system.
     :rtype: str
     """
