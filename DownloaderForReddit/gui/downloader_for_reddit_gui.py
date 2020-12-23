@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import os
+import io
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QFileDialog, QMessageBox, QWidget, QHBoxLayout)
@@ -46,13 +47,14 @@ from ..gui.settings.settings_dialog import SettingsDialog
 from ..gui.export_wizard import ExportWizard
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
+from ..core.cli import CLI
 from ..database.models import RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
 from ..database.model_manager import ModelManger
 from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
-from ..messaging.message import MessageType, MessagePriority
+from ..messaging.message import MessageType, MessagePriority, Message
 from ..version import __version__
 
 
@@ -165,6 +167,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_manual_menu_item.triggered.connect(self.open_user_manual)
         self.user_manual_menu_item.setDisabled(True)  # TODO: enable after online user manual is created
         self.ffmpeg_requirement_dialog_menu_item.triggered.connect(self.display_ffmpeg_info_dialog)
+        self.command_line_options_menu_item.triggered.connect(self.output_command_line_options)
         self.check_for_updates_menu_item.triggered.connect(lambda: self.check_for_updates(True))
         self.about_menu_item.triggered.connect(self.display_about_dialog)
         # endregion
@@ -368,9 +371,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addSeparator()
         delete_menu = menu.addMenu(f'Delete {object_type.title()}')
         delete_menu.addAction(f'Delete {object_type.title()}',
-                              lambda: self.delete_reddit_object(ros[0], delete_files=False))
+                              lambda: self.delete_reddit_objects(ros, delete_files=False))
         delete_menu.addAction(f'Delete {object_type.title()} with Files',
-                              lambda: self.delete_reddit_object(ros[0], delete_files=True))
+                              lambda: self.delete_reddit_objects(ros, delete_files=True))
         menu.addSeparator()
         disable_enable_download_option = True
         if all(x.download_enabled == enabled for x in ros):
@@ -874,25 +877,22 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                                                                  'folder_rename': rename_message,
                                                                  'removal_reason': reason})
 
-    def delete_reddit_object(self, reddit_object, delete_files):
-        try:
-            stats = reddit_object.get_stats()
-            text = f'Are you sure you want to delete this user from the database?\n' \
-                   f'{reddit_object.name} will be removed from {stats["lists"]} lists and\n' \
-                   f'{stats["posts"]} posts\n' \
-                   f'{stats["content"]} content items\n' \
-                   f'{stats["comments"]} comments\n' \
-                   f'will also be deleted from the database.  This action is not reversible.\n\n' \
-                   f'Do you want to proceed?'
-            remove = message_dialogs.warning_question_dialog(self, f'Delete {reddit_object.name}?', text)
-            if remove:
-                list_model = self.user_list_model if reddit_object.object_type == 'USER' else self.subreddit_list_model
-                list_name = list_model.close_session()
-                ModelManger.delete_reddit_object(reddit_object, delete_files=delete_files)
-                list_model.open_session(list_name=list_name)
-        except:
-            self.logger.error('Failed to delete reddit object', extra={'reddit_object': reddit_object.name},
-                              exc_info=True)
+    def delete_reddit_objects(self, reddit_objects, delete_files):
+        count_text = \
+            f'{len(reddit_objects)} {reddit_objects[0].object_type.lower()}{"s" if len(reddit_objects) > 1 else ""}'
+        text = f'Are you sure you want to permanently delete {count_text} from the database?\n' \
+               f'This action cannot be undone.'
+        remove = message_dialogs.warning_question_dialog(self, f'Delete {count_text}?', text)
+        if remove:
+            list_model = self.user_list_model if reddit_objects[0].object_type == 'USER' else self.subreddit_list_model
+            list_name = list_model.close_session()
+            for reddit_object in reddit_objects:
+                try:
+                    ModelManger.delete_reddit_object(reddit_object, delete_files=delete_files)
+                except:
+                    self.logger.error('Failed to delete reddit object', extra={'reddit_object': reddit_object.name},
+                                      exc_info=True)
+            list_model.open_session(list_name=list_name)
 
     def add_subreddit(self):
         if self.subreddit_list_model.list is None:
@@ -1293,3 +1293,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
             disable = message_dialogs.ffmpeg_warning(self)
             self.settings_manager.download_reddit_hosted_videos = not disable
             self.settings_manager.display_ffmpeg_warning = False
+
+    def output_command_line_options(self):
+        """
+        Outputs the command line options for users that run a compiled version of the application.  When compiled, the
+        cli output will not be seen by the user.  This shows them what options are available.
+        """
+        faux_file = io.StringIO()
+        cli = CLI()
+        cli.parser.print_help(faux_file)
+        Message.send_requested(faux_file.getvalue())

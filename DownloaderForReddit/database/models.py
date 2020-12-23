@@ -21,6 +21,9 @@ class BaseModel(Base):
     def get_session(self):
         return Session.object_session(self)
 
+    def save(self):
+        self.get_session().commit()
+
     def get_display_date(self, date_time):
         try:
             return general_utils.format_datetime(date_time)

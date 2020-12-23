@@ -69,7 +69,7 @@ class RedditVideoExtractor(BaseExtractor):
         except (AttributeError, TypeError):
             self.url = self.host_vid.url
         if self.url is not None:
-            self.audio_url = re.sub('DASH_[A-z 0-9]+', 'DASH_audio', self.url)
+            self.get_audio_url()
 
     def is_gif(self):
         return self.host_vid.media['reddit_video']['is_gif']
@@ -79,7 +79,7 @@ class RedditVideoExtractor(BaseExtractor):
             if self.url is not None:
                 video_content = self.get_video_content()
                 try:
-                    if self.check_audio_content():
+                    if self.audio_url is not None:
                         audio_content = self.get_audio_content()
                         if audio_content is not None and video_content is not None:
                             merge_set = video_merger.MergeSet(
@@ -99,10 +99,29 @@ class RedditVideoExtractor(BaseExtractor):
 
     def get_video_content(self):
         ext = 'mp4'
-        content = self.make_content(self.url, ext, name_modifier='(video)')
+        content = self.make_content(self.url, ext, name_modifier='(video)' if self.audio_url is not None else '')
         return content
 
-    def check_audio_content(self):
+    def get_audio_url(self):
+        """
+        Iterates through what I'm sure will be an increasing list of parsers to find a valid audio url. Because not only
+        does reddit separate the audio files from its video files when hosting a video, but they also change the path
+        to get the audio file about every three months for some reason.
+        """
+        parsers = [
+            lambda url: url.rsplit('/', 1)[0] + '/audio',
+            lambda url: re.sub('DASH_[A-z 0-9]+', 'DASH_audio', url)
+        ]
+        for parser in parsers:
+            try:
+                url = parser(self.url)
+                if self.check_audio_content(url):
+                    self.audio_url = url
+                    return
+            except AttributeError:
+                self.logger.error('Failed to get audio link for reddit video.', extra=self.get_log_data())
+
+    def check_audio_content(self, audio_url):
         """
         Checks the extracted audio url to make sure that a valid status code is returned.  Reddit videos are being
         mislabeled by reddit as being videos when they are in fact gifs.  This rectifies the problem by checking that
@@ -110,7 +129,7 @@ class RedditVideoExtractor(BaseExtractor):
         audio.
         :return: True if the audio link is valid, False if not.
         """
-        response = requests.head(self.audio_url)
+        response = requests.head(audio_url)
         return response.status_code == 200
 
     def get_audio_content(self):

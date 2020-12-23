@@ -60,7 +60,7 @@ class JsonStreamFormatter(jsonlogger.JsonFormatter):
         self.add_fields(log_record, record, message_dict)
         log_record = self.process_log_record(log_record)
 
-        return '%s%s' % (self.prefix, self.format_return(log_record))
+        return '%s%s\n' % (self.prefix, self.format_return(log_record))
 
     @staticmethod
     def format_return(log_record):

@@ -1,6 +1,27 @@
 # Change Log
 
 
+## v3.6.0-beta
+
+### Minor Changes
+* Add command line arguments for ability to specify application data directory as well as user and subreddit download
+directories before the application starts.
+* Multiple user/subreddit names can now be added in one line in the add user/subreddit dialog.  Names are separated by
+either a comma or a newline character.  This enables names to be copy and pasted into the multi-add input and added
+all at once.
+
+### Bug Fixes
+* Fix user/subreddit count label in add dialog when importing from file.
+* Fix list syncing errors when adding users/subreddits that may already be in the database, but not included on any
+download lists.
+  * Ex: A subreddit download is performed and a post is downloaded where the author is User-A.  Later, User-A is added 
+  to a user list for download.  User-A's download settings will now be synced with the user list they have now been 
+  added to, even though they were previously in the database with default settings.
+* Fix ability to delete multiple users/subreddits at the same time.
+* Fix audio downloads for reddit hosted videos.
+
+
+
 ## v3.5.0-beta
 
 ### Minor Changes
