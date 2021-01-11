@@ -45,6 +45,7 @@ from ..gui.database_views.database_dialog import DatabaseDialog
 from ..gui.database_views.database_statistics_dialog import DatabaseStatisticsDialog
 from ..gui.settings.settings_dialog import SettingsDialog
 from ..gui.export_wizard import ExportWizard
+from ..gui.invalid_reddit_object_dialog import InvalidRedditObjectDialog, InvalidObject
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
 from ..core.cli import CLI
@@ -82,6 +83,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_limit = 0
         self.progress = 0
         self.running = False
+        self.invalid_list = []
         self.db_handler = injector.get_database_handler()
         self.spinner = WaitingSpinner(self.user_list_view, roundness=80.0, opacity=10.0, fade=72.0, radius=10.0,
                                       lines=12, line_length=12.0, line_width=4.0, speed=1.4, color=(0, 0, 0))
@@ -835,10 +837,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         with self.db_handler.get_scoped_update_session() as session:
             reddit_object = session.query(RedditObject).get(reddit_object_id)
-            if message_dialogs.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
-                self.remove_problem_reddit_object(reddit_object,
-                                                  self.settings_manager.rename_invalidated_download_folders, 'Invalid',
-                                                  session)
+            self.invalid_list.append(InvalidObject(reddit_object.name, reddit_object.id, 'deleted'))
 
     def remove_forbidden_reddit_object(self, reddit_object_id):
         """
@@ -849,33 +848,33 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         with self.db_handler.get_scoped_update_session() as session:
             reddit_object = session.query(RedditObject).get(reddit_object_id)
-            if message_dialogs.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
-                self.remove_problem_reddit_object(reddit_object, False, 'Forbidden', session)
+            self.invalid_list.append(InvalidObject(reddit_object.name, reddit_object.id, 'suspended/banned'))
 
-    def remove_problem_reddit_object(self, reddit_object, rename, reason, session):
+    def remove_problem_reddit_object(self, reddit_object_id, rename, reason):
         """
         Handles the actual removal of the supplied reddit object from the list that it is found in.
-        :param reddit_object: The reddit object that is to be removed.
+        :param reddit_object_id: The id of the reddit object that is to be removed.
         :param rename: True if the objects download folder is to be renamed.
         :param reason: The reason that the object is being removed.  Used for logging purposes.
-        :param session: The sqlalchemy session that is currently open and is used for deleting the reddit object.
-        :type reddit_object: RedditObject
+        :type reddit_object_id: int
         :type rename: bool
         :type reason: str
-        :type session: Session
         """
-        session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object.id).delete()
-        rename_message = 'Not Attempted'
-        if rename:
-            path = general_utils.get_reddit_object_download_folder(reddit_object)
-            if not general_utils.rename_invalid_directory(path):
-                rename_message = 'Failed'
-                message_dialogs.failed_to_rename_error(self, reddit_object.name)
-            else:
-                rename_message = 'Success'
-        self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
-                                                                 'folder_rename': rename_message,
-                                                                 'removal_reason': reason})
+        with self.db_handler.get_scoped_update_session() as session:
+            reddit_object = session.query(RedditObject).get(reddit_object_id)
+            session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object_id).delete()
+            rename_message = 'Not Attempted'
+            if rename:
+                path = general_utils.get_reddit_object_download_folder(reddit_object)
+                if not general_utils.rename_invalid_directory(path):
+                    rename_message = 'Failed'
+                    message_dialogs.failed_to_rename_error(self, reddit_object.name)
+                else:
+                    rename_message = 'Success'
+            self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
+                                                                     'folder_rename': rename_message,
+                                                                     'removal_reason': reason})
+        self.refresh_list_models()
 
     def delete_reddit_objects(self, reddit_objects, delete_files):
         count_text = \
@@ -1084,11 +1083,24 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # list models are sorted to refresh the display list and
         self.user_list_model.refresh_session()
         self.subreddit_list_model.refresh_session()
+        self.check_invalid()
 
     def shift_download_buttons(self):
         self.download_button.setVisible(not self.running)
         self.soft_stop_download_button.setVisible(self.running)
         self.terminate_download_button.setVisible(self.running)
+
+    def check_invalid(self):
+        if len(self.invalid_list) > 0:
+            dialog = InvalidRedditObjectDialog(self.invalid_list)
+            dialog.exec_()
+            for ro in dialog.invalid_ros:
+                if ro.remove:
+                    if ro.status == 'deleted':
+                        rename = self.settings_manager.rename_invalidated_download_folders
+                    else:
+                        rename = False
+                    self.remove_problem_reddit_object(ro.id, rename, ro.status)
 
     def finish_progress_bar(self):
         """
