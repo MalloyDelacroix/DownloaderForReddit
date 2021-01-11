@@ -33,7 +33,8 @@ class Converter:
             'reddit_object_dialog',
             'schedule_settings',
             'settings',
-            'update_dialog'
+            'update_dialog',
+            'invalid_dialog',
         ]
 
     def run(self):
@@ -44,6 +45,7 @@ class Converter:
             name = self.get_method()
             method = getattr(self, name)
             method()
+            print('Conversion successful')
         except AttributeError:
             print(f'Command not recognized.  Choices are: ')
             self.list_methods()
@@ -156,6 +158,10 @@ class Converter:
     def object_settings(self):
         name = 'object_settings_widget'
         self.convert(name, 'widgets')
+
+    def invalid_dialog(self):
+        name = 'invalid_reddit_object_dialog'
+        self.convert(name)
 
 
 def main():
