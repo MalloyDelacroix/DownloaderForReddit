@@ -370,6 +370,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addSeparator()
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
         remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
+        self.move_reddit_object_menu_item(menu, ros, object_type, 'MOVE')
+        self.move_reddit_object_menu_item(menu, ros, object_type, 'COPY')
         menu.addSeparator()
         delete_menu = menu.addMenu(f'Delete {object_type.title()}')
         delete_menu.addAction(f'Delete {object_type.title()}',
@@ -393,6 +395,41 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         enable_download.setDisabled(disable_enable_download_option)
 
         menu.exec_(QCursor.pos())
+
+    def move_reddit_object_menu_item(self, main_menu, reddit_objects, ro_type, action_type):
+        if len(reddit_objects) > 1:
+            text = f'{action_type.lower()} {len(reddit_objects)} {ro_type.lower()}s to:'
+        else:
+            text = f'{action_type.lower()} {reddit_objects[0].name} to:'
+        menu = main_menu.addMenu(text)
+        current_list_model = self.user_list_model if ro_type == 'USER' else self.subreddit_list_model
+        current_list_id = current_list_model.list.id
+        with self.db_handler.get_scoped_session() as session:
+            lists = session.query(RedditObjectList)\
+                .filter(RedditObjectList.list_type == ro_type)\
+                .filter(RedditObjectList.id != current_list_id)
+        action = self.move_reddit_objects if action_type == 'MOVE' else self.copy_reddit_objects
+        for ro_list in lists:
+            menu.addAction(
+                ro_list.name,
+                lambda new_list=ro_list: action([x.id for x in reddit_objects], current_list_id, new_list.id))
+        return menu
+
+    def move_reddit_objects(self, reddit_object_ids, old_list_id, new_list_id):
+        with self.db_handler.get_scoped_update_session() as session:
+            for ro_id in reddit_object_ids:
+                session.query(ListAssociation)\
+                    .filter(ListAssociation.reddit_object_id == ro_id)\
+                    .filter(ListAssociation.reddit_object_list_id == old_list_id).delete()
+                new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
+                session.add(new_assoc)
+        self.refresh_list_models()
+
+    def copy_reddit_objects(self, reddit_object_ids, old_list_model, new_list_id):
+        with self.db_handler.get_scoped_update_session() as session:
+            for ro_id in reddit_object_ids:
+                new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
+                session.add(new_assoc)
 
     def user_list_combo_context_menu(self):
         menu = QMenu()
@@ -904,7 +941,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
         method to remove the object at the current index
         """
-        self.remove_reddit_object(self.get_selected_single_subreddit(), self.subreddit_list_model)
+        ros = self.get_selected_subreddits()
+        self.remove_reddit_object(ros, self.subreddit_list_model)
 
     def select_directory(self):
         """
