@@ -139,8 +139,9 @@ class RedditObjectListModel(QAbstractListModel):
         ro = self.session.query(RedditObject).filter(func.lower(RedditObject.name) == func.lower(name)).scalar()
         return ro in self.reddit_objects
 
-    def remove_reddit_object(self, reddit_object):
-        self.list.reddit_objects.remove(reddit_object)
+    def remove_reddit_objects(self, *reddit_objects):
+        for ro in reddit_objects:
+            self.list.reddit_objects.remove(ro)
         self.session.commit()
         self.sort_list()
 

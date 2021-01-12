@@ -369,7 +369,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                                              lambda: self.open_selected_reddit_object_dialog(ros[0].id, 'CONTENT'))
         menu.addSeparator()
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
-        remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
+        remove_text = f'Remove {ros[0].name}' if len(ros) == 1 else f'Remove {len(ros)} {object_type.title()}s'
+        remove_object = menu.addAction(remove_text, remove_command)
+        menu.addSeparator()
         self.move_reddit_object_menu_item(menu, ros, object_type, 'MOVE')
         self.move_reddit_object_menu_item(menu, ros, object_type, 'COPY')
         menu.addSeparator()
@@ -398,9 +400,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def move_reddit_object_menu_item(self, main_menu, reddit_objects, ro_type, action_type):
         if len(reddit_objects) > 1:
-            text = f'{action_type.lower()} {len(reddit_objects)} {ro_type.lower()}s to:'
+            text = f'{action_type.title()} {len(reddit_objects)} {ro_type.lower()}s to:'
         else:
-            text = f'{action_type.lower()} {reddit_objects[0].name} to:'
+            text = f'{action_type.title()} {reddit_objects[0].name} to:'
         menu = main_menu.addMenu(text)
         current_list_model = self.user_list_model if ro_type == 'USER' else self.subreddit_list_model
         current_list_id = current_list_model.list.id
@@ -844,23 +846,23 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the user list and the current user list model and calls a method to
         remove the object at the current index
         """
-        self.remove_reddit_object(self.get_selected_single_user(), self.user_list_model)
+        self.remove_reddit_object(self.get_selected_users(), self.user_list_model)
 
-    def remove_reddit_object(self, reddit_object, list_model):
+    def remove_reddit_object(self, reddit_objects, list_model):
         """
         Removes the supplied reddit object from the supplied list_model.
-        :param reddit_object: The reddit object to be removed.
+        :param reddit_objects: A list of reddit objects to be removed.
         :param list_model: The list model that the reddit object is to be removed from.
-        :type reddit_object: RedditObject
+        :type reddit_objects: list
         :type list_model: ListModel
         """
         try:
             remove = True
             if self.settings_manager.remove_reddit_object_warning:
-                remove, warn = message_dialogs.remove_reddit_object(self, reddit_object.name)
+                remove, warn = message_dialogs.remove_reddit_objects(self, reddit_objects)
                 self.settings_manager.remove_reddit_object_warning = not warn
             if remove:
-                list_model.remove_reddit_object(reddit_object)
+                list_model.remove_reddit_objects(*reddit_objects)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             message_dialogs.no_reddit_object_selected(self, list_model.list_type)
@@ -941,8 +943,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
         method to remove the object at the current index
         """
-        ros = self.get_selected_subreddits()
-        self.remove_reddit_object(ros, self.subreddit_list_model)
+        self.remove_reddit_object(self.get_selected_subreddits(), self.subreddit_list_model)
 
     def select_directory(self):
         """

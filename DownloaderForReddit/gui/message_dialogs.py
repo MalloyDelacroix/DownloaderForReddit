@@ -62,8 +62,8 @@ def remove_reddit_objects(parent, reddit_objects):
         text = f'Are you sure you want to remove {len(reddit_objects)} from the list?  These {ro_type.lower()}s will ' \
                f'remain in the database along with all associated information.'
     else:
-        text = f'Are you sure you want to remove {reddit_objects[0].name} from the list?  {reddit_objects[0].name} will' \
-               f'remain in the database along with all associated information.'
+        text = f'Are you sure you want to remove {reddit_objects[0].name} from the list?  {reddit_objects[0].name} ' \
+               f'will remain in the database along with all associated information.'
     return optional_question_dialog(parent, f'Remove {reddit_objects[0].name}?' if len(reddit_objects) > 1 else
                                     f'Remove {len(reddit_objects)} {ro_type.lower()}s?', text)
 
