@@ -45,6 +45,7 @@ from ..gui.database_views.database_dialog import DatabaseDialog
 from ..gui.database_views.database_statistics_dialog import DatabaseStatisticsDialog
 from ..gui.settings.settings_dialog import SettingsDialog
 from ..gui.export_wizard import ExportWizard
+from ..gui.invalid_reddit_object_dialog import InvalidRedditObjectDialog, InvalidObject
 from ..core.download_runner import DownloadRunner
 from ..core.update_runner import UpdateRunner
 from ..core.cli import CLI
@@ -82,6 +83,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_limit = 0
         self.progress = 0
         self.running = False
+        self.invalid_list = []
         self.db_handler = injector.get_database_handler()
         self.spinner = WaitingSpinner(self.user_list_view, roundness=80.0, opacity=10.0, fade=72.0, radius=10.0,
                                       lines=12, line_length=12.0, line_width=4.0, speed=1.4, color=(0, 0, 0))
@@ -367,7 +369,11 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                                              lambda: self.open_selected_reddit_object_dialog(ros[0].id, 'CONTENT'))
         menu.addSeparator()
         add_object = menu.addAction(f'Add {object_type.title()}', add_command)
-        remove_object = menu.addAction(f'Remove {object_type.title()}', remove_command)
+        remove_text = f'Remove {ros[0].name}' if len(ros) == 1 else f'Remove {len(ros)} {object_type.title()}s'
+        remove_object = menu.addAction(remove_text, remove_command)
+        menu.addSeparator()
+        self.move_reddit_object_menu_item(menu, ros, object_type, 'MOVE')
+        self.move_reddit_object_menu_item(menu, ros, object_type, 'COPY')
         menu.addSeparator()
         delete_menu = menu.addMenu(f'Delete {object_type.title()}')
         delete_menu.addAction(f'Delete {object_type.title()}',
@@ -391,6 +397,41 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         enable_download.setDisabled(disable_enable_download_option)
 
         menu.exec_(QCursor.pos())
+
+    def move_reddit_object_menu_item(self, main_menu, reddit_objects, ro_type, action_type):
+        if len(reddit_objects) > 1:
+            text = f'{action_type.title()} {len(reddit_objects)} {ro_type.lower()}s to:'
+        else:
+            text = f'{action_type.title()} {reddit_objects[0].name} to:'
+        menu = main_menu.addMenu(text)
+        current_list_model = self.user_list_model if ro_type == 'USER' else self.subreddit_list_model
+        current_list_id = current_list_model.list.id
+        with self.db_handler.get_scoped_session() as session:
+            lists = session.query(RedditObjectList)\
+                .filter(RedditObjectList.list_type == ro_type)\
+                .filter(RedditObjectList.id != current_list_id)
+        action = self.move_reddit_objects if action_type == 'MOVE' else self.copy_reddit_objects
+        for ro_list in lists:
+            menu.addAction(
+                ro_list.name,
+                lambda new_list=ro_list: action([x.id for x in reddit_objects], current_list_id, new_list.id))
+        return menu
+
+    def move_reddit_objects(self, reddit_object_ids, old_list_id, new_list_id):
+        with self.db_handler.get_scoped_update_session() as session:
+            for ro_id in reddit_object_ids:
+                session.query(ListAssociation)\
+                    .filter(ListAssociation.reddit_object_id == ro_id)\
+                    .filter(ListAssociation.reddit_object_list_id == old_list_id).delete()
+                new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
+                session.add(new_assoc)
+        self.refresh_list_models()
+
+    def copy_reddit_objects(self, reddit_object_ids, old_list_model, new_list_id):
+        with self.db_handler.get_scoped_update_session() as session:
+            for ro_id in reddit_object_ids:
+                new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
+                session.add(new_assoc)
 
     def user_list_combo_context_menu(self):
         menu = QMenu()
@@ -805,23 +846,23 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the user list and the current user list model and calls a method to
         remove the object at the current index
         """
-        self.remove_reddit_object(self.get_selected_single_user(), self.user_list_model)
+        self.remove_reddit_object(self.get_selected_users(), self.user_list_model)
 
-    def remove_reddit_object(self, reddit_object, list_model):
+    def remove_reddit_object(self, reddit_objects, list_model):
         """
         Removes the supplied reddit object from the supplied list_model.
-        :param reddit_object: The reddit object to be removed.
+        :param reddit_objects: A list of reddit objects to be removed.
         :param list_model: The list model that the reddit object is to be removed from.
-        :type reddit_object: RedditObject
+        :type reddit_objects: list
         :type list_model: ListModel
         """
         try:
             remove = True
             if self.settings_manager.remove_reddit_object_warning:
-                remove, warn = message_dialogs.remove_reddit_object(self, reddit_object.name)
+                remove, warn = message_dialogs.remove_reddit_objects(self, reddit_objects)
                 self.settings_manager.remove_reddit_object_warning = not warn
             if remove:
-                list_model.remove_reddit_object(reddit_object)
+                list_model.remove_reddit_objects(*reddit_objects)
         except (KeyError, AttributeError):
             self.logger.warning('Remove reddit object failed: No object selected', exc_info=True)
             message_dialogs.no_reddit_object_selected(self, list_model.list_type)
@@ -835,10 +876,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         with self.db_handler.get_scoped_update_session() as session:
             reddit_object = session.query(RedditObject).get(reddit_object_id)
-            if message_dialogs.reddit_object_not_valid(self, reddit_object.name, reddit_object.object_type):
-                self.remove_problem_reddit_object(reddit_object,
-                                                  self.settings_manager.rename_invalidated_download_folders, 'Invalid',
-                                                  session)
+            self.invalid_list.append(InvalidObject(reddit_object.name, reddit_object.id, 'deleted'))
 
     def remove_forbidden_reddit_object(self, reddit_object_id):
         """
@@ -849,33 +887,33 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         with self.db_handler.get_scoped_update_session() as session:
             reddit_object = session.query(RedditObject).get(reddit_object_id)
-            if message_dialogs.reddit_object_forbidden(self, reddit_object.name, reddit_object.object_type):
-                self.remove_problem_reddit_object(reddit_object, False, 'Forbidden', session)
+            self.invalid_list.append(InvalidObject(reddit_object.name, reddit_object.id, 'suspended/banned'))
 
-    def remove_problem_reddit_object(self, reddit_object, rename, reason, session):
+    def remove_problem_reddit_object(self, reddit_object_id, rename, reason):
         """
         Handles the actual removal of the supplied reddit object from the list that it is found in.
-        :param reddit_object: The reddit object that is to be removed.
+        :param reddit_object_id: The id of the reddit object that is to be removed.
         :param rename: True if the objects download folder is to be renamed.
         :param reason: The reason that the object is being removed.  Used for logging purposes.
-        :param session: The sqlalchemy session that is currently open and is used for deleting the reddit object.
-        :type reddit_object: RedditObject
+        :type reddit_object_id: int
         :type rename: bool
         :type reason: str
-        :type session: Session
         """
-        session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object.id).delete()
-        rename_message = 'Not Attempted'
-        if rename:
-            path = general_utils.get_reddit_object_download_folder(reddit_object)
-            if not general_utils.rename_invalid_directory(path):
-                rename_message = 'Failed'
-                message_dialogs.failed_to_rename_error(self, reddit_object.name)
-            else:
-                rename_message = 'Success'
-        self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
-                                                                 'folder_rename': rename_message,
-                                                                 'removal_reason': reason})
+        with self.db_handler.get_scoped_update_session() as session:
+            reddit_object = session.query(RedditObject).get(reddit_object_id)
+            session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object_id).delete()
+            rename_message = 'Not Attempted'
+            if rename:
+                path = general_utils.get_reddit_object_download_folder(reddit_object)
+                if not general_utils.rename_invalid_directory(path):
+                    rename_message = 'Failed'
+                    message_dialogs.failed_to_rename_error(self, reddit_object.name)
+                else:
+                    rename_message = 'Success'
+            self.logger.info('Invalid reddit object removed', extra={'object_name': reddit_object.name,
+                                                                     'folder_rename': rename_message,
+                                                                     'removal_reason': reason})
+        self.refresh_list_models()
 
     def delete_reddit_objects(self, reddit_objects, delete_files):
         count_text = \
@@ -905,7 +943,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         Gets the currently selected index from the subreddit list and the current subreddit list model and calls a
         method to remove the object at the current index
         """
-        self.remove_reddit_object(self.get_selected_single_subreddit(), self.subreddit_list_model)
+        self.remove_reddit_object(self.get_selected_subreddits(), self.subreddit_list_model)
 
     def select_directory(self):
         """
@@ -1084,11 +1122,24 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # list models are sorted to refresh the display list and
         self.user_list_model.refresh_session()
         self.subreddit_list_model.refresh_session()
+        self.check_invalid()
 
     def shift_download_buttons(self):
         self.download_button.setVisible(not self.running)
         self.soft_stop_download_button.setVisible(self.running)
         self.terminate_download_button.setVisible(self.running)
+
+    def check_invalid(self):
+        if len(self.invalid_list) > 0:
+            dialog = InvalidRedditObjectDialog(self.invalid_list)
+            dialog.exec_()
+            for ro in dialog.invalid_ros:
+                if ro.remove:
+                    if ro.status == 'deleted':
+                        rename = self.settings_manager.rename_invalidated_download_folders
+                    else:
+                        rename = False
+                    self.remove_problem_reddit_object(ro.id, rename, ro.status)
 
     def finish_progress_bar(self):
         """

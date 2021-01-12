@@ -70,7 +70,6 @@ class RedditObjectListModel(QAbstractListModel):
             self.session.add(ro_list)
             self.list = ro_list
             self.sort_list()
-            self.update_row_count(self.list.reddit_objects.count())
             return True
         return False
 
@@ -91,7 +90,6 @@ class RedditObjectListModel(QAbstractListModel):
                 .filter(RedditObjectList.name == list_name)\
                 .filter(RedditObjectList.list_type == self.list_type)\
                 .one()
-            self.update_row_count(self.list.reddit_objects.count())
             self.sort_list()
         except NoResultFound:
             pass
@@ -105,6 +103,7 @@ class RedditObjectListModel(QAbstractListModel):
                 f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc).all()
             self.refresh()
             self.check_last_added()
+            self.update_row_count(len(self.reddit_objects))
         except AttributeError:
             # AttributeError indicates that no list is set for this view model
             pass
@@ -140,10 +139,10 @@ class RedditObjectListModel(QAbstractListModel):
         ro = self.session.query(RedditObject).filter(func.lower(RedditObject.name) == func.lower(name)).scalar()
         return ro in self.reddit_objects
 
-    def remove_reddit_object(self, reddit_object):
-        self.list.reddit_objects.remove(reddit_object)
+    def remove_reddit_objects(self, *reddit_objects):
+        for ro in reddit_objects:
+            self.list.reddit_objects.remove(ro)
         self.session.commit()
-        self.update_row_count(self.row_count - 1)
         self.sort_list()
 
     def add_reddit_object(self, name: str):

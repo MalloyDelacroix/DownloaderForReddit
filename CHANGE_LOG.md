@@ -1,6 +1,15 @@
 # Change Log
 
 
+## v3.7.0-beta
+
+### Minor Changes
+* Invalid or deleted users/subreddits are now handled all at once at the end of a download session instead of in their
+own individual dialogs.
+* Add context menu option for moving and copying users/subreddits from one list to another.
+* Add ability to remove multiple users/subreddits from a list at a time.
+
+
 ## v3.6.0-beta
 
 ### Minor Changes
