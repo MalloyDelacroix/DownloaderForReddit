@@ -11,6 +11,7 @@ an sqlite database so the data you extract can be used and analysed in limitless
 ![BuildStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Build/badge.svg)
 ![TestStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Test/badge.svg)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XJQS23G9SN79G&currency_code=USD)
+![GitHub all releases](https://img.shields.io/github/downloads/malloydelacroix/downloaderforreddit/total)
 ------------
 <br>
 
