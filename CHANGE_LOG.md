@@ -1,6 +1,13 @@
 # Change Log
 
 
+## v3.8.0-beta
+
+### Minor Changes
+* Users are now notified if they are adding a user/subreddit that already exists in another list, and are asked how
+they would like to proceed.
+
+
 ## v3.7.0-beta
 
 ### Minor Changes
