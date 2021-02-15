@@ -89,6 +89,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="existing_reddit_object_dialog_checkbox">
+        <property name="text">
+         <string>Ask before adding existing users/subreddits that are located in other lists</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>

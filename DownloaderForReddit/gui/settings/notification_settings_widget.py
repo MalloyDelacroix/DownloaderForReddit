@@ -23,6 +23,7 @@ class NotificationSettingsWidget(AbstractSettingsWidget, Ui_NotificationSettings
         self.remove_reddit_object_warning_checkbox.setChecked(self.settings.remove_reddit_object_warning)
         self.remove_reddit_object_list_warning_checkbox.setChecked(self.settings.remove_reddit_object_list_warning)
         self.large_post_update_warning_checkbox.setChecked(self.settings.large_post_update_warning)
+        self.existing_reddit_object_dialog_checkbox.setChecked(self.settings.check_existing_reddit_objects)
 
     def apply_settings(self):
         self.settings.update_notification_level = self.update_level_combo.currentData(Qt.UserRole)
@@ -31,3 +32,4 @@ class NotificationSettingsWidget(AbstractSettingsWidget, Ui_NotificationSettings
         self.settings.remove_reddit_object_list_warning = \
             self.remove_reddit_object_list_warning_checkbox.isChecked()
         self.settings.large_post_update_warning = self.large_post_update_warning_checkbox.isChecked()
+        self.settings.check_existing_reddit_objects = self.existing_reddit_object_dialog_checkbox.isChecked()

@@ -146,8 +146,6 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
             if len(existing_names) > 0:
                 dialog = ExistingNamesDialog(existing_names)
                 dialog.exec_()
-                # if rep == QDialog.Accepted:
-                #     self.exclude.extend(list(existing_names.keys()))
                 for key, value in dialog.decisions.items():
                     if not value:
                         self.exclude.append(key)

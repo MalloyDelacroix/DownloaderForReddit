@@ -27,7 +27,6 @@ class ExistingNamesDialog(QDialog, Ui_ExistingNameDialog):
             checkbox = QCheckBox()
             checkbox.toggled.connect(lambda checked, name=name: self.decisions.update({name: checked}))
             self.checkboxes.append(checkbox)
-            # self.name_table_widget.setItem(row, 0, QTableWidgetItem(checkbox))
             self.name_table_widget.setItem(row, 1, QTableWidgetItem(name))
             self.name_table_widget.setItem(row, 2, QTableWidgetItem(',  '.join(lists)))
             self.name_table_widget.setCellWidget(row, 0, checkbox)
