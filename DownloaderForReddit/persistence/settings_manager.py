@@ -192,6 +192,7 @@ class SettingsManager:
         self.remove_reddit_object_warning = self.get('notification_defaults', 'remove_reddit_object_warning', True)
         self.remove_reddit_object_list_warning = self.get('notification_defaults', 'remove_reddit_object_list_warning',
                                                           True)
+        self.check_existing_reddit_objects = self.get('notification_defaults', 'check_existing_reddit_objects', True)
         # endregion
 
         # region Imgur
