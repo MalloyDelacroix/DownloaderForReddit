@@ -76,7 +76,7 @@ def main():
 
     window = DownloaderForRedditGUI(queue, receiver, scheduler)
 
-    receiver.text_output.connect(window.output_view_model.handle_message)
+    receiver.text_output.connect(window.handle_message)
     receiver.non_text_output.connect(window.handle_progress)
 
     receiver.moveToThread(message_thread)

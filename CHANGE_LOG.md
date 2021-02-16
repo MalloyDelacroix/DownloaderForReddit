@@ -8,6 +8,7 @@
   they would like to proceed.
 * Add ability to set custom save paths for downloaded posts and comments that override the global base save directories.  
   Can be set in the user/subreddit settings dialog for each user/subreddit.
+* Add status tray icon with download options and notifications.
   
 ### Bug Fixes
 * Fix crashing when right clicking on empty user/subreddit fields.
