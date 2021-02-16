@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>577</width>
-    <height>1330</height>
+    <height>1386</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -310,7 +310,7 @@
          </item>
         </layout>
        </item>
-       <item row="24" column="0" colspan="2">
+       <item row="25" column="0" colspan="2">
         <widget class="QLabel" name="post_path_example_label">
          <property name="text">
           <string>Post path example</string>
@@ -391,6 +391,40 @@
            </property>
            <property name="text">
             <string>Keep custom limit</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="24" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows you to set a custom path at which content from posts will be saved.  If left blank, the global setting for either user or subreddit will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Custom Save Directory:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="24" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="custom_post_save_path_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="choose_custom_post_save_path_button">
+           <property name="toolTip">
+            <string>Choose folder</string>
+           </property>
+           <property name="text">
+            <string>...</string>
            </property>
           </widget>
          </item>
@@ -568,7 +602,7 @@
          </item>
         </layout>
        </item>
-       <item row="16" column="0" colspan="2">
+       <item row="17" column="0" colspan="2">
         <widget class="QLabel" name="comment_path_example_label">
          <property name="text">
           <string>Comment path example</string>
@@ -630,6 +664,40 @@
           <widget class="QToolButton" name="comment_reply_max_button">
            <property name="text">
             <string>Max</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="16" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows you to set a custom path at which content from comments will be saved.  If left blank, the global setting for either user or subreddit will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Custom Save Directory:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="custom_comment_save_path_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="choose_custom_comment_save_path_button">
+           <property name="toolTip">
+            <string>Choose folder</string>
+           </property>
+           <property name="text">
+            <string>...</string>
            </property>
           </widget>
          </item>

@@ -4,8 +4,10 @@
 ## v3.8.0-beta
 
 ### Minor Changes
-* Users are now notified if they are adding a user/subreddit that already exists in another list, and are asked how
-they would like to proceed.
+* Users are now notified if they are adding a user/subreddit that already exists in another list, and are asked how 
+  they would like to proceed.
+* Add ability to set custom save paths for downloaded posts and comments that override the global base save directories.  
+  Can be set in the user/subreddit settings dialog for each user/subreddit.
 
 
 ## v3.7.0-beta

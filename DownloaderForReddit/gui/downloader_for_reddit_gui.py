@@ -945,21 +945,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         self.remove_reddit_object(self.get_selected_subreddits(), self.subreddit_list_model)
 
-    def select_directory(self):
-        """
-        Opens a dialog for the user to select a directory then verifies and returns the selected directory if it exists,
-        and returns None if it does not.
-        :return: A path to a user selected directory.
-        :rtype: str
-        """
-        folder = str(QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
-                                                                       self.settings_manager.save_directory))
-        if os.path.isdir(folder):
-            return folder
-        else:
-            message_dialogs.invalid_file_path(self)
-            return None
-
     def check_existing_object_for_download(self, existing_tuple: tuple):
         """
         Called when existing names are added to a list.  Takes a tuple containing the list type, list of existing id's,

@@ -247,8 +247,10 @@ class RedditObject(BaseModel):
     inactive_date = Column(DateTime, nullable=True)
     post_download_naming_method = Column(String, default='%[title]')
     post_save_structure = Column(String, default='%[author_name]')
+    custom_post_save_path = Column(String, nullable=True)
     comment_naming_method = Column(String, default='%[author_name]-comment')
     comment_save_structure = Column(String, default='%[post_author_name]/Comments/%[post_title]')
+    custom_comment_save_path = Column(String, nullable=True)
     new = Column(Boolean, default=True)
     lists = relationship(RedditObjectList, secondary='reddit_object_list_association', lazy='dynamic')
 
@@ -295,7 +297,7 @@ class RedditObject(BaseModel):
 
     @property
     def date_limit_export(self):
-        self.get_standard_date(self.date_limit)
+        return self.get_standard_date(self.date_limit)
 
     @property
     def last_download(self):
