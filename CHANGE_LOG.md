@@ -12,6 +12,7 @@
   
 ### Bug Fixes
 * Fix crashing when right clicking on empty user/subreddit fields.
+* Fix various download scheduling errors
 
 
 ## v3.7.0-beta
