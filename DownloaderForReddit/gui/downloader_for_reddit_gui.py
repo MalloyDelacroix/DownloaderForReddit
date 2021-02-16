@@ -1363,7 +1363,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.addSeparator()
         menu.addAction('Remove Icon', lambda: self.system_tray_icon.hide())
         menu.addAction('Exit', self.close)
-        menu.addAction('Show Message', lambda: Message.send_status_tray('Fucking Message!!!'))
 
         self.system_tray_icon.setContextMenu(menu)
         self.system_tray_icon.activated.connect(self.handle_tray_icon_click)
