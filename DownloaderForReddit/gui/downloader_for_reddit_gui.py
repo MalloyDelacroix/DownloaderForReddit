@@ -407,7 +407,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         if len(reddit_objects) > 1:
             text = f'{action_type.title()} {len(reddit_objects)} {ro_type.lower()}s to:'
         else:
-            text = f'{action_type.title()} {reddit_objects[0].name} to:'
+            text = f'{action_type.title()} {reddit_objects[0].name if len(reddit_objects) else ""} to:'
         menu = main_menu.addMenu(text)
         current_list_model = self.user_list_model if ro_type == 'USER' else self.subreddit_list_model
         current_list_id = current_list_model.list.id
