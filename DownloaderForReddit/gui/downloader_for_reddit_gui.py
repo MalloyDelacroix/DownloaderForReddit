@@ -86,7 +86,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.db_handler = injector.get_database_handler()
         self.spinner = WaitingSpinner(self.user_list_view, roundness=80.0, opacity=10.0, fade=72.0, radius=10.0,
                                       lines=12, line_length=12.0, line_width=4.0, speed=1.4, color=(0, 0, 0))
-        self.tray_icon_image = QIcon(QPixmap('Resources/Images/RedditDownloaderIcon.png'))
+        self.tray_icon_image = \
+            QIcon(QPixmap('Resources/Images/RedditDownloaderIcon.png').scaled(48, 48))
         self.system_tray_icon = QSystemTrayIcon(icon=self.tray_icon_image)
 
         # region Settings
