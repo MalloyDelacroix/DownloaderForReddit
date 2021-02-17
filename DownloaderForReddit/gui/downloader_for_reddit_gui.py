@@ -86,7 +86,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.db_handler = injector.get_database_handler()
         self.spinner = WaitingSpinner(self.user_list_view, roundness=80.0, opacity=10.0, fade=72.0, radius=10.0,
                                       lines=12, line_length=12.0, line_width=4.0, speed=1.4, color=(0, 0, 0))
-        self.system_tray_icon = QSystemTrayIcon(icon=QIcon(QPixmap('Resources/Images/RedditDownloaderIcon.png')))
+        self.tray_icon_image = QIcon(QPixmap('Resources/Images/RedditDownloaderIcon.png'))
+        self.system_tray_icon = QSystemTrayIcon(icon=self.tray_icon_image)
 
         # region Settings
         self.settings_manager = injector.get_settings_manager()
@@ -1382,7 +1383,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
     def set_tray_icon_message(self, message):
         if not QApplication.focusWindow() and self.settings_manager.show_system_tray_notifications:
-            self.system_tray_icon.showMessage('Downloader For Reddit', message.message,
+            self.system_tray_icon.showMessage('Downloader For Reddit', message.message, self.tray_icon_image,
                                               self.settings_manager.tray_icon_message_display_length * 1000)
 
     def minimize_to_tray(self):
