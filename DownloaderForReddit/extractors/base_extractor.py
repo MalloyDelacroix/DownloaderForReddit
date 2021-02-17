@@ -215,11 +215,13 @@ class BaseExtractor:
         :return: The base path to be used to save the content that is being extracted.
         """
         if is_comment:
-            if self.significant_reddit_object.custom_comment_save_path is not None:
-                return self.significant_reddit_object.custom_comment_save_path
+            custom_path = self.significant_reddit_object.custom_comment_save_path
+            if custom_path is not None and custom_path != '':
+                return custom_path
         else:
-            if self.significant_reddit_object.custom_post_save_path is not None:
-                return self.significant_reddit_object.custom_post_save_path
+            custom_path = self.significant_reddit_object.custom_post_save_path
+            if custom_path is not None and custom_path != '':
+                return custom_path
         if self.significant_reddit_object.object_type == 'USER':
             base = self.settings_manager.user_save_directory
         else:

@@ -165,8 +165,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.post_save_path_structure_line_edit.textChanged.connect(
             lambda: self.set_object_value('post_save_structure', self.post_save_path_structure_line_edit.text())
         )
+        self.custom_post_save_path_line_edit.textChanged.connect(self.sync_post_path_example)
         self.custom_post_save_path_line_edit.textChanged.connect(
-            lambda: self.set_object_value('custom_post_save_path', self.custom_post_save_path_line_edit.text())
+            lambda: self.set_object_value('custom_post_save_path', self.custom_post_save_path_line_edit.text(),
+                                          set_null=True)
         )
 
         self.comment_extract_combo.currentIndexChanged.connect(
@@ -201,8 +203,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.comment_save_path_structure_line_edit.textChanged.connect(
             lambda: self.set_object_value('comment_save_structure', self.comment_save_path_structure_line_edit.text())
         )
+        self.custom_comment_save_path_line_edit.textChanged.connect(self.sync_comment_path_example)
         self.custom_comment_save_path_line_edit.textChanged.connect(
-            lambda: self.set_object_value('custom_comment_save_path', self.custom_comment_save_path_line_edit.text())
+            lambda: self.set_object_value('custom_comment_save_path', self.custom_comment_save_path_line_edit.text(),
+                                          set_null=True)
         )
 
     def setup_checkbox(self, checkbox, attribute):
@@ -234,8 +238,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         epoch = self.custom_date_limit_edit.dateTime().toSecsSinceEpoch()
         self.set_object_value('date_limit', datetime.fromtimestamp(epoch))
 
-    def set_object_value(self, attr, value):
+    def set_object_value(self, attr, value, set_null=False):
         for obj in self.selected_objects:
+            if set_null and value == '':
+                value = None
             setattr(obj, attr, value)
             if obj.object_type == 'REDDIT_OBJECT_LIST':
                 obj.updated = True

@@ -19,9 +19,13 @@ depends_on = None
 def upgrade():
     op.add_column('reddit_object', sa.Column('custom_post_save_path', sa.String(), nullable=True))
     op.add_column('reddit_object', sa.Column('custom_comment_save_path', sa.String(), nullable=True))
+    op.add_column('reddit_object_list', sa.Column('custom_post_save_path', sa.String(), nullable=True))
+    op.add_column('reddit_object_list', sa.Column('custom_comment_save_path', sa.String(), nullable=True))
 
 
 def downgrade():
     with op.batch_alter_table('reddit_object') as batch:
+        batch.drop_column('custom_post_save_path')
+        batch.drop_column('custom_comment_save_path')
         batch.drop_column('custom_post_save_path')
         batch.drop_column('custom_comment_save_path')

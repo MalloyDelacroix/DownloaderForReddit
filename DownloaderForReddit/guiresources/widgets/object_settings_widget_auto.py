@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_ObjectSettingsWidget(object):
     def setupUi(self, ObjectSettingsWidget):
         ObjectSettingsWidget.setObjectName("ObjectSettingsWidget")
-        ObjectSettingsWidget.resize(577, 1386)
+        ObjectSettingsWidget.resize(577, 1407)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(ObjectSettingsWidget)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -168,6 +168,7 @@ class Ui_ObjectSettingsWidget(object):
         self.horizontalLayout_5.addWidget(self.post_save_structure_available_tokens_button)
         self.post_download_form.setLayout(23, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout_5)
         self.post_path_example_label = QtWidgets.QLabel(ObjectSettingsWidget)
+        self.post_path_example_label.setWordWrap(True)
         self.post_path_example_label.setObjectName("post_path_example_label")
         self.post_download_form.setWidget(25, QtWidgets.QFormLayout.SpanningRole, self.post_path_example_label)
         self.absolute_date_limit_radio = QtWidgets.QRadioButton(ObjectSettingsWidget)
@@ -300,6 +301,7 @@ class Ui_ObjectSettingsWidget(object):
         self.horizontalLayout_7.addWidget(self.comment_save_structure_available_tokens_button)
         self.comment_download_form.setLayout(15, QtWidgets.QFormLayout.FieldRole, self.horizontalLayout_7)
         self.comment_path_example_label = QtWidgets.QLabel(ObjectSettingsWidget)
+        self.comment_path_example_label.setWordWrap(True)
         self.comment_path_example_label.setObjectName("comment_path_example_label")
         self.comment_download_form.setWidget(17, QtWidgets.QFormLayout.SpanningRole, self.comment_path_example_label)
         self.label_2 = QtWidgets.QLabel(ObjectSettingsWidget)

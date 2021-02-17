@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>577</width>
-    <height>1386</height>
+    <height>1407</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -315,6 +315,9 @@
          <property name="text">
           <string>Post path example</string>
          </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item row="8" column="0">
@@ -606,6 +609,9 @@
         <widget class="QLabel" name="comment_path_example_label">
          <property name="text">
           <string>Comment path example</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

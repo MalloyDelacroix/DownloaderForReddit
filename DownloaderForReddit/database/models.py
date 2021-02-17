@@ -105,8 +105,10 @@ class RedditObjectList(BaseModel):
     update_date_limit = Column(Boolean, default=True)
     post_download_naming_method = Column(String, default='%[title]')
     post_save_structure = Column(String, default='%[author_name]')
+    custom_post_save_path = Column(String, nullable=True)
     comment_naming_method = Column(String, default='%[author_name]-comment')
     comment_save_structure = Column(String, default='%[post_author_name]/Comments/%[post_title]')
+    custom_comment_save_path = Column(String, nullable=True)
     # endregion
 
     object_type = 'REDDIT_OBJECT_LIST'
@@ -200,8 +202,10 @@ class RedditObjectList(BaseModel):
             'update_date_limit': self.update_date_limit,
             'post_download_naming_method': self.post_download_naming_method,
             'post_save_structure': self.post_save_structure,
+            'custom_post_save_path': self.custom_post_save_path,
             'comment_naming_method': self.comment_naming_method,
-            'comment_save_structure': self.comment_save_structure
+            'comment_save_structure': self.comment_save_structure,
+            'custom_comment_save_path': self.custom_comment_save_path,
         }
 
 
