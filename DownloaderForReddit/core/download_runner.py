@@ -478,6 +478,7 @@ class DownloadRunner(QObject):
             message = f'\nDownload stopped{message}'
         self.logger.info('Download complete', extra=extra)
         Message.send_info(message)
+        Message.send_status_tray(message)
 
     def stop_download(self, hard_stop=False):
         self.stopped = True

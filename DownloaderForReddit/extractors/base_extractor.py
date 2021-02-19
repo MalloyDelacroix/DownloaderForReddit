@@ -199,15 +199,34 @@ class BaseExtractor:
         if self.comment is None:
             token_string = self.significant_reddit_object.post_save_structure
             sub_path = TokenParser.parse_tokens(self.post, token_string)
+            base = self.get_base_path(is_comment=False)
         else:
             token_string = self.significant_reddit_object.comment_save_structure
             sub_path = TokenParser.parse_tokens(self.comment, token_string)
+            base = self.get_base_path(is_comment=True)
+        clean_sub_path = system_util.clean_path(sub_path, ends_with_dir=True)
+        return system_util.join_path(base, clean_sub_path)
+
+    def get_base_path(self, is_comment: bool) -> str:
+        """
+        Gets and returns the base path to be used with respect to whether the content is from a comment or a post
+        and whether the reddit object has a custom base save path set.
+        :param is_comment: True if the content is coming from a comment, false if it is not.
+        :return: The base path to be used to save the content that is being extracted.
+        """
+        if is_comment:
+            custom_path = self.significant_reddit_object.custom_comment_save_path
+            if custom_path is not None and custom_path != '':
+                return custom_path
+        else:
+            custom_path = self.significant_reddit_object.custom_post_save_path
+            if custom_path is not None and custom_path != '':
+                return custom_path
         if self.significant_reddit_object.object_type == 'USER':
             base = self.settings_manager.user_save_directory
         else:
             base = self.settings_manager.subreddit_save_directory
-        clean_sub_path = system_util.clean_path(sub_path, ends_with_dir=True)
-        return system_util.join_path(base, clean_sub_path)
+        return base
 
     def filter_content(self, url, extension):
         """

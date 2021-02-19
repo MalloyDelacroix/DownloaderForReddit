@@ -1,12 +1,13 @@
+import os
 from datetime import datetime
-from PyQt5.QtWidgets import QWidget, QMenu, QButtonGroup
+from PyQt5.QtWidgets import QWidget, QMenu, QButtonGroup, QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 
 from ...guiresources.widgets.object_settings_widget_auto import Ui_ObjectSettingsWidget
 from ...database.models import User, Subreddit, Post
 from ...database.model_enums import *
-from ...utils import TokenParser
+from ...utils import TokenParser, injector
 from ...core import const
 
 
@@ -15,6 +16,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
         self.setupUi(self)
+        self.settings_manager = injector.get_settings_manager()
         self.setup_widgets()
         self.connect_edit_widgets()
         self.selected_objects = []
@@ -47,12 +49,19 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         date_lock_group.addButton(self.update_custom_date_limit_radio)
         date_lock_group.addButton(self.do_not_update_custom_date_limit_radio)
 
+    @property
+    def object_type(self):
+        try:
+            return self.selected_objects[0].object_type
+        except (IndexError, AttributeError):
+            return None
+
     def set_objects(self, object_list):
         if object_list:
             self.selected_objects = object_list
             self.sync_post()
             self.sync_widgets_to_object()
-            self.sync_sort_methods(self.selected_objects[0].object_type)
+            self.sync_sort_methods(self.object_type)
 
     def sync_sort_methods(self, object_type):
         pos = self.post_sort_combo.findData(PostSortMethod.RISING, Qt.UserRole)
@@ -92,6 +101,9 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             lambda: self.path_token_context_menu(self.post_save_path_structure_line_edit))
         self.post_save_structure_available_tokens_button.clicked.connect(
             lambda: self.path_token_context_menu(self.post_save_path_structure_line_edit))
+        self.choose_custom_post_save_path_button.clicked.connect(
+            lambda: self.custom_post_save_path_line_edit.setText(self.choose_file_path())
+        )
 
         self.comment_download_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.comment_download_naming_line_edit.customContextMenuRequested.connect(
@@ -104,6 +116,9 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             lambda: self.path_token_context_menu(self.comment_save_path_structure_line_edit))
         self.comment_save_structure_available_tokens_button.clicked.connect(
             lambda: self.path_token_context_menu(self.comment_save_path_structure_line_edit))
+        self.choose_custom_comment_save_path_button.clicked.connect(
+            lambda: self.custom_comment_save_path_line_edit.setText(self.choose_file_path())
+        )
 
         self.post_limit_max_button.clicked.connect(
             lambda: self.post_limit_spinbox.setValue(self.post_limit_spinbox.maximum()))
@@ -131,7 +146,8 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.setup_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
         self.self_post_file_format_combo.currentIndexChanged.connect(
             lambda: self.set_object_value('self_post_file_format',
-                                          self.self_post_file_format_combo.currentData(Qt.UserRole)))
+                                          self.self_post_file_format_combo.currentData(Qt.UserRole))
+        )
         self.setup_checkbox(self.download_videos_checkbox, 'download_videos')
         self.setup_checkbox(self.download_images_checkbox, 'download_images')
         self.setup_checkbox(self.download_gifs_checkbox, 'download_gifs')
@@ -143,10 +159,18 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         )
         self.post_download_naming_line_edit.textChanged.connect(self.sync_post_path_example)
         self.post_download_naming_line_edit.textChanged.connect(
-            lambda: self.set_object_value('post_download_naming_method', self.post_download_naming_line_edit.text()))
+            lambda: self.set_object_value('post_download_naming_method', self.post_download_naming_line_edit.text())
+        )
         self.post_save_path_structure_line_edit.textChanged.connect(self.sync_post_path_example)
         self.post_save_path_structure_line_edit.textChanged.connect(
-            lambda: self.set_object_value('post_save_structure', self.post_save_path_structure_line_edit.text()))
+            lambda: self.set_object_value('post_save_structure', self.post_save_path_structure_line_edit.text())
+        )
+        self.custom_post_save_path_line_edit.textChanged.connect(self.sync_post_path_example)
+        self.custom_post_save_path_line_edit.textChanged.connect(
+            lambda: self.set_object_value('custom_post_save_path', self.custom_post_save_path_line_edit.text(),
+                                          set_null=True)
+        )
+
         self.comment_extract_combo.currentIndexChanged.connect(
             lambda x: self.set_object_value('extract_comments', self.comment_extract_combo.itemData(x))
         )
@@ -179,6 +203,11 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.comment_save_path_structure_line_edit.textChanged.connect(
             lambda: self.set_object_value('comment_save_structure', self.comment_save_path_structure_line_edit.text())
         )
+        self.custom_comment_save_path_line_edit.textChanged.connect(self.sync_comment_path_example)
+        self.custom_comment_save_path_line_edit.textChanged.connect(
+            lambda: self.set_object_value('custom_comment_save_path', self.custom_comment_save_path_line_edit.text(),
+                                          set_null=True)
+        )
 
     def setup_checkbox(self, checkbox, attribute):
         checkbox.stateChanged.connect(lambda: self.set_object_value(attribute, checkbox.isChecked()))
@@ -209,8 +238,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         epoch = self.custom_date_limit_edit.dateTime().toSecsSinceEpoch()
         self.set_object_value('date_limit', datetime.fromtimestamp(epoch))
 
-    def set_object_value(self, attr, value):
+    def set_object_value(self, attr, value, set_null=False):
         for obj in self.selected_objects:
+            if set_null and value == '':
+                value = None
             setattr(obj, attr, value)
             if obj.object_type == 'REDDIT_OBJECT_LIST':
                 obj.updated = True
@@ -236,14 +267,28 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             self.subreddit.name = selected.name
 
     def sync_post_path_example(self):
+        if self.custom_post_save_path_line_edit.text() != '':
+            base = self.custom_post_save_path_line_edit.text()
+        else:
+            if self.object_type == 'USER':
+                base = self.settings_manager.user_save_directory
+            else:
+                base = self.settings_manager.subreddit_save_directory
         path = TokenParser.parse_tokens(self.post, self.post_save_path_structure_line_edit.text())
         title = TokenParser.parse_tokens(self.post, self.post_download_naming_line_edit.text())
-        self.post_path_example_label.setText(f'.../{path}/{title}')
+        self.post_path_example_label.setText(f'{base}/{path}/{title}')
 
     def sync_comment_path_example(self):
+        if self.custom_comment_save_path_line_edit.text() != '':
+            base = self.custom_comment_save_path_line_edit.text()
+        else:
+            if self.object_type == 'USER':
+                base = self.settings_manager.user_save_directory
+            else:
+                base = self.settings_manager.subreddit_save_directory
         path = TokenParser.parse_tokens(self.post, self.comment_save_path_structure_line_edit.text())
         title = TokenParser.parse_tokens(self.post, self.comment_download_naming_line_edit.text())
-        self.comment_path_example_label.setText(f'.../{path}/{title}')
+        self.comment_path_example_label.setText(f'{base}/{path}/{title}')
 
     def sync_widgets_to_object(self):
         self.sync_optional()
@@ -262,6 +307,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.post_sort_combo, 'post_sort_method')
         self.sync_line_edit(self.post_download_naming_line_edit, 'post_download_naming_method')
         self.sync_line_edit(self.post_save_path_structure_line_edit, 'post_save_structure')
+        self.sync_line_edit(self.custom_post_save_path_line_edit, 'custom_post_save_path')
         self.sync_post_path_example()
         self.sync_combo(self.comment_extract_combo, 'extract_comments')
         self.sync_combo(self.comment_download_combo, 'download_comments')
@@ -275,6 +321,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.comment_file_format_combo, 'comment_file_format')
         self.sync_line_edit(self.comment_download_naming_line_edit, 'comment_naming_method')
         self.sync_line_edit(self.comment_save_path_structure_line_edit, 'comment_save_structure')
+        self.sync_line_edit(self.custom_comment_save_path_line_edit, 'custom_comment_save_path')
         self.sync_comment_path_example()
 
     def sync_optional(self):
@@ -362,3 +409,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         else:
             self.update_custom_date_limit_radio.setChecked(False)
             self.do_not_update_custom_date_limit_radio.setChecked(False)
+
+    def choose_file_path(self):
+        default = os.path.join(os.path.expanduser('~'), 'Downloads')
+        folder = str(QFileDialog.getExistingDirectory(self, 'Select Custom Save Directory', default))
+        if os.path.isdir(folder):
+            return folder
+        return None

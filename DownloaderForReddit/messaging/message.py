@@ -13,6 +13,8 @@ class MessageType(Enum):
     POTENTIAL_COUNT = 4
     ACTUAL_COUNT = 5
 
+    STATUS_TRAY = 6
+
 
 class MessagePriority(Enum):
 
@@ -77,3 +79,7 @@ class Message:
     def send_download_error(cls, message: str):
         cls.send(MessageType.POTENTIAL_PROGRESS, priority=MessagePriority.ERROR)
         cls.send(MessageType.TEXT, message, MessagePriority.ERROR)
+
+    @classmethod
+    def send_status_tray(cls, message: str):
+        cls.send(MessageType.STATUS_TRAY, message, priority=MessagePriority.INFO)

@@ -192,6 +192,11 @@ class SettingsManager:
         self.remove_reddit_object_warning = self.get('notification_defaults', 'remove_reddit_object_warning', True)
         self.remove_reddit_object_list_warning = self.get('notification_defaults', 'remove_reddit_object_list_warning',
                                                           True)
+        self.check_existing_reddit_objects = self.get('notification_defaults', 'check_existing_reddit_objects', True)
+        self.show_system_tray_icon = self.get('notification_defaults', 'show_system_tray_icon', True)
+        self.show_system_tray_notifications = self.get('notification_defaults', 'show_system_tray_notifications', True)
+        self.tray_icon_message_display_length = self.get('notification_defaults', 'tray_icon_message_display_length',
+                                                         6)
         # endregion
 
         # region Imgur

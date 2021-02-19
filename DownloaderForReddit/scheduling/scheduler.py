@@ -64,7 +64,7 @@ class Scheduler(QObject):
         with self.db.get_scoped_session() as session:
             task = session.query(DownloadTask).get(task_id)
             schedule.clear(task.tag)
-            task.delete()
+            session.delete(task)
             session.commit()
 
     def launch_task(self, user_list_id, subreddit_list_id):

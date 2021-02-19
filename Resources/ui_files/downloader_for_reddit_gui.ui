@@ -373,6 +373,8 @@ QListView::item:active {
     <addaction name="separator"/>
     <addaction name="open_data_directory_menu_item"/>
     <addaction name="separator"/>
+    <addaction name="minimize_to_tray_menu_item"/>
+    <addaction name="separator"/>
     <addaction name="exit_menu_item"/>
    </widget>
    <widget class="QMenu" name="lists_menu">
@@ -705,6 +707,11 @@ QListView::item:active {
   <action name="command_line_options_menu_item">
    <property name="text">
     <string>Command Line Options</string>
+   </property>
+  </action>
+  <action name="minimize_to_tray_menu_item">
+   <property name="text">
+    <string>Minimize To Tray</string>
    </property>
   </action>
  </widget>

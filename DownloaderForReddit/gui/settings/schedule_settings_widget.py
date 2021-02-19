@@ -34,9 +34,9 @@ class ScheduleSettingsWidget(AbstractSettingsWidget, Ui_ScheduleSettingsWidget):
         self.subreddit_list_combo.addItem('None', None)
         with self.db.get_scoped_session() as session:
             for user_list in session.query(RedditObjectList).filter(RedditObjectList.list_type == 'USER'):
-                self.user_list_combo.addItem(user_list.name, user_list.id)
+                self.user_list_combo.addItem(user_list.name, user_list)
             for sub_list in session.query(RedditObjectList).filter(RedditObjectList.list_type == 'SUBREDDIT'):
-                self.subreddit_list_combo.addItem(sub_list.name, sub_list.id)
+                self.subreddit_list_combo.addItem(sub_list.name, sub_list)
 
     @property
     def description(self):
@@ -76,8 +76,8 @@ class ScheduleSettingsWidget(AbstractSettingsWidget, Ui_ScheduleSettingsWidget):
             task = DownloadTask(
                 interval=self.interval_combo.currentData(Qt.UserRole),
                 value=self.interval_value_line_edit.text(),
-                user_list_id=self.user_list_combo.currentData(Qt.UserRole),
-                subreddit_list_id=self.subreddit_list_combo.currentData(Qt.UserRole),
+                user_list=self.user_list_combo.currentData(Qt.UserRole),
+                subreddit_list=self.subreddit_list_combo.currentData(Qt.UserRole),
                 active=True
             )
             with self.db.get_scoped_session() as session:
@@ -120,7 +120,12 @@ class ScheduleSettingsWidget(AbstractSettingsWidget, Ui_ScheduleSettingsWidget):
                 return False
         else:
             try:
+                if len(text.split(':')[0]) == 1:
+                    text = '0' + text
+                if text.count(':') == 1:
+                    text += ':00'
                 time.strptime(text, '%H:%M:%S')
+                self.interval_value_line_edit.setText(text)
                 return True
             except ValueError:
                 return False

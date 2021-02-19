@@ -35,6 +35,7 @@ class Converter:
             'settings',
             'update_dialog',
             'invalid_dialog',
+            'existing_names_dialog',
         ]
 
     def run(self):
@@ -161,6 +162,10 @@ class Converter:
 
     def invalid_dialog(self):
         name = 'invalid_reddit_object_dialog'
+        self.convert(name)
+
+    def existing_names_dialog(self):
+        name = 'existing_names_dialog'
         self.convert(name)
 
 

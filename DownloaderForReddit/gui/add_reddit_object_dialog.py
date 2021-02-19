@@ -8,6 +8,8 @@ from threading import Thread
 from ..guiresources.add_reddit_object_dialog_auto import Ui_AddRedditObjectDialog
 from ..utils import injector, system_util, reddit_utils
 from ..utils.importers import json_importer, text_importer
+from ..database.models import ListAssociation, RedditObject
+from .existing_names_dialog import ExistingNamesDialog
 
 
 class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
@@ -19,6 +21,7 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
         self.setupUi(self)
         self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.settings_manager = injector.get_settings_manager()
+        self.db = injector.get_database_handler()
         self.list_model = list_model
         self.setWindowTitle(f'Add {self.list_model.list_type.capitalize()}')
         self.single_add_label.setText(f'Enter new {self.list_model.list_type.lower()}')
@@ -39,6 +42,7 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
 
         self.added = []
         self.imported = []
+        self.exclude = []
 
     def tab_change(self):
         if self.tab_widget.currentIndex() == 0:
@@ -113,17 +117,47 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
         super().accept()
 
     def add_reddit_objects(self):
+        if self.settings_manager.check_existing_reddit_objects:
+            self.filter_existing()
         if self.tab_widget.currentIndex() == 0:
             name = self.single_object_line_edit.text().strip()
-            if name is not None and name != '':
+            if name is not None and name != '' and name not in self.exclude:
                 self.list_model.add_reddit_object(name)
         else:
-            self.list_model.add_reddit_objects(self.added)
+            add = [x for x in self.added if x not in self.exclude]
+            self.list_model.add_reddit_objects(add)
         self.add_imported_reddit_objects()
+
+    def filter_existing(self):
+        with self.db.get_scoped_session() as session:
+            if self.tab_widget.currentIndex() == 0:
+                check = [self.single_object_line_edit.text().strip()]
+            else:
+                check = self.added
+            existing_names = {}
+            for name in check:
+                lists = self.check_existing(name, session)
+                if len(lists) > 0:
+                    existing_names[name] = lists
+            for ro in self.imported:
+                lists = self.check_existing(ro.name, session)
+                if len(lists) > 0:
+                    existing_names[ro.name] = lists
+            if len(existing_names) > 0:
+                dialog = ExistingNamesDialog(existing_names)
+                dialog.exec_()
+                for key, value in dialog.decisions.items():
+                    if not value:
+                        self.exclude.append(key)
+
+    def check_existing(self, name, session):
+        ro_list = session.query(ListAssociation).join(RedditObject).filter(RedditObject.name == name)
+        return [x.reddit_object_list.name for x in ro_list]
 
     def add_imported_reddit_objects(self):
         for ro in self.imported:
-            self.list_model.add_complete_reddit_object(ro)
+            if ro.name not in self.exclude:
+                self.list_model.add_complete_reddit_object(ro)
 
     def keyPressEvent(self, event):
         key = event.key()
