@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>906</width>
-    <height>673</height>
+    <height>835</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,7 +120,7 @@
                </font>
               </property>
               <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter in time format. &lt;/p&gt;&lt;p&gt;Ex: [Download every MINUTE at &amp;quot;:20&amp;quot;| download at the 20th second of every minute]&lt;/p&gt;&lt;p&gt;[Download every HOUR at &amp;quot;10:25&amp;quot;| download at the 25th second of the 10th minute of every hour]&lt;/p&gt;&lt;p&gt;[Download every MONDAY at &amp;quot;6:42:55&amp;quot;| download at this time every Monday]&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter in time format. &lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Times must be:&lt;/span&gt;&lt;/p&gt;&lt;p&gt;* In 24 hour time (ex: 4:20 PM would be 16:20)&lt;/p&gt;&lt;p&gt;* Single digit numbers must have leading 0 (ex: 06:00 not 6:00)&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Examples: &lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Download every MINUTE at &amp;quot;:20&amp;quot;| download at the 20th second of every minute]&lt;/p&gt;&lt;p&gt;[Download every HOUR at &amp;quot;10:25&amp;quot;| download at the 25th second of the 10th minute of every hour]&lt;/p&gt;&lt;p&gt;[Download every MONDAY at &amp;quot;06:42:55&amp;quot;| download at this time every Monday]&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>

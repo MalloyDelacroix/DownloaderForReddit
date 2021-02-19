@@ -17,12 +17,25 @@ class NotificationSettingsWidget(AbstractSettingsWidget, Ui_NotificationSettings
         for key, value in level_map.items():
             self.update_level_combo.addItem(value, key)
 
+        self.show_system_tray_icon_checkbox.toggled.connect(self.set_checkboxes_enabled)
+        self.show_system_tray_notifications_checkbox.toggled.connect(self.set_checkboxes_enabled)
+
+    def set_checkboxes_enabled(self):
+        self.show_system_tray_notifications_checkbox.setEnabled(self.show_system_tray_icon_checkbox.isChecked())
+        self.status_tray_message_display_length_spinbox.setEnabled(
+            self.show_system_tray_icon_checkbox.isChecked() and self.show_system_tray_notifications_checkbox.isChecked()
+        )
+
     def load_settings(self):
         self.update_level_combo.setCurrentIndex(self.settings.update_notification_level)
         self.auto_display_failed_downloads_checkbox.setChecked(self.settings.auto_display_failed_downloads)
         self.remove_reddit_object_warning_checkbox.setChecked(self.settings.remove_reddit_object_warning)
         self.remove_reddit_object_list_warning_checkbox.setChecked(self.settings.remove_reddit_object_list_warning)
         self.large_post_update_warning_checkbox.setChecked(self.settings.large_post_update_warning)
+        self.existing_reddit_object_dialog_checkbox.setChecked(self.settings.check_existing_reddit_objects)
+        self.show_system_tray_icon_checkbox.setChecked(self.settings.show_system_tray_icon)
+        self.show_system_tray_notifications_checkbox.setChecked(self.settings.show_system_tray_notifications)
+        self.status_tray_message_display_length_spinbox.setValue(self.settings.tray_icon_message_display_length)
 
     def apply_settings(self):
         self.settings.update_notification_level = self.update_level_combo.currentData(Qt.UserRole)
@@ -31,3 +44,7 @@ class NotificationSettingsWidget(AbstractSettingsWidget, Ui_NotificationSettings
         self.settings.remove_reddit_object_list_warning = \
             self.remove_reddit_object_list_warning_checkbox.isChecked()
         self.settings.large_post_update_warning = self.large_post_update_warning_checkbox.isChecked()
+        self.settings.check_existing_reddit_objects = self.existing_reddit_object_dialog_checkbox.isChecked()
+        self.settings.show_system_tray_icon = self.show_system_tray_icon_checkbox.isChecked()
+        self.settings.show_system_tray_notifications = self.show_system_tray_notifications_checkbox.isChecked()
+        self.settings.tray_icon_message_display_length = self.status_tray_message_display_length_spinbox.value()

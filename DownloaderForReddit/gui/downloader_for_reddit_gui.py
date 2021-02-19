@@ -23,13 +23,12 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-import os
 import io
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
-                             QFileDialog, QMessageBox, QWidget, QHBoxLayout)
+                             QMessageBox, QWidget, QHBoxLayout, QSystemTrayIcon, QApplication)
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer
-from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QCursor, QPixmap, QIcon
 from pyqtspinner.spinner import WaitingSpinner
 import logging
 
@@ -87,6 +86,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.db_handler = injector.get_database_handler()
         self.spinner = WaitingSpinner(self.user_list_view, roundness=80.0, opacity=10.0, fade=72.0, radius=10.0,
                                       lines=12, line_length=12.0, line_width=4.0, speed=1.4, color=(0, 0, 0))
+        self.tray_icon_image = \
+            QIcon(QPixmap('Resources/Images/RedditDownloaderIcon.png').scaled(48, 48))
+        self.system_tray_icon = QSystemTrayIcon(icon=self.tray_icon_image)
 
         # region Settings
         self.settings_manager = injector.get_settings_manager()
@@ -118,6 +120,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         # region File Menu
         self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
         self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
+        self.minimize_to_tray_menu_item.triggered.connect(self.minimize_to_tray)
         self.exit_menu_item.triggered.connect(self.close)
         # endregion
 
@@ -262,6 +265,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.statusbar.addPermanentWidget(self.progress_label)
         self.progress_label.setText('Extraction Complete')
         self.progress_label.setVisible(False)
+
+        self.setup_system_tray_icon()
 
         self.check_ffmpeg()
         self.check_for_updates(False)
@@ -646,6 +651,12 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
     def finish_update(self):
         pass
 
+    def handle_message(self, message):
+        if message.message_type == MessageType.STATUS_TRAY:
+            self.set_tray_icon_message(message)
+        else:
+            self.output_view_model.handle_message(message)
+
     def handle_progress(self, message):
         """
         Handles non-text style messages that it receives from the message receiver.  Decides what to update on the main
@@ -945,21 +956,6 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """
         self.remove_reddit_object(self.get_selected_subreddits(), self.subreddit_list_model)
 
-    def select_directory(self):
-        """
-        Opens a dialog for the user to select a directory then verifies and returns the selected directory if it exists,
-        and returns None if it does not.
-        :return: A path to a user selected directory.
-        :rtype: str
-        """
-        folder = str(QFileDialog.getExistingDirectory(self, 'Select The Folder to Import From',
-                                                                       self.settings_manager.save_directory))
-        if os.path.isdir(folder):
-            return folder
-        else:
-            message_dialogs.invalid_file_path(self)
-            return None
-
     def check_existing_object_for_download(self, existing_tuple: tuple):
         """
         Called when existing names are added to a list.  Takes a tuple containing the list type, list of existing id's,
@@ -1110,6 +1106,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.progress_bar.setVisible(True)
         self.shift_download_buttons()
         self.setup_run_timer()
+        Message.send_status_tray('Starting download')
+        self.system_tray_icon.setToolTip('Downloader For Reddit (running)')
 
     def finished_download_gui_shift(self):
         """Resets the GUI shift that happens when a download session is started."""
@@ -1123,6 +1121,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.user_list_model.refresh_session()
         self.subreddit_list_model.refresh_session()
         self.check_invalid()
+        self.system_tray_icon.setToolTip('Downloader For Reddit')
 
     def shift_download_buttons(self):
         self.download_button.setVisible(not self.running)
@@ -1354,3 +1353,43 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         cli = CLI()
         cli.parser.print_help(faux_file)
         Message.send_requested(faux_file.getvalue())
+
+    def setup_system_tray_icon(self):
+        menu = QMenu()
+        menu.addAction('Download User list', self.download_user_list)
+        menu.addAction('Download Subreddit List', self.download_subreddit_list)
+        menu.addAction('Download User List Constrained', self.download_user_list_constrained)
+        menu.addSeparator()
+        menu.addAction('Hide Window', self.hide)
+        menu.addAction('Show Window', self.activate_window)
+        menu.addSeparator()
+        menu.addAction('Remove Icon', lambda: self.system_tray_icon.hide())
+        menu.addAction('Exit', self.close)
+
+        self.system_tray_icon.setContextMenu(menu)
+        self.system_tray_icon.activated.connect(self.handle_tray_icon_click)
+        self.system_tray_icon.messageClicked.connect(self.activate_window)
+        self.system_tray_icon.setToolTip('Downloader For Reddit')
+        if self.settings_manager.show_system_tray_icon:
+            self.system_tray_icon.show()
+
+    def handle_tray_icon_click(self, click_type):
+        if click_type == QSystemTrayIcon.DoubleClick:
+            self.activate_window()
+
+    def activate_window(self):
+        self.show()
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized | Qt.WindowActive)
+        self.activateWindow()
+
+    def set_tray_icon_message(self, message):
+        if not QApplication.focusWindow() and self.settings_manager.show_system_tray_notifications:
+            self.system_tray_icon.showMessage('Downloader For Reddit', message.message, self.tray_icon_image,
+                                              self.settings_manager.tray_icon_message_display_length * 1000)
+
+    def minimize_to_tray(self):
+        if QSystemTrayIcon.isSystemTrayAvailable():
+            self.system_tray_icon.show()
+            self.hide()
+        else:
+            Message.send_error('System tray icon is not available for this system.')
