@@ -1,17 +1,17 @@
 # Downloader For Reddit
 Downloader for Reddit is a GUI application for downloading content, self text, and comments submitted to reddit.  
 It has many advanced features and customizable settings to extract only content that you want and avoid duplicate 
-downloads.  Everything that is extracted is stored in an sqlite database.  A built in database view window allows for
-viewing and filtering all of the stored data.  The database can also be accessed with any software capable of reading 
-an sqlite database so the data you extract can be used and analysed in limitless ways.
+downloads.  Everything that is extracted is stored in an sqlite database.  A built-in database view window allows for
+viewing and filtering all the stored data.  The database can also be accessed with any software capable of reading 
+an sqlite database, so the data you extract can be used and analysed in limitless ways.
 
 
 
+![GitHub all releases](https://img.shields.io/github/downloads/malloydelacroix/downloaderforreddit/total)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MalloyDelacroix/DownloaderForReddit)
 ![BuildStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Build/badge.svg)
 ![TestStatus](https://github.com/MalloyDelacroix/DownloaderForReddit/workflows/Test/badge.svg)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=XJQS23G9SN79G&currency_code=USD)
-![GitHub all releases](https://img.shields.io/github/downloads/malloydelacroix/downloaderforreddit/total)
 ------------
 <br>
 
@@ -19,7 +19,7 @@ an sqlite database so the data you extract can be used and analysed in limitless
 
 
 Users and subreddits are kept in two separate list displays.  You can have an unlimited number of lists containing an 
-unlimited number of users/subreddits.  The lists can be downloaded as a whole or the individual users/subreddits can be 
+unlimited number of users/subreddits.  The lists can be downloaded as a whole, or the individual users/subreddits can be 
 downloaded independently.  User downloads can also be constrained to posts made only to the subreddits in the current 
 subreddit list.
 
@@ -52,11 +52,11 @@ interval or run at certain times on certain days.
 ![Database View](https://imgur.com/Lr4B8xL.gif)
 
 The database view can be adjusted to show you only the data that you want to see.  Each object view can be toggled on or
-off and is dependant on the model view before it.  For instance: as shown above, if a subreddit is selected and the post
-view is toggled off, all of the content for that subreddit will be displayed.  If posts are toggled on, only posts for
+off and is dependent on the model view before it.  For instance: as shown above, if a subreddit is selected, and the post
+view is toggled off, all the content for that subreddit will be displayed.  If posts are toggled on, only posts for
 the selected subreddit will be displayed, and only content for the selected post will be displayed.
 
-In addition to this filtering, there is also a robust specific filtering system in which every model can be filtered by 
+In addition to this filtering, there is a robust specific filtering system in which every model can be filtered by 
 almost every parameter in an easy to use interface.
 <br>
 <br>
@@ -94,11 +94,11 @@ Installing The Downloader For Reddit
 ---------------------------------
 
 By far the easiest way to install and use The Downloader for Reddit is to download one of the pre-packaged executables 
-from the [releases section](https://github.com/MalloyDelacroix/DownloaderForReddit/releases) (at the moment stand alone 
+from the [releases section](https://github.com/MalloyDelacroix/DownloaderForReddit/releases) (at the moment stand-alone 
 executables are only available for Windows).
 
 To run the program, extract the folder (DownloaderForReddit) from the zip file and scroll down to and click the 
-executable file (DownloaderForReddit.exe). Everything is self contained in the folder, there is nothing to install.
+executable file (DownloaderForReddit.exe). Everything is self-contained in the folder, there is nothing to install.
 <br>
 To run the application from source, please refer to the wiki entry 
 [Setting Up A Development Environment.](https://github.com/MalloyDelacroix/DownloaderForReddit/wiki/Setting-Up-A-Development-Environment)
