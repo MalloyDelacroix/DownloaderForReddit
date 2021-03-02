@@ -75,5 +75,13 @@ class GfycatExtractor(BaseExtractor):
             else:
                 gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
 
-        gfy_url = gfy_json.get('gfyItem').get('webmUrl')
-        self.make_content(gfy_url, 'webm', media_id=gif_id)
+        # First we attempt to extract the preferred mp4 url, if that is not successful we try the webm url.  If neither
+        # are available, the error is handled.
+        gfy_url = gfy_json.get('gfyItem').get('mp4Url')
+        if gfy_url is None:
+            gfy_url = gfy_json.get('gfyItem').get('webmUrl')
+        if gfy_url is None:
+            message = 'Failed to locate an appropriate download url within the response json'
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extraction_error_message=message)
+        else:
+            self.make_content(gfy_url, 'webm', media_id=gif_id)

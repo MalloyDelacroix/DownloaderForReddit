@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.8.1-beta
+
+### Bug Fixes
+* Fix problems in downloading from gfycat/redgifs.
+
+
 ## v3.8.0-beta
 
 ### Minor Changes
