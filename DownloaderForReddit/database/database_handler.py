@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+import sqlite3
 from sqlalchemy.ext.declarative import declarative_base
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -103,3 +104,8 @@ class DatabaseHandler:
             session.add(instance)
             session.commit()
             return instance, True
+
+    def vacuum(self):
+        connection = sqlite3.connect(self.database_path)
+        connection.execute('VACUUM')
+        connection.close()
