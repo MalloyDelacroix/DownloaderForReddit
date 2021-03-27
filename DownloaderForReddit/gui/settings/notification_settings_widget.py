@@ -31,6 +31,7 @@ class NotificationSettingsWidget(AbstractSettingsWidget, Ui_NotificationSettings
         self.auto_display_failed_downloads_checkbox.setChecked(self.settings.auto_display_failed_downloads)
         self.remove_reddit_object_warning_checkbox.setChecked(self.settings.remove_reddit_object_warning)
         self.remove_reddit_object_list_warning_checkbox.setChecked(self.settings.remove_reddit_object_list_warning)
+        self.ask_to_sync_on_move_checkbox.setChecked(self.settings.ask_to_sync_moved_ro_settings)
         self.large_post_update_warning_checkbox.setChecked(self.settings.large_post_update_warning)
         self.existing_reddit_object_dialog_checkbox.setChecked(self.settings.check_existing_reddit_objects)
         self.show_system_tray_icon_checkbox.setChecked(self.settings.show_system_tray_icon)
@@ -43,6 +44,7 @@ class NotificationSettingsWidget(AbstractSettingsWidget, Ui_NotificationSettings
         self.settings.remove_reddit_object_warning = self.remove_reddit_object_warning_checkbox.isChecked()
         self.settings.remove_reddit_object_list_warning = \
             self.remove_reddit_object_list_warning_checkbox.isChecked()
+        self.settings.ask_to_sync_moved_ro_settings = self.ask_to_sync_on_move_checkbox.isChecked()
         self.settings.large_post_update_warning = self.large_post_update_warning_checkbox.isChecked()
         self.settings.check_existing_reddit_objects = self.existing_reddit_object_dialog_checkbox.isChecked()
         self.settings.show_system_tray_icon = self.show_system_tray_icon_checkbox.isChecked()

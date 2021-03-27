@@ -423,6 +423,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         return menu
 
     def move_reddit_objects(self, reddit_object_ids, old_list_id, new_list_id):
+        if self.settings_manager.ask_to_sync_moved_ro_settings:
+            text = 'Would you like to sync the settings of the moved user/subreddit(s) to the settings defined for ' \
+                   'the list they are being moved to?'
+            sync, ask = message_dialogs.optional_question_dialog(self, 'Sync Settings?', text,
+                                                                 checkbox_text='Do not ask again')
+            self.settings_manager.ask_to_sync_moved_ro_settings = not ask
+        else:
+            sync = True
         with self.db_handler.get_scoped_update_session() as session:
             for ro_id in reddit_object_ids:
                 session.query(ListAssociation)\
@@ -430,9 +438,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                     .filter(ListAssociation.reddit_object_list_id == old_list_id).delete()
                 new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
                 session.add(new_assoc)
+                if sync:
+                    new_list = session.query(RedditObjectList).get(new_list_id)
+                    reddit_object = session.query(RedditObject).get(ro_id)
+                    new_list.sync_reddit_object_settings(reddit_object)
         self.refresh_list_models()
 
-    def copy_reddit_objects(self, reddit_object_ids, old_list_model, new_list_id):
+    def copy_reddit_objects(self, reddit_object_ids, old_list_model, new_list_id, ro_type):
         with self.db_handler.get_scoped_update_session() as session:
             for ro_id in reddit_object_ids:
                 new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
