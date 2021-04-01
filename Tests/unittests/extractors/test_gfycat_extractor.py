@@ -82,3 +82,16 @@ class TestGfycatExtractor(ExtractorTest):
 
         self.assertTrue(ge.failed_extraction)
         self.assertIsNotNone(ge.failed_extraction_message)
+
+    def test_redgifs(self, filter_content, make_title, make_dir_path):
+        filter_content.return_value = True
+        post = mock_objects.get_mock_post_gfycat(session=self.session)
+        post.url = 'https://www.redgifs.com/watch/decisivecleanfallowdeer'
+        expected_output = 'https://thumbs2.redgifs.com/DecisiveCleanFallowdeer.mp4'
+
+        make_title.return_value = post.title
+        make_dir_path.return_value = 'content_dir_path'
+
+        ge = GfycatExtractor(post)
+        ge.extract_content()
+        self.check_output(ge, expected_output, post)
