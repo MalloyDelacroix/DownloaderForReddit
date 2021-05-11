@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 from os import path
 from urllib.parse import urlparse
+
 import requests
 
 from .base_extractor import BaseExtractor
@@ -45,7 +46,7 @@ class GfycatExtractor(BaseExtractor):
         """
         super().__init__(post, **kwargs)
         item = urlparse(self.url)
-        if item.hostname == 'redgifs.com':
+        if 'redgifs' in item.hostname:
             self.api_caller = "https://api.redgifs.com/v1/gfycats/"
         else:
             self.api_caller = "https://api.gfycat.com/v1/gfycats/"
@@ -53,7 +54,7 @@ class GfycatExtractor(BaseExtractor):
     def extract_content(self):
         """Dictates which extraction method should be used"""
         try:
-            if self.url.lower().endswith(const.GIF_EXT):
+            if self.url.lower().endswith(const.GIF_EXT) or self.url.lower().endswith(const.VID_EXT):
                 self.extract_direct_link()
             else:
                 self.extract_single()
@@ -64,9 +65,11 @@ class GfycatExtractor(BaseExtractor):
     def extract_single(self):
         item = urlparse(self.url)
         gif_id = item.path
+        if gif_id.startswith("/watch/"):
+            gif_id = gif_id[len('/watch/'):]
         gif_id = path.basename(gif_id).split('-')[0]
 
-        if item.hostname == 'redgifs.com':
+        if 'redgifs' in item.hostname:
             gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
         else:
             response = requests.get(_GFYCAT_ENDPOINT + gif_id, timeout=10)
@@ -78,8 +81,10 @@ class GfycatExtractor(BaseExtractor):
         # First we attempt to extract the preferred mp4 url, if that is not successful we try the webm url.  If neither
         # are available, the error is handled.
         gfy_url = gfy_json.get('gfyItem').get('mp4Url')
-        if gfy_url is None:
-            gfy_url = gfy_json.get('gfyItem').get('webmUrl')
+        if gfy_url is not None:
+            self.make_content(gfy_url, 'mp4', media_id=gif_id)
+            return
+        gfy_url = gfy_json.get('gfyItem').get('webmUrl')
         if gfy_url is None:
             message = 'Failed to locate an appropriate download url within the response json'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extraction_error_message=message)
