@@ -1,10 +1,14 @@
 # Change Log
 
 
-## v3.8.1-beta
+## v3.9.0-beta
+
+### Minor Changes
+* Users now have the option to sync download settings when moving users/subreddits between lists.
 
 ### Bug Fixes
 * Fix problems in downloading from gfycat/redgifs.
+* Fix crashing from csv importer/exporter.
 
 
 ## v3.8.0-beta

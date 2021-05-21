@@ -208,6 +208,10 @@ class RedditObjectList(BaseModel):
             'custom_comment_save_path': self.custom_comment_save_path,
         }
 
+    def sync_reddit_object_settings(self, reddit_object):
+        for key, value in self.get_default_dict().items():
+            setattr(reddit_object, key, value)
+
 
 class RedditObject(BaseModel):
 

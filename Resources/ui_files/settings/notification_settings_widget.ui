@@ -95,6 +95,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QCheckBox" name="ask_to_sync_on_move_checkbox">
+        <property name="text">
+         <string>Ask before syncing user/subreddit settings on move</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

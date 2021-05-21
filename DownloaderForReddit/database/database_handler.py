@@ -1,5 +1,6 @@
 import os
 from contextlib import contextmanager
+import sqlite3
 from sqlalchemy.ext.declarative import declarative_base
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
@@ -10,11 +11,11 @@ from ..utils import system_util
 
 class DatabaseHandler:
 
+    database_path = os.path.join(system_util.get_data_directory(), const.DATABASE_NAME)
+    database_url = f'sqlite:///{database_path}'
     base = declarative_base()
 
     def __init__(self, *, in_memory=False):
-        self.database_path = os.path.join(system_util.get_data_directory(), const.DATABASE_NAME)
-        self.database_url = f'sqlite:///{self.database_path}'
         if not in_memory:
             self.engine = sqlalchemy.create_engine(self.database_url, echo=False,
                                                    connect_args={'check_same_thread': False})
@@ -103,3 +104,8 @@ class DatabaseHandler:
             session.add(instance)
             session.commit()
             return instance, True
+
+    def vacuum(self):
+        connection = sqlite3.connect(self.database_path)
+        connection.execute('VACUUM')
+        connection.close()
