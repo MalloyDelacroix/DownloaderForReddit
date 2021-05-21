@@ -76,7 +76,7 @@ class GfycatExtractor(BaseExtractor):
             if response.status_code == 200 and 'json' in response.headers['Content-Type']:
                 gfy_json = response.json()
             else:
-                gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
+                gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id.lower())  # refgif ids are all lowercase
 
         # First we attempt to extract the preferred mp4 url, if that is not successful we try the webm url.  If neither
         # are available, the error is handled.
