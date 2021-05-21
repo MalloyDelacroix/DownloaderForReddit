@@ -8,6 +8,7 @@
 
 ### Bug Fixes
 * Fix problems in downloading from gfycat/redgifs.
+* Fix crashing from csv importer/exporter.
 
 
 ## v3.8.0-beta
