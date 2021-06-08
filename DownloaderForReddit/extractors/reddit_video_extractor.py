@@ -50,14 +50,15 @@ class RedditVideoExtractor(BaseExtractor):
         :return: The top level post which holds the video information to be downloaded if the supplied post is a
                  crosspost, otherwise None.
         """
-
-        try:
-            r = reddit_utils.get_reddit_instance()
-            parent_submission = r.submission(self.submission.crosspost_parrent.split('_')[1])
-            parent_submission.title  # fetch info from server to load submission
-            return parent_submission
-        except AttributeError:
-            return self.submission
+        if hasattr(self.submission, 'crosspost_parent'):
+            try:
+                r = reddit_utils.get_reddit_instance()
+                parent_submission = r.submission(self.submission.crosspost_parrent.split('_')[1])
+                parent_submission.title  # fetch info from server to load submission
+                return parent_submission
+            except AttributeError:
+                pass
+        return self.submission
 
     def get_vid_url(self):
         """

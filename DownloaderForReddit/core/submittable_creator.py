@@ -83,9 +83,6 @@ class SubmittableCreator:
     def get_author(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             defaults = {}
-            date_created = cls.get_created(praw_object.author)
-            if date_created is None:
-                defaults = {'date_created': None, 'active': False, 'inactive_date': datetime.now()}
             author = cls.get_db().get_or_create(User, name=praw_object.author.name, defaults=defaults, session=session)[0]
         except AttributeError:
             author = cls.get_db().get_or_create(User, name='deleted', session=session)[0]
@@ -95,18 +92,9 @@ class SubmittableCreator:
     def get_subreddit(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             defaults = {}
-            date_created = cls.get_created(praw_object.subreddit)
-            if date_created is None:
-                defaults = {'date_created': None, 'active': False, 'inactive_date': datetime.now()}
             subreddit = cls.get_db().get_or_create(Subreddit, name=praw_object.subreddit.display_name, defaults=defaults,
                                              session=session)[0]
         except AttributeError:
+            cls.logger.error('Failed to get subreddit', exc_info=True)
             subreddit = cls.get_db().get_or_create(Subreddit, name='deleted', session=session)[0]
         return subreddit
-
-    @classmethod
-    def get_created(cls, praw_object):
-        try:
-            return datetime.fromtimestamp(praw_object.created)
-        except:
-            return None
