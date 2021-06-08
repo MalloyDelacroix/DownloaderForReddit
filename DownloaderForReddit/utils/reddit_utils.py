@@ -27,18 +27,87 @@ import prawcore
 import logging
 from datetime import datetime
 from collections import namedtuple
+from uuid import uuid4
+from urllib.parse import urlparse, parse_qs
 
 from ..version import __version__
+from ..utils import injector
+from ..messaging.message import Message
+
+
+TOKEN_SCOPES = ['identity', 'mysubreddits', 'subscribe', 'account', 'history', 'read']
+TOKEN_DURATION = 'permanent'
+USER_AGENT = F'python:DownloaderForReddit:{__version__} (by: /u/MalloyDelacroix)'
+CLIENT_ID = 'frGEUVAuHGL2PQ'
+REDIRECT_URL = 'http://localhost:8080/dfr/authorize'
+STATE = None
 
 
 logger = logging.getLogger('DownloaderForReddit.{}'.format(__name__))
 ValidationSet = namedtuple('ValidationSet', 'name date_created valid')
+should_output_welcome_message = True
+connection_is_authorized = False
 
 
 def get_reddit_instance():
-    reddit_instance = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
-                                  client_id='frGEUVAuHGL2PQ', client_secret=None)
-    return reddit_instance
+    global should_output_welcome_message, connection_is_authorized
+    token = injector.get_settings_manager().reddit_access_token
+    if token is None:
+        instance = get_unauthorized_reddit_instance()
+        connection_is_authorized = True
+        if should_output_welcome_message:
+            user = instance.user.me()
+            Message.send_info(f'Welcome {user}, you are connected through your reddit account.')
+            should_output_welcome_message = False
+    else:
+        instance = get_user_reddit_instance(token)
+        connection_is_authorized = False
+        if should_output_welcome_message:
+            Message.send_info('You are not connected through an authorized reddit account.  You will be able to '
+                              'download, but may have slower download speeds due to reddit\'s rate limiting of '
+                              'unauthorized accounts.  You can connect your reddit account in the file menu.')
+            should_output_welcome_message = False
+    return instance
+
+
+def get_unauthorized_reddit_instance():
+    return praw.Reddit(client_id=CLIENT_ID, user_agent=USER_AGENT, client_secret=None, redirect_uri=REDIRECT_URL)
+
+
+def get_user_reddit_instance(token):
+    return praw.Reddit(client_id=CLIENT_ID, user_agent=USER_AGENT, client_secret=None, refresh_token=token)
+
+
+def get_authorize_account_url():
+    r = get_unauthorized_reddit_instance()
+    return r.auth.url(TOKEN_SCOPES, uuid4().hex, TOKEN_DURATION)
+
+
+def get_user_authorization_token(url):
+    r = get_unauthorized_reddit_instance()
+    code = parse_url_token(url)
+    if code is not None:
+        token = r.auth.authorize(code)
+        auth_instance = get_user_reddit_instance(token)
+        user = auth_instance.user.me()
+        injector.get_settings_manager().reddit_access_token = token
+        Message.send_info(f'Downloader for Reddit is now linked {user}\'s account.')
+        return user
+    return None
+
+
+def parse_url_token(url):
+    parsed = urlparse(url)
+    args = parse_qs(parsed.query)
+    state = args['state'][0]
+    code = args['code'][0]
+    if state != STATE:
+        message = 'The state in the pasted url did not match the state supplied to reddit.  This suggests that the ' \
+                  'url has been tampered with.'
+        logger.error(message)
+        Message.send_error(message)
+        return None
+    return code
 
 
 def get_post_author_name(praw_post):
