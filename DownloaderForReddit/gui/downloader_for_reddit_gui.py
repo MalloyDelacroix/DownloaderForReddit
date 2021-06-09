@@ -34,6 +34,7 @@ import logging
 
 from ..guiresources.downloader_for_reddit_gui_auto import Ui_MainWindow
 from ..gui.about_dialog import AboutDialog
+from ..gui.user_auth_wizard import UserAuthWizard
 from ..gui.add_reddit_object_dialog import AddRedditObjectDialog
 from ..gui.existing_reddit_object_add_dialog import ExistingRedditObjectAddDialog
 from ..gui.ffmpeg_info_dialog import FfmpegInfoDialog
@@ -51,7 +52,7 @@ from ..core.cli import CLI
 from ..database.models import RedditObject, RedditObjectList, ListAssociation
 from ..database.filters import RedditObjectFilter
 from ..database.model_manager import ModelManger
-from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker)
+from ..utils import (injector, system_util, imgur_utils, video_merger, general_utils, UpdateChecker, reddit_utils)
 from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
 from ..messaging.message import MessageType, MessagePriority, Message
@@ -119,6 +120,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         # region File Menu
         self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
+        self.connect_reddit_account_menu_item.triggered.connect(self.open_connect_reddit_account_wizard)
         self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
         self.minimize_to_tray_menu_item.triggered.connect(self.minimize_to_tray)
         self.exit_menu_item.triggered.connect(self.close)
@@ -270,6 +272,8 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         self.check_ffmpeg()
         self.check_for_updates(False)
+
+        reddit_utils.check_authorized_connection()
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)
@@ -1177,6 +1181,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
         settings = SettingsDialog(parent=self, **kwargs)
         settings.exec_()
+
+    def open_connect_reddit_account_wizard(self):
+        wizard = UserAuthWizard(parent=self)
+        wizard.exec_()
 
     def update_output(self):
         self.output_view_model.update_output_level()
