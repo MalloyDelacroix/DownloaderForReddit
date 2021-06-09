@@ -168,6 +168,10 @@ class Converter:
         name = 'existing_names_dialog'
         self.convert(name)
 
+    def user_auth_wizard(self):
+        name = 'user_auth_wizard'
+        self.convert(name)
+
 
 def main():
     try:
