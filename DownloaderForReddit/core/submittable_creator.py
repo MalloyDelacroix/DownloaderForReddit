@@ -83,8 +83,10 @@ class SubmittableCreator:
     def get_author(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             defaults = {}
-            author = cls.get_db().get_or_create(User, name=praw_object.author.name, defaults=defaults, session=session)[0]
+            author = cls.get_db().get_or_create(User, name=praw_object.author.name, defaults=defaults,
+                                                session=session)[0]
         except AttributeError:
+            cls.logger.error('Failed to get author', exc_info=True)
             author = cls.get_db().get_or_create(User, name='deleted', session=session)[0]
         return author
 
@@ -92,8 +94,8 @@ class SubmittableCreator:
     def get_subreddit(cls, praw_object: Union[Submission, PrawComment], session: Session):
         try:
             defaults = {}
-            subreddit = cls.get_db().get_or_create(Subreddit, name=praw_object.subreddit.display_name, defaults=defaults,
-                                             session=session)[0]
+            subreddit = cls.get_db().get_or_create(Subreddit, name=praw_object.subreddit.display_name,
+                                                   defaults=defaults, session=session)[0]
         except AttributeError:
             cls.logger.error('Failed to get subreddit', exc_info=True)
             subreddit = cls.get_db().get_or_create(Subreddit, name='deleted', session=session)[0]
