@@ -9,16 +9,13 @@ class UserAuthWizard(QWizard, Ui_UserAuthWizard):
     def __init__(self, parent=None):
         QWizard.__init__(self, parent=parent)
         self.setupUi(self)
-        self.authorize_account_url_label.setVisible(False)
         self.load_url()
         self.button(QWizard.NextButton).clicked.connect(self.handle_next_click)
 
     def load_url(self):
         url = reddit_utils.get_authorize_account_url()
-        print(url)
         url_text = f'<a href="{url}">{url}</a>'
-        self.authorize_account_url_label.setText(url_text)
-        self.authorize_account_url_label.setVisible(True)
+        self.authorize_account_browser.setText(url_text)
 
     def handle_next_click(self):
         if self.currentPage().isFinalPage():
