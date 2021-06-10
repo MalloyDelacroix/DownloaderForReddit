@@ -9,3 +9,4 @@ toml==0.10.0
 alembic==1.4.2
 schedule==0.6.0
 pyqtspinner==0.1.1
+cryptography==3.4.7

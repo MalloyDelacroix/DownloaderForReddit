@@ -48,6 +48,7 @@ class SettingsManager:
         self.perpetual_download = self.get('core', 'perpetual_download', False)
         self.cascade_list_changes = self.get('core', 'cascade_list_changes', False)
         self.reddit_access_token = self.get('core', 'reddit_access_token', None)
+        self.reddit_access = self.get('core', 'reddit_access', None)
         # endregion
 
         # region Download Defaults

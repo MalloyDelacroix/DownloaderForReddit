@@ -47,16 +47,17 @@ logger = logging.getLogger('DownloaderForReddit.{}'.format(__name__))
 ValidationSet = namedtuple('ValidationSet', 'name date_created valid')
 state = None
 connection_is_authorized = False
+token = None
 
 
 def get_reddit_instance():
     global connection_is_authorized
-    token = injector.get_settings_manager().reddit_access_token
-    if token is None:
+    access_token = get_token()
+    if access_token is None:
         instance = get_unauthorized_reddit_instance()
         connection_is_authorized = True
     else:
-        instance = get_user_reddit_instance(token)
+        instance = get_user_reddit_instance(access_token)
         connection_is_authorized = False
     return instance
 
@@ -80,10 +81,10 @@ def get_user_authorization_token(url):
     r = get_unauthorized_reddit_instance()
     code = parse_url_token(url)
     if code is not None:
-        token = r.auth.authorize(code)
-        auth_instance = get_user_reddit_instance(token)
+        raw_token = r.auth.authorize(code)
+        auth_instance = get_user_reddit_instance(raw_token)
         user = auth_instance.user.me()
-        injector.get_settings_manager().reddit_access_token = token
+        save_token(raw_token)
         Message.send_info(f'Downloader for Reddit is now linked to {user}\'s reddit account.')
         return user
     return None
@@ -102,6 +103,30 @@ def parse_url_token(url):
         Message.send_error(message)
         return None
     return code
+
+
+def save_token(raw_token):
+    # This is not good security.  This will only keep someone from seeing the raw token if looking at the config file.
+    # If an attacker has access to the users computer, there is not much we can do to protect this token anyway.
+    key = Fernet.generate_key()
+    f = Fernet(key)
+    t = f.encrypt(raw_token.encode())
+    settings_manager = injector.get_settings_manager()
+    settings_manager.reddit_access_token = t.decode()
+    settings_manager.reddit_access = key.decode()
+
+
+def get_token():
+    global token
+    if token is None:
+        settings_manager = injector.get_settings_manager()
+        key = settings_manager.reddit_access
+        encrypted_token = settings_manager.reddit_access_token
+        if key is None or encrypted_token is None:
+            return None
+        f = Fernet(key.encode())
+        token = f.decrypt(encrypted_token.encode()).decode()
+    return token
 
 
 def check_authorized_connection():
