@@ -371,6 +371,8 @@ QListView::item:active {
     </property>
     <addaction name="open_settings_menu_item"/>
     <addaction name="separator"/>
+    <addaction name="connect_reddit_account_menu_item"/>
+    <addaction name="separator"/>
     <addaction name="open_data_directory_menu_item"/>
     <addaction name="separator"/>
     <addaction name="minimize_to_tray_menu_item"/>
@@ -712,6 +714,11 @@ QListView::item:active {
   <action name="minimize_to_tray_menu_item">
    <property name="text">
     <string>Minimize To Tray</string>
+   </property>
+  </action>
+  <action name="connect_reddit_account_menu_item">
+   <property name="text">
+    <string>Connect Reddit Account</string>
    </property>
   </action>
  </widget>

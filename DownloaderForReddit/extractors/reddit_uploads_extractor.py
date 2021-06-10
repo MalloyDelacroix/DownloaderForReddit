@@ -40,13 +40,15 @@ class RedditUploadsExtractor(BaseExtractor):
         self.submission = self.get_host_submission()
 
     def get_host_submission(self):
-        try:
-            r = reddit_utils.get_reddit_instance()
-            parent_submission = r.submission(self.submission.crosspost_parent.split('_')[1])
-            parent_submission.title
-            return parent_submission
-        except AttributeError:
-            return self.submission
+        if hasattr(self.submission, 'crosspost_parent'):
+            try:
+                r = reddit_utils.get_reddit_instance()
+                parent_submission = r.submission(self.submission.crosspost_parent.split('_')[1])
+                parent_submission.title
+                return parent_submission
+            except AttributeError:
+                pass
+        return self.submission
 
     def extract_content(self):
         try:

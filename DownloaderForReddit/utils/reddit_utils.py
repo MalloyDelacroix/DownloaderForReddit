@@ -27,18 +27,116 @@ import prawcore
 import logging
 from datetime import datetime
 from collections import namedtuple
+from uuid import uuid4
+from urllib.parse import urlparse, parse_qs
+from cryptography.fernet import Fernet
 
 from ..version import __version__
+from ..utils import injector
+from ..messaging.message import Message
+
+
+TOKEN_SCOPES = ['identity', 'mysubreddits', 'subscribe', 'account', 'history', 'read']
+TOKEN_DURATION = 'permanent'
+USER_AGENT = F'python:DownloaderForReddit:{__version__} (by: /u/MalloyDelacroix)'
+CLIENT_ID = 'frGEUVAuHGL2PQ'
+REDIRECT_URL = 'http://localhost:8080/dfr/authorize'
 
 
 logger = logging.getLogger('DownloaderForReddit.{}'.format(__name__))
 ValidationSet = namedtuple('ValidationSet', 'name date_created valid')
+state = None
+connection_is_authorized = False
+token = None
 
 
 def get_reddit_instance():
-    reddit_instance = praw.Reddit(user_agent='python:DownloaderForReddit:%s (by /u/MalloyDelacroix)' % __version__,
-                                  client_id='frGEUVAuHGL2PQ', client_secret=None)
-    return reddit_instance
+    global connection_is_authorized
+    access_token = get_token()
+    if access_token is None:
+        instance = get_unauthorized_reddit_instance()
+        connection_is_authorized = True
+    else:
+        instance = get_user_reddit_instance(access_token)
+        connection_is_authorized = False
+    return instance
+
+
+def get_unauthorized_reddit_instance():
+    return praw.Reddit(client_id=CLIENT_ID, user_agent=USER_AGENT, client_secret=None, redirect_uri=REDIRECT_URL)
+
+
+def get_user_reddit_instance(token):
+    return praw.Reddit(client_id=CLIENT_ID, user_agent=USER_AGENT, client_secret=None, refresh_token=token)
+
+
+def get_authorize_account_url():
+    global state
+    r = get_unauthorized_reddit_instance()
+    state = uuid4().hex
+    return r.auth.url(TOKEN_SCOPES, state, TOKEN_DURATION)
+
+
+def get_user_authorization_token(url):
+    r = get_unauthorized_reddit_instance()
+    code = parse_url_token(url)
+    if code is not None:
+        raw_token = r.auth.authorize(code)
+        auth_instance = get_user_reddit_instance(raw_token)
+        user = auth_instance.user.me()
+        save_token(raw_token)
+        Message.send_info(f'Downloader for Reddit is now linked to {user}\'s reddit account.')
+        return user
+    return None
+
+
+def parse_url_token(url):
+    global state
+    parsed = urlparse(url)
+    args = parse_qs(parsed.query)
+    url_state = args['state'][0]
+    code = args['code'][0]
+    if url_state != state:
+        message = 'The state in the pasted url did not match the state supplied to reddit.  This suggests that the ' \
+                  'url has been tampered with.'
+        logger.error(message)
+        Message.send_error(message)
+        return None
+    return code
+
+
+def save_token(raw_token):
+    # This is not good security.  This will only keep someone from seeing the raw token if looking at the config file.
+    # If an attacker has access to the users computer, there is not much we can do to protect this token anyway.
+    key = Fernet.generate_key()
+    f = Fernet(key)
+    t = f.encrypt(raw_token.encode())
+    settings_manager = injector.get_settings_manager()
+    settings_manager.reddit_access_token = t.decode()
+    settings_manager.reddit_access = key.decode()
+
+
+def get_token():
+    global token
+    if token is None:
+        settings_manager = injector.get_settings_manager()
+        key = settings_manager.reddit_access
+        encrypted_token = settings_manager.reddit_access_token
+        if key is None or encrypted_token is None:
+            return None
+        f = Fernet(key.encode())
+        token = f.decrypt(encrypted_token.encode()).decode()
+    return token
+
+
+def check_authorized_connection():
+    r = get_reddit_instance()
+    try:
+        user = r.user.me().name
+        Message.send_info(f'Welcome {user}, you are connected through your reddit account.')
+    except AttributeError:
+        Message.send_info('You are connected through the standard connection.  No reddit account is associated with '
+                          'this session.')
 
 
 def get_post_author_name(praw_post):

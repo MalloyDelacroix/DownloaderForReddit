@@ -1,6 +1,14 @@
 # Change Log
 
 
+## v3.10.0-beta
+
+### Minor Changes
+* Users can now link their reddit accounts with the application.  This should relieve some of the slow download times
+that users have been experiencing in recent weeks.
+  * To connect, use the connect reddit account wizard accessed from the file menu.
+
+
 ## v3.9.0-beta
 
 ### Minor Changes
