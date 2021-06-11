@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.10.1-beta
+
+### Bug Fixes
+* Fix crash that sometimes happens when checking for authorized connection status.
+
+
 ## v3.10.0-beta
 
 ### Minor Changes
