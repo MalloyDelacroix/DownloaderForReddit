@@ -1,6 +1,10 @@
 # Change Log
 
 
+## v3.10.2-beta
+* Update youtube-dl and add supported site url for youtu.be.
+
+
 ## v3.10.1-beta
 
 ### Bug Fixes
