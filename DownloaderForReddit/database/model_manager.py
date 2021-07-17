@@ -17,6 +17,10 @@ def check_session(method):
 
 class ModelManger:
 
+    """
+    Manages the deletion of database objects and their related models and respective files.
+    """
+
     @classmethod
     @check_session
     def delete_list(cls, ro_list, session=None, cascade=False):
@@ -29,38 +33,35 @@ class ModelManger:
     @classmethod
     @check_session
     def delete_reddit_object(cls, reddit_object, session=None, delete_files=False):
-        posts = session.query(Post).filter(Post.significant_reddit_object_id == reddit_object.id)
-
-        def delete_posts(post_query, session, delete_files):
-            for post in post_query:
-                content = session.query(Content).filter(Content.post_id == post.id)
-                if delete_files:
-                    for c in content:
-                        system_util.delete_file(c.get_full_file_path())
-                content.delete(synchronize_session='fetch')
-                comments = session.query(Comment).filter(Comment.post_id == post.id)
-                comments.delete(synchronize_session='fetch')
-            # SqlAlchemy is being a real pain in the ass about deleting these posts easily.  So this is a ridiculous,
-            # convoluted way to do it instead.
-            post_ids = [x.id for x in post_query]
-            session.query(Post).filter(Post.id.in_(post_ids)).delete(synchronize_session='fetch')
-
-        cls.batch_operation(posts, delete_posts, session=session, delete_files=delete_files)
-
+        post_ids = session.query(Post.id).filter(Post.significant_reddit_object_id == reddit_object.id)
+        comment_ids = session.query(Comment.id).filter(Comment.post_id.in_(post_ids))
+        cls.bulk_delete(Comment, session, comment_ids)
+        files = []
+        if delete_files:
+            content = session.query(Content).filter(Content.post_id.in_(post_ids))
+            files = [c.get_full_file_path() for c in content]
+        content_ids = session.query(Content.id).filter(Content.post_id.in_(post_ids))
+        cls.bulk_delete(Content, session, content_ids)
+        cls.bulk_delete(Post, session, post_ids)
         session.query(ListAssociation).filter(ListAssociation.reddit_object_id == reddit_object.id).delete()
         session.delete(reddit_object)
         session.commit()
+        for file in files:
+            system_util.delete_file(file)
 
     @classmethod
     @check_session
     def delete_post(cls, post, session=None, delete_files=False):
-        comments = session.query(Comment).filter(Comment.post_id == post.id)
-        cls.batch_operation(comments, cls.delete_query)
-        content = session.query(Content).filter(Content.post_id == post.id)
+        comments = session.query(Comment.id).filter(Comment.post_id == post.id)
+        cls.bulk_delete(Comment, session, comments)
         files = []
         if delete_files:
+            # First query full content model so that file paths can be retrieved.
+            content = session.query(Content).filter(Content.post_id == post.id)
             files = [c.get_full_file_path() for c in content]
-        cls.batch_operation(content, cls.delete_query)
+        # Query content id's so that the query can be bulk deleted
+        content_ids = session.query(Content.id).filter(Content.post_id == post.id)
+        cls.bulk_delete(Content, session, content_ids)
         session.delete(post)
         for file in files:
             system_util.delete_file(file)
@@ -77,24 +78,20 @@ class ModelManger:
         session.commit()
 
     @classmethod
-    @check_session
-    def delete_comment(cls, comment, delete_post=False, delete_files=False, session=None):
-        if delete_post:
-            session.delete(comment.post)
-        for content in comment.content:
-            cls.delete_content(content, delete_file=delete_files, session=session)
-        session.delete(comment)
-        session.commit()
-
-    @classmethod
-    def delete_query(cls, query):
-        query.delete(synchronize_session='fetch')
-
-    @classmethod
-    def batch_operation(cls, query, method, *args, **kwargs):
+    def bulk_delete(cls, model, session, query):
+        """
+        This method is more convoluted than should be necessary, but sqlalchemy does not have adequate batch operation
+        handling for this purpose.  So the subquery method used below is the only way to bulk delete a query with a
+        limit, and a query with an offset and limit is the only way to delete a query which may contain more than 1,000
+        items.  So here we are.
+        :param model: The database model in the query which will be deleted.
+        :param session: The session that has been used for the supplied query.
+        :param query: The query containing the id's of the objects to be deleted.
+        """
         batch_count = math.ceil(query.count() / 999)
         offset = 0
         for batch in range(batch_count):
-            batch_query = query.offset(offset).limit(999)
-            method(batch_query, *args, **kwargs)
+            sub_query = query.offset(offset).limit(999).subquery()
+            batch_query = session.query(model).filter(model.id.in_(sub_query))
+            batch_query.delete(synchronize_session='fetch')
             offset += 1000
