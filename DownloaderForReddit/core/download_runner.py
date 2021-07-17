@@ -1,4 +1,4 @@
-import sys
+import platform
 import logging
 from queue import Queue, Empty
 from threading import Thread, Event
@@ -187,7 +187,7 @@ class DownloadRunner(QObject):
     def log_download_settings(self):
         self.logger.info('Download runner started.', extra={
             'dfr_version': __version__,
-            'platform': sys.platform,
+            'platform': platform.platform,
             'account_connected': reddit_utils.connection_is_authorized,
             'run_unextracted': self.run_unextracted,
             'run_undownloaded': self.run_undownloaded,
