@@ -605,7 +605,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         for ro in reddit_objects:
             ModelManger.delete_reddit_object(ro, session=self.session, delete_files=delete_files)
         self.reddit_object_model.remove_items(reddit_objects)
-        self.cascade_setup()
+        self.setup_reddit_objects()
 
     def post_view_context_menu(self):
         menu = QMenu()
@@ -663,7 +663,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
         for post in selected_posts:
             ModelManger.delete_post(post, session=self.session, delete_files=delete_files)
         self.post_model.remove_items(selected_posts)
-        self.cascade_setup()
+        self.setup_posts()
 
     def export_posts(self, post_list):
         wizard = ExportWizard(post_list, Post)
@@ -791,7 +791,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             ModelManger.delete_content(content, session=self.session, delete_post=delete_post,
                                        delete_file=delete_file)
         self.content_model.remove_items(content_list)
-        self.cascade_setup()
+        self.setup_posts()
 
     def comment_view_context_menu(self):
         menu = QMenu()
@@ -827,7 +827,7 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             ModelManger.delete_comment(comment, session=self.session, delete_post=delete_posts,
                                        delete_files=delete_files)
         self.comment_tree_model.remove_items(comments)
-        self.cascade_setup()
+        self.setup_posts()
 
     def comment_header_context_menu(self):
         """
