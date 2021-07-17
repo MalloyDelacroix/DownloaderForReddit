@@ -24,6 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 import io
+import platform
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QMessageBox, QWidget, QHBoxLayout, QSystemTrayIcon, QApplication)
@@ -274,6 +275,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.check_for_updates(False)
 
         reddit_utils.check_authorized_connection()
+        self.log_startup()
+
+    def log_startup(self):
+        self.logger.info('Application started', extra={
+            'dfr_version': __version__,
+            'platform': platform.platform(),
+            'account_connected': reddit_utils.connection_is_authorized,
+        })
 
     def setup_list_sort_menu(self):
         list_view_group = QActionGroup(self)
