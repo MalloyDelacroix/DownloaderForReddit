@@ -1,6 +1,10 @@
 # Change Log
 
 
+## v3.10.3-beta
+* Fix crashing and unexpected behavior when deleting posts, content, or files from the database dialog.
+
+
 ## v3.10.2-beta
 * Update youtube-dl and add supported site url for youtu.be.
 
