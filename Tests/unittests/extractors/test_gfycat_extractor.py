@@ -83,11 +83,14 @@ class TestGfycatExtractor(ExtractorTest):
         self.assertTrue(ge.failed_extraction)
         self.assertIsNotNone(ge.failed_extraction_message)
 
-    def test_redgifs(self, filter_content, make_title, make_dir_path):
+    @patch('DownloaderForReddit.extractors.gfycat_extractor.GfycatExtractor.get_json')
+    def test_redgifs(self, get_json, filter_content, make_title, make_dir_path):
         filter_content.return_value = True
         post = mock_objects.get_mock_post_gfycat(session=self.session)
         post.url = 'https://www.redgifs.com/watch/decisivecleanfallowdeer'
         expected_output = 'https://thumbs2.redgifs.com/DecisiveCleanFallowdeer.mp4'
+
+        get_json.return_value = {'gfyItem': {'webmUrl': expected_output}}
 
         make_title.return_value = post.title
         make_dir_path.return_value = 'content_dir_path'

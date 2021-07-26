@@ -1,9 +1,10 @@
-import prawcore
+import platform
 import logging
-from PyQt5.QtCore import QObject, pyqtSignal
 from queue import Queue, Empty
 from threading import Thread, Event
 from datetime import datetime
+import prawcore
+from PyQt5.QtCore import QObject, pyqtSignal
 from collections import namedtuple
 from praw.models import Redditor
 
@@ -15,6 +16,7 @@ from .errors import NON_DOWNLOADABLE
 from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content
 from ..utils import injector, reddit_utils, video_merger
 from ..messaging.message import Message
+from ..version import __version__
 
 
 ExtractionSet = namedtuple('ExtractionSet', 'extraction_type extraction_object significant_id')
@@ -184,6 +186,9 @@ class DownloadRunner(QObject):
 
     def log_download_settings(self):
         self.logger.info('Download runner started.', extra={
+            'dfr_version': __version__,
+            'platform': platform.platform,
+            'account_connected': reddit_utils.connection_is_authorized,
             'run_unextracted': self.run_unextracted,
             'run_undownloaded': self.run_undownloaded,
             'run_new': self.run_new,
