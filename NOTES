@@ -1,0 +1,3 @@
+- settings_manager needs to split to
+    - server_settings_manager
+    - client_settings_manager
