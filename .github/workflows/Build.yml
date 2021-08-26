@@ -4,6 +4,7 @@ on:
   push:
     branches: 
       - master
+      - build_test
 
 jobs:
 
@@ -31,7 +32,13 @@ jobs:
     
     - name: Install pyinstaller
       run: |
-        pip install pyinstaller
+        pip install wheel
+        git clone https://github.com/pyinstaller/pyinstaller.git
+        cd pyinstaller/bootloader
+        python ./waf all --target-arch=64bit
+        cd ..
+        python setup.py install
+      working-directory: c:/
     
     - name: Build with pyinstaller
       run: 
