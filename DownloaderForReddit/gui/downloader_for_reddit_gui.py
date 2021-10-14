@@ -119,6 +119,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.output_list_view.setModel(self.output_view_model)
         self.output_view_model.added.connect(self.scroll_output)
 
+        reddit_utils.load_token()
         user = reddit_utils.check_authorized_connection()
 
         if(user):
