@@ -29,9 +29,9 @@ from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QMessageBox, QWidget, QHBoxLayout, QSystemTrayIcon, QApplication)
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer, QUrl
-from PyQt5.QtGui import QCursor, QPixmap, QIcon, QDesktopServices
-from PyQt5.QtNetworkAuth import QOAuth2AuthorizationCodeFlow, QOAuthHttpServerReplyHandler
+from PyQt5.QtGui import QCursor, QDesktopServices, QPixmap, QIcon
 from PyQt5.QtNetwork import QNetworkAccessManager
+from PyQt5.QtNetworkAuth import QOAuth2AuthorizationCodeFlow, QOAuthHttpServerReplyHandler
 from pyqtspinner.spinner import WaitingSpinner
 import logging
 
