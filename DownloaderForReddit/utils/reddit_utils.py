@@ -116,6 +116,14 @@ def save_token(raw_token):
     settings_manager.reddit_access = key.decode()
 
 
+def delete_token():
+    global connection_is_authorized
+    settings_manager = injector.get_settings_manager()
+    settings_manager.reddit_access_token = None
+    settings_manager.reddit_access = None
+    connection_is_authorized = False
+
+
 def get_token():
     global token
     if token is None:
