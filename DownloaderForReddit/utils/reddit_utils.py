@@ -130,20 +130,23 @@ def get_token():
 
 
 def check_authorized_connection():
+    """
+    Checks whether or not a user is currently logged in. If so, returns their username. Otherwise, returns None.
+
+    Side Effect: Updates connection_is_authorized
+    """
     global connection_is_authorized
     r = get_reddit_instance()
     try:
         if not r.read_only:
             user = r.user.me().name
-            Message.send_info(f'Welcome {user}, you are connected through your reddit account.')
             connection_is_authorized = True
-            return
+            return user
     except (AttributeError, RecursionError):
         # Recursion error happens sometimes with praw trying to access the "user.me" method of an unauthorized instance.
         # This should be fixed above by checking for read only status first, but this is put in here as a safe guard.
         pass
-    Message.send_info('You are connected through the standard connection.  No reddit account is associated with '
-                      'this session.')
+    return None
 
 
 def get_post_author_name(praw_post):

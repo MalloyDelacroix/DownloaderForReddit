@@ -117,6 +117,14 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.output_list_view.setModel(self.output_view_model)
         self.output_view_model.added.connect(self.scroll_output)
 
+        user = reddit_utils.check_authorized_connection()
+
+        if(user):
+            Message.send_info(f'Welcome {user}, you are connected through your reddit account.')
+        else:
+            Message.send_info(
+                'You are connected through the standard connection.  No reddit account is associated with '
+                'this session.')
         # region Main Menu
 
         # region File Menu
@@ -274,7 +282,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.check_ffmpeg()
         self.check_for_updates(False)
 
-        reddit_utils.check_authorized_connection()
+
         self.log_startup()
 
     def log_startup(self):
