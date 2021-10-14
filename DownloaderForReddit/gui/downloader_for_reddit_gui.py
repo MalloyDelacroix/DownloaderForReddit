@@ -37,7 +37,6 @@ import logging
 
 from ..guiresources.downloader_for_reddit_gui_auto import Ui_MainWindow
 from ..gui.about_dialog import AboutDialog
-from ..gui.user_auth_wizard import UserAuthWizard
 from ..gui.add_reddit_object_dialog import AddRedditObjectDialog
 from ..gui.existing_reddit_object_add_dialog import ExistingRedditObjectAddDialog
 from ..gui.ffmpeg_info_dialog import FfmpegInfoDialog

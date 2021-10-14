@@ -27,13 +27,10 @@ import prawcore
 import logging
 from datetime import datetime
 from collections import namedtuple
-from uuid import uuid4
-from urllib.parse import urlparse, parse_qs
 from cryptography.fernet import Fernet
 
 from ..version import __version__
 from ..utils import injector
-from ..messaging.message import Message
 
 
 TOKEN_SCOPES = ['identity', 'mysubreddits', 'subscribe', 'account', 'history', 'read']
@@ -68,41 +65,6 @@ def get_unauthorized_reddit_instance():
 
 def get_user_reddit_instance(token):
     return praw.Reddit(client_id=CLIENT_ID, user_agent=USER_AGENT, client_secret=None, refresh_token=token)
-
-
-def get_authorize_account_url():
-    global state
-    r = get_unauthorized_reddit_instance()
-    state = uuid4().hex
-    return r.auth.url(TOKEN_SCOPES, state, TOKEN_DURATION)
-
-
-def get_user_authorization_token(url):
-    r = get_unauthorized_reddit_instance()
-    code = parse_url_token(url)
-    if code is not None:
-        raw_token = r.auth.authorize(code)
-        auth_instance = get_user_reddit_instance(raw_token)
-        user = auth_instance.user.me()
-        save_token(raw_token)
-        Message.send_info(f'Downloader for Reddit is now linked to {user}\'s reddit account.')
-        return user
-    return None
-
-
-def parse_url_token(url):
-    global state
-    parsed = urlparse(url)
-    args = parse_qs(parsed.query)
-    url_state = args['state'][0]
-    code = args['code'][0]
-    if url_state != state:
-        message = 'The state in the pasted url did not match the state supplied to reddit.  This suggests that the ' \
-                  'url has been tampered with.'
-        logger.error(message)
-        Message.send_error(message)
-        return None
-    return code
 
 
 def save_token(raw_token):
