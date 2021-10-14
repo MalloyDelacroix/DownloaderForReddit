@@ -40,7 +40,7 @@ TOKEN_SCOPES = ['identity', 'mysubreddits', 'subscribe', 'account', 'history', '
 TOKEN_DURATION = 'permanent'
 USER_AGENT = F'python:DownloaderForReddit:{__version__} (by: /u/MalloyDelacroix)'
 CLIENT_ID = 'frGEUVAuHGL2PQ'
-REDIRECT_URL = 'http://localhost:8080/dfr/authorize'
+REDIRECT_URL = 'http://127.0.0.1:8086/'
 
 
 logger = logging.getLogger('DownloaderForReddit.{}'.format(__name__))
