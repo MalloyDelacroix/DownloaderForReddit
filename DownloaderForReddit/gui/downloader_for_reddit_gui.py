@@ -132,7 +132,12 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
 
         # region File Menu
         self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
-        self.connect_reddit_account_menu_item.triggered.connect(self.start_oauth_flow)
+        if user:
+            self.connect_reddit_account_menu_item.setText(f"Sign out: {user}")
+            self.connect_reddit_account_menu_item.triggered.connect(self.sign_out)
+        else:
+            self.connect_reddit_account_menu_item.setText(f"Connect Reddit Account")
+            self.connect_reddit_account_menu_item.triggered.connect(self.start_oauth_flow)
         self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
         self.minimize_to_tray_menu_item.triggered.connect(self.minimize_to_tray)
         self.exit_menu_item.triggered.connect(self.close)
@@ -1201,6 +1206,13 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         """Displays the main settings dialog and calls methods that update each reddit object if needed."""
         settings = SettingsDialog(parent=self, **kwargs)
         settings.exec_()
+
+    def sign_out(self):
+        reddit_utils.delete_token()
+        Message.send_info(f'Signed out of Downloader for Reddit.')
+        self.connect_reddit_account_menu_item.setText(f"Connect Reddit Account")
+        self.connect_reddit_account_menu_item.triggered.disconnect(self.sign_out)
+        self.connect_reddit_account_menu_item.triggered.connect(self.start_oauth_flow)
 
     def start_oauth_flow(self):
         authorization_url = QUrl("https://www.reddit.com/api/v1/authorize")
