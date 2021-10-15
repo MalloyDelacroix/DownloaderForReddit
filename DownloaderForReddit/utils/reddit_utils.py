@@ -79,13 +79,15 @@ def delete_token():
 
 
 def load_token():
+    global _token
     settings_manager = injector.get_settings_manager()
     key = settings_manager.reddit_access
     encrypted_token = settings_manager.reddit_access_token
     if key is None or encrypted_token is None:
         return None
     f = Fernet(key.encode())
-    return f.decrypt(encrypted_token.encode()).decode()
+    _token = f.decrypt(encrypted_token.encode()).decode()
+    return _token
 
 
 def check_authorized_connection():
