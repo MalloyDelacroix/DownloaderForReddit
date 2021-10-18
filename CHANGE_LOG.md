@@ -1,6 +1,13 @@
 # Change Log
 
 
+## v3.11.0-beta
+
+### Minor Changes
+* Greatly improve user account pairing OAuth flow.  There is no longer any need for the user to manually copy and paste
+  information between the browser and the app.
+
+
 ## v3.10.3-beta
 * Fix crashing and unexpected behavior when deleting posts, content, or files from the database dialog.
 
