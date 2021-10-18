@@ -28,14 +28,15 @@ import platform
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QMessageBox, QWidget, QHBoxLayout, QSystemTrayIcon, QApplication)
-from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer
-from PyQt5.QtGui import QCursor, QPixmap, QIcon
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer, QUrl
+from PyQt5.QtGui import QCursor, QDesktopServices, QPixmap, QIcon
+from PyQt5.QtNetwork import QNetworkAccessManager
+from PyQt5.QtNetworkAuth import QOAuth2AuthorizationCodeFlow, QOAuthHttpServerReplyHandler
 from pyqtspinner.spinner import WaitingSpinner
 import logging
 
 from ..guiresources.downloader_for_reddit_gui_auto import Ui_MainWindow
 from ..gui.about_dialog import AboutDialog
-from ..gui.user_auth_wizard import UserAuthWizard
 from ..gui.add_reddit_object_dialog import AddRedditObjectDialog
 from ..gui.existing_reddit_object_add_dialog import ExistingRedditObjectAddDialog
 from ..gui.ffmpeg_info_dialog import FfmpegInfoDialog
@@ -91,6 +92,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.tray_icon_image = \
             QIcon(QPixmap('Resources/Images/RedditDownloaderIcon.png').scaled(48, 48))
         self.system_tray_icon = QSystemTrayIcon(icon=self.tray_icon_image)
+        self.oauth = None
 
         # region Settings
         self.settings_manager = injector.get_settings_manager()
@@ -117,11 +119,25 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.output_list_view.setModel(self.output_view_model)
         self.output_view_model.added.connect(self.scroll_output)
 
+        reddit_utils.load_token()
+        user = reddit_utils.check_authorized_connection()
+
+        if(user):
+            Message.send_info(f'Welcome {user}, you are connected through your reddit account.')
+        else:
+            Message.send_info(
+                'You are connected through the standard connection.  No reddit account is associated with '
+                'this session.')
         # region Main Menu
 
         # region File Menu
         self.open_settings_menu_item.triggered.connect(self.open_settings_dialog)
-        self.connect_reddit_account_menu_item.triggered.connect(self.open_connect_reddit_account_wizard)
+        if user:
+            self.connect_reddit_account_menu_item.setText(f"Sign out: {user}")
+            self.connect_reddit_account_menu_item.triggered.connect(self.sign_out)
+        else:
+            self.connect_reddit_account_menu_item.setText(f"Connect Reddit Account")
+            self.connect_reddit_account_menu_item.triggered.connect(self.start_oauth_flow)
         self.open_data_directory_menu_item.triggered.connect(self.open_data_directory)
         self.minimize_to_tray_menu_item.triggered.connect(self.minimize_to_tray)
         self.exit_menu_item.triggered.connect(self.close)
@@ -274,7 +290,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.check_ffmpeg()
         self.check_for_updates(False)
 
-        reddit_utils.check_authorized_connection()
+
         self.log_startup()
 
     def log_startup(self):
@@ -1191,9 +1207,42 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         settings = SettingsDialog(parent=self, **kwargs)
         settings.exec_()
 
-    def open_connect_reddit_account_wizard(self):
-        wizard = UserAuthWizard(parent=self)
-        wizard.exec_()
+    def sign_out(self):
+        reddit_utils.delete_token()
+        Message.send_info(f'Signed out of Downloader for Reddit.')
+        self.connect_reddit_account_menu_item.setText(f"Connect Reddit Account")
+        self.connect_reddit_account_menu_item.triggered.disconnect(self.sign_out)
+        self.connect_reddit_account_menu_item.triggered.connect(self.start_oauth_flow)
+
+    def start_oauth_flow(self):
+        authorization_url = QUrl("https://www.reddit.com/api/v1/authorize")
+        access_url = QUrl("https://www.reddit.com/api/v1/access_token")
+
+        manager = QNetworkAccessManager(self)
+        reply_handler = QOAuthHttpServerReplyHandler(8086)
+        oauth = QOAuth2AuthorizationCodeFlow(reddit_utils.CLIENT_ID, authorization_url, access_url, manager, self)
+        oauth.granted.connect(self.finish_oauth_flow)
+        oauth.authorizeWithBrowser.connect(QDesktopServices.openUrl)
+        oauth.setReplyHandler(reply_handler)
+        oauth.setScope(" ".join(reddit_utils.TOKEN_SCOPES))
+        oauth.setUserAgent(reddit_utils.USER_AGENT)
+
+        params = {
+            "duration": "permanent"
+        }
+        oauth.resourceOwnerAuthorization(authorization_url, params)
+        self.oauth = oauth
+
+    def finish_oauth_flow(self):
+        token = self.oauth.refreshToken()
+        reddit_utils.save_token(token)
+        user = reddit_utils.check_authorized_connection()
+        Message.send_info(f'Downloader for Reddit is now linked to {user}\'s reddit account.')
+        self.connect_reddit_account_menu_item.setText(f"Sign out: {user}")
+        self.connect_reddit_account_menu_item.disconnect()
+        self.connect_reddit_account_menu_item.triggered.connect(self.sign_out)
+
+        self.oauth.replyHandler().close()
 
     def update_output(self):
         self.output_view_model.update_output_level()

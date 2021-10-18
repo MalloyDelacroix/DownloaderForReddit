@@ -1,6 +1,7 @@
 beautifulsoup4==4.6.3
 praw==7.2.0
-pyqt5==5.14.1
+pyqt5==5.15.4
+PyQtNetworkAuth==5.15.4
 python-json-logger==0.1.9
 requests==2.20.0
 youtube-dl==2021.6.6
