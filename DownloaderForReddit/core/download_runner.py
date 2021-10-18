@@ -473,11 +473,11 @@ class DownloadRunner(QObject):
             'download_count': downloaded_content_count,
         }
         message = f'\nFinished\nRun Time: {dl_session.duration_display}\n' \
+                  f'Download Count: {downloaded_content_count}' \
                   f'Downloaded Users: {significant_user_count}\n' \
                   f'Downloaded Subreddits: {significant_subreddit_count}\n' \
                   f'Post Count: {extracted_post_count}\n' \
-                  f'Comment Count: {extracted_comment_count}\n' \
-                  f'Download Count: {downloaded_content_count}'
+                  f'Comment Count: {extracted_comment_count}\n'
         if self.stopped:
             extra.update(download_stopped=True)
             message = f'\nDownload stopped{message}'
