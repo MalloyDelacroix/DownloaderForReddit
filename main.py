@@ -60,10 +60,10 @@ def check_args(args):
 
 
 def main():
+    check_args(sys.argv[1:])
+
     logger.make_logger()
     sys.excepthook = log_unhandled_exception
-
-    check_args(sys.argv[1:])
 
     check_migration()
 
