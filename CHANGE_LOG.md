@@ -1,7 +1,7 @@
 # Change Log
 
 
-## v3.12.0
+## v3.12.0-beta
 
 ### Minor Changes
 * Add a single command line option to locate all files created by the app in one directory.  This essentially makes the
