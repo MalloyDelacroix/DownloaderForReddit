@@ -1,6 +1,17 @@
 # Change Log
 
 
+## v3.12.0-beta
+
+### Minor Changes
+* Add a single command line option to locate all files created by the app in one directory.  This essentially makes the
+  app portable when used.
+
+
+### Bug Fixes
+* Fix "--data" command line argument not locating database and log file in the specified directory with the config file.
+
+
 ## v3.11.0-beta
 
 ### Minor Changes

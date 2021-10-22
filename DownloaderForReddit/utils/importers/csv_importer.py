@@ -2,8 +2,8 @@ import logging
 import csv
 import sqlite3
 
-from DownloaderForReddit.database.database_handler import DatabaseHandler
 from DownloaderForReddit.database.models import RedditObjectList, RedditObject, User, Subreddit, Post, Content, Comment
+from DownloaderForReddit.utils import injector
 
 
 model_map = {model.__name__: model for model in [RedditObjectList, RedditObject, User, Subreddit, Post, Content,
@@ -14,6 +14,7 @@ logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
 
 
 def import_csv(file_path):
+    database_path = injector.get_database_handler().database_path
     object_type, columns, data = read_file(file_path)
     sub_type = None
     if object_type == 'User' or object_type == 'Subreddit':
@@ -22,7 +23,7 @@ def import_csv(file_path):
     else:
         model = model_map[object_type]
     table = model.__tablename__
-    con = sqlite3.connect(DatabaseHandler.database_path)
+    con = sqlite3.connect(database_path)
     cursor = con.cursor()
     cursor.execute('BEGIN TRANSACTION;')
     sql = f'INSERT INTO {table} ({",".join(columns)}) VALUES({",".join(["?"] * len(columns))});'

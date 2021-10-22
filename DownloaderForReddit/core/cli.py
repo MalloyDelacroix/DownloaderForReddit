@@ -24,6 +24,9 @@ class CLI:
         self.parser.add_argument('-s', '--subpath', type=str,
                                  help='Specify the directory in which subreddit posts will be saved. (Must be a valid '
                                       'directory path)')
+        self.parser.add_argument('-o', '--onedir', type=str,
+                                 help='Specify a directory which will be used as the data directory, and the download '
+                                      'location for users and subreddits.  Keeps all app created files in one place.')
         self.parser.add_argument('-v', '--version', action='store_true',
                                  help='Show the application version info.')
         self.path_error_message = 'The path specified is not valid.  Please make sure this path exists and that you ' \
@@ -37,6 +40,8 @@ class CLI:
             self.set_user_download_path(args.userpath)
         if args.subpath:
             self.set_subreddit_download_path(args.subpath)
+        if args.onedir:
+            self.set_one_directory_path(args.onedir)
         if args.version:
             self.print_version()
 
@@ -64,6 +69,18 @@ class CLI:
             sm = injector.get_settings_manager()
             sm.subreddit_save_directory = path
             text = f'Subreddit save directory successfully set to "{path}"'
+            print(text)
+            Message.send_info(text)
+        else:
+            self.send_path_error()
+
+    def set_one_directory_path(self, path):
+        if os.path.isdir(path):
+            system_util.DATA_DIR = path
+            sm = injector.get_settings_manager()
+            sm.user_save_directory = path
+            sm.subreddit_save_directory = path
+            text = f'Data directory, user save directory, and subreddit save directory successfully set to "{path}"'
             print(text)
             Message.send_info(text)
         else:
