@@ -472,8 +472,8 @@ class DownloadRunner(QObject):
             'comment_extraction_count': extracted_comment_count,
             'download_count': downloaded_content_count,
         }
-        message = f'\nFinished\nRun Time: {dl_session.duration_display}\n' \
-                  f'Download Count: {downloaded_content_count}' \
+        message = f'Finished\nRun Time: {dl_session.duration_display}\n' \
+                  f'Download Count: {downloaded_content_count}\n' \
                   f'Downloaded Users: {significant_user_count}\n' \
                   f'Downloaded Subreddits: {significant_subreddit_count}\n' \
                   f'Post Count: {extracted_post_count}\n' \
@@ -482,7 +482,7 @@ class DownloadRunner(QObject):
             extra.update(download_stopped=True)
             message = f'\nDownload stopped{message}'
         self.logger.info('Download complete', extra=extra)
-        Message.send_info(message)
+        Message.send_info('\n' + message)
         Message.send_status_tray(message)
 
     def stop_download(self, hard_stop=False):
