@@ -15,15 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.7
-
-    - uses: actions/cache@v2
-      with:
-        path: c:\hostedtoolcache\windows\python\3.7.5\x64\lib\site-packages
-        key: ${{ runner.os }}-pip_build-${{ hashFiles('**/requirements.txt') }}
+        python-version: 3.8
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
