@@ -5,6 +5,7 @@ on:
     branches: 
       - master
       - build_test
+      - release_test
 
 jobs:
 
@@ -12,35 +13,97 @@ jobs:
 
     runs-on: windows-latest
 
+    outputs:
+      version_changed: ${{ steps.check-version.outputs.any_changed }}
+      changes: ${{ steps.changes.outputs.changes }}
+      version: ${{ steps.changes.outputs.version }}
+
     steps:
-    - uses: actions/checkout@v1
 
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-        cache: 'pip'
+      - uses: actions/checkout@v1
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Install pyinstaller
-      run: |
-        pip install wheel
-        git clone https://github.com/pyinstaller/pyinstaller.git
-        cd pyinstaller/bootloader
-        python ./waf all --target-arch=64bit
-        cd ..
-        python setup.py install
-      working-directory: c:/
-    
-    - name: Build with pyinstaller
-      run: 
-        pyinstaller build_github.spec
-    
-    - uses: actions/upload-artifact@v1
-      with:
-        name: DownloaderForReddit_${{ github.run_number }}
-        path: dist/DownloaderForReddit
+      - name: Check Version
+        uses: tj-actions/changed-files@v12
+        id: check-version
+        with:
+          files: DownloaderForReddit/version.py
+
+      - name: Read Changelog
+        id: changes
+        run: |
+          $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
+          $index = $item.IndexOf("`n")
+          $version = "v" + $item.SubString(0,$index).Trim()
+          $item = $item.SubString($index).Trim()
+          $item = $item.Replace("`r","%0D").Replace("`n","%0A")
+          Write-Output "::set-output name=version::$version"
+          Write-Output "::set-output name=changes::$item"
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install pyinstaller
+        run: |
+          pip install wheel
+          git clone https://github.com/pyinstaller/pyinstaller.git
+          cd pyinstaller/bootloader
+          python ./waf all --target-arch=64bit
+          cd ..
+          python setup.py install
+        working-directory: c:/
+      
+      - name: Build with pyinstaller
+        run: 
+          pyinstaller build_github.spec
+      
+      - uses: actions/upload-artifact@v1
+        with:
+          name: DownloaderForReddit_${{ github.run_number }}
+          path: dist/DownloaderForReddit
+
+  Release:
+    runs-on: windows-latest
+    needs: Build
+    if: ${{ needs.Build.outputs.version_changed == 'true' }}
+
+    steps:
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          tag_name: ${{ needs.Build.outputs.version }}
+          release_name: ${{ needs.Build.outputs.version }}
+          body: ${{ needs.Build.outputs.changes }}
+          draft: false
+          prerelease: false
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: DownloaderForReddit_${{ github.run_number }}
+          path: build
+
+      - name: Package Build
+        run: |
+          Compress-Archive build/* ./build.zip
+
+      - name: Upload Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build.zip
+          asset_name: DownloaderForReddit_${{ needs.Build.outputs.version }}.zip
+          asset_content_type: application/zip
