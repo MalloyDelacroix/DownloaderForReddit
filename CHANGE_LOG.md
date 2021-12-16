@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.12.1-beta
+
+### Bug Fixes
+* Fix the application was being falsely flagged as a trojan by some anti-virus software.
+
 
 ## v3.12.0-beta
 
