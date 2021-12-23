@@ -107,6 +107,8 @@ def check_authorized_connection():
         # Recursion error happens sometimes with praw trying to access the "user.me" method of an unauthorized instance.
         # This should be fixed above by checking for read only status first, but this is put in here as a safe guard.
         pass
+    except prawcore.RequestException:
+        logger.error('Praw request failed', exc_info=True)
     return None
 
 
