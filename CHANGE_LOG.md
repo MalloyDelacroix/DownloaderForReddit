@@ -1,5 +1,18 @@
 # Change Log
 
+
+## v3.13.0
+
+### We are out of beta!
+
+### Minor Changes
+* Update PRAW version.
+
+
+### Bug Fixes
+* Fix crashing that rarely occurred when PRAW failed to connect to reddit with a RequestException.
+
+
 ## v3.12.1-beta
 
 ### Bug Fixes
