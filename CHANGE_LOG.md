@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.13.1
+
+### Bug Fixes
+* Fix crashing that occurred when attempting a json export failed content list from database dialog.
+
+
 ## v3.13.0
 
 ### We are out of beta!
