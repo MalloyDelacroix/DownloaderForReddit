@@ -327,11 +327,13 @@ def export_posts_to_json(post_list, file_path, nested=False):
 
 
 def export_content_to_json(content_list, file_path, nested=False):
+    content_list = list(content_list)
     encoder = NestedJSONContentEncoder if nested else SimpleJSONContentEncoder
     _export(ContentCollection(content_list), file_path, encoder)
 
 
 def export_comments_to_json(comment_list, file_path, nested=False):
+    comment_list = list(comment_list)
     encoder = NestedJSONCommentEncoder if nested else SimpleJSONCommentEncoder
     _export(CommentCollection(comment_list), file_path, encoder)
 
