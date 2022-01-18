@@ -78,7 +78,7 @@ class Downloader(Runner):
         try:
             with self.db.get_scoped_session() as session:
                 content = session.query(Content).get(content_id)
-                response = requests.get(content.url, stream=True, timeout=10)
+                response = requests.get(content.url, stream=True, timeout=10, headers=self.check_headers(content.url))
                 if response.status_code == 200:
                     file_size = int(response.headers['Content-Length'])
                     content.download_title = general_utils.check_file_path(content)
@@ -102,6 +102,17 @@ class Downloader(Runner):
             self.handle_connection_error(content)
         except:
             self.handle_unknown_error(content)
+
+    def check_headers(self, url):
+        """
+        This is a helper method to add a necessary header entry for erome downloads.  It is just a patch for a problem
+        at the moment.  This can be expanded as further need arises, or replaced by a different better system.
+        :param url: The url on which a download is about to be performed.
+        :return: A dict to be used as a request header where applicable, None if not.
+        """
+        if 'erome' in url:
+            return {"Referer": "https://www.erome.com/"}
+        return None
 
     def finish_download(self, content: Content):
         """
