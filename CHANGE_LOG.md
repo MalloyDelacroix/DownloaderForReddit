@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.13.2
+
+### Bug Fixes
+* Fix extraction errors for erome hosted content.
+
+
 ## v3.13.1
 
 ### Bug Fixes

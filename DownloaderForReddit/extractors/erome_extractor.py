@@ -41,7 +41,7 @@ def get_content(tag):
     if video_tags:
         return video_tags[0].find_all('source')[0].get('src')
     else:
-        img_tags = tag.find_all(class_filter('img'))
+        img_tags = tag.find_all(class_filter('img-back'))
         return img_tags[0].get("data-src")
 
 
@@ -66,10 +66,6 @@ class EromeExtractor(BaseExtractor):
             message = 'Failed to locate content'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message)
 
-    def get_soup(self):
-        soup = BeautifulSoup(self.get_text(self.url), 'html.parser')
-        return soup
-
     def extract_single(self):
         # Singles are just ablums containing 1 item
         pass
@@ -84,5 +80,8 @@ class EromeExtractor(BaseExtractor):
         for url in urls:
             _, hosted_id = url.rsplit('/', 1)
             base, extension = hosted_id.rsplit('.', 1)
+            # Image urls have an identifier param after the url, this removes it to get a clean extension
+            if '?' in extension:
+                extension = extension.split('?')[0]
             self.make_content(url, extension, count=count if count > 0 else None, media_id=base)
             count += 1
