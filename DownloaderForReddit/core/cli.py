@@ -80,7 +80,7 @@ class CLI:
             sm = injector.get_settings_manager()
             sm.user_save_directory = path
             sm.subreddit_save_directory = path
-            text = f'Data directory, user save directory, and subreddit save directory successfully set to "{path}"'
+            text = f'Data, user save, and subreddit save directories successfully set to "{path}"'
             print(text)
             Message.send_info(text)
         else:
