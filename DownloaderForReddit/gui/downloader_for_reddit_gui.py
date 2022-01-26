@@ -123,9 +123,9 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         user = reddit_utils.check_authorized_connection()
 
         if user is not None:
-            Message.send_info(f'You are logged into reddit account {user}.')
+            Message.send_info(f'You are logged in as /u/{user}.')
         else:
-            Message.send_info('No reddit account is associated with this session.')
+            Message.send_info('You are not logged in to Reddit.')
         # region Main Menu
 
         # region File Menu
