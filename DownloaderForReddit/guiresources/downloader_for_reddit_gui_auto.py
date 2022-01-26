@@ -159,7 +159,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.schedule_widget.sizePolicy().hasHeightForWidth())
         self.schedule_widget.setSizePolicy(sizePolicy)
-        self.schedule_widget.setMaximumSize(QtCore.QSize(16777215, 15))
+        self.schedule_widget.setMaximumSize(QtCore.QSize(16777215, 18))
         self.schedule_widget.setObjectName("schedule_widget")
         self.horizontalLayout_8 = QtWidgets.QHBoxLayout(self.schedule_widget)
         self.horizontalLayout_8.setContentsMargins(-1, 0, -1, 0)
