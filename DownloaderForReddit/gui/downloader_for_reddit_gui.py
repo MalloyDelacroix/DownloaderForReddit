@@ -122,12 +122,10 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         reddit_utils.load_token()
         user = reddit_utils.check_authorized_connection()
 
-        if(user):
-            Message.send_info(f'Welcome {user}, you are connected through your reddit account.')
+        if user is not None:
+            Message.send_info(f'You are logged into reddit account {user}.')
         else:
-            Message.send_info(
-                'You are connected through the standard connection.  No reddit account is associated with '
-                'this session.')
+            Message.send_info('No reddit account is associated with this session.')
         # region Main Menu
 
         # region File Menu
