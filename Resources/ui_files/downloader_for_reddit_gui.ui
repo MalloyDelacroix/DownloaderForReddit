@@ -17,6 +17,11 @@
    <iconset>
     <normaloff>../images/RedditDownloaderIcon.png</normaloff>../images/RedditDownloaderIcon.png</iconset>
   </property>
+  <property name="font">
+    <font>
+      <pointsize>10</pointsize>
+    </font>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
@@ -62,11 +67,6 @@
         </item>
         <item>
          <widget class="QListView" name="user_list_view">
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
@@ -74,11 +74,6 @@
         </item>
         <item>
          <widget class="QComboBox" name="user_lists_combo">
-          <property name="font">
-           <font>
-            <pointsize>10</pointsize>
-           </font>
-          </property>
           <property name="toolTip">
            <string>Current user list</string>
           </property>
@@ -220,11 +215,6 @@
           </item>
           <item>
            <widget class="QPushButton" name="terminate_download_button">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
             <property name="toolTip">
              <string>Stops the download immediately and terminates in progress downloads (may result in corrupted files for downloads that were not complete)</string>
             </property>
