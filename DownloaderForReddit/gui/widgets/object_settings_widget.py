@@ -59,7 +59,6 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
     def set_objects(self, object_list):
         if object_list:
             self.selected_objects = object_list
-            self.sync_post()
             self.sync_widgets_to_object()
             self.sync_sort_methods(self.object_type)
 
@@ -256,15 +255,6 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         if line_edit.hasSelectedText():
             line_edit.del_()
         line_edit.insert(f'%[{token}]')
-
-    def sync_post(self):
-        selected = self.selected_objects[0]
-        if selected.object_type == 'USER':
-            self.user.name = selected.name
-            self.subreddit.name = 'ExampleName'
-        else:
-            self.user.name = 'ExampleUser'
-            self.subreddit.name = selected.name
 
     def sync_post_path_example(self):
         if self.custom_post_save_path_line_edit.text() != '':
