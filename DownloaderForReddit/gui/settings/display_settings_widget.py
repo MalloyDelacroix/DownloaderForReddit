@@ -61,12 +61,14 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.datetime_format_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.datetime_format_line_edit.customContextMenuRequested.connect(self.datetime_token_context_menu)
         self.datetime_format_line_edit.textChanged.connect(
-            lambda: self.set_date_example(self.datetime_format_line_edit, self.date_time_format_example_label))
+            lambda: self.set_date_example(self.datetime_format_line_edit, self.date_time_format_example_label)
+        )
 
         self.date_format_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.date_format_line_edit.customContextMenuRequested.connect(self.date_token_context_menu)
         self.date_format_line_edit.textChanged.connect(
-            lambda: self.set_date_example(self.date_format_line_edit, self.date_format_example_label))
+            lambda: self.set_date_example(self.date_format_line_edit, self.date_format_example_label)
+        )
 
         for value in self.settings.countdown_view_choices:
             self.schedule_countdown_combo.addItem(value.replace('_', ' ').title(), value)
