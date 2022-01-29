@@ -17,8 +17,6 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
             self.connect_color_picker_buttons(x.name.lower())
         self.debug_color_label.setStyleSheet('background-color: white;')
 
-        self.use_color_output_checkbox.toggled.connect(lambda x: self.color_groupbox.setDisabled(not x))
-
     def connect_color_picker_buttons(self, priority):
         button = getattr(self, f'change_{priority.lower()}_color_button')
         button.clicked.connect(lambda: self.pick_color(priority))
@@ -28,7 +26,7 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
         self.show_priority_level_checkbox.setChecked(self.settings.show_priority_level)
         self.clear_on_run_checkbox.setChecked(self.settings.clear_messages_on_run)
         self.output_saved_content_full_path_checkbox.setChecked(self.settings.output_saved_content_full_path)
-        self.use_color_output_checkbox.setChecked(self.settings.use_color_output)
+        self.color_groupbox.setChecked(self.settings.use_color_output)
 
         for x in MessagePriority:
             self.colors[x.name.lower()] = getattr(self.settings, f'{x.name.lower()}_color')
@@ -65,6 +63,6 @@ class OutputSettingsWidget(AbstractSettingsWidget, Ui_OutputSettingsWidget):
         self.settings.show_priority_level = self.show_priority_level_checkbox.isChecked()
         self.settings.clear_messages_on_run = self.clear_on_run_checkbox.isChecked()
         self.settings.output_saved_content_full_path = self.output_saved_content_full_path_checkbox.isChecked()
-        self.settings.use_color_output = self.use_color_output_checkbox.isChecked()
+        self.settings.use_color_output = self.color_groupbox.isChecked()
         for key, value in self.colors.items():
             setattr(self.settings, f'{key}_color', value)
