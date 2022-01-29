@@ -14,7 +14,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         self.main_window = kwargs.pop('main_window', None)
         self.kwargs = kwargs
 
-        self.list_map = {}
+        self.lists = []
 
         self.master_user_list = None
         self.master_subreddit_list = None
@@ -25,8 +25,9 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         for ro_list in self.session.query(RedditObjectList).order_by(RedditObjectList.name):
             self.add_list(ro_list)
 
-        self.list_widget.currentItemChanged.connect(
-            lambda x: self.list_settings_widget.set_objects([self.list_map[x.text()]]))
+        self.list_combo_box.currentIndexChanged.connect(
+            lambda idx: self.list_settings_widget.set_objects([self.lists[idx]])
+        )
         self.cascade_changes_checkbox.setChecked(self.settings.cascade_list_changes)
 
     @property
@@ -43,24 +44,21 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         creator.list_type = 'SUBREDDIT'
         self.master_subreddit_list = creator.create_reddit_object_list('Master Subreddit List', commit=False)
 
-    def add_list(self, ro_list, master=False):
-        list_type = ro_list.list_type if not master else f'MASTER_{ro_list.list_type}'
-        item = f'{ro_list.name}  [{list_type}]'
-        self.list_map[item] = ro_list
-        self.list_widget.addItem(item)
+    def add_list(self, ro_list: RedditObjectList, is_master=False):
+        list_type = ro_list.list_type if not is_master else f'MASTER_{ro_list.list_type}'
+        name = f'{ro_list.name}  [{list_type}]'
+        self.lists.append(ro_list)
+        self.list_combo_box.addItem(name)
 
     def load_settings(self):
         open_list_id = self.kwargs.get('open_list_id', None)
         if open_list_id is None:
-            self.list_widget.setCurrentRow(0)
+            self.list_combo_box.setCurrentIndex(0)
         else:
-            index = 0
-            for ro_list in self.list_map.values():
+            for index, ro_list in enumerate(self.lists):
                 if ro_list.id == open_list_id:
-                    self.list_widget.setCurrentRow(index)
+                    self.list_combo_box.setCurrentIndex(index)
                     break
-                else:
-                    index += 1
 
     def apply_settings(self):
         if self.cascade_changes_checkbox.isChecked():
@@ -71,7 +69,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         self.main_window.refresh_list_models()
 
     def cascade_list_changes(self):
-        for ro_list in self.list_map.values():
+        for ro_list in self.lists:
             if ro_list != self.master_user_list and ro_list != self.master_subreddit_list and ro_list.updated:
                 for ro in ro_list.reddit_objects:
                     if not ro.lock_settings:
