@@ -17,6 +17,11 @@
    <iconset>
     <normaloff>../images/add.png</normaloff>../images/add.png</iconset>
   </property>
+  <property name="font">
+    <font>
+      <pointsize>10</pointsize>
+    </font>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QTabWidget" name="tab_widget">
