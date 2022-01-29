@@ -74,6 +74,7 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.choose_new_color_button.clicked.connect(self.choose_new_color)
         self.choose_disabled_color_button.clicked.connect(self.choose_disabled_color)
         self.choose_inactive_color_button.clicked.connect(self.choose_inactive_color)
+        self.tooltip_checkbox_count = 0
 
     def load_settings(self):
         self.short_title_length_spin_box.setValue(self.settings.short_title_char_length)
@@ -92,7 +93,7 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
         self.datetime_format_line_edit.setText(self.settings.datetime_display_format)
         self.date_format_line_edit.setText(self.settings.date_display_format)
         for key, value in self.settings.main_window_tooltip_display_dict.items():
-            self.add_checkbox(key, value)
+            self.add_tooltip_setting_checkbox(key, value)
 
     def set_new_color_label(self):
         r, g, b = self.colors['new']
@@ -140,11 +141,12 @@ class DisplaySettingsWidget(AbstractSettingsWidget, Ui_DispalySettingsWidget):
             return color
         return None
 
-    def add_checkbox(self, attr, checked):
+    def add_tooltip_setting_checkbox(self, attr, checked):
         checkbox = QCheckBox(attr.replace('_', ' ').title())
         checkbox.setChecked(checked)
-        self.grid.addWidget(checkbox)
+        self.grid.addWidget(checkbox, self.tooltip_checkbox_count // 2, self.tooltip_checkbox_count % 2)
         self.tooltips[attr] = checkbox
+        self.tooltip_checkbox_count += 1
 
     def datetime_token_context_menu(self):
         menu = QMenu()
