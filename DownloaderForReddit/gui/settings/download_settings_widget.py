@@ -32,11 +32,11 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
 
     @property
     def description(self):
-        return 'Sets default download settings for the selected list.  Settings changed for each list will propagate ' \
-               'to each reddit object held by the list unless that reddit object has its settings locked.  Reddit ' \
-               'objects that are in multiple lists will be set by which ever list was modified last.  \n' \
-               'If the selected list is a MASTER list, no settings will be propagated.  This list sets the global ' \
-               'download defaults for the application and holds the default used when a new list is created.'
+        return 'Sets default download settings for the selected list. New settings will propagate ' \
+               'to each user/subreddit currently in the list unless its settings are locked.' \
+               'Users/subreddits in multiple lists will be set by which ever list was modified last.  \n\n' \
+               'Master lists are special lists from which settings are copied when you create a new list. '\
+               'These special lists contain no users/subreddits.'
 
     def make_master_lists(self):
         creator = RedditObjectCreator('USER')
