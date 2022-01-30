@@ -1,6 +1,16 @@
 # Change Log
 
 
+## v3.14.0
+
+### Minor Changes
+* Improve look of main UI window.
+* Improve look of settings window, and make some supporting text more clear.
+
+### Bug Fixes
+* Fix problems with scheduling.
+
+
 ## v3.13.2
 
 ### Bug Fixes
