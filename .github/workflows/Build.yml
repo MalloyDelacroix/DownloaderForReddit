@@ -20,13 +20,16 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Check Version
-        uses: tj-actions/changed-files@v12
+        uses: tj-actions/changed-files@v14.3
         id: check-version
         with:
           files: DownloaderForReddit/version.py
+          since_last_remote_commit: "true"
 
       - name: Read Changelog
         id: changes
