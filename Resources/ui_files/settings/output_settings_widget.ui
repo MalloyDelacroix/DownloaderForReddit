@@ -98,22 +98,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="use_color_output_checkbox">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When selected, output messages will be shown in the colors indicated below&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Use color outputs</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QGroupBox" name="color_groupbox">
        <property name="title">
         <string>Output Colors</string>
        </property>
        <property name="checkable">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <layout class="QFormLayout" name="formLayout_2">
         <item row="0" column="0">

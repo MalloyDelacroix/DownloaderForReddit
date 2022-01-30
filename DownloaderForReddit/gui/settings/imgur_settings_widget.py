@@ -18,17 +18,17 @@ class ImgurSettingsWidget(AbstractSettingsWidget):
 
         layout.addRow(QLabel('Imgur client id:'), self.client_id_line_edit)
         layout.addRow(QLabel('Imgur client secret:'), self.client_secret_line_edit)
-        layout.addRow(QLabel('Imgur mashape key:'), self.mashape_key_line_edit)
+        layout.addRow(QLabel('RapidAPI key:'), self.mashape_key_line_edit)
 
     @property
     def description(self):
         return 'Enter the credentials provided to you from imgur when you registered for the client.  If you do not ' \
-               'yet have these credentials, instructions on how to register ' \
-               '<a href="https://github.com/MalloyDelacroix/DownloaderForReddit#requirements">can be found here.</a>' \
+               'yet have these credentials, instructions on how to register can be found ' \
+               '<a href="https://github.com/MalloyDelacroix/DownloaderForReddit#imgur-posts">here.</a>' \
                '<br><br>' \
-               'If the standard allotted credits are unsuitable for your needs, you can purchase commercial api ' \
-               'credentials <a href="https://rapidapi.com/imgur/api/imgur-9/pricing">from rapidapi.com</a> ' \
-               '(free plans are also available) and enter the key in the "mashape key" box.'
+               'If the standard API is not enough for your needs, you can get commercial API credentials' \
+               ' from <a href="https://rapidapi.com/imgur/api/imgur-9/pricing">RapidAPI</a>. They have a free tier ' \
+               'with 100,000 requests/ month and larger paid tiers.'
 
     def load_settings(self):
         self.client_id_line_edit.setText(self.settings.imgur_client_id)
