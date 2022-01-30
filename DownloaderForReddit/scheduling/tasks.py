@@ -17,7 +17,7 @@ class Interval(Enum):
     MINUTE = 2
     HOUR = 3
     DAY = 4
-    WEEK = 5
+    WEEK = 5  # deprecated - do not use
 
     MONDAY = 6
     TUESDAY = 7

@@ -28,7 +28,12 @@ class ScheduleSettingsWidget(AbstractSettingsWidget, Ui_ScheduleSettingsWidget):
     def load_ui(self):
         self.error_label.setVisible(False)
         for interval in Interval:
-            self.interval_combo.addItem(interval.name.title(), interval)
+            # This is a patch to fix an issue that has otherwise been resolved.  WEEK is not available and should  be
+            # removed in future versions.  This allows us to keep the WEEK enum so that any existing erroneous tasks
+            # with the WEEK interval can be loaded from the database, but new tasks with the WEEK interval cannot be
+            # added.
+            if interval.name != 'WEEK':
+                self.interval_combo.addItem(interval.name.title(), interval)
         self.interval_combo.setCurrentIndex(-1)
         self.user_list_combo.addItem('None', None)
         self.subreddit_list_combo.addItem('None', None)

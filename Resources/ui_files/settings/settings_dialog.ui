@@ -17,6 +17,11 @@
    <iconset>
     <normaloff>../../images/settings_single_gear.png</normaloff>../../images/settings_single_gear.png</iconset>
   </property>
+  <property name="font">
+    <font>
+      <pointsize>10</pointsize>
+    </font>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QSplitter" name="splitter">
