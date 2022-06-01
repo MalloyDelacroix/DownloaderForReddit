@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.14.1
+
+### Bug Fixes
+* Fix crashing due to error responses when trying to connect to a reddit account.
+
+
 ## v3.14.0
 
 ### Minor Changes
