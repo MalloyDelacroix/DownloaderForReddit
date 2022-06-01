@@ -92,7 +92,7 @@ def load_token():
 
 def check_authorized_connection():
     """
-    Checks whether or not a user is currently logged in. If so, returns their username. Otherwise, returns None.
+    Checks if a user is currently logged in. If so, returns their username. Otherwise, returns None.
 
     Side Effect: Updates connection_is_authorized
     """
@@ -103,12 +103,13 @@ def check_authorized_connection():
             user = r.user.me().name
             connection_is_authorized = True
             return user
-    except (AttributeError, RecursionError):
-        # Recursion error happens sometimes with praw trying to access the "user.me" method of an unauthorized instance.
-        # This should be fixed above by checking for read only status first, but this is put in here as a safe guard.
-        pass
     except prawcore.RequestException:
         logger.error('Praw request failed', exc_info=True)
+    except prawcore.ResponseException:
+        logger.error('Praw response failed', exc_info=True)
+    except:
+        # Handle unknown exception here to keep the application from completely crashing.
+        logger.error('Error checking reddit account', exc_info=True)
     return None
 
 
