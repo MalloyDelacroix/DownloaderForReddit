@@ -12,7 +12,7 @@ from ..messaging.message import MessagePriority
 class SettingsManager:
 
     def __init__(self):
-        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+        self.logger = logging.getLogger(__name__)
         self.config_file_path = os.path.join(system_util.get_data_directory(), 'config.toml')
         self.config = None
         self.load_config_file()
@@ -402,7 +402,8 @@ class SettingsManager:
 
     def load_config_file(self):
         try:
-            self.config = toml.load(self.config_file_path)
+            with open(self.config_file_path, 'r', encoding='utf-8') as file:
+                self.config = toml.load(file)
         except FileNotFoundError:
             self.logger.info('No config file found.  Generating new file')
             self.generate_default_config()
@@ -418,7 +419,7 @@ class SettingsManager:
                        'unpredictable behavior (but most likely crashing) if the values entered are not accounted '
                        'for by the application.'
         }
-        with open(self.config_file_path, 'w') as file:
+        with open(self.config_file_path, 'w', encoding='utf-8') as file:
             toml.dump(self.config, file)
 
     def save_all(self):
