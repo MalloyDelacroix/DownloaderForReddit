@@ -72,7 +72,7 @@ The following settings are recommended:
 - Authorization type: Anonymous usage without user authorization
 - Authorization callback URL: Any valid url can be used here (ex. https://google.com) 
 - Application website: https://github.com/MalloyDelacroix/DownloaderForReddit
-- Email: This is the email the client-id and secret will me sent to
+- Email: This is the email the client-id and secret will be sent to
 
 This client-id and client secret will be entered on the Imgur category of the settings menu.
 
