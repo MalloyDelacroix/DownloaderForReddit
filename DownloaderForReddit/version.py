@@ -1,4 +1,4 @@
-__version__ = 'v3.14.1'
+__version__ = 'v3.14.2'
 
 
 def get_major_version():

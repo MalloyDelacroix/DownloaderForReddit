@@ -1,6 +1,14 @@
 # Change Log
 
 
+## v3.14.2
+
+### Bug Fixes
+* Fix encoding error when loading config file in some circumstances.
+* Fix content and posts not being retried when they show no errors in the database.
+* Fix redgifs extraction.
+
+
 ## v3.14.1
 
 ### Bug Fixes
