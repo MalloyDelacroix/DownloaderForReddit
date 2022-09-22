@@ -30,6 +30,7 @@ IMAGE_EXT = ('jpg', 'jpeg', 'png')
 GIF_EXT = ('gif', 'gifv', 'webm')
 VID_EXT = ('mp4', 'wmv', 'avi', 'mpg', 'divx')
 TEXT_EXT = ('txt', 'html')
+ANIMATED_EXT = VID_EXT + GIF_EXT
 ALL_EXT = IMAGE_EXT + GIF_EXT + VID_EXT
 FIRST_POST_EPOCH = 1119537833
 
