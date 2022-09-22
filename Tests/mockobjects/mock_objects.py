@@ -132,6 +132,12 @@ def get_mock_post_gfycat_tagged(**kwargs):
     return post
 
 
+def get_mock_redgifs(**kwargs):
+    post = get_post(**kwargs)
+    post.url = 'https://www.redgifs.com/watch/subparmauveevisceratingkracken'
+    return post
+
+
 def get_mock_post_vidble_direct(**kwargs):
     post = get_post(**kwargs)
     post.url = 'https://vidble.com/XOwqxH6Xz9.jpg'
