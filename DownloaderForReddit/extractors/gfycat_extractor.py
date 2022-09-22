@@ -31,13 +31,12 @@ from .base_extractor import BaseExtractor
 from ..core.errors import Error
 from ..core import const
 
-_REDGIFS_ENDPOINT = "https://api.redgifs.com/v1/gfycats/"
 _GFYCAT_ENDPOINT = "https://api.gfycat.com/v1/gfycats/"
 
 
 class GfycatExtractor(BaseExtractor):
 
-    url_key = ['gfycat', 'redgifs']
+    url_key = ['gfycat']
 
     def __init__(self, post, **kwargs):
         """
@@ -45,11 +44,7 @@ class GfycatExtractor(BaseExtractor):
         api.
         """
         super().__init__(post, **kwargs)
-        item = urlparse(self.url)
-        if 'redgifs' in item.hostname:
-            self.api_caller = "https://api.redgifs.com/v1/gfycats/"
-        else:
-            self.api_caller = "https://api.gfycat.com/v1/gfycats/"
+        self.api_caller = "https://api.gfycat.com/v1/gfycats/"
 
     def extract_content(self):
         """Dictates which extraction method should be used"""
@@ -69,14 +64,11 @@ class GfycatExtractor(BaseExtractor):
             gif_id = gif_id[len('/watch/'):]
         gif_id = path.basename(gif_id).split('-')[0]
 
-        if 'redgifs' in item.hostname:
-            gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id)
+        response = requests.get(_GFYCAT_ENDPOINT + gif_id, timeout=10)
+        if response.status_code == 200 and 'json' in response.headers['Content-Type']:
+            gfy_json = response.json()
         else:
-            response = requests.get(_GFYCAT_ENDPOINT + gif_id, timeout=10)
-            if response.status_code == 200 and 'json' in response.headers['Content-Type']:
-                gfy_json = response.json()
-            else:
-                gfy_json = self.get_json(_REDGIFS_ENDPOINT + gif_id.lower())  # refgif ids are all lowercase
+            return  # if no json is available, the error has been handled, so we abort
 
         # First we attempt to extract the preferred mp4 url, if that is not successful we try the webm url.  If neither
         # are available, the error is handled.
