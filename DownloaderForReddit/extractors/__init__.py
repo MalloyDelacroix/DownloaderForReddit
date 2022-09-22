@@ -27,6 +27,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 # extractor class to be used in the Extractor.assign_extractor method.
 from .imgur_extractor import ImgurExtractor
 from .gfycat_extractor import GfycatExtractor
+from .redgifs_extractor import RedgifsExtractor
 from .vidble_extractor import VidbleExtractor
 from .reddit_uploads_extractor import RedditUploadsExtractor
 from .reddit_video_extractor import RedditVideoExtractor

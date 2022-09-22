@@ -78,10 +78,10 @@ class Downloader(Runner):
         try:
             with self.db.get_scoped_session() as session:
                 content = session.query(Content).get(content_id)
+                content.download_title = general_utils.check_file_path(content)
                 response = requests.get(content.url, stream=True, timeout=10, headers=self.check_headers(content.url))
                 if response.status_code == 200:
                     file_size = int(response.headers['Content-Length'])
-                    content.download_title = general_utils.check_file_path(content)
                     file_path = content.get_full_file_path()
                     if self.settings_manager.use_multi_part_downloader and \
                             file_size > self.settings_manager.multi_part_threshold:
