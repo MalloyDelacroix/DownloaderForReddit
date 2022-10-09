@@ -431,23 +431,27 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         menu.exec_(QCursor.pos())
 
     def move_reddit_object_menu_item(self, main_menu, reddit_objects, ro_type, action_type):
-        if len(reddit_objects) > 1:
-            text = f'{action_type.title()} {len(reddit_objects)} {ro_type.lower()}s to:'
-        else:
-            text = f'{action_type.title()} {reddit_objects[0].name if len(reddit_objects) else ""} to:'
-        menu = main_menu.addMenu(text)
-        current_list_model = self.user_list_model if ro_type == 'USER' else self.subreddit_list_model
-        current_list_id = current_list_model.list.id
-        with self.db_handler.get_scoped_session() as session:
-            lists = session.query(RedditObjectList)\
-                .filter(RedditObjectList.list_type == ro_type)\
-                .filter(RedditObjectList.id != current_list_id)
-        action = self.move_reddit_objects if action_type == 'MOVE' else self.copy_reddit_objects
-        for ro_list in lists:
-            menu.addAction(
-                ro_list.name,
-                lambda new_list=ro_list: action([x.id for x in reddit_objects], current_list_id, new_list.id))
-        return menu
+        try:
+            if len(reddit_objects) > 1:
+                text = f'{action_type.title()} {len(reddit_objects)} {ro_type.lower()}s to:'
+            else:
+                text = f'{action_type.title()} {reddit_objects[0].name if len(reddit_objects) else ""} to:'
+            menu = main_menu.addMenu(text)
+            current_list_model = self.user_list_model if ro_type == 'USER' else self.subreddit_list_model
+            current_list_id = current_list_model.list.id  # Throws attribute error when no list is available
+            with self.db_handler.get_scoped_session() as session:
+                lists = session.query(RedditObjectList) \
+                    .filter(RedditObjectList.list_type == ro_type) \
+                    .filter(RedditObjectList.id != current_list_id)
+            action = self.move_reddit_objects if action_type == 'MOVE' else self.copy_reddit_objects
+            for ro_list in lists:
+                menu.addAction(
+                    ro_list.name,
+                    lambda new_list=ro_list: action([x.id for x in reddit_objects], current_list_id, new_list.id))
+            return menu
+        except AttributeError:
+            # In this case there is no available list
+            return None
 
     def move_reddit_objects(self, reddit_object_ids, old_list_id, new_list_id):
         if self.settings_manager.ask_to_sync_moved_ro_settings:
