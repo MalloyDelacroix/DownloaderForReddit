@@ -23,6 +23,7 @@ class TokenParser:
         'post_score': lambda x: TokenParser.tokenize(x, 'post.score', 'score'),
         'post_domain': lambda x: TokenParser.tokenize(x, 'post.domain', 'domain'),
         'date_posted': lambda x: TokenParser.tokenize(x, 'post.date_posted_path', 'date_posted_path'),
+        'datetime_posted': lambda x: TokenParser.tokenize(x, 'post.datetime_posted_path', 'datetime_posted_path'),
         'extraction_date': lambda x: TokenParser.tokenize(x, 'post.extraction_date', 'extraction_date'),
         'download_date': lambda x: TokenParser.tokenize(x, 'download_date', 'post.download_date'),
         'id': lambda x: TokenParser.tokenize(x, 'id', 'post.id', 'author.id', 'user.id', 'subreddit.id',
