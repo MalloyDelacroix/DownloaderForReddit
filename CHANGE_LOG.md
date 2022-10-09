@@ -1,6 +1,18 @@
 # Change Log
 
 
+## v3.15.0
+
+### Minor Changes
+* Date displays throughout the entire application now use your preferred date format as selected in the settings.
+* A new "datetime" token has been added to download naming and path tokens which incorporates the date and time of the 
+  post creation date.  This was previously the behavior of the standard "date" token, which now only provides the date
+  and no time.
+
+### Bug Fixes
+* Fix crashing that happened when right-clicking a user or subreddit list without an available list.
+
+
 ## v3.14.2
 
 ### Bug Fixes
