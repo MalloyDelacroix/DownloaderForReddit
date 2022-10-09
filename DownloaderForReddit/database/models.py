@@ -48,12 +48,6 @@ class BaseModel(Base):
         except AttributeError:
             return None
 
-    def get_standard_date(self, date_time):
-        try:
-            return general_utils.format_raw_datetime(date_time, '%m/%d/%Y %I:%M %p')
-        except AttributeError:
-            return None
-
 
 class Version(BaseModel):
 
@@ -602,6 +596,10 @@ class Post(BaseModel):
 
     @property
     def date_posted_path(self):
+        return self.get_path_date(self.date_posted)
+
+    @property
+    def datetime_posted_path(self):
         return self.get_path_datetime(self.date_posted)
 
     @property
