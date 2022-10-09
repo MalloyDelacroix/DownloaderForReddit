@@ -94,5 +94,15 @@ def format_date(raw_date: date):
     return raw_date.strftime(date_format)
 
 
-def format_raw_datetime(datetime, format_str):
-    return datetime.strftime(format_str)
+def format_date_path(formatted_date):
+    """
+    Takes a formatted date string, and returns a version that can be used in a file path (ie: the slashes are replaced
+    with dashes and forbidden characters are removed.)
+    :param formatted_date: A formatted date string.
+    :return: The supplied formatted date string in a format that can be used for file paths.
+    """
+    return formatted_date.replace('/', '-').replace('\\', '-').replace(':', '--')
+
+
+def format_raw_datetime(date_time, format_str):
+    return date_time.strftime(format_str)

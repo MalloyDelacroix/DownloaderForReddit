@@ -3,7 +3,7 @@ from datetime import datetime
 from PyQt5.QtWidgets import QWizard, QFileDialog
 
 from ..guiresources.export_wizard_auto import Ui_ExportWizard
-from ..utils import injector, system_util
+from ..utils import injector, system_util, general_utils
 from ..utils.exporters import json_exporter, csv_exporter
 
 
@@ -16,7 +16,8 @@ class ExportWizard(QWizard, Ui_ExportWizard):
         self.export_list = export_list
         self.export_model = export_model
         if suggested_name is None:
-            name = f"{datetime.now().strftime('%m-%d-%Y--%H-%M-%S')} Export"
+            formatted_date = general_utils.format_datetime(datetime.now())
+            name = f"{general_utils.format_date_path(formatted_date)} Export"
         else:
             name = suggested_name
         self.export_path_line_edit.setText(system_util.join_path(self.settings_manager.export_file_path, name))
