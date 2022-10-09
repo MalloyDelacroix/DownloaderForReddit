@@ -24,15 +24,27 @@ class BaseModel(Base):
     def save(self):
         self.get_session().commit()
 
-    def get_display_date(self, date_time):
+    def get_display_datetime(self, date_time):
         try:
             return general_utils.format_datetime(date_time)
         except AttributeError:
             return None
 
-    def get_path_date(self, date_time):
+    def get_display_date(self, date):
         try:
-            return self.get_display_date(date_time).replace('/', '-').replace('\\', '-')
+            return general_utils.format_date(date)
+        except AttributeError:
+            return None
+
+    def get_path_datetime(self, date_time):
+        try:
+            return self.get_display_datetime(date_time).replace('/', '-').replace('\\', '-')
+        except AttributeError:
+            return None
+
+    def get_path_date(self, date):
+        try:
+            return self.get_display_date(date).replace('/', '-').replace('\\', '-')
         except AttributeError:
             return None
 
@@ -125,7 +137,7 @@ class RedditObjectList(BaseModel):
 
     @property
     def date_created_display(self):
-        return self.get_display_date(self.date_created)
+        return self.get_display_datetime(self.date_created)
 
     @property
     def date_created_export(self):
@@ -133,7 +145,7 @@ class RedditObjectList(BaseModel):
 
     @property
     def date_limit_display(self):
-        return self.get_display_date(self.date_limit)
+        return self.get_display_datetime(self.date_limit)
 
     @property
     def date_limit_export(self):
@@ -141,7 +153,7 @@ class RedditObjectList(BaseModel):
 
     @property
     def absolute_date_limit_display(self):
-        return self.get_display_date(self.absolute_date_limit)
+        return self.get_display_datetime(self.absolute_date_limit)
 
     @property
     def absolute_date_limit_export(self):
@@ -277,7 +289,7 @@ class RedditObject(BaseModel):
 
     @property
     def date_created_display(self):
-        return self.get_display_date(self.date_created)
+        return self.get_display_datetime(self.date_created)
 
     @property
     def date_created_export(self):
@@ -285,7 +297,7 @@ class RedditObject(BaseModel):
 
     @property
     def date_added_display(self):
-        return self.get_display_date(self.date_added)
+        return self.get_display_datetime(self.date_added)
 
     @property
     def date_added_export(self):
@@ -293,7 +305,7 @@ class RedditObject(BaseModel):
 
     @property
     def absolute_date_limit_display(self):
-        return self.get_display_date(self.absolute_date_limit)
+        return self.get_display_datetime(self.absolute_date_limit)
 
     @property
     def absolute_date_limit_export(self):
@@ -301,7 +313,7 @@ class RedditObject(BaseModel):
 
     @property
     def date_limit_display(self):
-        return self.get_display_date(self.date_limit)
+        return self.get_display_datetime(self.date_limit)
 
     @property
     def date_limit_export(self):
@@ -314,7 +326,7 @@ class RedditObject(BaseModel):
 
     @property
     def last_download_display(self):
-        return self.get_display_date(self.last_download)
+        return self.get_display_datetime(self.last_download)
 
     @property
     def last_download_export(self):
@@ -322,7 +334,7 @@ class RedditObject(BaseModel):
 
     @property
     def inactive_date_display(self):
-        return self.get_display_date(self.inactive_date)
+        return self.get_display_datetime(self.inactive_date)
 
     @property
     def inactive_date_export(self):
@@ -444,7 +456,7 @@ class DownloadSession(BaseModel):
 
     @property
     def start_time_display(self):
-        return self.get_display_date(self.start_time)
+        return self.get_display_datetime(self.start_time)
 
     @property
     def start_time_export(self):
@@ -452,7 +464,7 @@ class DownloadSession(BaseModel):
 
     @property
     def end_time_display(self):
-        return self.get_display_date(self.end_time)
+        return self.get_display_datetime(self.end_time)
 
     @property
     def end_time_export(self):
@@ -582,7 +594,7 @@ class Post(BaseModel):
 
     @property
     def date_posted_display(self):
-        return self.get_display_date(self.date_posted)
+        return self.get_display_datetime(self.date_posted)
 
     @property
     def date_posted_export(self):
@@ -590,7 +602,7 @@ class Post(BaseModel):
 
     @property
     def date_posted_path(self):
-        return self.get_path_date(self.date_posted)
+        return self.get_path_datetime(self.date_posted)
 
     @property
     def score_display(self):
@@ -598,7 +610,7 @@ class Post(BaseModel):
 
     @property
     def extraction_date_display(self):
-        return self.get_display_date(self.extraction_date)
+        return self.get_display_datetime(self.extraction_date)
 
     @property
     def extraction_date_export(self):
@@ -655,7 +667,7 @@ class Comment(BaseModel):
 
     @property
     def date_added_display(self):
-        return self.get_display_date(self.date_added)
+        return self.get_display_datetime(self.date_added)
 
     @property
     def date_added_export(self):
@@ -663,7 +675,7 @@ class Comment(BaseModel):
 
     @property
     def date_posted_display(self):
-        return self.get_display_date(self.date_posted)
+        return self.get_display_datetime(self.date_posted)
 
     @property
     def date_posted_export(self):
@@ -675,7 +687,7 @@ class Comment(BaseModel):
 
     @property
     def extraction_date_display(self):
-        return self.get_display_date(self.extraction_date)
+        return self.get_display_datetime(self.extraction_date)
 
     @property
     def extraction_date_export(self):
@@ -749,7 +761,7 @@ class Content(BaseModel):
 
     @property
     def download_date_display(self):
-        return self.get_display_date(self.download_date)
+        return self.get_display_datetime(self.download_date)
 
     @property
     def download_date_export(self):
