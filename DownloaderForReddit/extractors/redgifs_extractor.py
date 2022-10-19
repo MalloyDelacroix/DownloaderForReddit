@@ -1,8 +1,8 @@
 from yt_dlp import YoutubeDL
 
 from .base_extractor import BaseExtractor
-from ..core.downloader import Downloader
 from ..core.errors import Error
+from ..core.download import HEADERS
 
 
 class RedgifsExtractor(BaseExtractor):
@@ -51,7 +51,7 @@ class RedgifsExtractor(BaseExtractor):
             with YoutubeDL({'format': 'mp4'}) as ydl:
                 result = ydl.extract_info(self.url, download=False)
                 content = self.make_content(result['url'], 'mp4')
-                Downloader.HEADERS[content.id] = result['http_headers']
+                HEADERS[content.id] = result['http_headers']
         except:
             message = 'Failed to locate content'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message)

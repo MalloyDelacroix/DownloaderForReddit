@@ -5,7 +5,7 @@ from threading import Thread, Event
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .submission_handler import SubmissionHandler
-from .downloader import Downloader
+from DownloaderForReddit.core.download.downloader import Downloader
 from .runner import verify_run
 from ..database.models import DownloadSession, Post
 from ..utils import injector, reddit_utils

@@ -2,25 +2,20 @@ import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from .runner import Runner, verify_run
+from DownloaderForReddit.core.runner import Runner, verify_run
 from .multipart_downloader import MultipartDownloader
-from .errors import Error
-from ..utils import injector, system_util, general_utils
-from ..database import Content
-from ..messaging.message import Message
+from . import HEADERS
+from DownloaderForReddit.core.errors import Error
+from DownloaderForReddit.utils import injector, system_util, general_utils
+from DownloaderForReddit.database import Content
+from DownloaderForReddit.messaging.message import Message
 
 
 class Downloader(Runner):
 
     """
     The class that is responsible for the actual downloading of content.
-
-    Attributes:
-        HEADERS: A dict comprised of they key value being a content's id, and the value being a dict of header
-            information that needs to be sent with the download request in order to get a successful response.
     """
-
-    HEADERS = {}
 
     def __init__(self, download_queue, download_session_id, stop_run):
         """
@@ -69,7 +64,7 @@ class Downloader(Runner):
             else:
                 break
         self.executor.shutdown(wait=True)
-        Downloader.HEADERS.clear()
+        HEADERS.clear()
         self.logger.debug('Downloader exiting')
 
     def remove_future(self, future):
@@ -92,7 +87,7 @@ class Downloader(Runner):
                     if self.settings_manager.use_multi_part_downloader and \
                             file_size > self.settings_manager.multi_part_threshold:
                         multi_part_downloader = MultipartDownloader(self.stop_run)
-                        multi_part_downloader.run(content.url, file_path, file_size)
+                        multi_part_downloader.run(content, file_path, file_size)
                         self.finish_multi_part_download(content, multi_part_downloader)
                     else:
                         with open(file_path, 'wb') as file:
@@ -121,7 +116,7 @@ class Downloader(Runner):
         """
         if 'erome' in content.url:
             return {"Referer": "https://www.erome.com/"}
-        return Downloader.HEADERS.get(content.id, None)
+        return HEADERS.get(content.id, None)
 
     def finish_download(self, content: Content):
         """
