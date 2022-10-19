@@ -9,7 +9,7 @@ from collections import namedtuple
 from praw.models import Redditor
 from sqlalchemy import or_
 
-from .downloader import Downloader
+from DownloaderForReddit.core.download.downloader import Downloader
 from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
 from .runner import verify_run

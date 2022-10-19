@@ -4,8 +4,9 @@ import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
 
-from .runner import Runner, verify_run
-from ..utils import injector
+from . import HEADERS
+from DownloaderForReddit.core.runner import Runner, verify_run
+from DownloaderForReddit.utils import injector
 
 
 class MultipartDownloader(Runner):
@@ -19,17 +20,17 @@ class MultipartDownloader(Runner):
         self.part_count = 0
         self.failed_parts = 0
 
-    def run(self, url, path, size):
+    def run(self, content, path, size):
         loop = asyncio.new_event_loop()
         try:
-            loop.run_until_complete(self.download(url, path, size))
+            loop.run_until_complete(self.download(content, path, size))
         except:
-            self.logger.error('Multi-part download failed', extra={'url': url, 'path': path}, exc_info=True)
+            self.logger.error('Multi-part download failed', extra={'url': content.url, 'path': path}, exc_info=True)
         finally:
             loop.close()
 
     @verify_run
-    async def download(self, url, path, file_size):
+    async def download(self, content, path, file_size):
         loop = asyncio.get_event_loop()
         chunks = range(0, file_size, self.chunk_size)
         self.part_count = len(chunks)
@@ -37,7 +38,7 @@ class MultipartDownloader(Runner):
             loop.run_in_executor(
                 self.executor,
                 self.download_part,
-                url,
+                content,
                 start,
                 start + self.chunk_size - 1,
                 f'{path}.part{x}'
@@ -58,12 +59,13 @@ class MultipartDownloader(Runner):
                                       extra={'chunk_path': chunk_path}, exc_info=True)
 
     @verify_run
-    def download_part(self, url, start, end, path):
+    def download_part(self, content, start, end, path):
         retry = True
         tries = 0
+        url = content.url
 
         def download():
-            headers = {'Range': f'bytes={start}-{end}'}
+            headers = self.get_headers(content, start, end)
             response = requests.get(url, headers=headers, stream=True, timeout=10)
             if response.status_code == 206:
                 with open(path, 'wb') as file:
@@ -93,6 +95,13 @@ class MultipartDownloader(Runner):
             except:
                 self.log_part_error('Unknown error occurred', extra={'url': url, 'range': f'{start} - {end}'},
                                     log=tries >= 3)
+
+    def get_headers(self, content, start, end):
+        headers = {'Range': f'bytes={start}-{end}'}
+        download_headers = HEADERS.get(content.id, None)
+        if download_headers is not None:
+            headers.update(download_headers)
+        return headers
 
     def log_part_error(self, message, extra=None, exc_info=True, log=True):
         if log:
