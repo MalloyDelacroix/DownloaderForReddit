@@ -1,4 +1,3 @@
-import os
 import requests
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -14,8 +13,14 @@ from ..messaging.message import Message
 class Downloader(Runner):
 
     """
-    Class that is responsible for the actual downloading of content.
+    The class that is responsible for the actual downloading of content.
+
+    Attributes:
+        HEADERS: A dict comprised of they key value being a content's id, and the value being a dict of header
+            information that needs to be sent with the download request in order to get a successful response.
     """
+
+    HEADERS = {}
 
     def __init__(self, download_queue, download_session_id, stop_run):
         """
@@ -64,6 +69,7 @@ class Downloader(Runner):
             else:
                 break
         self.executor.shutdown(wait=True)
+        Downloader.HEADERS.clear()
         self.logger.debug('Downloader exiting')
 
     def remove_future(self, future):
@@ -79,7 +85,7 @@ class Downloader(Runner):
             with self.db.get_scoped_session() as session:
                 content = session.query(Content).get(content_id)
                 content.download_title = general_utils.check_file_path(content)
-                response = requests.get(content.url, stream=True, timeout=10, headers=self.check_headers(content.url))
+                response = requests.get(content.url, stream=True, timeout=10, headers=self.check_headers(content))
                 if response.status_code == 200:
                     file_size = int(response.headers['Content-Length'])
                     file_path = content.get_full_file_path()
@@ -103,16 +109,19 @@ class Downloader(Runner):
         except:
             self.handle_unknown_error(content)
 
-    def check_headers(self, url):
+    def check_headers(self, content):
         """
         This is a helper method to add a necessary header entry for erome downloads.  It is just a patch for a problem
         at the moment.  This can be expanded as further need arises, or replaced by a different better system.
-        :param url: The url on which a download is about to be performed.
-        :return: A dict to be used as a request header where applicable, None if not.
+
+        Checks the HEADER dict for the supplied content's id and, if found, returns the associated header data that will
+        be necessary for the request to be successful.
+        :param content: The content object that is in the process of being downloaded.
+        :return: A dict to be used as a request header where applicable, None if there is no applicable header.
         """
-        if 'erome' in url:
+        if 'erome' in content.url:
             return {"Referer": "https://www.erome.com/"}
-        return None
+        return Downloader.HEADERS.get(content.id, None)
 
     def finish_download(self, content: Content):
         """

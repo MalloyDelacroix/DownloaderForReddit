@@ -24,7 +24,7 @@ along with Downloader for Reddit.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from time import time
-import youtube_dl
+from yt_dlp import YoutubeDL
 
 from .base_extractor import BaseExtractor
 from ..core.errors import Error
@@ -58,7 +58,7 @@ class GenericVideoExtractor(BaseExtractor):
     def extract_content(self):
         try:
             # TODO: need way to kill this when session is terminated
-            with youtube_dl.YoutubeDL({'format': 'mp4'}) as ydl:
+            with YoutubeDL({'format': 'mp4'}) as ydl:
                 result = ydl.extract_info(self.url, download=False)
             if 'entries' in result:
                 self.extract_playlist(result['entries'])
