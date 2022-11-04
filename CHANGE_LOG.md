@@ -1,6 +1,12 @@
 # Change Log
 
 
+## v3.15.2
+
+### Bug Fixes
+* Fix redgifs extraction, yet again.
+
+
 ## v3.15.1
 
 ### Bug Fixes
