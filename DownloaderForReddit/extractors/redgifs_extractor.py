@@ -1,4 +1,4 @@
-from yt_dlp import YoutubeDL
+import redgifs
 
 from .base_extractor import BaseExtractor
 from ..core.errors import Error
@@ -48,10 +48,36 @@ class RedgifsExtractor(BaseExtractor):
 
     def extract_content(self):
         try:
-            with YoutubeDL({'format': 'mp4'}) as ydl:
-                result = ydl.extract_info(self.url, download=False)
-                content = self.make_content(result['url'], 'mp4')
-                HEADERS[content.id] = result['http_headers']
+            api = redgifs.API()
+            api.login()
+            response = api.get_gif(self.get_gif_id())
+            url = self.get_download_url(response)
+            content = self.make_content(url, 'mp4')
+            HEADERS[content.id] = api.http.headers
         except:
-            message = 'Failed to locate content'
-            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message)
+            message = 'Failed to extract content from redgifs'
+            self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, exetractor_error_message=message)
+
+    def get_gif_id(self):
+        return self.url.rsplit('/', 1)[-1]
+
+    @staticmethod
+    def get_download_url(data):
+        try:
+            return data.urls.hd
+        except KeyError:
+            return data.urls.sd
+
+    # def extract_with_yt_dlp(self):
+    #     """
+    #     This method is out of date at the moment.  But with the way redgifs is changing their api, it could very well
+    #     be relevant again soon.  So this is staying here, just in case.
+    #     """
+    #     try:
+    #         with YoutubeDL({'format': 'mp4'}) as ydl:
+    #             result = ydl.extract_info(self.url, download=False)
+    #             content = self.make_content(result['url'], 'mp4')
+    #             HEADERS[content.id] = result['http_headers']
+    #     except:
+    #         message = 'Failed to locate content'
+    #         self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, extractor_error_message=message)
