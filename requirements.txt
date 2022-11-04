@@ -11,3 +11,4 @@ schedule==1.1.0
 pyqtspinner==0.1.1
 cryptography==3.4.7
 redgifs==1.4.0
+yt-dlp==2022.10.4
