@@ -32,6 +32,10 @@ class Interval(Enum):
         return self.name.lower()
 
 
+def generate_uuid():
+    return uuid4().hex
+
+
 class DownloadTask(Base):
 
     __tablename__ = 'download_task'
@@ -44,7 +48,7 @@ class DownloadTask(Base):
     subreddit_list_id = Column(ForeignKey('reddit_object_list.id'), nullable=True)
     subreddit_list = relationship(RedditObjectList, backref='scheduled_subreddit_downloads',
                                   foreign_keys=[subreddit_list_id])
-    tag = Column(String, default=uuid4().hex, unique=True)
+    tag = Column(String, default=generate_uuid, unique=True)
     active = Column(Boolean, default=True)
 
     @property

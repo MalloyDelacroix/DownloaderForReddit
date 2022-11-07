@@ -71,8 +71,8 @@ class Scheduler(QObject):
 
     def schedule_task(self, task):
         """
-        Attempts to schedule the task with he scheduling module.
-        :param task: A task model instance that will scheduled with the scheduling module.
+        Attempts to schedule the task with the scheduling module.
+        :param task: A task model instance that will schedule with the scheduling module.
         :type task DownloadTask
         """
         try:
