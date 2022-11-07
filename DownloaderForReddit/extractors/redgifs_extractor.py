@@ -53,7 +53,8 @@ class RedgifsExtractor(BaseExtractor):
             response = api.get_gif(self.get_gif_id())
             url = self.get_download_url(response)
             content = self.make_content(url, 'mp4')
-            HEADERS[content.id] = api.http.headers
+            if content is not None:
+                HEADERS[content.id] = api.http.headers
         except:
             message = 'Failed to extract content from redgifs'
             self.handle_failed_extract(error=Error.FAILED_TO_LOCATE, message=message, exetractor_error_message=message)
