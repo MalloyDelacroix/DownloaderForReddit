@@ -1,6 +1,14 @@
 # Change Log
 
 
+## v3.15.3
+
+### Bug Fixes
+* Fix an error in the redgifs extractor that caused ignored duplicate links to be falsely reported as failures to
+  extract.
+* Fix inability to schedule more than one download task.
+
+
 ## v3.15.2
 
 ### Bug Fixes
