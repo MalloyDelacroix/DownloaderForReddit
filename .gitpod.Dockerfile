@@ -10,6 +10,7 @@ RUN sudo apt update -y
 RUN sudo apt upgrade -y
 RUN sudo apt install qtcreator -y
 RUN pyenv install 3.8.16 -v
-RUN /home/gitpod/.pyenv/versions/3.8.16/bin/python3.8 -m pip install --upgrade pip
+RUN pyenv global 3.8.16
+RUN pip install --upgrade pip
 COPY . .
 RUN pip install -r requirements.txt
