@@ -2,6 +2,4 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: |
-  sudo apt install qtcreator
-  pip install -r ./requirements.txt
+  - init: pip install -r ./requirements.txt
