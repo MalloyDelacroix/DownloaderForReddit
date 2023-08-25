@@ -1,6 +1,13 @@
 # Change Log
 
 
+## v3.15.4
+
+### Bug Fixes
+
+* Fix crashing when opening failed downloads dialog.
+
+
 ## v3.15.3
 
 ### Bug Fixes
