@@ -1249,13 +1249,30 @@ class DatabaseDialog(QWidget, Ui_DatabaseDialog):
             query = query.filter(RedditObject.id.in_(self.current_post_attr('significant_reddit_object_id')))
         elif self.content_focus:
             query = query.filter(RedditObject.id.in_(
-                [x.post.significant_reddit_object_id for x in self.current_content]))
+                self.get_significant_reddit_object_ids_from_post_in_list(self.current_content)
+            ))
         elif self.comment_focus:
             query = query.filter(RedditObject.id.in_(
-                [x.post.significant_reddit_object_id for x in self.current_comment]))
+                self.get_significant_reddit_object_ids_from_post_in_list(self.current_comment)
+            ))
         final_query = f.filter(self.session, *filter_tups, query=query, order_by=self.reddit_object_order,
                                desc=self.reddit_object_desc)
         return final_query
+
+    def get_significant_reddit_object_ids_from_post_in_list(self, item_list):
+        """
+        Helper method to return a list of significant reddit object ids associated with the posts of a list of items.
+        :param item_list: A list of items from which significant reddit object ids are to be taken.  A list of content
+            or comments.
+        :return: A list of significant reddit object ids from posts associated with each item in the supplied item list.
+        """
+        id_list = []
+        for item in item_list:
+            try:
+                id_list.append(item.post.significant_reddit_object_id)
+            except AttributeError:
+                pass
+        return id_list
 
     @check_hold
     def set_reddit_object_data(self, extend=False):
