@@ -46,7 +46,10 @@ class RedditObjectCreator:
         with self.db.get_scoped_session() as session:
             user = session.query(User).filter(func.lower(User.name) == user_name.lower()).first()
             if user is None:
-                validation_set = self.get_name_checker().check_user_name(user_name)
+                if self.settings_manager.validate_names_before_add:
+                    validation_set = self.get_name_checker().check_user_name(user_name)
+                else:
+                    validation_set = reddit_utils.ValidationSet(name=user_name, date_created=None, valid=True)
                 if validation_set.valid:
                     list_defaults['significant'] = True
                     user = User(name=validation_set.name, date_created=validation_set.date_created, **list_defaults)
