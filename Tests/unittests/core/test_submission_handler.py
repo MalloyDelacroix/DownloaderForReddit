@@ -11,9 +11,23 @@ class TestSubmissionHandler(TestCase):
 
     PATH = 'DownloaderForReddit.core.submission_handler.SubmissionHandler'
 
+    extractor_dict = {
+        'ImgurExtractor': True,
+        'GfycatExtractor': True,
+        'RedgifsExtractor': True,
+        'VidbleExtractor': True,
+        'RedditUploadsExtractor': True,
+        'RedditVideoExtractor': True,
+        'GenericVideoExtractor': True,
+        'EromeExtractor': True,
+        'SelfPostExtractor': True,
+        'DirectExtractor': True,
+    }
+
     @classmethod
     def setUpClass(cls):
         cls.settings = MagicMock()
+        cls.settings.extractor_dict = cls.extractor_dict
         injector.settings_manager = cls.settings
 
     def setUp(self):
@@ -28,31 +42,49 @@ class TestSubmissionHandler(TestCase):
         post = mock_objects.get_unsupported_direct_post()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('DirectExtractor', ex.__name__)
+        self.settings.extractor_dict['DirectExtractor'] = False
+        ex = self.handler.assign_extractor(post.url)
+        self.assertIsNone(ex)
 
     def test_assign_extractor_imgur(self):
         post = mock_objects.get_mock_post_imgur()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('ImgurExtractor', ex.__name__)
+        self.settings.extractor_dict['ImgurExtractor'] = False
+        ex = self.handler.assign_extractor(post.url)
+        self.assertIsNone(ex)
 
     def test_assign_extractor_gfycat(self):
         post = mock_objects.get_mock_post_gfycat()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('GfycatExtractor', ex.__name__)
+        self.settings.extractor_dict['GfycatExtractor'] = False
+        ex = self.handler.assign_extractor(post.url)
+        self.assertIsNone(ex)
 
     def test_assign_extractor_vidble(self):
         post = mock_objects.get_mock_post_vidble()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('VidbleExtractor', ex.__name__)
+        self.settings.extractor_dict['VidbleExtractor'] = False
+        ex = self.handler.assign_extractor(post.url)
+        self.assertIsNone(ex)
 
     def test_assign_extractor_reddit_uploads(self):
         post = mock_objects.get_mock_reddit_uploads_post()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('RedditUploadsExtractor', ex.__name__)
+        self.settings.extractor_dict['RedditUploadsExtractor'] = False
+        ex = self.handler.assign_extractor(post.url)
+        self.assertIsNone(ex)
 
     def test_assign_extractor_reddit_video(self):
         post = mock_objects.get_mock_reddit_video_post()
         ex = self.handler.assign_extractor(post.url)
         self.assertEqual('RedditVideoExtractor', ex.__name__)
+        self.settings.extractor_dict['RedditVideoExtractor'] = False
+        ex = self.handler.assign_extractor(post.url)
+        self.assertIsNone(ex)
 
     @patch(f'{PATH}.extract_link')
     @patch(f'{PATH}.parse_html_links')
