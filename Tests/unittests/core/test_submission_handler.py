@@ -38,6 +38,9 @@ class TestSubmissionHandler(TestCase):
         self.mock_queue = MagicMock()
         self.handler = SubmissionHandler(self.submission, self.post, 0, MagicMock(), self.mock_queue, stop_run)
 
+    def tearDown(self):
+        self.settings.extractor_dict = self.extractor_dict
+
     def test_assign_extractor_direct(self):
         post = mock_objects.get_unsupported_direct_post()
         ex = self.handler.assign_extractor(post.url)
