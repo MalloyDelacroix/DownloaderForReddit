@@ -2,6 +2,7 @@ import os
 import toml
 import logging
 
+from ..extractors.base_extractor import BaseExtractor
 from ..utils import system_util
 from ..core import const
 from ..database.model_enums import *
@@ -49,6 +50,11 @@ class SettingsManager:
         self.cascade_list_changes = self.get('core', 'cascade_list_changes', False)
         self.reddit_access_token = self.get('core', 'reddit_access_token', None)
         self.reddit_access = self.get('core', 'reddit_access', None)
+
+        default_extractor_dict = {
+            extractor.__name__: True for extractor in BaseExtractor.__subclasses__()
+        }
+        self.extractor_dict = self.get('core', 'extractor_dict', default_extractor_dict)
         # endregion
 
         # region Download Defaults
