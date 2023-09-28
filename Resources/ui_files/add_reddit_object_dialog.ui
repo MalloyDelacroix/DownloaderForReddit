@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
+    <width>666</width>
     <height>328</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>Add</string>
@@ -16,11 +21,6 @@
   <property name="windowIcon">
    <iconset>
     <normaloff>../images/add.png</normaloff>../images/add.png</iconset>
-  </property>
-  <property name="font">
-    <font>
-      <pointsize>10</pointsize>
-    </font>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -147,6 +147,13 @@
       <widget class="QCheckBox" name="download_on_add_checkbox">
        <property name="text">
         <string>Download on add</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="validate_names_checkbox">
+       <property name="text">
+        <string>Validate names</string>
        </property>
       </widget>
      </item>

@@ -31,6 +31,11 @@ class AddRedditObjectDialog(QDialog, Ui_AddRedditObjectDialog):
         self.download_on_add_checkbox.stateChanged.connect(
             lambda checked: setattr(self.settings_manager, 'download_on_add', checked))
 
+        self.validate_names_checkbox.setChecked(self.settings_manager.validate_names_before_add)
+        self.validate_names_checkbox.stateChanged.connect(
+            lambda checked: setattr(self.settings_manager, 'validate_names_before_add', checked)
+        )
+
         self.add_button.clicked.connect(self.add_object_to_list)
         self.remove_button.clicked.connect(self.remove_object_from_list)
         self.import_button.clicked.connect(self.import_list)
