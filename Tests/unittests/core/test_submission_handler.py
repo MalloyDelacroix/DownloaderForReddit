@@ -18,7 +18,7 @@ class TestSubmissionHandler(TestCase):
         'VidbleExtractor': True,
         'RedditUploadsExtractor': True,
         'RedditVideoExtractor': True,
-        'GenericVideoExtractor': True,
+        'GenericVideoExtractor': False,
         'EromeExtractor': True,
         'SelfPostExtractor': True,
         'DirectExtractor': True,
