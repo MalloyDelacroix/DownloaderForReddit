@@ -83,6 +83,11 @@ class Downloader(Runner):
                 response = requests.get(content.url, stream=True, timeout=10, headers=self.check_headers(content))
                 if response.status_code == 200:
                     file_size = int(response.headers['Content-Length'])
+                    if file_size <= system_util.KB:
+                        # If the file size is less than one KB, it is a strong indicator that the content has been
+                        # deleted and what we are about to download is only a placeholder image.  So we abort download
+                        self.handle_deleted_content_error(content)
+                        return
                     file_path = content.get_full_file_path()
                     if self.settings_manager.use_multi_part_downloader and \
                             file_size > self.settings_manager.multi_part_threshold:
@@ -165,6 +170,12 @@ class Downloader(Runner):
         self.log_errors(content, message)
         self.output_error(content, message)
         content.set_download_error(Error.UNKNOWN_ERROR, message)
+
+    def handle_deleted_content_error(self, content: Content):
+        message = 'Content has been deleted'
+        self.log_errors(content, message)
+        self.output_error(content, message)
+        content.set_download_error(Error.DOES_NOT_EXIST, message)
 
     def log_errors(self, content: Content, message, **kwargs):
         extra = {
