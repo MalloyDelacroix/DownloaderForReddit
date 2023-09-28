@@ -15,6 +15,7 @@ from ..extractors.direct_extractor import DirectExtractor
 from ..extractors.self_post_extractor import SelfPostExtractor
 from ..extractors.comment_extractor import CommentExtractor
 from ..messaging.message import Message
+from ..utils import injector
 
 
 class SubmissionHandler(Runner):
@@ -23,6 +24,7 @@ class SubmissionHandler(Runner):
                  download_queue: Queue, stop_run):
         super().__init__(stop_run)
         self.logger = logging.getLogger(__name__)
+        self.settings_manager = injector.get_settings_manager()
         self.submission = submission
         self.post = post
         self.download_session_id = download_session_id
@@ -117,10 +119,11 @@ class SubmissionHandler(Runner):
     @verify_run
     def assign_extractor(self, url):
         for extractor in BaseExtractor.__subclasses__():
-            key = extractor.get_url_key()
-            if key is not None and any(x in url.lower() for x in key):
-                return extractor
-        if url.lower().endswith(const.ALL_EXT):
+            if self.settings_manager.extractor_dict[extractor.__name__]:
+                key = extractor.get_url_key()
+                if key is not None and any(x in url.lower() for x in key):
+                    return extractor
+        if url.lower().endswith(const.ALL_EXT) and self.settings_manager.extractor_dict['DirectExtractor']:
             return DirectExtractor
         return None
 

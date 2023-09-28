@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_CoreSettingsWidget(object):
     def setupUi(self, CoreSettingsWidget):
         CoreSettingsWidget.setObjectName("CoreSettingsWidget")
-        CoreSettingsWidget.resize(906, 760)
+        CoreSettingsWidget.resize(906, 849)
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(CoreSettingsWidget)
         self.verticalLayout_4.setSpacing(30)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
@@ -240,6 +240,14 @@ class Ui_CoreSettingsWidget(object):
         self.download_reddit_hosted_videos_checkbox.setObjectName("download_reddit_hosted_videos_checkbox")
         self.horizontalLayout_6.addWidget(self.download_reddit_hosted_videos_checkbox)
         self.verticalLayout_3.addLayout(self.horizontalLayout_6)
+        self.extractor_list_group_box = QtWidgets.QGroupBox(self.download_group_box)
+        self.extractor_list_group_box.setObjectName("extractor_list_group_box")
+        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.extractor_list_group_box)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.extractor_list_widget = QtWidgets.QListWidget(self.extractor_list_group_box)
+        self.extractor_list_widget.setObjectName("extractor_list_widget")
+        self.verticalLayout_5.addWidget(self.extractor_list_widget)
+        self.verticalLayout_3.addWidget(self.extractor_list_group_box)
         self.verticalLayout_4.addWidget(self.download_group_box)
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_4.addItem(spacerItem3)
@@ -291,3 +299,4 @@ class Ui_CoreSettingsWidget(object):
         self.label_11.setText(_translate("CoreSettingsWidget", "Finish incomplete extractions at start of session:"))
         self.label_5.setToolTip(_translate("CoreSettingsWidget", "<html><head/><body><p>Videos hosted on reddit are downloaded in two parts and must be joined after the download session is complete.</p><p>Because of this extra step, downloading these videos is optional</p></body></html>"))
         self.label_5.setText(_translate("CoreSettingsWidget", "Download reddit hosted videos:"))
+        self.extractor_list_group_box.setTitle(_translate("CoreSettingsWidget", "Extractor List"))

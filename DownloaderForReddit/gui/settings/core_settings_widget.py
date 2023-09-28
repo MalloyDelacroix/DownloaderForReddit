@@ -1,5 +1,5 @@
 import os
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QCheckBox, QListWidgetItem
 from PyQt5.QtGui import QValidator
 from PyQt5.QtCore import Qt
 
@@ -24,6 +24,7 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             lambda: self.select_directory_path(self.user_save_dir_line_edit))
         self.select_subreddit_base_directory_button.clicked.connect(
             lambda: self.select_directory_path(self.subreddit_save_dir_line_edit))
+        self.extractor_map = {}
 
     def load_settings(self):
         self.user_save_dir_line_edit.setText(self.settings.user_save_directory)
@@ -49,6 +50,17 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.set_size_options(self.settings.multi_part_chunk_size, self.chunk_size_combo,
                               self.multi_part_chunk_size_spinbox)
         self.multi_part_thread_count_spinbox.setValue(self.settings.multi_part_thread_count)
+        self.load_extractor_list()
+
+    def load_extractor_list(self):
+        for extractor, enabled in self.settings.extractor_dict.items():
+            checkbox = QCheckBox(extractor)
+            checkbox.setChecked(enabled)
+            item = QListWidgetItem()
+            item.setSizeHint(checkbox.sizeHint())
+            self.extractor_list_widget.addItem(item)
+            self.extractor_list_widget.setItemWidget(item, checkbox)
+            self.extractor_map[extractor] = checkbox
 
     def set_size_options(self, size, combo, spinbox):
         for key, value in sorted(self.size_map.items(), key=lambda x: x[1], reverse=True):
@@ -76,6 +88,8 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             int(self.multipart_threshold_spinbox.value() * self.threshold_size_combo.currentData(Qt.UserRole))
         self.settings.multi_part_threshold = threshold_size
         self.settings.multi_part_thread_count = self.multi_part_thread_count_spinbox.value()
+        for extractor, checkbox in self.extractor_map.items():
+            self.settings.extractor_dict[extractor] = checkbox.isChecked()
 
     def select_directory_path(self, line_edit):
         text = line_edit.text()

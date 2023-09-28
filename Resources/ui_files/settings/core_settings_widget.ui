@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>906</width>
-    <height>760</height>
+    <height>849</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -63,8 +63,7 @@
            <number>3</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="user_save_dir_line_edit">
-           </widget>
+           <widget class="QLineEdit" name="user_save_dir_line_edit"/>
           </item>
           <item>
            <widget class="QToolButton" name="select_user_base_directory_button">
@@ -81,8 +80,7 @@
            <number>3</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="subreddit_save_dir_line_edit">
-           </widget>
+           <widget class="QLineEdit" name="subreddit_save_dir_line_edit"/>
           </item>
           <item>
            <widget class="QToolButton" name="select_subreddit_base_directory_button">
@@ -521,6 +519,18 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="extractor_list_group_box">
+        <property name="title">
+         <string>Extractor List</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QListWidget" name="extractor_list_widget"/>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </widget>
