@@ -475,7 +475,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
                     new_list.sync_reddit_object_settings(reddit_object)
         self.refresh_list_models()
 
-    def copy_reddit_objects(self, reddit_object_ids, old_list_model, new_list_id, ro_type):
+    def copy_reddit_objects(self, reddit_object_ids, old_list_model, new_list_id):
         with self.db_handler.get_scoped_update_session() as session:
             for ro_id in reddit_object_ids:
                 new_assoc = ListAssociation(reddit_object_id=ro_id, reddit_object_list_id=new_list_id)
