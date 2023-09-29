@@ -1,6 +1,18 @@
 # Change Log
 
 
+## v3.16.0
+
+### Minor Changes
+* Users now have the ability to select which extractors are used during a download session.
+* Users can now choose to add a user or subreddit to a list without validating their existence with reddit first.
+
+### Bug Fixes
+* Files that are under 1KB in size are no longer downloaded.  This should keep deleted content placeholder images from
+  being downloaded.
+* Fix crashing when copying a user/subreddit to another list.
+
+
 ## v3.15.4
 
 ### Bug Fixes
