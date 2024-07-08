@@ -113,7 +113,7 @@ class UpdateRunner(QObject):
         self.finished.emit()
 
     def start_downloader(self):
-        self.downloader = Downloader(self.download_queue, self.download_session_id)
+        self.downloader = Downloader(self.download_queue, self.download_session_id, self.stop_run)
         self.download_thread = Thread(target=self.downloader.run)
         self.download_thread.start()
 
@@ -123,7 +123,7 @@ class UpdateRunner(QObject):
             post = session.query(Post).get(post_id)
             submission = self.reddit_instance.submission(id=post.reddit_id)
             submission_handler = SubmissionHandler(submission, post, self.download_session_id, session,
-                                                   self.download_queue)
+                                                   self.download_queue, self.stop_run)
             submission_handler.extract_comments()
 
     def stop(self):
