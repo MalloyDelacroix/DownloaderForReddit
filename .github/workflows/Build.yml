@@ -62,7 +62,7 @@ jobs:
         run: 
           pyinstaller build_github.spec
       
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v4
         with:
           name: DownloaderForReddit_${{ github.run_number }}
           path: dist/DownloaderForReddit
