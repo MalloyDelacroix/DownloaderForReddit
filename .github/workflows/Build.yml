@@ -56,7 +56,7 @@ jobs:
       
       - name: Install pyinstaller
         run: |
-          pip install pyinstaller
+          pip install pyinstaller==5.13.2
         working-directory: c:/
       
       - name: Build with pyinstaller
