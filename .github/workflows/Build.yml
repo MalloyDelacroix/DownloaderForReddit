@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: Check Version
-        uses: tj-actions/changed-files@v14.3
+        uses: tj-actions/changed-files@v46
         id: check-version
         with:
           files: DownloaderForReddit/version.py
@@ -43,10 +43,11 @@ jobs:
           Write-Output "::set-output name=changes::$item"
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
           cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
 
       - name: Install dependencies
         run: |
