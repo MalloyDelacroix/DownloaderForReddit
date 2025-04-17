@@ -9,17 +9,16 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v5
       with:
         python-version: 3.8
-
-    - uses: actions/cache@v2
-      with:
-        path: c:\hostedtoolcache\windows\python\3.8.4\x64\lib\site-packages
-        key: ${{ runner.os }}-pip_build-${{ hashFiles('**/requirements.txt') }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements.txt'
 
     - name: Install dependencies
       run: |
