@@ -16,7 +16,7 @@ jobs:
       with:
         python-version: 3.8
 
-    - uses: actions/cache@v2
+    - uses: actions/cache@v4
       with:
         path: c:\hostedtoolcache\windows\python\3.8.4\x64\lib\site-packages
         key: ${{ runner.os }}-pip_build-${{ hashFiles('**/requirements.txt') }}
