@@ -39,8 +39,8 @@ jobs:
           $version = "v" + $item.SubString(0,$index).Trim()
           $item = $item.SubString($index).Trim()
           $item = $item.Replace("`r","%0D").Replace("`n","%0A")
-          Write-Output "::set-output name=version::$version"
-          Write-Output "::set-output name=changes::$item"
+          "name=version::$version" >> $GITHUB_OUTPUT
+          "name=changes::$item" >> $GITHUB_OUTPUT
 
       - name: Set up Python 3.8
         uses: actions/setup-python@v5
