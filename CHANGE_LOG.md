@@ -1,6 +1,13 @@
 # Change Log
 
 
+## v3.16.1
+
+### Bug Fixes
+* Update several dependencies to the latest versions.
+* Fix redgifs extractor
+
+
 ## v3.16.0
 
 ### Minor Changes
