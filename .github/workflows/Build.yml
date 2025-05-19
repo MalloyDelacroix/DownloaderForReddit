@@ -39,7 +39,7 @@ jobs:
             -   name: Get version
                 id: get_version
                 run: |
-                    $version = python -c "import re; f=open('DownloaderForReddit/version.py').read(); print(re.search(r'__version__\\s*=\\s*[\"\\\']([^\"\\\']+)[\"\\\']', f).group(1))"
+                    $version = python -c "import re; f=open('DownloaderForReddit/version.py').read()"
                     echo "version_py=$version" >> $env:GITHUB_OUTPUT
 
             -   name: Get latest release version
