@@ -1,108 +1,125 @@
 name: Build
 
-on: 
-  push:
-    branches: 
-      - master
-      - build_test
-      - release_test
+on:
+    push:
+        branches:
+            - master
+            - build_test
+            - release_test
 
 jobs:
 
-  Build:
+    Build:
 
-    runs-on: windows-latest
+        runs-on: windows-latest
 
-    outputs:
-      version_changed: ${{ steps.check-version.outputs.any_changed }}
-      changes: ${{ steps.changes.outputs.changes }}
-      version: ${{ steps.changes.outputs.version }}
+        outputs:
+            should_release: ${{ steps.compare_versions.outputs.should_release }}
+            version: ${{ steps.get_version_py.outputs.version_py }}
+            changes: ${{ steps.read_changelog.outputs.changes }}
 
-    steps:
+        steps:
 
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+            -   uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
 
-      - name: Check Version
-        uses: tj-actions/changed-files@v46
-        id: check-version
-        with:
-          files: DownloaderForReddit/version.py
-          since_last_remote_commit: "true"
+            -   name: Set up Python 3.9
+                uses: actions/setup-python@v5
+                with:
+                    python-version: 3.9
+                    cache: 'pip'
+                    cache-dependency-path: 'requirements.txt'
 
-      - name: Read Changelog
-        id: changes
-        run: |
-          $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
-          $index = $item.IndexOf("`n")
-          $version = "v" + $item.SubString(0,$index).Trim()
-          $item = $item.SubString($index).Trim()
-          $item = $item.Replace("`r","%0D").Replace("`n","%0A")
-          "name=version::$version" >> $GITHUB_OUTPUT
-          "name=changes::$item" >> $GITHUB_OUTPUT
+            -   name: Install dependencies
+                run: |
+                    python -m pip install --upgrade pip
+                    pip install -r requirements.txt
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.9
-          cache: 'pip'
-          cache-dependency-path: 'requirements.txt'
+            -   name: Get version
+                id: get_version
+                run: |
+                    $version = python -c "import re; f=open('DownloaderForReddit/version.py').read(); print(re.search(r'__version__\\s*=\\s*[\"\\\']([^\"\\\']+)[\"\\\']', f).group(1))"
+                    echo "version_py=$version" >> $env:GITHUB_OUTPUT
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      
-      - name: Install pyinstaller
-        run: |
-          pip install pyinstaller==5.13.2
-        working-directory: c:/
-      
-      - name: Build with pyinstaller
-        run: 
-          pyinstaller build_github.spec
-      
-      - uses: actions/upload-artifact@v4
-        with:
-          name: DownloaderForReddit_${{ github.run_number }}
-          path: dist/DownloaderForReddit
+            -   name: Get latest release version
+                id: get_latest_release
+                shell: bash
+                run: |
+                    choco install jq -y
+                    LATEST_RELEASE=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest | jq -r .tag_name)
+                    echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
 
-  Release:
-    runs-on: windows-latest
-    needs: Build
-    if: ${{ needs.Build.outputs.version_changed == 'true' }}
+            -   name: Compare versions
+                id: compare_versions
+                shell: bash
+                run: |
+                    if [ "${{ steps.get_version_py.outputs.version_py }}" != "${{ steps.get_latest_release.outputs.latest_release }}" ]; then
+                      echo "should_release=true" >> $GITHUB_OUTPUT
+                    else
+                      echo "should_release=false" >> $GITHUB_OUTPUT
+                    fi
 
-    steps:
+            -   name: Read Changelog
+                id: read_changelog
+                run: |
+                    $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
+                    $index = $item.IndexOf("`n")
+                    $version = "v" + $item.SubString(0,$index).Trim()
+                    $item = $item.SubString($index).Trim()
+                    $item = $item.Replace("`r","%0D").Replace("`n","%0A")
+                    echo "version=$version" >> $env:GITHUB_OUTPUT
+                    echo "changes=$item" >> $env:GITHUB_OUTPUT
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
-        with:
-          tag_name: ${{ needs.Build.outputs.version }}
-          release_name: ${{ needs.Build.outputs.version }}
-          body: ${{ needs.Build.outputs.changes }}
-          draft: false
-          prerelease: false
+            -   name: Install pyinstaller
+                run: |
+                    pip install pyinstaller==5.13.2
+                working-directory: c:/
 
-      - uses: actions/download-artifact@v2
-        with:
-          name: DownloaderForReddit_${{ github.run_number }}
-          path: build
+            -   name: Build with pyinstaller
+                run: |
+                    pyinstaller build_github.spec
 
-      - name: Package Build
-        run: |
-          Compress-Archive build/* ./build.zip
+            -   uses: actions/upload-artifact@v4
+                with:
+                    name: DownloaderForReddit_${{ github.run_number }}
+                    path: dist/DownloaderForReddit
 
-      - name: Upload Release
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build.zip
-          asset_name: DownloaderForReddit_${{ needs.Build.outputs.version }}.zip
-          asset_content_type: application/zip
+    Release:
+        runs-on: windows-latest
+        needs: Build
+        if: ${{ needs.Build.outputs.should_release == 'true' }}
+
+        steps:
+
+            -   name: Create Release
+                id: create_release
+                uses: actions/create-release@v1
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                with:
+                    tag_name: ${{ needs.Build.outputs.version }}
+                    release_name: ${{ needs.Build.outputs.version }}
+                    body: ${{ needs.Build.outputs.changes }}
+                    draft: false
+                    prerelease: false
+
+            -   uses: actions/download-artifact@v2
+                with:
+                    name: DownloaderForReddit_${{ github.run_number }}
+                    path: build
+
+            -   name: Package Build
+                run: |
+                    Compress-Archive build/* ./build.zip
+
+            -   name: Upload Release
+                id: upload-release-asset
+                uses: actions/upload-release-asset@v1
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                with:
+                    upload_url: ${{ steps.create_release.outputs.upload_url }}
+                    asset_path: ./build.zip
+                    asset_name: DownloaderForReddit_${{ needs.Build.outputs.version }}.zip
+                    asset_content_type: application/zip
