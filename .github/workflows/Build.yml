@@ -51,13 +51,17 @@ jobs:
                 id: changes
                 shell: powershell
                 run: |
-                  $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
-                  $index = $item.IndexOf("`n")
-                  $version = "v" + $item.SubString(0,$index).Trim()
-                  $item = $item.SubString($index).Trim()
-                  $item = $item.Replace("`r","%0D").Replace("`n","%0A")
-                  echo "version=$version" >> $env:GITHUB_OUTPUT
-                  echo "changes=$item" >> $env:GITHUB_OUTPUT
+                    $changelogContent = Get-Content CHANGE_LOG.md -Raw
+                    if ($changelogContent -match "## v(\S+)\s") {
+                        $version = "v$($matches[1])"
+                        $changes = $changelogContent.Substring($changelogContent.IndexOf($matches[0]) + $matches[0].Length).Trim()
+                        $changes = $changes.Replace("`r","%0D").Replace("`n","%0A")
+                        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+                        Write-Output "changes=$changes" >> $env:GITHUB_OUTPUT
+                    } else {
+                        Write-Error "Failed to parse version from CHANGE_LOG.md"
+                        exit 1
+                    }
 
             -   name: Set up Python 3.9
                 uses: actions/setup-python@v5
