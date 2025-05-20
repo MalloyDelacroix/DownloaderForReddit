@@ -49,14 +49,15 @@ jobs:
 
             -   name: Read Changelog
                 id: changes
+                shell: powershell
                 run: |
                   $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
                   $index = $item.IndexOf("`n")
                   $version = "v" + $item.SubString(0,$index).Trim()
                   $item = $item.SubString($index).Trim()
                   $item = $item.Replace("`r","%0D").Replace("`n","%0A")
-                  "name=version::$version" >> $GITHUB_OUTPUT
-                  "name=changes::$item" >> $GITHUB_OUTPUT
+                  echo "version=$version" >> $env:GITHUB_OUTPUT
+                  echo "changes=$item" >> $env:GITHUB_OUTPUT
 
             -   name: Set up Python 3.9
                 uses: actions/setup-python@v5
