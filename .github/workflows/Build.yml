@@ -15,8 +15,8 @@ jobs:
 
         outputs:
             should_release: ${{ steps.compare_versions.outputs.should_release }}
-            changes: ${{ steps.changes.outputs.changes }}
-            version: ${{ steps.changes.outputs.version }}
+            changes: ${{ steps.get_version.outputs.version_py }}
+            version: ${{ steps.read_changelog.outputs.changes }}
 
         steps:
             -   uses: actions/checkout@v4
