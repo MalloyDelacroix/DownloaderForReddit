@@ -15,14 +15,48 @@ jobs:
 
         outputs:
             should_release: ${{ steps.compare_versions.outputs.should_release }}
-            version: ${{ steps.get_version_py.outputs.version_py }}
-            changes: ${{ steps.read_changelog.outputs.changes }}
+            changes: ${{ steps.changes.outputs.changes }}
+            version: ${{ steps.changes.outputs.version }}
 
         steps:
-
             -   uses: actions/checkout@v4
                 with:
                     fetch-depth: 0
+
+            -   name: Get version
+                id: get_version
+                run: |
+                  $version = python -c "import re; f=open('DownloaderForReddit/version.py').read()"
+                  echo "version_py=$version" >> $env:GITHUB_OUTPUT
+
+            -   name: Get latest release version
+                id: get_latest_release
+                shell: bash
+                run: |
+                  choco install jq -y
+                  LATEST_RELEASE=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest | jq -r .tag_name)
+                  echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+
+            -   name: Compare versions
+                id: compare_versions
+                shell: bash
+                run: |
+                  if [ "${{ steps.get_version_py.outputs.version_py }}" != "${{ steps.get_latest_release.outputs.latest_release }}" ]; then
+                    echo "should_release=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "should_release=false" >> $GITHUB_OUTPUT
+                  fi
+
+            -   name: Read Changelog
+                id: changes
+                run: |
+                  $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
+                  $index = $item.IndexOf("`n")
+                  $version = "v" + $item.SubString(0,$index).Trim()
+                  $item = $item.SubString($index).Trim()
+                  $item = $item.Replace("`r","%0D").Replace("`n","%0A")
+                  "name=version::$version" >> $GITHUB_OUTPUT
+                  "name=changes::$item" >> $GITHUB_OUTPUT
 
             -   name: Set up Python 3.9
                 uses: actions/setup-python@v5
@@ -36,48 +70,13 @@ jobs:
                     python -m pip install --upgrade pip
                     pip install -r requirements.txt
 
-            -   name: Get version
-                id: get_version
-                run: |
-                    $version = python -c "import re; f=open('DownloaderForReddit/version.py').read()"
-                    echo "version_py=$version" >> $env:GITHUB_OUTPUT
-
-            -   name: Get latest release version
-                id: get_latest_release
-                shell: bash
-                run: |
-                    choco install jq -y
-                    LATEST_RELEASE=$(curl -s https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest | jq -r .tag_name)
-                    echo "latest_release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
-
-            -   name: Compare versions
-                id: compare_versions
-                shell: bash
-                run: |
-                    if [ "${{ steps.get_version_py.outputs.version_py }}" != "${{ steps.get_latest_release.outputs.latest_release }}" ]; then
-                      echo "should_release=true" >> $GITHUB_OUTPUT
-                    else
-                      echo "should_release=false" >> $GITHUB_OUTPUT
-                    fi
-
-            -   name: Read Changelog
-                id: read_changelog
-                run: |
-                    $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
-                    $index = $item.IndexOf("`n")
-                    $version = "v" + $item.SubString(0,$index).Trim()
-                    $item = $item.SubString($index).Trim()
-                    $item = $item.Replace("`r","%0D").Replace("`n","%0A")
-                    echo "version=$version" >> $env:GITHUB_OUTPUT
-                    echo "changes=$item" >> $env:GITHUB_OUTPUT
-
             -   name: Install pyinstaller
                 run: |
                     pip install pyinstaller==5.13.2
                 working-directory: c:/
 
             -   name: Build with pyinstaller
-                run: |
+                run:
                     pyinstaller build_github.spec
 
             -   uses: actions/upload-artifact@v4
@@ -103,7 +102,7 @@ jobs:
                     draft: false
                     prerelease: false
 
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v2
                 with:
                     name: DownloaderForReddit_${{ github.run_number }}
                     path: build
