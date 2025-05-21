@@ -13,8 +13,18 @@ class HyperlinkDelegate(QStyledItemDelegate):
     mouse events to support hyperlink navigation.
     """
     def paint(self, painter, option, index):
+        """
+        Overrides the paint method to render hyperlinks and colored text in the item view.
+
+        :param painter: QPainter object used for rendering the text.
+        :param option: QStyleOptionViewItem containing options for rendering the item.
+        :param index: QModelIndex providing access to model data.
+        :return: None
+        """
         doc = QTextDocument()
-        doc.setHtml(index.data(Qt.DisplayRole))
+        html = index.data(Qt.DisplayRole)
+        formatted_html = self.format_html(html)
+        doc.setHtml(formatted_html)
         color = index.data(Qt.ForegroundRole)
 
         if color:
@@ -37,6 +47,9 @@ class HyperlinkDelegate(QStyledItemDelegate):
         return doc.size().toSize()
 
     def editorEvent(self, event, model, option, index):
+        """
+        Overrides the editorEvent method to handle mouse events for hyperlink navigation.
+        """
         if event.type() == QEvent.MouseButtonRelease and event.button() == Qt.LeftButton:
             doc = QTextDocument()
             doc.setHtml(index.data(Qt.DisplayRole))
@@ -46,3 +59,15 @@ class HyperlinkDelegate(QStyledItemDelegate):
                 webbrowser.open(anchor)
                 return True
         return False
+
+    @staticmethod
+    def format_html(html_text: str) -> str:
+        """
+        Formats a given HTML text by replacing newline characters with HTML line break
+        tags and wrapping the entire text with paragraph tags.
+
+        :param html_text: The HTML text to format.
+        :return: The formatted HTML text.
+        """
+        html_text = html_text.replace('\n', '<br/>')
+        return f'<p>{html_text}</p>'
