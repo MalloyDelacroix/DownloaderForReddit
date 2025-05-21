@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QStyledItemDelegate
-from PyQt5.QtGui import QTextDocument
+from PyQt5.QtGui import QTextDocument, QTextCursor, QTextCharFormat
 from PyQt5.QtCore import QEvent, Qt
 import webbrowser
 
@@ -15,6 +15,15 @@ class HyperlinkDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         doc = QTextDocument()
         doc.setHtml(index.data(Qt.DisplayRole))
+        color = index.data(Qt.ForegroundRole)
+
+        if color:
+            cursor = QTextCursor(doc)
+            cursor.select(QTextCursor.Document)
+            fmt = QTextCharFormat()
+            fmt.setForeground(color)
+            cursor.mergeCharFormat(fmt)
+
         doc.setTextWidth(option.rect.width())
         painter.save()
         painter.translate(option.rect.topLeft())
