@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QStyledItemDelegate
+from PyQt5.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem
 from PyQt5.QtGui import QTextDocument, QTextCursor, QTextCharFormat
-from PyQt5.QtCore import QEvent, Qt
+from PyQt5.QtCore import QEvent, Qt, QModelIndex
 import webbrowser
 
 
@@ -10,7 +10,8 @@ class HyperlinkDelegate(QStyledItemDelegate):
 
     This class inherits from QStyledItemDelegate and is used to display and interact with
     content containing hyperlinks within item views. It renders HTML content and handles
-    mouse events to support hyperlink navigation.
+    mouse events to support hyperlink navigation while preserving the item's intended
+    color.
     """
     def paint(self, painter, option, index):
         """
@@ -20,6 +21,39 @@ class HyperlinkDelegate(QStyledItemDelegate):
         :param option: QStyleOptionViewItem containing options for rendering the item.
         :param index: QModelIndex providing access to model data.
         :return: None
+        """
+        doc = self.get_document(option, index)
+
+        painter.save()
+        painter.translate(option.rect.topLeft())
+        doc.drawContents(painter)
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        """
+        Overrides the sizeHint method to return the size of the document element after
+        the formatting is applied to render the HTML correctly.
+
+        :param option: Contains style option controls for rendering items
+        :param index: Refers to the model index of the item
+        :return: Calculated size of the item as a QSize object
+        """
+        doc = self.get_document(option, index)
+        return doc.size().toSize()
+
+    def get_document(self, option: QStyleOptionViewItem, index: QModelIndex) -> QTextDocument:
+        """
+        Generates a QTextDocument object with formatted HTML content and foreground
+        color based on provided index data. The method applies formatting to the
+        HTML content before setting it to the document and adjusts the text width
+        according to the specified option.
+
+        :param option: The style option which provides information such as the rectangle
+                       dimensions to adjust the document's text width.
+        :param index: The model index containing data for the document, such as HTML content
+                      and optional foreground color.
+        :return: A QTextDocument object set with the formatted HTML content and modified
+                 foreground color (if applicable).
         """
         doc = QTextDocument()
         html = index.data(Qt.DisplayRole)
@@ -35,16 +69,7 @@ class HyperlinkDelegate(QStyledItemDelegate):
             cursor.mergeCharFormat(fmt)
 
         doc.setTextWidth(option.rect.width())
-        painter.save()
-        painter.translate(option.rect.topLeft())
-        doc.drawContents(painter)
-        painter.restore()
-
-    def sizeHint(self, option, index):
-        doc = QTextDocument()
-        doc.setHtml(index.data(Qt.DisplayRole))
-        doc.setTextWidth(option.rect.width())
-        return doc.size().toSize()
+        return doc
 
     def editorEvent(self, event, model, option, index):
         """
