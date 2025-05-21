@@ -59,6 +59,7 @@ from ..viewmodels.reddit_object_list_model import RedditObjectListModel
 from ..viewmodels.output_view_model import OutputViewModel
 from ..viewmodels.hyperlink_delegate import HyperlinkDelegate
 from ..messaging.message import MessageType, MessagePriority, Message
+from ..customwidgets.link_cursor_handler import LinkCursorHandler
 from ..version import __version__
 
 
@@ -119,6 +120,7 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.output_view_model = OutputViewModel()
         self.output_list_view.setModel(self.output_view_model)
         self.output_list_view.setItemDelegate(HyperlinkDelegate())
+        self.link_cursor_handler = LinkCursorHandler(self.output_list_view)
         self.output_view_model.added.connect(self.scroll_output)
 
         reddit_utils.load_token()
