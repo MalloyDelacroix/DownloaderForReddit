@@ -44,9 +44,7 @@ class HyperlinkDelegate(QStyledItemDelegate):
     def get_document(self, option: QStyleOptionViewItem, index: QModelIndex) -> QTextDocument:
         """
         Generates a QTextDocument object with formatted HTML content and foreground
-        color based on provided index data. The method applies formatting to the
-        HTML content before setting it to the document and adjusts the text width
-        according to the specified option.
+        color based on provided index data.
 
         :param option: The style option which provides information such as the rectangle
                        dimensions to adjust the document's text width.
