@@ -1,3 +1,4 @@
+import re
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem
 from PyQt5.QtGui import QTextDocument, QTextCursor, QTextCharFormat
 from PyQt5.QtCore import QEvent, Qt, QModelIndex
@@ -95,4 +96,22 @@ class HyperlinkDelegate(QStyledItemDelegate):
         :return: The formatted HTML text.
         """
         html_text = html_text.replace('\n', '<br/>')
+        html_text = HyperlinkDelegate.linkify_urls(html_text)
         return f'<p>{html_text}</p>'
+
+    @staticmethod
+    def linkify_urls(text: str) -> str:
+        """
+        Converts all URLs in a given string into clickable HTML anchor links.
+
+        :param text: The input string containing URLs that need to be converted
+            into clickable HTML links.
+        :return: A string where any valid URLs are replaced with equivalent clickable
+            anchor links in HTML format.
+        """
+        url_regex = re.compile(
+            r'(https?://[^\s"<>()]+)',  # match http(s) URLs excluding common HTML-breaking chars
+            re.IGNORECASE
+        )
+
+        return url_regex.sub(r'<a href="\1">\1</a>', text)
