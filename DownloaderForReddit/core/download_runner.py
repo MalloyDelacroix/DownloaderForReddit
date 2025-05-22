@@ -10,6 +10,7 @@ from praw.models import Redditor
 from sqlalchemy import or_
 
 from DownloaderForReddit.core.download.downloader import Downloader
+from . import const
 from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
 from .runner import verify_run
@@ -107,6 +108,8 @@ class DownloadRunner(QObject):
             reddit_object.set_inactive()
         except prawcore.RequestException:
             self.handle_failed_connection()
+        except prawcore.exceptions.TooManyRequests:
+            self.handle_too_many_requests_error(reddit_object)
         except:
             self.handle_unknown_error(reddit_object)
         return False
@@ -135,6 +138,16 @@ class DownloadRunner(QObject):
             Message.send_error(f'Failed to connect to reddit.  Connection attempts remaining: '
                                f'{3 - self.failed_connection_attempts}')
             self.failed_connection_attempts += 1
+
+    def handle_too_many_requests_error(self, reddit_object):
+        self.logger.error('Too many requests error', exc_info=True)
+        message = (
+            f'Reddit rate limit reached.  {reddit_object.object_type.capitalize()} ({reddit_object.name}) could '
+            f'not be validated.  Please try again later.\n'
+            f'For More information about this error, please visit the link below:\n'
+            f'{const.RATE_LIMIT_DOC_URL}'
+        )
+        Message.send_error(message)
 
     def handle_unknown_error(self, reddit_object):
         self.logger.error('Failed to validate reddit object due to unknown error',
@@ -320,16 +333,26 @@ class DownloadRunner(QObject):
         """
         submissions = []
         for submission in self.get_raw_submissions(praw_object, reddit_object):
-            passes_date_limit = self.submission_filter.date_filter(submission, reddit_object)
-            # stickied posts are taken first when getting submissions by new, even when they are not the newest
-            # submissions.  So the first filter pass allows stickied posts through so they do not trip the date filter
-            # before more recent posts are allowed through
-            if (submission.pinned or submission.stickied) or passes_date_limit:
-                if passes_date_limit:
-                    if (not self.filter_subreddits or submission.subreddit.display_name in self.validated_subreddits) \
+            try:
+                passes_date_limit = self.submission_filter.date_filter(submission, reddit_object)
+                # stickied posts are taken first when getting submissions by new, even when they are not the newest
+                # submissions.  So the first filter pass allows stickied posts through so they do not trip the date filter
+                # before more recent posts are allowed through
+                if (submission.pinned or submission.stickied) or passes_date_limit:
+                    if passes_date_limit:
+                        if (not self.filter_subreddits or submission.subreddit.display_name
+                            in self.validated_subreddits) \
                             and self.submission_filter.filter_submission(submission, reddit_object):
-                        submissions.append(submission)
-            else:
+                                submissions.append(submission)
+                else:
+                    break
+            except prawcore.exceptions.TooManyRequests:
+                self.logger.error('Reddit reports too many requests.  Ending submission extraction', exc_info=True)
+                message = (
+                    f'Reddit rate limit reached. Please try again shortly.\n'
+                    f'For more information, please visit the link below:\n{const.RATE_LIMIT_DOC_URL}'
+                )
+                Message.send_error(message)
                 break
         return submissions
 
