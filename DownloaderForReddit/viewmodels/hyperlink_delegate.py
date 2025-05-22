@@ -1,4 +1,3 @@
-import re
 from PyQt5.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem
 from PyQt5.QtGui import QTextDocument, QTextCursor, QTextCharFormat
 from PyQt5.QtCore import QEvent, Qt, QModelIndex
@@ -58,8 +57,7 @@ class HyperlinkDelegate(QStyledItemDelegate):
         """
         doc = QTextDocument()
         html = index.data(Qt.DisplayRole)
-        formatted_html = self.format_html(html)
-        doc.setHtml(formatted_html)
+        doc.setHtml(html)
         color = index.data(Qt.ForegroundRole)
 
         if color:
@@ -78,40 +76,11 @@ class HyperlinkDelegate(QStyledItemDelegate):
         """
         if event.type() == QEvent.MouseButtonRelease and event.button() == Qt.LeftButton:
             doc = QTextDocument()
-            doc.setHtml(index.data(Qt.DisplayRole))
+            html = index.data(Qt.DisplayRole)
+            doc.setHtml(html)
             pos = event.pos() - option.rect.topLeft()
             anchor = doc.documentLayout().anchorAt(pos)
             if anchor:
                 webbrowser.open(anchor)
                 return True
         return False
-
-    @staticmethod
-    def format_html(html_text: str) -> str:
-        """
-        Formats a given HTML text by replacing newline characters with HTML line break
-        tags and wrapping the entire text with paragraph tags.
-
-        :param html_text: The HTML text to format.
-        :return: The formatted HTML text.
-        """
-        html_text = html_text.replace('\n', '<br/>')
-        html_text = HyperlinkDelegate.linkify_urls(html_text)
-        return f'<p>{html_text}</p>'
-
-    @staticmethod
-    def linkify_urls(text: str) -> str:
-        """
-        Converts all URLs in a given string into clickable HTML anchor links.
-
-        :param text: The input string containing URLs that need to be converted
-            into clickable HTML links.
-        :return: A string where any valid URLs are replaced with equivalent clickable
-            anchor links in HTML format.
-        """
-        url_regex = re.compile(
-            r'(https?://[^\s"<>()]+)',  # match http(s) URLs excluding common HTML-breaking chars
-            re.IGNORECASE
-        )
-
-        return url_regex.sub(r'<a href="\1">\1</a>', text)
