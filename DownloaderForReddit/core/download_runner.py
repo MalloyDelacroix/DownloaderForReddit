@@ -108,6 +108,8 @@ class DownloadRunner(QObject):
             reddit_object.set_inactive()
         except prawcore.RequestException:
             self.handle_failed_connection()
+        except prawcore.exceptions.TooManyRequests:
+            self.handle_too_many_requests_error(reddit_object)
         except:
             self.handle_unknown_error(reddit_object)
         return False
@@ -136,6 +138,16 @@ class DownloadRunner(QObject):
             Message.send_error(f'Failed to connect to reddit.  Connection attempts remaining: '
                                f'{3 - self.failed_connection_attempts}')
             self.failed_connection_attempts += 1
+
+    def handle_too_many_requests_error(self, reddit_object):
+        self.logger.error('Too many requests error', exc_info=True)
+        message = (
+            f'Reddit rate limit reached.  {reddit_object.object_type.capitalize()} ({reddit_object.name}) could '
+            f'not be validated.  Please try again later.\n'
+            f'For More information about this error, please visit the link below:\n'
+            f'{const.RATE_LIMIT_DOC_URL}'
+        )
+        Message.send_error(message)
 
     def handle_unknown_error(self, reddit_object):
         self.logger.error('Failed to validate reddit object due to unknown error',
