@@ -32,19 +32,16 @@ jobs:
 
             -   name: Get version
                 id: get_version
+                shell: powershell
                 run: |
-                    VERSION=$(python -c "
-                    import re
-                    with open('DownloaderForReddit/version.py', 'r') as file:
-                        content = file.read()
-                        match = re.search(r\"__version__ = '(.*?)'\", content)
-                        if match:
-                            print(match.group(1))
-                        else:
-                            raise ValueError('Version string not found')
-                    ")
-                    echo "VERSION=$VERSION"
-                    echo "version=$VERSION" >> $GITHUB_OUTPUT
+                    $content = Get-Content -Path 'DownloaderForReddit/version.py' -Raw
+                    if ($content -match "__version__ = '(.*?)'") {
+                        $version = $matches[1]
+                        Write-Output "VERSION=$version"
+                        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+                    } else {
+                        throw "Version string not found"
+                    }
 
             -   name: Get latest release version
                 id: get_latest_release
