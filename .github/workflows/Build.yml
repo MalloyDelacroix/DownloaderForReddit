@@ -26,7 +26,7 @@ jobs:
             -   name: Get version
                 id: get_version
                 run: |
-                    VERSION=$(python -c "import re; f=open('version.py').read(); print(re.search(r\"__version__\s*=\s*['\\\"]([^'\\\"]+)['\\\"]\", f).group(1))")
+                    VERSION=$(python -c "import re; f=open('DownloaderForReddit/version.py').read(); print(re.search(r\"__version__\s*=\s*['\\\"]([^'\\\"]+)['\\\"]\", f).group(1))")
                     echo "VERSION=$VERSION"
                     echo "version=$VERSION" >> $GITHUB_OUTPUT
 
