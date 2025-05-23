@@ -16,7 +16,7 @@ jobs:
         outputs:
             should_release: ${{ steps.compare_versions.outputs.should_release }}
             changes: ${{ steps.changes.outputs.changes }}
-            version: ${{ steps.changes.outputs.version }}
+            version: ${{ steps.get_version.outputs.version }}
 
         steps:
             -   uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
                     if ($content -match "__version__ = '(.*?)'") {
                         $version = $matches[1]
                         Write-Output "VERSION=$version"
-                        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
+                        "name=version::$version" >> $GITHUB_OUTPUT
                     } else {
                         throw "Version string not found"
                     }
