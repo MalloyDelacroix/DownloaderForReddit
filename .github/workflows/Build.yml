@@ -63,15 +63,12 @@ jobs:
 
             -   name: Read Changelog
                 id: changes
-                shell: python
+                shell: powershell
                 run: |
-                    import os
-                    with open('CHANGE_LOG.md', 'r') as file:
-                        content = file.read()
-                        parts = content.split('## v')
-                        latest = 'v' + parts[1].strip()
-                        with open(os.environ["GITHUB_OUTPUT"], 'a') as output_file:
-                            print(f"changes={latest}", file=output_file)
+                    $content = Get-Content -Path 'CHANGE_LOG.md' -Raw
+                    $parts = $content -split('## v')
+                    $latest = 'v' + $parts[1].Trim()
+                    "name=changes::$latest" >> $GITHUB_OUTPUT
 
             -   name: Install dependencies
                 run: |
