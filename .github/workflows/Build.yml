@@ -26,8 +26,9 @@ jobs:
             -   name: Get version
                 id: get_version
                 run: |
-                  $version = python -c "import re; f=open('DownloaderForReddit/version.py').read()"
-                  echo "version_py=$version" >> $env:GITHUB_OUTPUT
+                    VERSION=$(python -c "import re; f=open('version.py').read(); print(re.search(r\"__version__\s*=\s*['\\\"]([^'\\\"]+)['\\\"]\", f).group(1))")
+                    echo "VERSION=$VERSION"
+                    echo "version=$VERSION" >> $GITHUB_OUTPUT
 
             -   name: Get latest release version
                 id: get_latest_release
@@ -51,17 +52,12 @@ jobs:
                 id: changes
                 shell: powershell
                 run: |
-                    $changelogContent = Get-Content CHANGE_LOG.md -Raw
-                    if ($changelogContent -match "## v(\S+)\s") {
-                        $version = "v$($matches[1])"
-                        $changes = $changelogContent.Substring($changelogContent.IndexOf($matches[0]) + $matches[0].Length).Trim()
-                        $changes = $changes.Replace("`r","%0D").Replace("`n","%0A")
-                        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
-                        Write-Output "changes=$changes" >> $env:GITHUB_OUTPUT
-                    } else {
-                        Write-Error "Failed to parse version from CHANGE_LOG.md"
-                        exit 1
-                    }
+                    $item = (Get-Content CHANGE_LOG.md -Raw).split("## v")[1]
+                    $index = $item.IndexOf("`n")
+                    $version = "v" + $item.SubString(0,$index).Trim()
+                    $item = $item.SubString($index).Trim()
+                    $item = $item.Replace("`r","%0D").Replace("`n","%0A")
+                    "name=changes::$item" >> $GITHUB_OUTPUT
 
             -   name: Set up Python 3.9
                 uses: actions/setup-python@v5
