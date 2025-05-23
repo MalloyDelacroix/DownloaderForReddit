@@ -23,6 +23,13 @@ jobs:
                 with:
                     fetch-depth: 0
 
+            -   name: Set up Python 3.9
+                uses: actions/setup-python@v5
+                with:
+                    python-version: 3.9
+                    cache: 'pip'
+                    cache-dependency-path: 'requirements.txt'
+
             -   name: Get version
                 id: get_version
                 run: |
@@ -67,13 +74,6 @@ jobs:
                     $item = $item.SubString($index).Trim()
                     $item = $item.Replace("`r","%0D").Replace("`n","%0A")
                     "name=changes::$item" >> $GITHUB_OUTPUT
-
-            -   name: Set up Python 3.9
-                uses: actions/setup-python@v5
-                with:
-                    python-version: 3.9
-                    cache: 'pip'
-                    cache-dependency-path: 'requirements.txt'
 
             -   name: Install dependencies
                 run: |
