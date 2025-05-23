@@ -68,6 +68,8 @@ jobs:
                     $content = Get-Content -Path 'CHANGE_LOG.md' -Raw
                     $parts = $content -split('## v')
                     $latest = 'v' + $parts[1].Trim()
+                    $latest = latest.Replace("`r","%0D").Replace("`n","%0A")
+                    Write-Output $latest
                     echo "changes=$latest" >> $env:GITHUB_OUTPUT
 
             -   name: Install dependencies
