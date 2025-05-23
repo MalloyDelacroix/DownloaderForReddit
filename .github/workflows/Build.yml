@@ -30,7 +30,7 @@ jobs:
                     import re
                     with open('DownloaderForReddit/version.py', 'r') as file:
                         content = file.read()
-                        match = re.search(r"__version__ = '(.*?)'", content)
+                        match = re.search(r\"__version__ = '(.*?)'\", content)
                         if match:
                             print(match.group(1))
                         else:
