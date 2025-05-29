@@ -332,8 +332,8 @@ class DownloadRunner(QObject):
         :return: A list of submissions extracted from reddit.  May be an empty list if no passing submissions are found.
         """
         submissions = []
-        for submission in self.get_raw_submissions(praw_object, reddit_object):
-            try:
+        try:
+            for submission in self.get_raw_submissions(praw_object, reddit_object):
                 passes_date_limit = self.submission_filter.date_filter(submission, reddit_object)
                 # stickied posts are taken first when getting submissions by new, even when they are not the newest
                 # submissions.  So the first filter pass allows stickied posts through so they do not trip the date filter
@@ -346,15 +346,18 @@ class DownloadRunner(QObject):
                                 submissions.append(submission)
                 else:
                     break
-            except prawcore.exceptions.TooManyRequests:
-                self.logger.error('Reddit reports too many requests.  Ending submission extraction', exc_info=True)
-                message = (
-                    f'Reddit rate limit reached. Please try again shortly.\n'
-                    f'For more information, please visit the link below:\n{const.RATE_LIMIT_DOC_URL}'
-                )
-                Message.send_error(message)
-                break
-        return submissions
+            return submissions
+        except prawcore.exceptions.TooManyRequests:
+            extra={'object_type': reddit_object.object_type, 'reddit_object': reddit_object.name}
+            self.logger.error('Reddit reports too many requests.  Ending submission extraction',
+                              extra=extra, exc_info=True)
+            message = (
+                f'Reddit rate limit reached. Failed to extract submissions for: {reddit_object.name}.  '
+                f'Please try again shortly.\n'
+                f'For more information, please visit the link below:\n{const.RATE_LIMIT_DOC_URL}'
+            )
+            Message.send_error(message)
+            return submissions
 
     def get_raw_submissions(self, praw_object, reddit_object):
         """
