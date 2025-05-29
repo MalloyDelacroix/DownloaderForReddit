@@ -1,6 +1,8 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, call
 
+import prawcore.exceptions
+
 from Tests.mockobjects import mock_objects
 from DownloaderForReddit.core.submission_handler import SubmissionHandler
 from DownloaderForReddit.core.errors import Error
@@ -216,3 +218,17 @@ class TestSubmissionHandler(TestCase):
         self.post.set_extracted.assert_not_called()
         self.post.set_extraction_failed.assert_not_called()
         self.mock_queue.put.assert_not_called()
+
+    @patch(f'{PATH}.handle_too_many_requests_error')
+    @patch(f'{PATH}.assign_extractor')
+    def test_too_many_requests_error_handled_gracefully(self, assign, handle):
+        mock_reddit_extractor = MagicMock()
+        mock_extractor_class = MagicMock()
+        mock_extractor_class.return_value = mock_reddit_extractor
+        mock_reddit_extractor.extract_content.side_effect = prawcore.exceptions.TooManyRequests(MagicMock())
+        assign.return_value = mock_extractor_class
+
+        self.handler.extract_link(mock_objects.get_post().url)
+
+        mock_reddit_extractor.extract_content.assert_called()
+        handle.assert_called()
