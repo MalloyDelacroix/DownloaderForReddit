@@ -2,6 +2,7 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 import logging
 from datetime import datetime, timedelta
+import prawcore
 
 from DownloaderForReddit.core.download_runner import DownloadRunner
 from DownloaderForReddit.database.database_handler import DatabaseHandler
@@ -227,28 +228,6 @@ class TestDownloadRunner(TestCase):
             self.assertGreater(sub.created, user.absolute_date_limit.timestamp())
             self.assertNotEqual(sub.subreddit, forbidden_subreddit)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @patch(f'{DL}.get_raw_submissions')
     def test_get_submissions_with_old_pinned_posts(self, get_raw_submissions, reddit_utils):
         user = get_user(absolute_date_limit=self.now - timedelta(days=10))
@@ -354,3 +333,18 @@ class TestDownloadRunner(TestCase):
             if sub.pinned:
                 pinned += 1
         self.assertEqual(2, pinned)
+
+    @patch(f'{DL}.get_raw_submissions')
+    def test_too_many_requests_exception_is_properly_handled(self, get_raw_submissions, reddit_utils):
+        user = get_user()
+        mock_submissions = []
+        for x in range(4):
+            mock_submissions.append(MockPrawSubmission(created=self.now - timedelta(days=x)))
+        get_raw_submissions.side_effect = prawcore.exceptions.TooManyRequests(MagicMock())
+
+        download_runner = DownloadRunner()
+        submissions = download_runner.get_submissions(None, user)
+
+        get_raw_submissions.assert_called()
+        self.assertEqual(0, len(submissions))
+
