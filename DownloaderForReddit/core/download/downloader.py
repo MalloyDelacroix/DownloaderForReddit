@@ -2,6 +2,7 @@ import hashlib
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import requests
+from sqlalchemy.orm import Session
 
 from DownloaderForReddit.core.runner import Runner, verify_run
 from .multipart_downloader import MultipartDownloader
@@ -127,13 +128,22 @@ class Downloader(Runner):
             return {"Referer": "https://www.erome.com/"}
         return HEADERS.get(content.id, None)
 
-    def finish_download(self, content: Content):
+    def finish_download(self, content: Content, session: Session) -> None:
         """
-        Wraps up loose ends from the download process.  Takes care of updating the user about the download status,
-        setting the date modified for the file, and saving the content changes to the database.
-        :param content: The content item that has been downloaded and needs to be finished.
+        Finalizes the download process for a given content item. The method updates the
+        content's status, manages duplicate detection, sets file modification times,
+        and adjusts the download count. It also provides optional debugging messages
+        indicating the download's result. If the download process was interrupted by
+        a hard stop, it handles the error and logs it accordingly.
+
+        :param content: An object representing the content being downloaded.
+        :param session: The session context under which the download is processed.
+        :return: None
         """
         if not self.hard_stop:
+            if self.is_duplicate_hash(session, content.md5):
+                self.handle_duplicate_content(content)
+                return
             if self.settings_manager.match_file_modified_to_post_date:
                 system_util.set_file_modify_time(content.get_full_file_path(), content.post.date_posted.timestamp())
             content.set_downloaded(self.download_session_id)
@@ -146,6 +156,34 @@ class Downloader(Runner):
             message = 'Download was stopped before finished'
             content.set_download_error(Error.DOWNLOAD_STOPPED, message)
             Message.send_download_error(f'{message}. File at path: "{content.get_full_file_path()}" may be corrupted')
+
+    def is_duplicate_hash(self, session: Session, md5: str) -> bool:
+        """
+        Checks if a given MD5 hash already exists in the database indicating a duplicate download.
+
+        :param session: A SQLAlchemy session object used to query the database.
+        :param md5: A string representing the MD5 hash to check against the
+            database.
+        :return: A boolean value indicating whether the MD5 hash exists
+            (True) or not (False).
+        """
+        return session.query(session.query(Content).filter(Content.md5 == md5).exists()).scalar()
+
+    def handle_duplicate_content(self, content: Content) -> None:
+        """
+        Handles duplicate content.
+
+        Deletes the file associated with the given content and sends a debug
+        message indicating that the duplicate file was not saved along with
+        the content's title and URL.
+
+        :param content: The Content instance that represents the duplicate
+            content which was detected.
+        """
+        file_path = content.get_full_file_path()
+        system_util.delete_file(file_path)
+        message = f'Duplicate file not saved: {content.title}\n{content.url}'
+        Message.send_debug(message)
 
     def finish_multi_part_download(self, content: Content, multipart_downloader: MultipartDownloader):
         parts = multipart_downloader.part_count
