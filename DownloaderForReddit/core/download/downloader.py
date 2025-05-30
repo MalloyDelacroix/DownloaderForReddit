@@ -1,6 +1,7 @@
-import requests
+import hashlib
 import logging
 from concurrent.futures import ThreadPoolExecutor
+import requests
 
 from DownloaderForReddit.core.runner import Runner, verify_run
 from .multipart_downloader import MultipartDownloader
@@ -95,12 +96,15 @@ class Downloader(Runner):
                         multi_part_downloader.run(content, file_path, file_size)
                         self.finish_multi_part_download(content, multi_part_downloader)
                     else:
+                        md5 = hashlib.md5()
                         with open(file_path, 'wb') as file:
                             for chunk in response.iter_content(1024 * 1024):
                                 if not self.hard_stop:
+                                    md5.update(chunk)
                                     file.write(chunk)
                                 else:
                                     break
+                        content.md5 = md5.hexdigest()
                         self.finish_download(content)
                 else:
                     self.handle_unsuccessful_response(content, response.status_code)
