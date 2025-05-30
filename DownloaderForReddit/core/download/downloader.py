@@ -180,9 +180,12 @@ class Downloader(Runner):
         :param content: The Content instance that represents the duplicate
             content which was detected.
         """
-        file_path = content.get_full_file_path()
-        system_util.delete_file(file_path)
-        message = f'Duplicate file not saved: {content.title}\n{content.url}'
+        if self.settings_manager.remove_duplicates_on_download:
+            file_path = content.get_full_file_path()
+            system_util.delete_file(file_path)
+            message = f'Duplicate file not saved: {content.title}\n{content.url}'
+        else:
+            message = f'Duplicate file saved: {content.title}'
         Message.send_debug(message)
 
     def finish_multi_part_download(self, content: Content, multipart_downloader: MultipartDownloader):
