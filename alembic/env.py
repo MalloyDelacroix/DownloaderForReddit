@@ -3,10 +3,9 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
+sys.path = ['', '..'] + sys.path[1:]
 from DownloaderForReddit.database.database_handler import DatabaseHandler
 from DownloaderForReddit.utils import injector
-
-sys.path = ['', '..'] + sys.path[1:]
 
 
 # this is the Alembic Config object, which provides
