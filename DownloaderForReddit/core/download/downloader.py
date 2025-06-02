@@ -105,8 +105,8 @@ class Downloader(Runner):
                                     file.write(chunk)
                                 else:
                                     break
-                        content.md5 = md5.hexdigest()
-                        self.finish_download(content)
+                        content.md5_hash = md5.hexdigest()
+                        self.finish_download(content, session)
                 else:
                     self.handle_unsuccessful_response(content, response.status_code)
         except ConnectionError:
@@ -141,7 +141,7 @@ class Downloader(Runner):
         :return: None
         """
         if not self.hard_stop:
-            if self.is_duplicate_hash(session, content.md5):
+            if self.is_duplicate_hash(content.md5_hash):
                 self.handle_duplicate_content(content)
                 return
             if self.settings_manager.match_file_modified_to_post_date:
@@ -157,17 +157,18 @@ class Downloader(Runner):
             content.set_download_error(Error.DOWNLOAD_STOPPED, message)
             Message.send_download_error(f'{message}. File at path: "{content.get_full_file_path()}" may be corrupted')
 
-    def is_duplicate_hash(self, session: Session, md5: str) -> bool:
+    def is_duplicate_hash(self, md5: str) -> bool:
         """
         Checks if a given MD5 hash already exists in the database indicating a duplicate download.
 
-        :param session: A SQLAlchemy session object used to query the database.
         :param md5: A string representing the MD5 hash to check against the
             database.
         :return: A boolean value indicating whether the MD5 hash exists
             (True) or not (False).
         """
-        return session.query(session.query(Content).filter(Content.md5 == md5).exists()).scalar()
+        with self.db.get_scoped_session() as session:
+            dup = session.query(Content).filter_by(md5_hash=md5).first()
+            return dup is not None
 
     def handle_duplicate_content(self, content: Content) -> None:
         """
@@ -183,9 +184,11 @@ class Downloader(Runner):
         if self.settings_manager.remove_duplicates_on_download:
             file_path = content.get_full_file_path()
             system_util.delete_file(file_path)
-            message = f'Duplicate file not saved: {content.title}\n{content.url}'
+            message = f'Duplicate file deleted: {content.title}\n{content.url}'
         else:
+            content.set_downloaded(self.download_session_id)
             message = f'Duplicate file saved: {content.title}'
+            self.download_count += 1
         Message.send_debug(message)
 
     def finish_multi_part_download(self, content: Content, multipart_downloader: MultipartDownloader):
