@@ -725,7 +725,7 @@ class Content(BaseModel):
     extension = Column(String(collation='NOCASE'))
     url = Column(String(collation='NOCASE'))
     directory_path = Column(String(collation='NOCASE'), nullable=True)
-    md5_hash = Column(String(collation='NOCASE'), nullable=True)
+    md5_hash = Column(String(), nullable=True, index=True)
 
     downloaded = Column(Boolean, default=False)
     download_date = Column(DateTime, nullable=True)
