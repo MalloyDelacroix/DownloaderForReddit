@@ -106,7 +106,7 @@ class Downloader(Runner):
                                 else:
                                     break
                         content.md5_hash = md5.hexdigest()
-                        self.finish_download(content, session)
+                        self.finish_download(content)
                 else:
                     self.handle_unsuccessful_response(content, response.status_code)
         except ConnectionError:
@@ -128,7 +128,7 @@ class Downloader(Runner):
             return {"Referer": "https://www.erome.com/"}
         return HEADERS.get(content.id, None)
 
-    def finish_download(self, content: Content, session: Session) -> None:
+    def finish_download(self, content: Content) -> None:
         """
         Finalizes the download process for a given content item. The method updates the
         content's status, manages duplicate detection, sets file modification times,
@@ -137,7 +137,6 @@ class Downloader(Runner):
         a hard stop, it handles the error and logs it accordingly.
 
         :param content: An object representing the content being downloaded.
-        :param session: The session context under which the download is processed.
         :return: None
         """
         if not self.hard_stop:
