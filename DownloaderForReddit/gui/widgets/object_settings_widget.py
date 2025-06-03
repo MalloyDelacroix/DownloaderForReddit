@@ -141,6 +141,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.custom_date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
         self.update_custom_date_limit_radio.toggled.connect(lambda x: self.set_object_value('update_date_limit', x))
         self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
+        self.setup_checkbox(self.avoid_hashed_duplicates_checkbox, 'avoid_hash_duplicates')
         self.setup_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.setup_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
         self.self_post_file_format_combo.currentIndexChanged.connect(
@@ -287,6 +288,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.score_limit_operator_combo, 'post_score_limit_operator')
         self.sync_date_limits()
         self.sync_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
+        self.sync_checkbox(self.avoid_hashed_duplicates_checkbox, 'avoid_hash_duplicates')
         self.sync_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.sync_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
         self.sync_combo(self.self_post_file_format_combo, 'self_post_file_format')

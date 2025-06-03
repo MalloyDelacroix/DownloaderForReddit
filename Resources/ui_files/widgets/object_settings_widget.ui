@@ -135,127 +135,133 @@
         </widget>
        </item>
        <item row="11" column="0">
-        <widget class="QLabel" name="label_12">
+        <widget class="QLabel" name="avoid_duplicate_urls_label">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The URL of each downloaded file is stored. If an extracted file has a matching URL in the database, it won’t be downloaded.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>Avoid Duplicates:</string>
+          <string>Avoid Duplicates URLs:</string>
          </property>
         </widget>
        </item>
        <item row="11" column="1">
         <widget class="QCheckBox" name="avoid_duplicates_checkbox">
-         <property name="text">
-          <string/>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The URL of each downloaded file is stored. If an extracted file has a matching URL in the database, it won’t be downloaded.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="label_30">
-         <property name="text">
-          <string>Extract Self Post Content:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="extract_self_post_content_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
        <item row="13" column="0">
-        <widget class="QLabel" name="label_15">
+        <widget class="QLabel" name="label_30">
          <property name="text">
-          <string>Download Self Post Text:</string>
+          <string>Extract Self Post Content:</string>
          </property>
         </widget>
        </item>
        <item row="13" column="1">
-        <widget class="QCheckBox" name="download_self_post_text_checkbox">
+        <widget class="QCheckBox" name="extract_self_post_content_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
        <item row="14" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Download Self Post Text:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QCheckBox" name="download_self_post_text_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
         <widget class="QLabel" name="label_31">
          <property name="text">
           <string>Self Post File Format:</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="15" column="1">
         <widget class="QComboBox" name="self_post_file_format_combo"/>
        </item>
-       <item row="15" column="0">
+       <item row="16" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
           <string>Download Videos:</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="download_videos_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="16" column="0">
+       <item row="17" column="0">
         <widget class="QLabel" name="label_14">
          <property name="text">
           <string>Download Images:</string>
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="17" column="1">
         <widget class="QCheckBox" name="download_images_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="17" column="0">
+       <item row="18" column="0">
         <widget class="QLabel" name="label_29">
          <property name="text">
           <string>Download Gifs:</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="1">
+       <item row="18" column="1">
         <widget class="QCheckBox" name="download_gifs_checkbox">
          <property name="text">
           <string/>
          </property>
         </widget>
        </item>
-       <item row="18" column="0">
+       <item row="19" column="0">
         <widget class="QLabel" name="label_28">
          <property name="text">
           <string>NSFW Filter:</string>
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="19" column="1">
         <widget class="QComboBox" name="nsfw_filter_combo"/>
        </item>
-       <item row="19" column="0">
+       <item row="20" column="0">
         <widget class="QLabel" name="label_16">
          <property name="text">
           <string>Sort Posts By:</string>
          </property>
         </widget>
        </item>
-       <item row="19" column="1">
+       <item row="20" column="1">
         <widget class="QComboBox" name="post_sort_combo"/>
        </item>
-       <item row="22" column="0">
+       <item row="23" column="0">
         <widget class="QLabel" name="post_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
          </property>
         </widget>
        </item>
-       <item row="22" column="1">
+       <item row="23" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="spacing">
           <number>2</number>
@@ -279,14 +285,14 @@
          </item>
         </layout>
        </item>
-       <item row="23" column="0">
+       <item row="24" column="0">
         <widget class="QLabel" name="post_save_structure_label">
          <property name="text">
           <string>Save Path Structure:</string>
          </property>
         </widget>
        </item>
-       <item row="23" column="1">
+       <item row="24" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <property name="spacing">
           <number>2</number>
@@ -310,7 +316,7 @@
          </item>
         </layout>
        </item>
-       <item row="25" column="0" colspan="2">
+       <item row="26" column="0" colspan="2">
         <widget class="QLabel" name="post_path_example_label">
          <property name="text">
           <string>Post path example</string>
@@ -399,7 +405,7 @@
          </item>
         </layout>
        </item>
-       <item row="24" column="0">
+       <item row="25" column="0">
         <widget class="QLabel" name="label_5">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows you to set a custom path at which content from posts will be saved.  If left blank, the global setting for either user or subreddit will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -409,7 +415,7 @@
          </property>
         </widget>
        </item>
-       <item row="24" column="1">
+       <item row="25" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <property name="spacing">
           <number>2</number>
@@ -432,6 +438,26 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="12" column="0">
+        <widget class="QLabel" name="avoid_hash_duplicates_label">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;An MD5 hash is generated for each downloaded file. Files with matching hashes already in the database are deduplicated based on your duplicate handling settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Avoid Hashed Duplicates:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="avoid_hashed_duplicates_checkbox">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;An MD5 hash is generated for each downloaded file. Files with matching hashes already in the database are deduplicated based on your duplicate handling settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
