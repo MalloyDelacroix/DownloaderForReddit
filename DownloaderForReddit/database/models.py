@@ -87,7 +87,8 @@ class RedditObjectList(BaseModel):
     post_score_limit = Column(Integer, default=1000)
     post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
     post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
-    avoid_duplicates = Column(Boolean, default=True)
+    avoid_duplicates = Column(Boolean, default=True)  # Url duplicates
+    avoid_hash_duplicates = Column(Boolean, default=False)  # MD5 hashed duplicates
     extract_self_post_links = Column(Boolean, default=False)
     download_self_post_text = Column(Boolean, default=False)
     self_post_file_format = Column(String, default='txt')
@@ -187,6 +188,7 @@ class RedditObjectList(BaseModel):
             'post_score_limit_operator': self.post_score_limit_operator,
             'post_sort_method': self.post_sort_method,
             'avoid_duplicates': self.avoid_duplicates,
+            'avoid_hash_duplicates': self.avoid_hash_duplicates,
             'extract_self_post_links': self.extract_self_post_links,
             'download_self_post_text': self.download_self_post_text,
             'self_post_file_format': self.self_post_file_format,
@@ -230,7 +232,8 @@ class RedditObject(BaseModel):
     post_score_limit = Column(Integer, default=1000)
     post_score_limit_operator = Column(Enum(LimitOperator), default=LimitOperator.NO_LIMIT)
     post_sort_method = Column(Enum(PostSortMethod), default=PostSortMethod.NEW)
-    avoid_duplicates = Column(Boolean, default=True)
+    avoid_duplicates = Column(Boolean, default=True)  # Url duplicates
+    avoid_hash_duplicates = Column(Boolean, default=False)  # MD5 hashed duplicates
     extract_self_post_links = Column(Boolean, default=False)
     download_self_post_text = Column(Boolean, default=False)
     self_post_file_format = Column(String, default='txt')

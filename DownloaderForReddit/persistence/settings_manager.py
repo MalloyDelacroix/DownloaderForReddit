@@ -67,7 +67,8 @@ class SettingsManager:
             'post_limit': 25,
             'post_score_limit_operator': LimitOperator.NO_LIMIT,
             'post_score_limit': 1000,
-            'avoid_duplicates': True,
+            'avoid_duplicates': True,  # Url duplicates
+            'avoid_hash_duplicates': False,  #MD5 hashed duplicates
             'extract_self_post_links': False,
             'download_self_post_text': False,
             'self_post_file_format': 'txt',
@@ -98,7 +99,8 @@ class SettingsManager:
             'post_limit': 25,
             'post_score_limit_operator': LimitOperator.NO_LIMIT,
             'post_score_limit': 1000,
-            'avoid_duplicates': True,
+            'avoid_duplicates': True,  # Url duplicates
+            'avoid_hash_duplicates': False,  # MD5 hashed duplicates
             'extract_self_post_links': False,
             'download_self_post_text': False,
             'self_post_file_format': 'txt',
