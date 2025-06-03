@@ -28,6 +28,7 @@ class DownloadSettingsWidget(AbstractSettingsWidget, Ui_DownloadSettingsWidget):
         self.list_combo_box.currentIndexChanged.connect(
             lambda idx: self.list_settings_widget.set_objects([self.lists[idx]])
         )
+        self.list_settings_widget.set_objects([self.lists[0]])
         self.cascade_changes_checkbox.setChecked(self.settings.cascade_list_changes)
 
     @property
