@@ -131,6 +131,8 @@ class SettingsManager:
         self.subreddit_download_defaults = self.get('download_defaults', 'subreddit_download_defaults',
                                                     default_subreddit_download_dict,
                                                     converter=self.convert_download_dict)
+        self.ensure_dict_defaults(self.user_download_defaults, default_user_download_dict)
+        self.ensure_dict_defaults(self.subreddit_download_defaults, default_subreddit_download_dict)
         # endregion
 
         # region Output
@@ -501,3 +503,23 @@ class SettingsManager:
                 if 'value' not in filter_dict:
                     filter_dict['value'] = None
         return quick_filters
+
+    def ensure_dict_defaults(self, loaded_dict: dict, default_dict: dict) -> None:
+        """
+        Ensures that a dictionary has all keys and values from a default dictionary.
+        For keys present in the default dictionary but missing in the first dictionary,
+        adds the corresponding key-value pair from the default dictionary to the first.
+        If the value associated with a key is also a dictionary, recursively applies the
+        same process to nested dictionaries.
+
+        :param loaded_dict: The dictionary to update. Missing keys will be filled in from
+            the default_dict.
+        :param default_dict: The dictionary containing default key-value pairs to use
+            when they are absent in the loaded_dict.
+        :return: None; operation occurs in-place modifying loaded_dict.
+        """
+        for key, value in default_dict.items():
+            if key not in loaded_dict:
+                loaded_dict[key] = value
+            elif type(value) == dict:
+                self.ensure_dict_defaults(loaded_dict[key], value)
