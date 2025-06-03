@@ -39,6 +39,7 @@ class SettingsManager:
         self.multi_part_threshold = self.get('core', 'multi_part_threshold', 3 * 1024 * 1024)
         self.multi_part_chunk_size = self.get('core', 'multi_part_chunk_size', 1024 * 1024)
         self.multi_part_thread_count = self.get('core', 'multi_part_thread_count', 4)
+        self.hash_duplicates = self.get('core', 'hash_duplicates', True)
         self.remove_duplicates_on_download = self.get('core', 'remove_duplicates_on_download', False)
         self.download_on_add = self.get('core', 'download_on_add', False)
         self.finish_incomplete_extractions_at_session_start = \
