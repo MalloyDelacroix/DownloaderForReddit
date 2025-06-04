@@ -268,7 +268,22 @@ class Downloader(Runner):
             content.set_download_error(Error.MULTIPART_FAILURE,
                                        f'{failed_percent}% of multi-part download parts failed to download')
         else:
+            if self.should_use_hash(content):
+                self.hash_complete_multi_part_file(content)
             self.finish_download(content)
+
+    def hash_complete_multi_part_file(self, content: Content) -> None:
+        """
+        Calculates and sets the MD5 hash for the full multi-part file content provided. This function updates the given
+        content object with the computed hash by processing the entire file in chunks to handle large files efficiently.
+
+        :param content: The content object containing metadata and file information that needs to be processed.
+        """
+        md5 = hashlib.md5()
+        with open(content.get_full_file_path(), 'rb') as file:
+            for chunk in iter(lambda: file.read(1024 * 1024), b''):
+                md5.update(chunk)
+        content.md5_hash = md5.hexdigest()
 
     def handle_unsuccessful_response(self, content: Content, status_code):
         message = 'Failed Download: Unsuccessful response from server'
