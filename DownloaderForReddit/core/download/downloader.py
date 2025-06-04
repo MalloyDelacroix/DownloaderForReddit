@@ -141,7 +141,6 @@ class Downloader(Runner):
         return sig_ro.avoid_hash_duplicates
 
     def download_with_hash(self, content: Content, response: requests.Response) -> None:
-        print(f'Downloading WITH hash: {content.title}')
         file_path = content.get_full_file_path()
         md5 = hashlib.md5()
         with open(file_path, 'wb') as file:
@@ -154,7 +153,6 @@ class Downloader(Runner):
         content.md5_hash = md5.hexdigest()
 
     def download_without_hash(self, content: Content, response: requests.Response) -> None:
-        print(f'Downloading WITHOUT hash: {content.title}')
         file_path = content.get_full_file_path()
         with open(file_path, 'wb') as file:
             for chunk in response.iter_content(1024 * 1024):
