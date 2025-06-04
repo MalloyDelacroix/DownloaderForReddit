@@ -98,12 +98,12 @@ class TestDownloader(TestCase):
 
     def test_should_use_hash_true(self):
         content = MagicMock()
-        content.post.significant_reddit_object.avoid_hash_duplicates = True
+        content.post.significant_reddit_object.hash_duplicates = True
         self.assertTrue(self.downloader.should_use_hash(content))
 
     def test_should_use_hash_false(self):
         content = MagicMock()
-        content.post.significant_reddit_object.avoid_hash_duplicates = False
+        content.post.significant_reddit_object.hash_duplicates = False
         self.assertFalse(self.downloader.should_use_hash(content))
 
     def test_is_duplicate_hash_exists(self):

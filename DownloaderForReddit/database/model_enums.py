@@ -51,3 +51,10 @@ class CommentSortMethod(DisplayableEnum):
     CONTROVERSIAL = 4
     OLD = 5
     Q_AND_A = 6
+
+
+class DuplicateControlMethod(DisplayableEnum):
+
+    KEEP = 1
+    DELETE = 2
+    MOVE = 3

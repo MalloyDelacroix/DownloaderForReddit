@@ -138,7 +138,7 @@ class Downloader(Runner):
 
     def should_use_hash(self, content: Content) -> bool:
         sig_ro = content.post.significant_reddit_object
-        return sig_ro.avoid_hash_duplicates
+        return sig_ro.hash_duplicates
 
     def download_with_hash(self, content: Content, response: requests.Response) -> None:
         file_path = content.get_full_file_path()

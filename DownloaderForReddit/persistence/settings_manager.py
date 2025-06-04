@@ -39,8 +39,6 @@ class SettingsManager:
         self.multi_part_threshold = self.get('core', 'multi_part_threshold', 3 * 1024 * 1024)
         self.multi_part_chunk_size = self.get('core', 'multi_part_chunk_size', 1024 * 1024)
         self.multi_part_thread_count = self.get('core', 'multi_part_thread_count', 4)
-        self.hash_duplicates = self.get('core', 'hash_duplicates', True)
-        self.remove_duplicates_on_download = self.get('core', 'remove_duplicates_on_download', False)
         self.download_on_add = self.get('core', 'download_on_add', False)
         self.finish_incomplete_extractions_at_session_start = \
             self.get('core', 'finish_incomplete_extractions_at_session_start', False)
@@ -68,7 +66,10 @@ class SettingsManager:
             'post_score_limit_operator': LimitOperator.NO_LIMIT,
             'post_score_limit': 1000,
             'avoid_duplicates': True,  # Url duplicates
-            'avoid_hash_duplicates': False,  #MD5 hashed duplicates
+            'hash_duplicates': False,  #MD5 hashed duplicates
+            'duplicate_control_method': DuplicateControlMethod.DELETE,
+            'duplicate_naming_method': '%[title]',
+            'duplicate_save_structure': '%[author_name]',
             'extract_self_post_links': False,
             'download_self_post_text': False,
             'self_post_file_format': 'txt',
@@ -100,7 +101,10 @@ class SettingsManager:
             'post_score_limit_operator': LimitOperator.NO_LIMIT,
             'post_score_limit': 1000,
             'avoid_duplicates': True,  # Url duplicates
-            'avoid_hash_duplicates': False,  # MD5 hashed duplicates
+            'hash_duplicates': False,  # MD5 hashed duplicates
+            'duplicate_control_method': DuplicateControlMethod.DELETE,
+            'duplicate_naming_method': '%[title]',
+            'duplicate_save_structure': '%[subreddit_name]',
             'extract_self_post_links': False,
             'download_self_post_text': False,
             'self_post_file_format': 'txt',
