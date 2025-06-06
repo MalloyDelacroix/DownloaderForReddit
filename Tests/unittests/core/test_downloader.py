@@ -16,6 +16,12 @@ class TestDownloader(TestCase):
         cls.engine = create_engine('sqlite:///:memory:')
         BaseModel.metadata.create_all(cls.engine)  # Create tables
         cls.Session = sessionmaker(bind=cls.engine)
+        cls._original_ensure_content_download_path = general_utils.ensure_content_download_path
+        general_utils.ensure_content_download_path = MagicMock(return_value='path/to/file')
+
+    @classmethod
+    def tearDownClass(cls):
+        general_utils.ensure_content_download_path = cls._original_ensure_content_download_path
 
     def setUp(self):
         self.session = self.Session()
@@ -30,7 +36,6 @@ class TestDownloader(TestCase):
         self.downloader.db = MagicMock()  # Mock db interface
         self.downloader.db.get_scoped_session.return_value.__enter__.return_value = self.session
         self.downloader.check_headers = MagicMock(return_value={})
-        general_utils.check_file_path = MagicMock(return_value='path/to/file')
 
         # Insert some test data
         self.duplicate_hash = 'abcd1234'
@@ -210,6 +215,7 @@ class TestDownloader(TestCase):
         self.downloader.duplicate_count = 0
         self.downloader.settings_manager.remove_duplicates_on_download = False
         self.downloader.get_downloaded_output_data = MagicMock(return_value="Sample Output Data")
+        self.downloader.handle_date_modified = MagicMock()
 
         self.downloader.handle_duplicate_content(content)
 
