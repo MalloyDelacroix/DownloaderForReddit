@@ -70,7 +70,7 @@ def merge_videos():
                     video_content = session.query(Content).get(ms.video_id)
                     audio_content = session.query(Content).get(ms.audio_id)
                     merged_content = create_merged_content(video_content)
-                    merged_content.download_title = general_utils.check_file_path(merged_content)
+                    merged_content.download_title = general_utils.ensure_content_download_path(merged_content)
 
                     cmd = 'ffmpeg -i "%s" -i "%s" -c:v copy -c:a aac -strict experimental "%s" -y' % \
                           (video_content.get_full_file_path(), audio_content.get_full_file_path(),

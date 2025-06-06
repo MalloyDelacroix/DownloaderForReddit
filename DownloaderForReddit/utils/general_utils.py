@@ -60,7 +60,7 @@ def open_post_in_browser(post):
         print(e)
 
 
-def check_file_path(content):
+def ensure_content_download_path(content):
     """
     Checks the content's full file path to make sure there are no naming conflicts.  If there are, a number is
     incremented and appended to the contents title until a naming conflict no longer exists.
@@ -78,7 +78,6 @@ def check_file_path(content):
         download_title = f'{clean_title}({unique_count})'
         path = content.get_full_file_path(download_title)
         unique_count += 1
-    # content.download_title = download_title
     return download_title
 
 

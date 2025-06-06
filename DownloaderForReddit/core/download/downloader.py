@@ -89,7 +89,7 @@ class Downloader(Runner):
         try:
             with self.db.get_scoped_session() as session:
                 content = session.query(Content).get(content_id)
-                content.download_title = general_utils.check_file_path(content)
+                content.download_title = general_utils.ensure_content_download_path(content)
                 response = requests.get(content.url, stream=True, timeout=10, headers=self.check_headers(content))
                 if response.status_code == 200:
                     file_size = int(response.headers['Content-Length'])
