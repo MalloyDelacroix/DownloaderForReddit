@@ -3,7 +3,7 @@ import os
 from DownloaderForReddit.database import Content
 from DownloaderForReddit.database.model_enums import DuplicateControlMethod
 from DownloaderForReddit.messaging.message import Message
-from DownloaderForReddit.utils import injector, system_util
+from DownloaderForReddit.utils import injector, system_util, general_utils
 from DownloaderForReddit.utils.filename_generator import FilenameGenerator
 
 
@@ -100,11 +100,12 @@ class DuplicateHandler:
 
         :param self: The instance of the class that contains the method.
         """
+        previous_file_path = self.content.get_full_file_path()
         filename_generator = FilenameGenerator(self.content, is_duplicate=True)
         base_path = filename_generator.make_dir_path()
         title = filename_generator.make_title()
         new_path = self.combine_file_path(base_path, title, self.content.extension)
-        previous_file_path = self.content.get_full_file_path()
+        new_path = general_utils.ensure_file_path(new_path)
         os.rename(previous_file_path, new_path)
         Message.send_debug(
             f'Duplicate renamed: {self.content.title}\n{self.content.url}\n{self.sig_ro.name}\n{previous_file_path}'

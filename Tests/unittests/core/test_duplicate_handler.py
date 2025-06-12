@@ -156,13 +156,15 @@ class TestDuplicateHandlerHandleDuplicate(TestCase):
             f'Duplicate deleted: Test Title\nhttp://example.com/file\nTest User\npath/to/file/Test Title.mp4'
         )
 
+    @patch('DownloaderForReddit.utils.general_utils.ensure_file_path')
     @patch('DownloaderForReddit.core.duplicate_handler.FilenameGenerator')
     @patch('DownloaderForReddit.core.duplicate_handler.os.rename')
-    def test_rename_duplicate(self, mock_rename, mock_filename_generator_class):
+    def test_rename_duplicate(self, mock_rename, mock_filename_generator_class, mock_ensure_file_path):
         mock_filename_generator = MagicMock()
         mock_filename_generator_class.return_value = mock_filename_generator
         mock_filename_generator.make_dir_path.return_value = 'base/path'
         mock_filename_generator.make_title.return_value = 'mock title'
+        mock_ensure_file_path.side_effect = lambda x: x  # Return the input value unchanged
 
         user = MagicMock(spec=User)
         user.name = 'Test User'
@@ -181,3 +183,4 @@ class TestDuplicateHandlerHandleDuplicate(TestCase):
             'path/to/file/Test Title.mp4',
             'base/path/mock title.mp4'
         )
+        mock_ensure_file_path.assert_called_once_with('base/path/mock title.mp4')
