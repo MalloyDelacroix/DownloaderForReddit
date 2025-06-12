@@ -65,7 +65,7 @@ class TestDownloader(TestCase):
         self.downloader.download_with_hash = MagicMock()
         self.downloader.download_without_hash = MagicMock()
         self.downloader.finish_download = MagicMock()
-        self.downloader.is_duplicate_hash = MagicMock()
+        self.downloader.is_duplicate_content = MagicMock()
         self.downloader.handle_duplicate_content = MagicMock()
         self.downloader.handle_date_modified = MagicMock()
         self.downloader.output_downloaded_message = MagicMock()
@@ -111,21 +111,6 @@ class TestDownloader(TestCase):
         content.post.significant_reddit_object.hash_duplicates = False
         self.assertFalse(self.downloader.should_use_hash(content))
 
-    def test_is_duplicate_hash_exists(self):
-        # Test when a hash exists in the database
-        result = self.downloader.is_duplicate_hash(self.duplicate_hash)
-        self.assertTrue(result)
-
-    def test_is_duplicate_hash_not_exists(self):
-        # Test when a hash does not exist in the database
-        result = self.downloader.is_duplicate_hash('nonexistent_hash')
-        self.assertFalse(result)
-
-    def test_is_duplicate_hash_empty(self):
-        # Test behavior when an empty string is provided as the hash
-        result = self.downloader.is_duplicate_hash('')
-        self.assertFalse(result)
-
     def test_finish_download_non_hashed_successful(self):
         self.content1.md5_hash = None
         self.downloader.handle_duplicate_content = MagicMock()
@@ -157,7 +142,7 @@ class TestDownloader(TestCase):
 
     def test_finish_download_hashed_non_duplicate_successful(self):
         self.content1.md5_hash = 'a0uqlka0f9'
-        self.downloader.is_duplicate_hash = MagicMock(return_value=False)
+        self.downloader.is_duplicate_content = MagicMock(return_value=False)
         self.downloader.handle_duplicate_content = MagicMock()
         self.downloader.handle_date_modified = MagicMock()
         self.downloader.output_downloaded_message = MagicMock()
@@ -172,7 +157,7 @@ class TestDownloader(TestCase):
 
     def test_finish_download_hashed_duplicate_successful(self):
         self.content1.md5_hash = 'a0uqlka0f9'
-        self.downloader.is_duplicate_hash = MagicMock(return_value=True)
+        self.downloader.is_duplicate_content = MagicMock(return_value=True)
         self.downloader.handle_duplicate_content = MagicMock()
         self.downloader.handle_date_modified = MagicMock()
         self.downloader.output_downloaded_message = MagicMock()
@@ -184,47 +169,6 @@ class TestDownloader(TestCase):
         self.downloader.handle_date_modified.assert_not_called()
         self.downloader.output_downloaded_message.assert_not_called()
         self.downloader.handle_download_stopped.assert_not_called()
-
-    @patch('DownloaderForReddit.utils.system_util.delete_file')
-    @patch('DownloaderForReddit.messaging.message.Message.send_debug')
-    def test_handle_duplicate_content_remove(self, mock_send_debug, mock_delete_file):
-        content = MagicMock(spec=Content)
-        content.get_full_file_path.return_value = '/path/to/file'
-        content.url = 'http://example.com/file'
-
-        self.downloader.download_count = 0
-        self.downloader.duplicate_count = 0
-        self.mock_settings_manager.remove_duplicates_on_download = True
-        self.downloader.get_downloaded_output_data = MagicMock(return_value="Sample Output Data")
-
-        self.downloader.handle_duplicate_content(content)
-
-        mock_delete_file.assert_called_once_with('/path/to/file')
-        mock_send_debug.assert_called_once_with(
-            'Duplicate file deleted: Sample Output Data\nhttp://example.com/file'
-        )
-        self.assertEqual(self.downloader.duplicate_count, 1)
-        self.assertEqual(self.downloader.download_count, 0)
-
-    @patch('DownloaderForReddit.messaging.message.Message.send_debug')
-    def test_handle_duplicate_content_save(self, mock_send_debug):
-        content = MagicMock(spec=Content)
-        content.url = 'http://example.com/file'
-
-        self.downloader.download_count = 0
-        self.downloader.duplicate_count = 0
-        self.downloader.settings_manager.remove_duplicates_on_download = False
-        self.downloader.get_downloaded_output_data = MagicMock(return_value="Sample Output Data")
-        self.downloader.handle_date_modified = MagicMock()
-
-        self.downloader.handle_duplicate_content(content)
-
-        mock_send_debug.assert_called_once_with(
-            'Duplicate file saved: Sample Output Data'
-        )
-        content.set_downloaded.assert_called_once_with(self.downloader.download_session_id)
-        self.assertEqual(self.downloader.duplicate_count, 1)
-        self.assertEqual(self.downloader.download_count, 1)
 
     @patch('DownloaderForReddit.core.download.downloader.requests.get')
     def test_download_successful(self, mock_get):

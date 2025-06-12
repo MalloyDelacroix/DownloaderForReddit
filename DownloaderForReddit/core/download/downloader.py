@@ -10,6 +10,7 @@ from DownloaderForReddit.core.errors import Error
 from DownloaderForReddit.utils import injector, system_util, general_utils
 from DownloaderForReddit.database import Content
 from DownloaderForReddit.messaging.message import Message
+from ..duplicate_handler import DuplicateHandler
 
 
 class Downloader(Runner):
@@ -171,7 +172,7 @@ class Downloader(Runner):
         :param content: An object representing the content being downloaded.
         """
         if not self.hard_stop:
-            if content.md5_hash is not None and self.is_duplicate_hash(content.md5_hash):
+            if content.md5_hash is not None and self.is_duplicate_content(content):
                 self.handle_duplicate_content(content)
                 return
             self.handle_date_modified(content)
@@ -181,16 +182,14 @@ class Downloader(Runner):
         else:
             self.handle_download_stopped(content)
 
-    def is_duplicate_hash(self, md5: str) -> bool:
+    def is_duplicate_content(self, content: Content) -> bool:
         """
-        Checks if a given MD5 hash already exists in the database indicating a duplicate download.
+        Checks if the given content's MD5 hash already exists in the database indicating a duplicate download.
 
-        :param md5: A string representing the MD5 hash to check against the database.
+        :param content: A content object with an MD5 hash to check against the database.
         :return: A boolean value indicating whether the MD5 hash exists (True) or not (False).
         """
-        with self.db.get_scoped_session() as session:
-            dup = session.query(Content).filter_by(md5_hash=md5).first()
-            return dup is not None
+        return DuplicateHandler.is_duplicate(content)
 
     def handle_duplicate_content(self, content: Content) -> None:
         """
@@ -201,18 +200,11 @@ class Downloader(Runner):
 
         :param content: The Content instance that represents the duplicate content which was detected.
         """
-        output_data = self.get_downloaded_output_data(content)
-        if self.settings_manager.remove_duplicates_on_download:
-            file_path = content.get_full_file_path()
-            system_util.delete_file(file_path)
-            message = f'Duplicate file deleted: {output_data}\n{content.url}'
-        else:
-            self.handle_date_modified(content)
-            content.set_downloaded(self.download_session_id)
-            message = f'Duplicate file saved: {output_data}'
+        duplicate_handler = DuplicateHandler(content)
+        duplicate_handler.handle_duplicate()
+        if not duplicate_handler.duplicate_deleted:
             self.download_count += 1
         self.duplicate_count += 1
-        Message.send_debug(message)
 
     def handle_date_modified(self, content: Content) -> None:
         """
