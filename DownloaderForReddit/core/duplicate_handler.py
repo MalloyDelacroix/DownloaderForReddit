@@ -57,6 +57,7 @@ class DuplicateHandler:
         self.post = None
         self.sig_ro = None
         self.setup()
+        self.duplicate_deleted = False
 
     def setup(self) -> None:
         self.post = self.content.post
@@ -88,6 +89,7 @@ class DuplicateHandler:
         Message.send_debug(
             f'Duplicate deleted: {self.content.title}\n{self.content.url}\n{self.sig_ro.name}\n{file_path}'
         )
+        self.duplicate_deleted = True
 
     def rename_duplicate(self) -> None:
         """
