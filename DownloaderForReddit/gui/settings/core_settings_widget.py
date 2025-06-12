@@ -38,7 +38,6 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
 
         self.extraction_thread_count_spinbox.setValue(self.settings.extraction_thread_count)
         self.download_thread_count_spinbox.setValue(self.settings.download_thread_count)
-        self.remove_duplicates_checkbox.setChecked(self.settings.remove_duplicates_on_download)
         self.download_on_add_checkbox.setChecked(self.settings.download_on_add)
         self.finish_incomplete_extractions_checkbox.setChecked(
             self.settings.finish_incomplete_extractions_at_session_start)
@@ -89,7 +88,6 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
             int(self.multipart_threshold_spinbox.value() * self.threshold_size_combo.currentData(Qt.UserRole))
         self.settings.multi_part_threshold = threshold_size
         self.settings.multi_part_thread_count = self.multi_part_thread_count_spinbox.value()
-        self.settings.remove_duplicates_on_download = self.remove_duplicates_checkbox.isChecked()
         self.settings.download_on_add = self.download_on_add_checkbox.isChecked()
         for extractor, checkbox in self.extractor_map.items():
             self.settings.extractor_dict[extractor] = checkbox.isChecked()

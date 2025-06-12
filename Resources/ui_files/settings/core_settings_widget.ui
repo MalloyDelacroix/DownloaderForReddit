@@ -408,42 +408,6 @@
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="duplicate_controls_layout">
-        <property name="spacing">
-         <number>10</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="remove_duplicates_label">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;When checked, duplicate files will be deleted after they are downloaded.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Remove duplicates after download</string>
-          </property>
-          <property name="buddy">
-           <cstring>remove_duplicates_checkbox</cstring>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="remove_duplicates_checkbox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;When checked, duplicate files will be deleted after they are downloaded.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <property name="spacing">
          <number>10</number>
