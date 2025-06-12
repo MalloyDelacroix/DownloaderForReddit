@@ -216,15 +216,6 @@ class BaseExtractor:
             self.failed_extraction_message = self.content_filter.filter_message
         return passes
 
-    def get_save_path(self):
-        """
-        Returns the save path specified in the settings manager based on the type of the significant reddit object.
-        """
-        if self.significant_reddit_object.object_type == 'USER':
-            return self.settings_manager.user_save_directory
-        else:
-            return self.settings_manager.subreddit_save_directory
-
     def handle_failed_extract(self, error, message=None, log=True, log_exception=False, **kwargs):
         """
         Handles the logging and output of error messages encountered while extracting content and saves posts if
