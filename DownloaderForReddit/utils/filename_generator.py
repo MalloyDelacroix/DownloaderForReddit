@@ -104,9 +104,10 @@ class FilenameGenerator:
         """
         token_string = self._get_dir_token_string()
         sub_path = TokenParser.parse_tokens(self.title_obj, token_string)
+        clean_sub_path = system_util.clean_path(sub_path, ends_with_dir=True)
         base_path = self._get_base_path()
-        combined_path = system_util.join_path(base_path, sub_path)
-        return system_util.clean_path(combined_path, ends_with_dir=True)
+        combined_path = system_util.join_path(base_path, clean_sub_path)
+        return combined_path
 
     def _get_dir_token_string(self) -> str:
         """
