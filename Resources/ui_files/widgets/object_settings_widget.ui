@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>577</width>
+    <width>403</width>
     <height>1407</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
@@ -461,10 +467,10 @@
                </font>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;An MD5 hash is generated for each downloaded file. Files with matching hashes already in the database are deduplicated based on your duplicate handling settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, an MD5 hash is generated for each downloaded file and stored in the database. This helps detect duplicates, but may slightly slow down downloads. Some duplicate detection features will be unavailable if disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Avoid Hashed Duplicates:</string>
+               <string>Hash Content</string>
               </property>
              </widget>
             </item>
@@ -481,7 +487,7 @@
             <item row="1" column="1">
              <widget class="QCheckBox" name="hash_content_checkbox">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;An MD5 hash is generated for each downloaded file. Files with matching hashes already in the database are deduplicated based on your duplicate handling settings.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked, an MD5 hash will be generated for each downloaded file and stored in the database.  Some duplicate controls will not be available if this is disabled.  This may result in slightly slower downloads.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string/>
@@ -495,6 +501,9 @@
                 <weight>50</weight>
                 <bold>false</bold>
                </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dictates how duplicates are handled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Duplicate Control Method:</string>
