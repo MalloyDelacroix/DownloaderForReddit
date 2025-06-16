@@ -86,8 +86,8 @@ class DuplicateHandler:
         """
         file_path = self.content.get_full_file_path()
         system_util.delete_file(file_path)
-        Message.send_debug(
-            f'Duplicate deleted: {self.content.title}\n{self.content.url}\n{self.sig_ro.name}\n{file_path}'
+        Message.send_info(
+            f'Duplicate deleted: {self.content.user.name}: {self.content.title}'
         )
         self.duplicate_deleted = True
 
@@ -109,8 +109,9 @@ class DuplicateHandler:
         new_path = self.combine_file_path(base_path, title, self.content.extension)
         new_path = general_utils.ensure_file_path(new_path)
         os.rename(previous_file_path, new_path)
-        Message.send_debug(
-            f'Duplicate renamed: {self.content.title}\n{self.content.url}\n{self.sig_ro.name}\n{previous_file_path}'
+        Message.send_info(
+            f'Duplicate renamed: {self.content.user.name}: {self.content.title}\n'
+            f'{previous_file_path}\n{new_path}'
         )
 
     @staticmethod
