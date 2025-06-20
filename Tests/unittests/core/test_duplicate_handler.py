@@ -135,14 +135,15 @@ class TestDuplicateHandlerHandleDuplicate(TestCase):
         mock_rename_duplicate.assert_not_called()
         mock_delete_duplicate.assert_not_called()
 
-    @patch('DownloaderForReddit.messaging.message.Message.send_debug')
+    @patch('DownloaderForReddit.messaging.message.Message.send_info')
     @patch('DownloaderForReddit.utils.system_util.delete_file')
-    def test_delete_duplicate(self, mock_delete_file, mock_send_debug):
+    def test_delete_duplicate(self, mock_delete_file, mock_send_info):
         user = MagicMock(spec=User)
         user.name = 'Test User'
         post = MagicMock(spec=Post)
         post.significant_reddit_object = user
         content = MagicMock(spec=Content)
+        content.user = user
         content.post = post
         content.title = 'Test Title'
         content.url = 'http://example.com/file'
@@ -152,8 +153,8 @@ class TestDuplicateHandlerHandleDuplicate(TestCase):
         dup_handler.delete_duplicate()
 
         mock_delete_file.assert_called_once_with('path/to/file/Test Title.mp4')
-        mock_send_debug.assert_called_once_with(
-            f'Duplicate deleted: Test Title\nhttp://example.com/file\nTest User\npath/to/file/Test Title.mp4'
+        mock_send_info.assert_called_once_with(
+            f'Duplicate deleted: Test User: Test Title'
         )
 
     @patch('DownloaderForReddit.utils.general_utils.ensure_file_path')
