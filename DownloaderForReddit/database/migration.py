@@ -6,7 +6,9 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import desc
 from sqlalchemy.exc import OperationalError, IntegrityError
 
-from .models import Version
+from .database_handler import DatabaseHandler
+from .model_enums import DuplicateControlMethod
+from .models import Version, RedditObject, RedditObjectList
 from ..utils import injector, system_util
 from .. import version
 
@@ -40,6 +42,7 @@ class Migrator:
                             'new_version': version.__version__
                         }
                     )
+                    self.set_default_duplicate_handling()
             else:
                 self.session.add(Version(version=version.__version__))
                 self.session.commit()
@@ -135,3 +138,61 @@ class Migrator:
             self.write_version_to_db('70d9de393850')
             return True
         return False
+
+    def set_default_duplicate_handling(self):
+        """
+        A method that exists only to set the default values of duplicate controls that were added in v3.17.0.
+        """
+        default_duplicate_control = DefaultDuplicateControls(self.db)
+        default_duplicate_control.run()
+
+
+class DefaultDuplicateControls:
+
+    """
+    A class that exists for the sole purpose of setting the default values of duplicate controls after the update to
+    3.17.0.
+
+    This update established duplicate controls for each reddit object and reddit object list.  These values are stored
+    in the database for each of these objects.  Although default values are provided in the model class, existing
+    entries did not receive these updates automatically.  This class is used as a one-time fix for this issue.
+    """
+
+    def __init__(self, db: DatabaseHandler):
+        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
+        self.db = db
+        self.ro_count = 0
+        self.list_count = 0
+
+    def run(self):
+        with self.db.get_scoped_session() as session:
+            self.run_reddit_objects(session)
+            self.run_lists(session)
+        self.logger.info('Default duplicate controls updated.',
+                         extra={'updated_reddit_objects': self.ro_count, 'update_ro_lists': self.list_count})
+
+    def run_reddit_objects(self, session):
+        for ro in session.query(RedditObject).all():
+            self.set_values(ro)
+            self.ro_count += 1
+        session.commit()
+
+    def run_lists(self, session):
+        for ro_list in session.query(RedditObjectList).all():
+            self.set_values(ro_list)
+            self.list_count += 1
+        session.commit()
+
+    def set_values(self, obj):
+        hash_dup = getattr(obj, 'hash_duplicates', None)
+        duplicate_control = getattr(obj, 'duplicate_control_method', None)
+        naming_method = getattr(obj, 'duplicate_naming_method', None)
+        save_struct = getattr(obj, 'duplicate_save_structure', None)
+        if hash_dup is None:
+            setattr(obj, 'hash_duplicates', False)
+        if duplicate_control is None:
+            setattr(obj, 'duplicate_control_method', DuplicateControlMethod.DELETE)
+        if naming_method is None:
+            setattr(obj, 'duplicate_naming_method', '%[title]')
+        if save_struct is None:
+            setattr(obj, 'duplicate_save_structure', '%[author_name]/Duplicates')
