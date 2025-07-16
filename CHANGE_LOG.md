@@ -1,6 +1,15 @@
 # Change Log
 
 
+## v3.17.0
+
+### Minor Updates
+* Add duplicate handling
+  * There are now options available to handle duplicate files.  These settings can be found in user/subreddit settings 
+and user/subreddit list settings.  They are disabled by default.
+  * See [this wiki page for more information](https://github.com/MalloyDelacroix/DownloaderForReddit/wiki/De%E2%80%90Duplication).
+
+
 ## v3.16.1
 
 ### Bug Fixes
