@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>577</width>
+    <width>403</width>
     <height>1407</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
@@ -134,189 +140,13 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="0">
-        <widget class="QLabel" name="label_12">
+       <item row="7" column="0">
+        <widget class="QCheckBox" name="limit_date_checkbox">
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
          <property name="text">
-          <string>Avoid Duplicates:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="1">
-        <widget class="QCheckBox" name="avoid_duplicates_checkbox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="label_30">
-         <property name="text">
-          <string>Extract Self Post Content:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="extract_self_post_content_checkbox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QLabel" name="label_15">
-         <property name="text">
-          <string>Download Self Post Text:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QCheckBox" name="download_self_post_text_checkbox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0">
-        <widget class="QLabel" name="label_31">
-         <property name="text">
-          <string>Self Post File Format:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QComboBox" name="self_post_file_format_combo"/>
-       </item>
-       <item row="15" column="0">
-        <widget class="QLabel" name="label_13">
-         <property name="text">
-          <string>Download Videos:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="1">
-        <widget class="QCheckBox" name="download_videos_checkbox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>Download Images:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QCheckBox" name="download_images_checkbox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="0">
-        <widget class="QLabel" name="label_29">
-         <property name="text">
-          <string>Download Gifs:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
-        <widget class="QCheckBox" name="download_gifs_checkbox">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="0">
-        <widget class="QLabel" name="label_28">
-         <property name="text">
-          <string>NSFW Filter:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="1">
-        <widget class="QComboBox" name="nsfw_filter_combo"/>
-       </item>
-       <item row="19" column="0">
-        <widget class="QLabel" name="label_16">
-         <property name="text">
-          <string>Sort Posts By:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="19" column="1">
-        <widget class="QComboBox" name="post_sort_combo"/>
-       </item>
-       <item row="22" column="0">
-        <widget class="QLabel" name="post_download_naming_label">
-         <property name="text">
-          <string>Download Naming:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="22" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <property name="spacing">
-          <number>2</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="post_download_naming_line_edit">
-           <property name="placeholderText">
-            <string>----</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="post_download_naming_available_tokens_button">
-           <property name="toolTip">
-            <string>See available tokens</string>
-           </property>
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="23" column="0">
-        <widget class="QLabel" name="post_save_structure_label">
-         <property name="text">
-          <string>Save Path Structure:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="23" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <property name="spacing">
-          <number>2</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="post_save_path_structure_line_edit">
-           <property name="placeholderText">
-            <string>----</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="post_save_structure_available_tokens_button">
-           <property name="toolTip">
-            <string>See available tokens</string>
-           </property>
-           <property name="text">
-            <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="25" column="0" colspan="2">
-        <widget class="QLabel" name="post_path_example_label">
-         <property name="text">
-          <string>Post path example</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
+          <string>Limit by Date</string>
          </property>
         </widget>
        </item>
@@ -324,6 +154,13 @@
         <widget class="QRadioButton" name="absolute_date_limit_radio">
          <property name="text">
           <string>Last Post Date:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLabel" name="absolute_date_limit_label">
+         <property name="text">
+          <string>Absolute date limit</string>
          </property>
         </widget>
        </item>
@@ -358,23 +195,6 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
-        <widget class="QLabel" name="absolute_date_limit_label">
-         <property name="text">
-          <string>Absolute date limit</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QCheckBox" name="limit_date_checkbox">
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
-         <property name="text">
-          <string>Limit by Date</string>
-         </property>
-        </widget>
-       </item>
        <item row="10" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
@@ -399,7 +219,169 @@
          </item>
         </layout>
        </item>
+       <item row="14" column="0">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>Extract Self Post Content:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QCheckBox" name="extract_self_post_content_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
+        <widget class="QLabel" name="label_15">
+         <property name="text">
+          <string>Download Self Post Text:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="download_self_post_text_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="0">
+        <widget class="QLabel" name="label_31">
+         <property name="text">
+          <string>Self Post File Format:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="16" column="1">
+        <widget class="QComboBox" name="self_post_file_format_combo"/>
+       </item>
+       <item row="17" column="0">
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Download Videos:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="17" column="1">
+        <widget class="QCheckBox" name="download_videos_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="0">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Download Images:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="1">
+        <widget class="QCheckBox" name="download_images_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="0">
+        <widget class="QLabel" name="label_29">
+         <property name="text">
+          <string>Download Gifs:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="1">
+        <widget class="QCheckBox" name="download_gifs_checkbox">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="20" column="0">
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>NSFW Filter:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="20" column="1">
+        <widget class="QComboBox" name="nsfw_filter_combo"/>
+       </item>
+       <item row="21" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>Sort Posts By:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="21" column="1">
+        <widget class="QComboBox" name="post_sort_combo"/>
+       </item>
        <item row="24" column="0">
+        <widget class="QLabel" name="post_download_naming_label">
+         <property name="text">
+          <string>Download Naming:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="24" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="post_download_naming_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="post_download_naming_available_tokens_button">
+           <property name="toolTip">
+            <string>See available tokens</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="25" column="0">
+        <widget class="QLabel" name="post_save_structure_label">
+         <property name="text">
+          <string>Save Path Structure:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="25" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QLineEdit" name="post_save_path_structure_line_edit">
+           <property name="placeholderText">
+            <string>----</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="post_save_structure_available_tokens_button">
+           <property name="toolTip">
+            <string>See available tokens</string>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="26" column="0">
         <widget class="QLabel" name="label_5">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows you to set a custom path at which content from posts will be saved.  If left blank, the global setting for either user or subreddit will be used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -409,7 +391,7 @@
          </property>
         </widget>
        </item>
-       <item row="24" column="1">
+       <item row="26" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <property name="spacing">
           <number>2</number>
@@ -432,6 +414,233 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="27" column="0" colspan="2">
+        <widget class="QLabel" name="post_path_example_label">
+         <property name="text">
+          <string>Post path example</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="0" colspan="2">
+        <widget class="QGroupBox" name="duplicate_controls_groupbox">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="title">
+          <string>Duplicate Controls</string>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <layout class="QFormLayout" name="duplicate_controls_layout">
+            <item row="0" column="0">
+             <widget class="QLabel" name="avoid_duplicate_urls_label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The URL of each downloaded file is stored. If an extracted file has a matching URL in the database, it won’t be downloaded.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Avoid Duplicates URLs:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="hash_content_label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, an MD5 hash is generated for each downloaded file and stored in the database. This helps detect duplicates, but may slightly slow down downloads. Some duplicate detection features will be unavailable if disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Hash Content</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="avoid_duplicates_checkbox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The URL of each downloaded file is stored. If an extracted file has a matching URL in the database, it won’t be downloaded.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="hash_content_checkbox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked, an MD5 hash will be generated for each downloaded file and stored in the database.  Some duplicate controls will not be available if this is disabled.  This may result in slightly slower downloads.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="duplicate_control_method_combo_label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dictates how duplicates are handled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Duplicate Control Method:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QComboBox" name="duplicate_control_method_combo">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="duplicate_naming_method_label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the duplicate control method is MOVE, this pattern will be used to rename duplicates. (Match to download naming to keep the original post name)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Duplicate Naming Method:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <layout class="QHBoxLayout" name="duplicate_naming_method_layout">
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <item>
+               <widget class="QLineEdit" name="duplicate_naming_line_edit">
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="placeholderText">
+                 <string>----</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="duplicate_naming_available_tokens_button">
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="toolTip">
+                 <string>See available tokens</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="duplicate_save_structure_label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the duplicate control method is MOVE, this pattern will be used to structure the path the duplicates are moved to.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Duplicate Path Structure</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <layout class="QHBoxLayout" name="duplicate_save_structure_layout">
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <item>
+               <widget class="QLineEdit" name="duplicate_save_structure_line_edit">
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="placeholderText">
+                 <string>----</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="duplicate_save_structure_available_tokens_button">
+                <property name="font">
+                 <font>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="toolTip">
+                 <string>See available tokens</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <widget class="QLabel" name="duplicate_path_example_label">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Duplicate path example</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </item>
@@ -456,6 +665,16 @@
           <string>Comment Download Settings:</string>
          </property>
         </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_32">
+         <property name="text">
+          <string>Extract:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="comment_extract_combo"/>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_22">
@@ -483,6 +702,77 @@
           <string>Comment Limit:</string>
          </property>
         </widget>
+       </item>
+       <item row="5" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QSpinBox" name="comment_limit_spinbox">
+           <property name="toolTip">
+            <string>Only limits top level comment.  May pull more comments depending on replies</string>
+           </property>
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="comment_limit_max_button">
+           <property name="text">
+            <string>Max</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Comment Depth:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QSpinBox" name="comment_depth_spinbox">
+           <property name="maximum">
+            <number>9999</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="comment_depth_max_button">
+           <property name="text">
+            <string>Max</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Comment Reply Limit:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QSpinBox" name="comment_reply_limit_spinbox">
+           <property name="maximum">
+            <number>9999</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="comment_reply_max_button">
+           <property name="text">
+            <string>Max</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item row="8" column="0">
         <widget class="QLabel" name="label_24">
@@ -518,48 +808,20 @@
        <item row="10" column="1">
         <widget class="QComboBox" name="comment_sort_combo"/>
        </item>
-       <item row="5" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QSpinBox" name="comment_limit_spinbox">
-           <property name="toolTip">
-            <string>Only limits top level comment.  May pull more comments depending on replies</string>
-           </property>
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="comment_limit_max_button">
-           <property name="text">
-            <string>Max</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_32">
+       <item row="13" column="0">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Extract:</string>
+          <string>Comment File Format:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QComboBox" name="comment_extract_combo"/>
+       <item row="13" column="1">
+        <widget class="QComboBox" name="comment_file_format_combo"/>
        </item>
        <item row="14" column="0">
         <widget class="QLabel" name="comment_download_naming_label">
          <property name="text">
           <string>Download Naming:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="0">
-        <widget class="QLabel" name="comment_save_structure_label">
-         <property name="text">
-          <string>Save Path Structure:</string>
          </property>
         </widget>
        </item>
@@ -584,6 +846,13 @@
          </item>
         </layout>
        </item>
+       <item row="15" column="0">
+        <widget class="QLabel" name="comment_save_structure_label">
+         <property name="text">
+          <string>Save Path Structure:</string>
+         </property>
+        </widget>
+       </item>
        <item row="15" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
@@ -600,76 +869,6 @@
            </property>
            <property name="text">
             <string>...</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="17" column="0" colspan="2">
-        <widget class="QLabel" name="comment_path_example_label">
-         <property name="text">
-          <string>Comment path example</string>
-         </property>
-         <property name="wordWrap">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="0">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Comment File Format:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QComboBox" name="comment_file_format_combo"/>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Comment Depth:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Comment Reply Limit:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QSpinBox" name="comment_depth_spinbox">
-           <property name="maximum">
-            <number>9999</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="comment_depth_max_button">
-           <property name="text">
-            <string>Max</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="7" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="QSpinBox" name="comment_reply_limit_spinbox">
-           <property name="maximum">
-            <number>9999</number>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QToolButton" name="comment_reply_max_button">
-           <property name="text">
-            <string>Max</string>
            </property>
           </widget>
          </item>
@@ -708,6 +907,16 @@
           </widget>
          </item>
         </layout>
+       </item>
+       <item row="17" column="0" colspan="2">
+        <widget class="QLabel" name="comment_path_example_label">
+         <property name="text">
+          <string>Comment path example</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

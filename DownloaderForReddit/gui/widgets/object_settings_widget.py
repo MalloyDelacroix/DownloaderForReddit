@@ -89,6 +89,8 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         for value in CommentSortMethod:
             self.comment_sort_combo.addItem(value.display_name, value)
 
+        self.hash_content_checkbox.stateChanged.connect(self.sync_duplicate_controls_enabled)
+        self.duplicate_control_method_combo.currentIndexChanged.connect(self.sync_duplicate_controls_enabled)
         self.post_download_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
         self.post_download_naming_line_edit.customContextMenuRequested.connect(
             lambda: self.path_token_context_menu(self.post_download_naming_line_edit))
@@ -128,6 +130,24 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.comment_reply_max_button.clicked.connect(
             lambda: self.comment_reply_limit_spinbox.setValue(self.comment_reply_limit_spinbox.maximum()))
 
+        for value in DuplicateControlMethod:
+            self.duplicate_control_method_combo.addItem(value.display_name, value)
+
+        self.duplicate_naming_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.duplicate_naming_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.duplicate_naming_line_edit)
+        )
+        self.duplicate_naming_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.duplicate_naming_line_edit)
+        )
+        self.duplicate_save_structure_line_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.duplicate_save_structure_line_edit.customContextMenuRequested.connect(
+            lambda: self.path_token_context_menu(self.duplicate_save_structure_line_edit)
+        )
+        self.duplicate_save_structure_available_tokens_button.clicked.connect(
+            lambda: self.path_token_context_menu(self.duplicate_save_structure_line_edit)
+        )
+
     def connect_edit_widgets(self):
         self.setup_checkbox(self.lock_settings_checkbox, 'lock_settings')
         self.setup_checkbox(self.enable_download_checkbox, 'download_enabled')
@@ -140,7 +160,21 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.custom_date_limit_radio.toggled.connect(self.custom_date_limit_toggled)
         self.custom_date_limit_edit.dateTimeChanged.connect(self.set_date_limit_from_edit)
         self.update_custom_date_limit_radio.toggled.connect(lambda x: self.set_object_value('update_date_limit', x))
+
         self.setup_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
+        self.setup_checkbox(self.hash_content_checkbox, 'hash_duplicates')
+        self.duplicate_control_method_combo.currentIndexChanged.connect(
+            lambda x: self.set_object_value('duplicate_control_method', self.duplicate_control_method_combo.itemData(x))
+        )
+        self.duplicate_naming_line_edit.textChanged.connect(self.sync_duplicate_path_example)
+        self.duplicate_naming_line_edit.textChanged.connect(
+            lambda: self.set_object_value('duplicate_naming_method', self.duplicate_naming_line_edit.text())
+        )
+        self.duplicate_save_structure_line_edit.textChanged.connect(self.sync_duplicate_path_example)
+        self.duplicate_save_structure_line_edit.textChanged.connect(
+            lambda: self.set_object_value('duplicate_save_structure', self.duplicate_save_structure_line_edit.text())
+        )
+
         self.setup_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.setup_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
         self.self_post_file_format_combo.currentIndexChanged.connect(
@@ -257,6 +291,32 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         line_edit.insert(f'%[{token}]')
 
     def sync_post_path_example(self):
+        """
+        Syncs the example post path displayed to the user to what an actual path would look like with the settings
+        specified
+        :return:
+        """
+        base = self.get_example_path_base()
+        path = TokenParser.parse_tokens(self.post, self.post_save_path_structure_line_edit.text())
+        title = TokenParser.parse_tokens(self.post, self.post_download_naming_line_edit.text())
+        self.post_path_example_label.setText(f'{base}/{path}/{title}')
+
+    def sync_duplicate_path_example(self):
+        """
+        Syncs the example duplicate path displayed to the user to what an actual path would look like with the settings
+        specified.
+        """
+        base = self.get_example_path_base()
+        path = TokenParser.parse_tokens(self.post, self.duplicate_save_structure_line_edit.text())
+        title = TokenParser.parse_tokens(self.post, self.duplicate_naming_line_edit.text())
+        self.duplicate_path_example_label.setText(f'{base}/{path}/{title}')
+
+    def get_example_path_base(self) -> str:
+        """
+        Returns the base path for post examples based on the custom path set for the reddit object if available, or the
+        path specified in the settings manager if a custom path is not set.
+        :return: The base path to be shown in example labels.
+        """
         if self.custom_post_save_path_line_edit.text() != '':
             base = self.custom_post_save_path_line_edit.text()
         else:
@@ -264,9 +324,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
                 base = self.settings_manager.user_save_directory
             else:
                 base = self.settings_manager.subreddit_save_directory
-        path = TokenParser.parse_tokens(self.post, self.post_save_path_structure_line_edit.text())
-        title = TokenParser.parse_tokens(self.post, self.post_download_naming_line_edit.text())
-        self.post_path_example_label.setText(f'{base}/{path}/{title}')
+        return base
 
     def sync_comment_path_example(self):
         if self.custom_comment_save_path_line_edit.text() != '':
@@ -287,6 +345,10 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_combo(self.score_limit_operator_combo, 'post_score_limit_operator')
         self.sync_date_limits()
         self.sync_checkbox(self.avoid_duplicates_checkbox, 'avoid_duplicates')
+        self.sync_checkbox(self.hash_content_checkbox, 'hash_duplicates')
+        self.sync_combo(self.duplicate_control_method_combo, 'duplicate_control_method')
+        self.sync_line_edit(self.duplicate_naming_line_edit, 'duplicate_naming_method')
+        self.sync_line_edit(self.duplicate_save_structure_line_edit, 'duplicate_save_structure')
         self.sync_checkbox(self.extract_self_post_content_checkbox, 'extract_self_post_links')
         self.sync_checkbox(self.download_self_post_text_checkbox, 'download_self_post_text')
         self.sync_combo(self.self_post_file_format_combo, 'self_post_file_format')
@@ -406,3 +468,36 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         if os.path.isdir(folder):
             return folder
         return None
+
+    def sync_duplicate_controls_enabled(self) -> None:
+        """
+        Updates the enabled state of duplicate control-related inputs.
+
+        This method checks the current state of the hash content checkbox and determines whether the duplicate
+        control method involves moving files. Based on these states, it enables or disables several user interface
+        components related to duplicate control configuration.
+        """
+        hash_enabled = self.hash_content_checkbox.isChecked()
+        enable_dup_path_line_edits = self.is_current_duplicate_control_method_move()
+        self.duplicate_control_method_combo.setEnabled(hash_enabled)
+        self.duplicate_control_method_combo_label.setEnabled(hash_enabled)
+        self.duplicate_naming_line_edit.setEnabled(enable_dup_path_line_edits and hash_enabled)
+        self.duplicate_naming_method_label.setEnabled(enable_dup_path_line_edits and hash_enabled)
+        self.duplicate_save_structure_line_edit.setEnabled(enable_dup_path_line_edits and hash_enabled)
+        self.duplicate_save_structure_label.setEnabled(enable_dup_path_line_edits and hash_enabled)
+
+    def is_current_duplicate_control_method_move(self) -> bool:
+        """
+        Determines if the current duplicate control method is set to 'MOVE'.
+
+        This method checks the currently selected item in the duplicate control method combo box and compares it with
+        the constant representing the 'MOVE' duplicate control method. It returns a boolean indicating whether the
+        current selection matches 'MOVE'.
+
+        :return: A boolean indicating if the current duplicate control method is 'MOVE'
+        :rtype: bool
+        """
+        current_dup_control_method = self.duplicate_control_method_combo.itemData(
+            self.duplicate_control_method_combo.currentIndex()
+        )
+        return current_dup_control_method == DuplicateControlMethod.MOVE

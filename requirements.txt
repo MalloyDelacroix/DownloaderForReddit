@@ -1,6 +1,6 @@
 beautifulsoup4==4.6.3
 praw==7.8.1
-pyqt5==5.15.4
+pyqt5==5.15.9
 PyQtNetworkAuth==5.15.4
 python-json-logger==0.1.9
 requests==2.32.3

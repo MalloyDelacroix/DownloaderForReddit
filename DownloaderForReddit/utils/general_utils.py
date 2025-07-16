@@ -60,7 +60,7 @@ def open_post_in_browser(post):
         print(e)
 
 
-def check_file_path(content):
+def ensure_content_download_path(content):
     """
     Checks the content's full file path to make sure there are no naming conflicts.  If there are, a number is
     incremented and appended to the contents title until a naming conflict no longer exists.
@@ -78,8 +78,44 @@ def check_file_path(content):
         download_title = f'{clean_title}({unique_count})'
         path = content.get_full_file_path(download_title)
         unique_count += 1
-    # content.download_title = download_title
     return download_title
+
+
+def ensure_file_path(file_path: str) -> str:
+    """
+    Checks the supplied file path to make sure there are no naming conflicts.  If there are, a number is incremented
+    and appended after the file name portion until a naming conflict no longer exists.  The file path is returned.  If
+    the directory does not exist, it is created.  If there is a permission error, the error is logged and the operation
+    continues.
+    :param file_path: The file path to check for naming conflicts.
+    :return: A clean, unique file path to an existing directory.
+    """
+    base_path, title, ext = split_file_path(file_path)
+    try:
+        system_util.create_directory(base_path)
+    except PermissionError:
+        logger.error('Could not create directory path', extra={'directory_path': base_path}, exc_info=True)
+    unique_count = 1
+    clean_title = system_util.clean_path(title)
+    path = system_util.join_path(base_path, f'{clean_title}{ext}')
+    while os.path.exists(path):
+        title = f'{clean_title}({unique_count}){ext}'
+        path = system_util.join_path(base_path, title)
+        unique_count += 1
+    return path
+
+
+def split_file_path(file_path: str) -> tuple[str, str, str]:
+    """
+    Splits a supplied file path into three parts: the base path, the title, and the extension.  All three are returned
+    as a tuple.
+    :param file_path: The file path to split.
+    :return: A tuple containing the base path, the title, and the extension of the supplied file path.
+    """
+    base_path = os.path.dirname(file_path)
+    raw_title = os.path.basename(file_path)
+    title, ext = os.path.splitext(raw_title)
+    return base_path, title, ext
 
 
 def format_datetime(date_time: datetime):
