@@ -248,7 +248,7 @@ class RedditObjectListModel(QAbstractListModel):
 
     def rowCount(self, parent=QModelIndex(), *args, **kwargs):
         try:
-            return self.row_count
+            return len(self.reddit_objects) if self.reddit_objects else 0
         except AttributeError:
             return 0
 
