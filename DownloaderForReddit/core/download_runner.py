@@ -368,7 +368,16 @@ class DownloadRunner(QObject):
                               and limit the submission generator.
         :return: A submission generator for the supplied praw object.
         """
+        from ..database.model_enums import PostSortMethod
         sort_method = reddit_object.post_sort_method
+        # Handle None case by falling back to default
+        if sort_method is None:
+            self.logger.warning(
+                f'post_sort_method is None for {reddit_object.object_type} {reddit_object.name}, '
+                f'using default PostSortMethod.NEW'
+            )
+            sort_method = PostSortMethod.NEW
+            reddit_object.post_sort_method = PostSortMethod.NEW
         if sort_method.value <= 4:
             submission_method = self.get_raw_submission_method(praw_object, sort_method.name.lower())
             return submission_method(limit=reddit_object.post_limit)
