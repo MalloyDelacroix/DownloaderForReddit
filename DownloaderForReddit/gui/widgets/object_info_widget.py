@@ -1,5 +1,6 @@
 from threading import Thread
 from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSignal, QMetaObject, Qt, Q_ARG
 
 from ...guiresources.widgets.object_info_widget_auto import Ui_ObjectInfoWidget
 from ...database.models import Post, Comment, Content, RedditObject, RedditObjectList, ListAssociation, User, Subreddit
@@ -8,12 +9,18 @@ from ...utils import injector
 
 class ObjectInfoWidget(QWidget, Ui_ObjectInfoWidget):
 
+    # Signals for thread-safe label updates
+    update_labels_signal = pyqtSignal(int, int, int, int, bool)
+
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
         self.setupUi(self)
         self.db = injector.get_database_handler()
         self.object_type = None
         self.selected_objects = []
+
+        # Connect signal for thread-safe updates
+        self.update_labels_signal.connect(self._update_labels_on_main_thread)
 
     @property
     def single_object(self):
@@ -44,12 +51,24 @@ class ObjectInfoWidget(QWidget, Ui_ObjectInfoWidget):
         self.download_info_thread.start()
 
     def set_download_info_labels(self):
+        # Extract IDs first to avoid session conflicts
+        # This MUST be done before creating the new session in the thread
+        if self.object_type == 'REDDIT_OBJECT_LIST':
+            selected_ids = [x.id for x in self.selected_objects]
+            is_list = True
+        else:
+            selected_ids = [x.id for x in self.selected_objects]
+            is_list = False
+
+        is_user = self.object_type == 'USER'
+
         with self.db.get_scoped_session() as session:
-            if self.object_type == 'REDDIT_OBJECT_LIST':
+            if is_list:
                 id_list = session.query(ListAssociation.reddit_object_id)\
-                    .filter(RedditObjectList.id.in_([x.id for x in self.selected_objects]))
+                    .filter(RedditObjectList.id.in_(selected_ids))
             else:
-                id_list = [x.id for x in self.selected_objects]
+                id_list = selected_ids
+
             post_count = session.query(Post.id).filter(Post.significant_reddit_object_id.in_(id_list)).count()
             content_count = session.query(Content.id) \
                 .filter(Content.post_id.in_(session.query(Post.id)
@@ -57,13 +76,22 @@ class ObjectInfoWidget(QWidget, Ui_ObjectInfoWidget):
             associated_comment_count = session.query(Comment.id).join(Post) \
                 .filter(Post.significant_reddit_object_id.in_(id_list)).count()
 
-            self.post_count_label.setText(str(post_count))
-            self.content_count_label.setText(str(content_count))
-            self.associated_comment_count_label.setText(str(associated_comment_count))
-
-            user = self.object_type == 'USER'
-            self.comment_author_label.setVisible(user)
-            self.comment_author_count_label.setVisible(user)
-            if user:
+            comment_author_count = 0
+            if is_user:
                 comment_author_count = session.query(Comment.id).filter(Comment.author_id.in_(id_list)).count()
-                self.comment_author_count_label.setText(str(comment_author_count))
+
+            # Emit signal to update labels on main thread (thread-safe)
+            self.update_labels_signal.emit(post_count, content_count, associated_comment_count,
+                                          comment_author_count, is_user)
+
+    def _update_labels_on_main_thread(self, post_count, content_count, associated_comment_count,
+                                      comment_author_count, is_user):
+        """This method runs on the main Qt thread, safe to update widgets."""
+        self.post_count_label.setText(str(post_count))
+        self.content_count_label.setText(str(content_count))
+        self.associated_comment_count_label.setText(str(associated_comment_count))
+
+        self.comment_author_label.setVisible(is_user)
+        self.comment_author_count_label.setVisible(is_user)
+        if is_user:
+            self.comment_author_count_label.setText(str(comment_author_count))
