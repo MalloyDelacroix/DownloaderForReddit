@@ -29,7 +29,7 @@ from datetime import datetime
 from collections import namedtuple
 from cryptography.fernet import Fernet
 
-from . import get_platform_str
+from . import system_util
 from ..core import const
 from ..messaging.message import Message
 from ..version import __version__
@@ -39,7 +39,7 @@ from ..utils import injector
 TOKEN_SCOPES = ['identity', 'mysubreddits', 'subscribe', 'account', 'history', 'read']
 TOKEN_DURATION = 'permanent'
 USER_AGENT = (
-    f'{get_platform_str()}:DownloaderForReddit:{__version__} '
+    f'{system_util.get_platform_str()}:DownloaderForReddit:{__version__} '
     f'(by /u/MalloyDelacroix; contact: downloaderforreddit@gmail.com)'
 )
 CLIENT_ID = 'frGEUVAuHGL2PQ'
