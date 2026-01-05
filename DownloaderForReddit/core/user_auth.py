@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5.QtCore import QByteArray, QUrl, QObject, pyqtSignal
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtNetwork import QNetworkAccessManager
@@ -55,6 +57,7 @@ class UserAuth(QObject):
 
     def __init__(self, reddit_utils, parent=None):
         super().__init__(parent=parent)
+        self.logger = logging.getLogger(f'DownloaderForReddit.{__name__}')
         self.reddit_utils = reddit_utils
         self.client_id = reddit_utils.CLIENT_ID
         self.user_agent = reddit_utils.USER_AGENT
@@ -86,7 +89,12 @@ class UserAuth(QObject):
             manager,
             self
         )
+
         oauth.granted.connect(self.finish_oauth)
+        oauth.error.connect(
+            lambda error, description: self.logger.error(f'OAuth error: {error} - {description}')
+        )
+
         oauth.authorizeWithBrowser.connect(QDesktopServices.openUrl)
         oauth.setReplyHandler(reply_handler)
         oauth.setScope(" ".join(self.token_scope))
@@ -112,6 +120,7 @@ class UserAuth(QObject):
             self.connected.emit(False)
             if self.oauth:
                 self.oauth.replyHandler().close()
+            self.logger.error('Failed to connect reddit account', exc_info=True)
             return
 
         self.reddit_utils.save_token(token)
