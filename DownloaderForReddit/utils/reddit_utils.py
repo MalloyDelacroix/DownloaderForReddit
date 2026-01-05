@@ -29,6 +29,7 @@ from datetime import datetime
 from collections import namedtuple
 from cryptography.fernet import Fernet
 
+from . import get_platform_str
 from ..core import const
 from ..messaging.message import Message
 from ..version import __version__
@@ -37,7 +38,10 @@ from ..utils import injector
 
 TOKEN_SCOPES = ['identity', 'mysubreddits', 'subscribe', 'account', 'history', 'read']
 TOKEN_DURATION = 'permanent'
-USER_AGENT = F'python:DownloaderForReddit:{__version__} (by: /u/MalloyDelacroix)'
+USER_AGENT = (
+    f'{get_platform_str()}:DownloaderForReddit:{__version__} '
+    f'(by /u/MalloyDelacroix; contact: downloaderforreddit@gmail.com)'
+)
 CLIENT_ID = 'frGEUVAuHGL2PQ'
 REDIRECT_URL = 'http://127.0.0.1:8086/'
 
