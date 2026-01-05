@@ -131,6 +131,23 @@ def set_file_modify_time(file_path, epoch):
         return False
 
 
+def get_platform_str():
+    """
+    Determines the current operating system platform as a string representation.
+    :return: A string representing the platform: `'windows'`, `'linux'`, `'macos'`, or `'unknown'`.
+    :rtype: str
+    """
+    if sys.platform == 'win32':
+        return 'windows'
+    elif sys.platform.startswith('linux'):
+        return 'linux'
+    elif sys.platform == 'darwin':
+        return 'macos'
+    else:
+        return 'unknown'
+
+
+
 def get_data_directory():
     """
     Builds and returns a path the DownloaderForReddit data files location based on the users OS.  This will either be
