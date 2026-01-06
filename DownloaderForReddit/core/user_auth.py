@@ -115,16 +115,26 @@ class UserAuth(QObject):
 
         :return: None
         """
+        if not self.oauth:
+            self.connected.emit(False)
+            self.logger.error(
+                'Failed to create OAuth (QOAuth2AuthorizationCodeFlow) object, cannot finish OAuth process'
+            )
+            return
+
         token = self.oauth.refreshToken()
         if not token:
             self.connected.emit(False)
             if self.oauth:
                 self.oauth.replyHandler().close()
-            self.logger.error('Failed to connect reddit account', exc_info=True)
+            self.logger.error(
+                'Failed to connect reddit account: OAuth object has no refresh token',
+                exc_info=True
+            )
             return
 
         self.reddit_utils.save_token(token)
         if self.oauth:
             self.oauth.replyHandler().close()
         self.connected.emit(True)
-
+        self.logger.info('Successfully connected to reddit account')
