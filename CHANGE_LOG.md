@@ -1,6 +1,11 @@
 # Change Log
 
 
+## v3.17.1
+
+### Bug Fixes
+* Fix users being unable to connect reddit accounts.
+
 ## v3.17.0
 
 ### Minor Updates
