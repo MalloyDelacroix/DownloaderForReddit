@@ -28,13 +28,12 @@ import platform
 from datetime import datetime
 from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProgressBar, QLabel, QMenu, QInputDialog,
                              QMessageBox, QWidget, QHBoxLayout, QSystemTrayIcon, QApplication)
-from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer, QUrl
-from PyQt5.QtGui import QCursor, QDesktopServices, QPixmap, QIcon
-from PyQt5.QtNetwork import QNetworkAccessManager
-from PyQt5.QtNetworkAuth import QOAuth2AuthorizationCodeFlow, QOAuthHttpServerReplyHandler
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer
+from PyQt5.QtGui import QCursor, QPixmap, QIcon
 from pyqtspinner.spinner import WaitingSpinner
 import logging
 
+from ..core.user_auth import UserAuth
 from ..guiresources.downloader_for_reddit_gui_auto import Ui_MainWindow
 from ..gui.about_dialog import AboutDialog
 from ..gui.add_reddit_object_dialog import AddRedditObjectDialog
@@ -1221,34 +1220,36 @@ class DownloaderForRedditGUI(QMainWindow, Ui_MainWindow):
         self.connect_reddit_account_menu_item.triggered.connect(self.start_oauth_flow)
 
     def start_oauth_flow(self):
-        authorization_url = QUrl("https://www.reddit.com/api/v1/authorize")
-        access_url = QUrl("https://www.reddit.com/api/v1/access_token")
+        """
+        Initiates the OAuth flow for user authentication.
 
-        manager = QNetworkAccessManager(self)
-        reply_handler = QOAuthHttpServerReplyHandler(8086)
-        oauth = QOAuth2AuthorizationCodeFlow(reddit_utils.CLIENT_ID, authorization_url, access_url, manager, self)
-        oauth.granted.connect(self.finish_oauth_flow)
-        oauth.authorizeWithBrowser.connect(QDesktopServices.openUrl)
-        oauth.setReplyHandler(reply_handler)
-        oauth.setScope(" ".join(reddit_utils.TOKEN_SCOPES))
-        oauth.setUserAgent(reddit_utils.USER_AGENT)
+        :return: None
+        """
+        self.user_auth = UserAuth(reddit_utils=reddit_utils, parent=self)
+        self.user_auth.connected.connect(self.finish_oauth_flow)
+        self.user_auth.start_oauth()
 
-        params = {
-            "duration": "permanent"
-        }
-        oauth.resourceOwnerAuthorization(authorization_url, params)
-        self.oauth = oauth
+    def finish_oauth_flow(self, connected: bool):
+        """
+        Handles the completion of the OAuth flow for connecting a Reddit account.
 
-    def finish_oauth_flow(self):
-        token = self.oauth.refreshToken()
-        reddit_utils.save_token(token)
-        user = reddit_utils.check_authorized_connection()
-        Message.send_info(f'Downloader for Reddit is now linked to {user}\'s reddit account.')
-        self.connect_reddit_account_menu_item.setText(f"Sign out: {user}")
-        self.connect_reddit_account_menu_item.disconnect()
-        self.connect_reddit_account_menu_item.triggered.connect(self.sign_out)
+        If the connection is successful, the user's Reddit account is checked and linked to the application. The
+        application updates the UI to reflect the connected state, including displaying the username of the linked
+        Reddit account and reassigning the menu item's functionality to handle account sign-out. If the connection
+        fails, an error message is displayed.
 
-        self.oauth.replyHandler().close()
+        :param connected: Indicates whether the OAuth flow was completed successfully.
+        :type connected: bool
+        :return: None
+        """
+        if connected:
+            user = reddit_utils.check_authorized_connection()
+            Message.send_info(f'Downloader for Reddit is now linked to {user}\'s reddit account.')
+            self.connect_reddit_account_menu_item.setText(f"Sign out: {user}")
+            self.connect_reddit_account_menu_item.disconnect()
+            self.connect_reddit_account_menu_item.triggered.connect(self.sign_out)
+        else:
+            Message.send_error("Failed to connect to reddit account.")
 
     def update_output(self):
         self.output_view_model.update_output_level()
