@@ -20,8 +20,8 @@ class SubmittableCreator:
         return cls.db
 
     @classmethod
-    def create_post(cls, submission: Submission, significant_id: int, session: Session, download_session_id: int) \
-            -> Optional[Post]:
+    def create_post(cls, submission: Submission, significant_id: int, session: Session, download_session_id: int,
+                    fetched_via_search: bool = False) -> Optional[Post]:
         post = None
         if cls.check_duplicate_post_url(submission.url, session):
             author = cls.get_author(submission, session)
@@ -42,7 +42,8 @@ class SubmittableCreator:
                 author=author,
                 subreddit=subreddit,
                 download_session_id=download_session_id,
-                significant_reddit_object_id=significant_id
+                significant_reddit_object_id=significant_id,
+                fetched_via_search=fetched_via_search
             )
             session.add(post)
             session.commit()

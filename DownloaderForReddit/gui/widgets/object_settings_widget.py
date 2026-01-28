@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
-from PyQt5.QtWidgets import QWidget, QMenu, QButtonGroup, QFileDialog
+from PyQt5.QtWidgets import (QWidget, QMenu, QButtonGroup, QFileDialog, QComboBox,
+                             QHBoxLayout, QLabel, QGroupBox, QVBoxLayout)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 
@@ -18,6 +19,7 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.setupUi(self)
         self.settings_manager = injector.get_settings_manager()
         self.setup_widgets()
+        self.setup_search_fallback_widget()
         self.connect_edit_widgets()
         self.selected_objects = []
 
@@ -148,9 +150,40 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
             lambda: self.path_token_context_menu(self.duplicate_save_structure_line_edit)
         )
 
+    def setup_search_fallback_widget(self):
+        """Add search fallback settings for users with hidden profiles."""
+        # Create a group box for search fallback
+        self.search_fallback_groupbox = QGroupBox('Search Fallback (Hidden Profiles)')
+        search_layout = QVBoxLayout(self.search_fallback_groupbox)
+
+        # Create combo for tri-state selection
+        combo_layout = QHBoxLayout()
+        label = QLabel('Use search fallback:')
+        self.search_fallback_combo = QComboBox()
+        self.search_fallback_combo.addItem('Use Global Setting', None)
+        self.search_fallback_combo.addItem('Enable', True)
+        self.search_fallback_combo.addItem('Disable', False)
+        self.search_fallback_combo.setToolTip(
+            'When enabled, if this user\'s profile returns few or no posts, '
+            'the app will search Reddit for their posts using author:username.\n'
+            '"Use Global Setting" follows the setting in Core Settings.')
+        combo_layout.addWidget(label)
+        combo_layout.addWidget(self.search_fallback_combo)
+        combo_layout.addStretch()
+        search_layout.addLayout(combo_layout)
+
+        # Add to the main vertical layout (verticalLayout is inside verticalLayout_2)
+        self.verticalLayout.addWidget(self.search_fallback_groupbox)
+
     def connect_edit_widgets(self):
         self.setup_checkbox(self.lock_settings_checkbox, 'lock_settings')
         self.setup_checkbox(self.enable_download_checkbox, 'download_enabled')
+
+        # Search fallback combo connection
+        self.search_fallback_combo.currentIndexChanged.connect(
+            lambda x: self.set_object_value('use_search_fallback',
+                                            self.search_fallback_combo.itemData(x, Qt.UserRole))
+        )
         self.post_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('post_limit', x))
         self.score_limit_spinbox.valueChanged.connect(lambda x: self.set_object_value('post_score_limit', x))
         self.score_limit_operator_combo.currentIndexChanged.connect(
@@ -375,6 +408,27 @@ class ObjectSettingsWidget(QWidget, Ui_ObjectSettingsWidget):
         self.sync_line_edit(self.comment_save_path_structure_line_edit, 'comment_save_structure')
         self.sync_line_edit(self.custom_comment_save_path_line_edit, 'custom_comment_save_path')
         self.sync_comment_path_example()
+        self.sync_search_fallback()
+
+    def sync_search_fallback(self):
+        """Sync search fallback combo and visibility based on object type."""
+        # Only show for USER type, not SUBREDDIT
+        is_user = self.object_type == 'USER'
+        self.search_fallback_groupbox.setVisible(is_user)
+
+        if is_user:
+            self.sync_search_fallback_combo(self.search_fallback_combo, 'use_search_fallback')
+
+    def sync_search_fallback_combo(self, combo, attr):
+        """Sync a combo box that has None/True/False data values."""
+        value = self.get_value(attr)
+        # Find the item with matching data
+        for i in range(combo.count()):
+            if combo.itemData(i, Qt.UserRole) == value:
+                combo.setCurrentIndex(i)
+                return
+        # Default to first item (Use Global Setting = None)
+        combo.setCurrentIndex(0)
 
     def sync_optional(self):
         try:

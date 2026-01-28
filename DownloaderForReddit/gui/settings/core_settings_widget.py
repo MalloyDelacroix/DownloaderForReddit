@@ -1,5 +1,6 @@
 import os
-from PyQt5.QtWidgets import QFileDialog, QCheckBox, QListWidgetItem
+from PyQt5.QtWidgets import (QFileDialog, QCheckBox, QListWidgetItem, QGroupBox,
+                             QVBoxLayout, QHBoxLayout, QLabel, QSpinBox)
 from PyQt5.QtGui import QValidator
 from PyQt5.QtCore import Qt
 
@@ -25,6 +26,65 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.select_subreddit_base_directory_button.clicked.connect(
             lambda: self.select_directory_path(self.subreddit_save_dir_line_edit))
         self.extractor_map = {}
+        self.setup_search_fallback_settings()
+
+    def setup_search_fallback_settings(self):
+        """Add search fallback settings group box programmatically."""
+        # Create group box for search fallback settings
+        self.search_fallback_groupbox = QGroupBox('Search Fallback (Hidden Profiles)')
+        search_layout = QVBoxLayout(self.search_fallback_groupbox)
+        search_layout.setSpacing(10)
+
+        # Enable checkbox
+        enable_layout = QHBoxLayout()
+        enable_label = QLabel('Enable search fallback for users with hidden profiles:')
+        self.enable_search_fallback_checkbox = QCheckBox()
+        self.enable_search_fallback_checkbox.setToolTip(
+            'When enabled, if a user\'s profile returns few or no posts, '
+            'the app will search Reddit for their posts using author:username')
+        enable_layout.addWidget(enable_label)
+        enable_layout.addWidget(self.enable_search_fallback_checkbox)
+        enable_layout.addStretch()
+        search_layout.addLayout(enable_layout)
+
+        # Threshold spinbox
+        threshold_layout = QHBoxLayout()
+        threshold_label = QLabel('Trigger fallback when profile returns fewer than:')
+        self.search_fallback_threshold_spinbox = QSpinBox()
+        self.search_fallback_threshold_spinbox.setRange(1, 25)
+        self.search_fallback_threshold_spinbox.setToolTip(
+            'If the user\'s profile returns fewer posts than this number, '
+            'search fallback will be triggered')
+        threshold_posts_label = QLabel('posts')
+        threshold_layout.addWidget(threshold_label)
+        threshold_layout.addWidget(self.search_fallback_threshold_spinbox)
+        threshold_layout.addWidget(threshold_posts_label)
+        threshold_layout.addStretch()
+        search_layout.addLayout(threshold_layout)
+
+        # Post limit spinbox
+        limit_layout = QHBoxLayout()
+        limit_label = QLabel('Maximum posts to retrieve via search:')
+        self.search_fallback_limit_spinbox = QSpinBox()
+        self.search_fallback_limit_spinbox.setRange(10, 1000)
+        self.search_fallback_limit_spinbox.setToolTip(
+            'Maximum number of posts to retrieve when using search fallback')
+        limit_layout.addWidget(limit_label)
+        limit_layout.addWidget(self.search_fallback_limit_spinbox)
+        limit_layout.addStretch()
+        search_layout.addLayout(limit_layout)
+
+        # Connect enable checkbox to toggle other controls
+        self.enable_search_fallback_checkbox.toggled.connect(self.toggle_search_fallback_options)
+
+        # Add to the main layout (at the end, before the stretch)
+        self.verticalLayout_4.addWidget(self.search_fallback_groupbox)
+
+    def toggle_search_fallback_options(self):
+        """Enable/disable search fallback options based on the enable checkbox."""
+        enabled = self.enable_search_fallback_checkbox.isChecked()
+        self.search_fallback_threshold_spinbox.setEnabled(enabled)
+        self.search_fallback_limit_spinbox.setEnabled(enabled)
 
     def load_settings(self):
         self.user_save_dir_line_edit.setText(self.settings.user_save_directory)
@@ -51,6 +111,12 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
                               self.multi_part_chunk_size_spinbox)
         self.multi_part_thread_count_spinbox.setValue(self.settings.multi_part_thread_count)
         self.load_extractor_list()
+
+        # Search fallback settings
+        self.enable_search_fallback_checkbox.setChecked(self.settings.enable_search_fallback)
+        self.search_fallback_threshold_spinbox.setValue(self.settings.search_fallback_threshold)
+        self.search_fallback_limit_spinbox.setValue(self.settings.search_fallback_post_limit)
+        self.toggle_search_fallback_options()
 
     def load_extractor_list(self):
         for extractor, enabled in self.settings.extractor_dict.items():
@@ -91,6 +157,11 @@ class CoreSettingsWidget(AbstractSettingsWidget, Ui_CoreSettingsWidget):
         self.settings.download_on_add = self.download_on_add_checkbox.isChecked()
         for extractor, checkbox in self.extractor_map.items():
             self.settings.extractor_dict[extractor] = checkbox.isChecked()
+
+        # Search fallback settings
+        self.settings.enable_search_fallback = self.enable_search_fallback_checkbox.isChecked()
+        self.settings.search_fallback_threshold = self.search_fallback_threshold_spinbox.value()
+        self.settings.search_fallback_post_limit = self.search_fallback_limit_spinbox.value()
 
     def select_directory_path(self, line_edit):
         text = line_edit.text()

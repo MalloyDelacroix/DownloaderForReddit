@@ -13,6 +13,7 @@ from DownloaderForReddit.core.download.downloader import Downloader
 from . import const
 from .content_runner import ContentRunner
 from .submission_filter import SubmissionFilter
+from .search_handler import SearchHandler
 from .runner import verify_run
 from .errors import NON_DOWNLOADABLE
 from ..database.models import DownloadSession, RedditObject, User, Subreddit, Post, Content
@@ -21,7 +22,8 @@ from ..messaging.message import Message
 from ..version import __version__
 
 
-ExtractionSet = namedtuple('ExtractionSet', 'extraction_type extraction_object significant_id')
+ExtractionSet = namedtuple('ExtractionSet', 'extraction_type extraction_object significant_id from_search_fallback')
+ExtractionSet.__new__.__defaults__ = (False,)  # Default from_search_fallback to False
 RunPair = namedtuple('RunPair', 'reddit_object_id praw_object')
 
 
@@ -50,6 +52,7 @@ class DownloadRunner(QObject):
         self.settings_manager = injector.get_settings_manager()
         self.reddit_instance = reddit_utils.get_reddit_instance()
         self.submission_filter = SubmissionFilter()
+        self.search_handler = SearchHandler(self.reddit_instance)
 
         self.user_id_list = user_id_list
         self.subreddit_id_list = subreddit_id_list
@@ -309,12 +312,39 @@ class DownloadRunner(QObject):
 
     def handle_submissions(self, reddit_object, praw_object):
         submissions = self.get_submissions(praw_object, reddit_object)
+        used_search_fallback = False
+        search_submission_ids = set()
+
+        # Check if search fallback should be triggered for users with hidden profiles
+        if reddit_object.object_type == 'USER':
+            should_fallback = self.search_handler.should_use_fallback(
+                profile_post_count=len(submissions),
+                user_setting=reddit_object.use_search_fallback,
+                global_setting=self.settings_manager.enable_search_fallback
+            )
+            if should_fallback:
+                Message.send_info(f'Profile access limited for {reddit_object.name}, using search fallback')
+                used_search_fallback = True
+                search_submissions, search_submission_ids = self.get_search_fallback_submissions(reddit_object)
+
+                # Merge submissions, avoiding duplicates
+                existing_ids = {s.id for s in submissions}
+                for sub in search_submissions:
+                    if sub.id not in existing_ids:
+                        submissions.append(sub)
+                        existing_ids.add(sub.id)
+
+        # Notify user if both profile and search returned no results
+        if len(submissions) == 0 and used_search_fallback:
+            Message.send_warning(f'No posts found for {reddit_object.name} via profile or search')
+
         date_limit = 0
         for submission in submissions:
             if submission.created > date_limit:
                 date_limit = submission.created
+            from_search = submission.id in search_submission_ids
             extraction_set = ExtractionSet(extraction_type='SUBMISSION', extraction_object=submission,
-                                           significant_id=reddit_object.id)
+                                           significant_id=reddit_object.id, from_search_fallback=from_search)
             self.submission_queue.put(extraction_set)
         if date_limit > 0:
             reddit_object.set_date_limit(date_limit)  # date limit modified after submissions are extracted
@@ -398,6 +428,43 @@ class DownloadRunner(QObject):
             return getattr(praw_object.submissions, sort_type)
         else:
             return getattr(praw_object, sort_type)
+
+    @verify_run
+    def get_search_fallback_submissions(self, reddit_object):
+        """
+        Retrieves submissions for a user via Reddit search API.
+        Used when direct profile access fails or returns insufficient results.
+
+        :param reddit_object: The User database object
+        :return: Tuple of (list of submissions, set of submission IDs from search)
+        """
+        submissions = []
+        search_submission_ids = set()
+
+        search_gen = self.search_handler.search_user_submissions(
+            username=reddit_object.name,
+            limit=self.settings_manager.search_fallback_post_limit
+        )
+
+        for submission in search_gen:
+            search_submission_ids.add(submission.id)
+
+            passes_date_limit = self.submission_filter.date_filter(submission, reddit_object)
+            if (submission.pinned or submission.stickied) or passes_date_limit:
+                if passes_date_limit:
+                    if (not self.filter_subreddits or
+                        submission.subreddit.display_name in self.validated_subreddits):
+                        if self.submission_filter.filter_submission(submission, reddit_object):
+                            submissions.append(submission)
+            else:
+                # Since search is sorted by new, we can break on old posts
+                break
+
+        self.logger.info(
+            f'Search fallback retrieved {len(submissions)} submissions for {reddit_object.name}'
+        )
+
+        return submissions, search_submission_ids
 
     def perpetuate_run(self):
         """

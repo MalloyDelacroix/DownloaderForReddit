@@ -52,6 +52,11 @@ class SettingsManager:
         self.reddit_access = self.get('core', 'reddit_access', None)
         self.validate_names_before_add = self.get('core', 'validate_names_before_add', True)
 
+        # Search fallback settings (for users with hidden profiles)
+        self.enable_search_fallback = self.get('core', 'enable_search_fallback', False)
+        self.search_fallback_threshold = self.get('core', 'search_fallback_threshold', 3)
+        self.search_fallback_post_limit = self.get('core', 'search_fallback_post_limit', 500)
+
         default_extractor_dict = {
             extractor.__name__: True for extractor in BaseExtractor.__subclasses__()
         }

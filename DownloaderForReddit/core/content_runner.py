@@ -46,10 +46,14 @@ class ContentRunner(Runner):
                         self.hold = False
                         self.download_queue.put('RELEASE_HOLD')
                     else:
-                        extraction_type, extraction_object, significant_id = item
+                        extraction_type = item.extraction_type
+                        extraction_object = item.extraction_object
+                        significant_id = item.significant_id
+                        from_search_fallback = getattr(item, 'from_search_fallback', False)
                         if extraction_type == 'SUBMISSION':
                             future = self.executor.submit(self.handle_submission, submission=extraction_object,
-                                                          significant_id=significant_id)
+                                                          significant_id=significant_id,
+                                                          from_search_fallback=from_search_fallback)
                         else:
                             future = self.executor.submit(self.finish_post, post_id=extraction_object)
                         future.add_done_callback(self.remove_future)
@@ -68,15 +72,17 @@ class ContentRunner(Runner):
         self.futures.remove(future)
 
     @verify_run
-    def handle_submission(self, submission, significant_id):
+    def handle_submission(self, submission, significant_id, from_search_fallback=False):
         """
         Takes a reddit submission and creates a Post from its data.  Then calls the appropriate methods for the post.
         If comments are to be extracted from the submission, this is also handled here.
         :param submission: The reddit submission that is to be extracted.
         :param significant_id: The id of the reddit object for which the submissions was extracted from reddit.
+        :param from_search_fallback: Whether the submission was fetched via search fallback.
         """
         with self.db.get_scoped_session() as session:
-            post = SubmittableCreator.create_post(submission, significant_id, session, self.download_session_id)
+            post = SubmittableCreator.create_post(submission, significant_id, session, self.download_session_id,
+                                                  fetched_via_search=from_search_fallback)
             if post is not None:
                 submission_handler = SubmissionHandler(submission, post, self.download_session_id, session,
                                                        self.download_queue, self.stop_run)
