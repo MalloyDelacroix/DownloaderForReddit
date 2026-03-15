@@ -2,7 +2,7 @@ import os
 import logging
 from PyQt5.QtWidgets import QDialog, QFileDialog, QApplication
 from PyQt5.QtCore import Qt, pyqtSignal
-from pyqtspinner.spinner import WaitingSpinner
+from ..customwidgets.qt_compat_spinner import CompatibleWaitingSpinner as WaitingSpinner
 from threading import Thread
 
 from ..guiresources.add_reddit_object_dialog_auto import Ui_AddRedditObjectDialog

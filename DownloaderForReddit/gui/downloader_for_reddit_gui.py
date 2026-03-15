@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import (QMainWindow, QActionGroup, QAbstractItemView, QProg
                              QMessageBox, QWidget, QHBoxLayout, QSystemTrayIcon, QApplication)
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QCursor, QPixmap, QIcon
-from pyqtspinner.spinner import WaitingSpinner
+from ..customwidgets.qt_compat_spinner import CompatibleWaitingSpinner as WaitingSpinner
 import logging
 
 from ..core.user_auth import UserAuth
