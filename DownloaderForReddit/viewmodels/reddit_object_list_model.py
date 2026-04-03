@@ -102,6 +102,7 @@ class RedditObjectListModel(QAbstractListModel):
                 f.filter(self.session, query=self.list.reddit_objects, order_by=order, desc=desc).all()
             self.refresh()
             self.check_last_added()
+            self.send_count_change()
         except AttributeError:
             # AttributeError indicates that no list is set for this view model
             pass
@@ -224,6 +225,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.session.commit()
             self.reddit_object_added.emit(item.id)
             self.last_added = item
+            self.send_count_change()
             return True
         return False
 
@@ -233,6 +235,7 @@ class RedditObjectListModel(QAbstractListModel):
             self.list.reddit_objects.remove(self.list.reddit_objects[position])
         self.endRemoveRows()
         self.session.commit()
+        self.send_count_change()
         return True
 
     def removeRow(self, row, parent=QModelIndex(), *args):
@@ -240,6 +243,7 @@ class RedditObjectListModel(QAbstractListModel):
         del self.list.reddit_objects[row]
         self.endRemoveRows()
         self.session.commit()
+        self.send_count_change()
         return True
 
     def rowCount(self, parent=QModelIndex(), *args, **kwargs):
@@ -247,6 +251,13 @@ class RedditObjectListModel(QAbstractListModel):
             return len(self.reddit_objects) if self.reddit_objects else 0
         except AttributeError:
             return 0
+
+    def send_count_change(self):
+        """
+        Emits the 'count_change' signal with the correct row count.
+        """
+        row_count = self.rowCount()
+        self.count_change.emit(row_count)
 
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
