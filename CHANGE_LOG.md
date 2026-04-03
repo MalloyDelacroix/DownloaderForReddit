@@ -1,10 +1,16 @@
 # Change Log
 
+## Unreleased
+
+### Bug Fixes
+* Fix user/subreddit count labels not displaying the correct count.
+
 
 ## v3.17.1
 
 ### Bug Fixes
 * Fix users being unable to connect reddit accounts.
+
 
 ## v3.17.0
 
