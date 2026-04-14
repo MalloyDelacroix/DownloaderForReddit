@@ -69,8 +69,8 @@ class RedditUploadsExtractor(BaseExtractor):
             for value in self.submission.media_metadata.values():
                 try:
                     container = value['s']
-                    url = container['u']
-                    ext = url[url.rfind('.') + 1: url.rfind('?width')]
+                    url = self.get_album_item_url(container)
+                    ext = self.get_media_extension(url)
                     media_id = getattr(value, 'id', None)
                     self.make_content(url, ext, count, media_id=media_id)
                     count += 1
@@ -83,6 +83,33 @@ class RedditUploadsExtractor(BaseExtractor):
                 message='Failed to extract images from reddit gallery',
                 log_exception=True,
             )
+
+    def get_album_item_url(self, container: dict) -> str:
+        """
+        The url for an album media item will be stored under a different key depending
+        on the type of media it is. This method returns the correct url for the media type.
+        :param container: The "container" dict for each media item in an album.
+        :return: The url to the media item.
+        """
+        keys = container.keys()
+        if 'mp4' in keys:
+            return container['mp4']
+        if 'gif' in keys:
+            return container['gif']
+        return container['u']
+
+    def get_media_extension(self, url: str) -> str:
+        """
+        Extracts the file extension from a URL using regex.
+        :param url: The URL to extract the extension from.
+        :return: The file extension if found, otherwise None.
+        """
+        match = re.search(r'\.([a-zA-Z0-9]+)(?=[?#]|$)', url)
+        url = match.group(1) if match else ''
+        # Reddit encodes gifs as mp4, so if the extension is shown as gif, we return mp4
+        if url == 'gif':
+            url = 'mp4'
+        return url
 
     def extract_single(self):
         if not self.url.endswith(const.ALL_EXT):
