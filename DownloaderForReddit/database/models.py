@@ -280,6 +280,7 @@ class RedditObject(BaseModel):
     comment_save_structure = Column(String, default='%[post_author_name]/Comments/%[post_title]')
     custom_comment_save_path = Column(String, nullable=True)
     new = Column(Boolean, default=True)
+    use_search_fallback = Column(Boolean, nullable=True, default=None)  # None = use global, True/False = override
     lists = relationship(RedditObjectList, secondary='reddit_object_list_association', lazy='dynamic')
 
     object_type = Column(String(15))
@@ -570,6 +571,7 @@ class Post(BaseModel):
     extraction_error = Column(Enum(Error), nullable=True)
     error_message = Column(String, nullable=True)
     retry_attempts = Column(Integer, default=0)
+    fetched_via_search = Column(Boolean, nullable=False, default=False)  # True if post was fetched via search fallback
 
     author_id = Column(ForeignKey('user.id'))
     author = relationship('User', foreign_keys=author_id, backref='posts')

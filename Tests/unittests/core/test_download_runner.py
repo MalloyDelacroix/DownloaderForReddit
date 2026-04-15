@@ -348,3 +348,104 @@ class TestDownloadRunner(TestCase):
         get_raw_submissions.assert_called()
         self.assertEqual(0, len(submissions))
 
+    # =========================================================================
+    # Search Fallback Tests
+    # =========================================================================
+
+    def test_get_search_fallback_submissions_returns_tuple(self, reddit_utils):
+        """get_search_fallback_submissions should return (list, set) tuple."""
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
+        mock_submissions = []
+        for x in range(3):
+            sub = MockPrawSubmission(created=self.now - timedelta(days=x), _id=f'search{x}')
+            sub.subreddit = MagicMock()
+            sub.subreddit.display_name = 'TestSub'
+            mock_submissions.append(sub)
+
+        download_runner = DownloadRunner()
+        download_runner.search_handler = MagicMock()
+        download_runner.search_handler.search_user_submissions.return_value = iter(mock_submissions)
+
+        result = download_runner.get_search_fallback_submissions(user)
+
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(2, len(result))
+        submissions, ids = result
+        self.assertIsInstance(submissions, list)
+        self.assertIsInstance(ids, set)
+
+    def test_get_search_fallback_submissions_returns_submission_ids(self, reddit_utils):
+        """Search fallback should return set containing all searched submission IDs."""
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
+        mock_submissions = []
+        for x in range(3):
+            sub = MockPrawSubmission(created=self.now - timedelta(days=x), _id=f'search{x}')
+            sub.subreddit = MagicMock()
+            sub.subreddit.display_name = 'TestSub'
+            mock_submissions.append(sub)
+
+        download_runner = DownloadRunner()
+        download_runner.search_handler = MagicMock()
+        download_runner.search_handler.search_user_submissions.return_value = iter(mock_submissions)
+
+        submissions, ids = download_runner.get_search_fallback_submissions(user)
+
+        self.assertEqual({'search0', 'search1', 'search2'}, ids)
+
+    def test_get_search_fallback_submissions_filters_by_date(self, reddit_utils):
+        """Search fallback should filter submissions by date limit."""
+        user = get_user(absolute_date_limit=self.now - timedelta(days=5))
+        mock_submissions = []
+        # 3 recent posts (within date limit)
+        for x in range(3):
+            sub = MockPrawSubmission(created=self.now - timedelta(days=x), _id=f'recent{x}')
+            sub.subreddit = MagicMock()
+            sub.subreddit.display_name = 'TestSub'
+            mock_submissions.append(sub)
+        # 2 old posts (outside date limit)
+        for x in range(10, 12):
+            sub = MockPrawSubmission(created=self.now - timedelta(days=x), _id=f'old{x}')
+            sub.subreddit = MagicMock()
+            sub.subreddit.display_name = 'TestSub'
+            mock_submissions.append(sub)
+
+        download_runner = DownloadRunner()
+        download_runner.search_handler = MagicMock()
+        download_runner.search_handler.search_user_submissions.return_value = iter(mock_submissions)
+
+        submissions, ids = download_runner.get_search_fallback_submissions(user)
+
+        # Should only include the 3 recent posts
+        self.assertEqual(3, len(submissions))
+
+    def test_get_search_fallback_submissions_respects_subreddit_filter(self, reddit_utils):
+        """Search fallback should respect subreddit filter when set."""
+        user = get_user(absolute_date_limit=self.now - timedelta(days=10))
+        allowed_sub = MagicMock()
+        allowed_sub.display_name = 'AllowedSub'
+        forbidden_sub = MagicMock()
+        forbidden_sub.display_name = 'ForbiddenSub'
+
+        mock_submissions = []
+        for x in range(3):
+            sub = MockPrawSubmission(created=self.now - timedelta(days=x), _id=f'allowed{x}')
+            sub.subreddit = allowed_sub
+            mock_submissions.append(sub)
+        for x in range(3, 6):
+            sub = MockPrawSubmission(created=self.now - timedelta(days=x), _id=f'forbidden{x}')
+            sub.subreddit = forbidden_sub
+            mock_submissions.append(sub)
+
+        download_runner = DownloadRunner()
+        download_runner.filter_subreddits = True
+        download_runner.validated_subreddits = ['AllowedSub']
+        download_runner.search_handler = MagicMock()
+        download_runner.search_handler.search_user_submissions.return_value = iter(mock_submissions)
+
+        submissions, ids = download_runner.get_search_fallback_submissions(user)
+
+        # Should only include submissions from AllowedSub
+        self.assertEqual(3, len(submissions))
+        for sub in submissions:
+            self.assertEqual('AllowedSub', sub.subreddit.display_name)
+
